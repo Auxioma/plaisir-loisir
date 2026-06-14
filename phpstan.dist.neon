@@ -1,0 +1,8 @@
+parameters:
+    level: 6
+    paths:
+        - src
+    # Le niveau 6 est un bon point de départ : strict sur les types sans être bloquant.
+    # On pourra monter vers le niveau 8 (le plus strict) quand le code aura grossi.
+    # L'extension phpstan/phpstan-symfony (ajoutée plus tard) apportera la connaissance
+    # du conteneur de services Symfony.
