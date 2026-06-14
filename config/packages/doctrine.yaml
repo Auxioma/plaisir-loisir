@@ -17,8 +17,10 @@ doctrine:
             App:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'App\Entity'
+                # DDD léger : les entités vivent dans src/<Domaine>/Entity.
+                # On scanne tout src/ ; seules les classes avec #[ORM\Entity] sont mappées.
+                dir: '%kernel.project_dir%/src'
+                prefix: 'App'
                 alias: App
 
 when@test:
