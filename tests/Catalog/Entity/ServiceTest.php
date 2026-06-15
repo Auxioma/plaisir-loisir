@@ -6,6 +6,7 @@ namespace App\Tests\Catalog\Entity;
 
 use App\Catalog\Entity\Media;
 use App\Catalog\Entity\Service;
+use App\Catalog\Entity\ServiceOption;
 use App\Catalog\Entity\ServicePackage;
 use App\Catalog\Enum\ActivityType;
 use App\Catalog\Enum\BookingType;
@@ -27,6 +28,7 @@ final class ServiceTest extends TestCase
         self::assertSame([], $service->getLanguages());
         self::assertCount(0, $service->getPackages());
         self::assertCount(0, $service->getMedia());
+        self::assertCount(0, $service->getOptions());
 
         // Champs additionnels (maquette) : non renseignés par défaut.
         self::assertNull($service->getSubtitle());
@@ -71,5 +73,17 @@ final class ServiceTest extends TestCase
 
         self::assertCount(1, $service->getMedia());
         self::assertSame($service, $media->getService());
+    }
+
+    public function testAddOptionLinksBothSidesAndAvoidsDuplicates(): void
+    {
+        $service = new Service();
+        $option = new ServiceOption();
+
+        $service->addOption($option);
+        $service->addOption($option); // ajout en double : ignoré
+
+        self::assertCount(1, $service->getOptions());
+        self::assertSame($service, $option->getService());
     }
 }

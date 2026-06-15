@@ -137,10 +137,17 @@ class Service
     #[ORM\OneToMany(targetEntity: Media::class, mappedBy: 'service', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $media;
 
+    /**
+     * @var Collection<int, ServiceOption>
+     */
+    #[ORM\OneToMany(targetEntity: ServiceOption::class, mappedBy: 'service', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $options;
+
     public function __construct()
     {
         $this->packages = new ArrayCollection();
         $this->media = new ArrayCollection();
+        $this->options = new ArrayCollection();
     }
 
     public function getProvider(): ?ProviderProfile
@@ -546,6 +553,33 @@ class Service
     {
         if ($this->media->removeElement($media) && $media->getService() === $this) {
             $media->setService(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ServiceOption>
+     */
+    public function getOptions(): Collection
+    {
+        return $this->options;
+    }
+
+    public function addOption(ServiceOption $option): static
+    {
+        if (!$this->options->contains($option)) {
+            $this->options->add($option);
+            $option->setService($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOption(ServiceOption $option): static
+    {
+        if ($this->options->removeElement($option) && $option->getService() === $this) {
+            $option->setService(null);
         }
 
         return $this;
