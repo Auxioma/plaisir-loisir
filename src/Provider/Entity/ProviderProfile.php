@@ -1,0 +1,104 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Provider\Entity;
+
+use App\Provider\Enum\ProviderStatus;
+use App\Provider\Repository\ProviderProfileRepository;
+use App\Shared\Doctrine\SoftDeletableTrait;
+use App\Shared\Doctrine\TimestampableTrait;
+use App\Shared\Doctrine\UlidIdentifierTrait;
+use App\User\Entity\User;
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Profil professionnel rattaché à un User qui devient prestataire.
+ *
+ * La relation vers User est unidirectionnelle (portée ici) afin que le domaine
+ * User reste indépendant du domaine Provider.
+ */
+#[ORM\Entity(repositoryClass: ProviderProfileRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+class ProviderProfile
+{
+    use UlidIdentifierTrait;
+    use TimestampableTrait;
+    use SoftDeletableTrait;
+
+    #[ORM\OneToOne]
+    #[ORM\JoinColumn(nullable: false, unique: true)]
+    private ?User $user = null;
+
+    #[ORM\Column(length: 120)]
+    private string $displayName;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $bio = null;
+
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $companyName = null;
+
+    #[ORM\Column(enumType: ProviderStatus::class)]
+    private ProviderStatus $status = ProviderStatus::Draft;
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getDisplayName(): string
+    {
+        return $this->displayName;
+    }
+
+    public function setDisplayName(string $displayName): static
+    {
+        $this->displayName = $displayName;
+
+        return $this;
+    }
+
+    public function getBio(): ?string
+    {
+        return $this->bio;
+    }
+
+    public function setBio(?string $bio): static
+    {
+        $this->bio = $bio;
+
+        return $this;
+    }
+
+    public function getCompanyName(): ?string
+    {
+        return $this->companyName;
+    }
+
+    public function setCompanyName(?string $companyName): static
+    {
+        $this->companyName = $companyName;
+
+        return $this;
+    }
+
+    public function getStatus(): ProviderStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(ProviderStatus $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+}
