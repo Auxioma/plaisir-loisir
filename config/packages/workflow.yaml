@@ -1,0 +1,32 @@
+framework:
+    workflows:
+        provider_verification:
+            type: state_machine
+            # Le marking est stocké via getMarking()/setMarking() (pont enum <-> string).
+            marking_store:
+                type: method
+                property: marking
+            supports:
+                - App\Provider\Entity\ProviderProfile
+            initial_marking: draft
+            places:
+                - draft
+                - pending_verification
+                - verified
+                - suspended
+            transitions:
+                submit:
+                    from: draft
+                    to: pending_verification
+                approve:
+                    from: pending_verification
+                    to: verified
+                reject:
+                    from: pending_verification
+                    to: suspended
+                suspend:
+                    from: verified
+                    to: suspended
+                reinstate:
+                    from: suspended
+                    to: verified

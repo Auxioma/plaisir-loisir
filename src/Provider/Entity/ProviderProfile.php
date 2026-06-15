@@ -101,4 +101,22 @@ class ProviderProfile
 
         return $this;
     }
+
+    /**
+     * Pont pour Symfony Workflow : expose le statut sous forme de chaîne.
+     */
+    public function getMarking(): string
+    {
+        return $this->status->value;
+    }
+
+    /**
+     * Pont pour Symfony Workflow : applique un marquage (place) sous forme de chaîne.
+     *
+     * @param array<string, mixed> $context
+     */
+    public function setMarking(string $marking, array $context = []): void
+    {
+        $this->status = ProviderStatus::from($marking);
+    }
 }
