@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Provider\Entity;
 
 use App\Provider\Entity\ProviderProfile;
+use App\Provider\Enum\FiscalStatus;
 use App\Provider\Enum\ProviderStatus;
 use PHPUnit\Framework\TestCase;
 
@@ -39,5 +40,25 @@ final class ProviderProfileTest extends TestCase
         $this->expectException(\ValueError::class);
 
         (new ProviderProfile())->setMarking('not-a-real-place');
+    }
+
+    public function testSocialAndFiscalFieldsDefaultToNull(): void
+    {
+        $profile = new ProviderProfile();
+
+        self::assertNull($profile->getFacebookUrl());
+        self::assertNull($profile->getInstagramUrl());
+        self::assertNull($profile->getLinkedinUrl());
+        self::assertNull($profile->getWebsiteUrl());
+        self::assertNull($profile->getFiscalStatus());
+        self::assertNull($profile->getFiscalAddress());
+        self::assertNull($profile->getFiscalCountry());
+    }
+
+    public function testFiscalStatusIsAssignable(): void
+    {
+        $profile = (new ProviderProfile())->setFiscalStatus(FiscalStatus::AutoEntrepreneur);
+
+        self::assertSame(FiscalStatus::AutoEntrepreneur, $profile->getFiscalStatus());
     }
 }

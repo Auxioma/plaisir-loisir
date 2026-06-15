@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Provider\Entity;
 
+use App\Provider\Enum\FiscalStatus;
 use App\Provider\Enum\ProviderStatus;
 use App\Provider\Repository\ProviderProfileRepository;
 use App\Shared\Doctrine\SoftDeletableTrait;
@@ -41,6 +42,31 @@ class ProviderProfile
 
     #[ORM\Column(enumType: ProviderStatus::class)]
     private ProviderStatus $status = ProviderStatus::Draft;
+
+    // --- Réseaux sociaux (maquette, nullables) ---
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $facebookUrl = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $instagramUrl = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $linkedinUrl = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $websiteUrl = null;
+
+    // --- Informations fiscales (maquette, nullables) ---
+
+    #[ORM\Column(enumType: FiscalStatus::class, nullable: true)]
+    private ?FiscalStatus $fiscalStatus = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $fiscalAddress = null;
+
+    #[ORM\Column(length: 2, nullable: true)]
+    private ?string $fiscalCountry = null;
 
     public function getUser(): ?User
     {
@@ -98,6 +124,90 @@ class ProviderProfile
     public function setStatus(ProviderStatus $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getFacebookUrl(): ?string
+    {
+        return $this->facebookUrl;
+    }
+
+    public function setFacebookUrl(?string $facebookUrl): static
+    {
+        $this->facebookUrl = $facebookUrl;
+
+        return $this;
+    }
+
+    public function getInstagramUrl(): ?string
+    {
+        return $this->instagramUrl;
+    }
+
+    public function setInstagramUrl(?string $instagramUrl): static
+    {
+        $this->instagramUrl = $instagramUrl;
+
+        return $this;
+    }
+
+    public function getLinkedinUrl(): ?string
+    {
+        return $this->linkedinUrl;
+    }
+
+    public function setLinkedinUrl(?string $linkedinUrl): static
+    {
+        $this->linkedinUrl = $linkedinUrl;
+
+        return $this;
+    }
+
+    public function getWebsiteUrl(): ?string
+    {
+        return $this->websiteUrl;
+    }
+
+    public function setWebsiteUrl(?string $websiteUrl): static
+    {
+        $this->websiteUrl = $websiteUrl;
+
+        return $this;
+    }
+
+    public function getFiscalStatus(): ?FiscalStatus
+    {
+        return $this->fiscalStatus;
+    }
+
+    public function setFiscalStatus(?FiscalStatus $fiscalStatus): static
+    {
+        $this->fiscalStatus = $fiscalStatus;
+
+        return $this;
+    }
+
+    public function getFiscalAddress(): ?string
+    {
+        return $this->fiscalAddress;
+    }
+
+    public function setFiscalAddress(?string $fiscalAddress): static
+    {
+        $this->fiscalAddress = $fiscalAddress;
+
+        return $this;
+    }
+
+    public function getFiscalCountry(): ?string
+    {
+        return $this->fiscalCountry;
+    }
+
+    public function setFiscalCountry(?string $fiscalCountry): static
+    {
+        $this->fiscalCountry = $fiscalCountry;
 
         return $this;
     }
