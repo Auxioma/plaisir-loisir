@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Catalog\Entity;
 
+use App\Catalog\Enum\ActivityLevel;
 use App\Catalog\Enum\BookingType;
+use App\Catalog\Enum\CancellationPolicy;
 use App\Catalog\Enum\ServiceStatus;
 use App\Catalog\Repository\ServiceRepository;
 use App\Provider\Entity\ProviderProfile;
@@ -52,6 +54,51 @@ class Service
 
     #[ORM\Column(length: 3, options: ['default' => 'EUR'])]
     private string $currency = 'EUR';
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $shortDescription = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $durationMinutes = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $capacity = null;
+
+    #[ORM\Column(enumType: ActivityLevel::class, nullable: true)]
+    private ?ActivityLevel $level = null;
+
+    /**
+     * @var list<string>
+     */
+    #[ORM\Column]
+    private array $languages = [];
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $included = null;
+
+    #[ORM\Column(enumType: CancellationPolicy::class, options: ['default' => 'flexible'])]
+    private CancellationPolicy $cancellationPolicy = CancellationPolicy::Flexible;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $address = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $city = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $postalCode = null;
+
+    #[ORM\Column(length: 2, nullable: true)]
+    private ?string $country = null;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 7, nullable: true)]
+    private ?string $latitude = null;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 7, nullable: true)]
+    private ?string $longitude = null;
+
+    #[ORM\ManyToOne(targetEntity: Destination::class)]
+    private ?Destination $destination = null;
 
     /**
      * @var Collection<int, ServicePackage>
@@ -163,6 +210,180 @@ class Service
     public function setCurrency(string $currency): static
     {
         $this->currency = $currency;
+
+        return $this;
+    }
+
+    public function getShortDescription(): ?string
+    {
+        return $this->shortDescription;
+    }
+
+    public function setShortDescription(?string $shortDescription): static
+    {
+        $this->shortDescription = $shortDescription;
+
+        return $this;
+    }
+
+    public function getDurationMinutes(): ?int
+    {
+        return $this->durationMinutes;
+    }
+
+    public function setDurationMinutes(?int $durationMinutes): static
+    {
+        $this->durationMinutes = $durationMinutes;
+
+        return $this;
+    }
+
+    public function getCapacity(): ?int
+    {
+        return $this->capacity;
+    }
+
+    public function setCapacity(?int $capacity): static
+    {
+        $this->capacity = $capacity;
+
+        return $this;
+    }
+
+    public function getLevel(): ?ActivityLevel
+    {
+        return $this->level;
+    }
+
+    public function setLevel(?ActivityLevel $level): static
+    {
+        $this->level = $level;
+
+        return $this;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getLanguages(): array
+    {
+        return $this->languages;
+    }
+
+    /**
+     * @param list<string> $languages
+     */
+    public function setLanguages(array $languages): static
+    {
+        $this->languages = $languages;
+
+        return $this;
+    }
+
+    public function getIncluded(): ?string
+    {
+        return $this->included;
+    }
+
+    public function setIncluded(?string $included): static
+    {
+        $this->included = $included;
+
+        return $this;
+    }
+
+    public function getCancellationPolicy(): CancellationPolicy
+    {
+        return $this->cancellationPolicy;
+    }
+
+    public function setCancellationPolicy(CancellationPolicy $cancellationPolicy): static
+    {
+        $this->cancellationPolicy = $cancellationPolicy;
+
+        return $this;
+    }
+
+    public function getAddress(): ?string
+    {
+        return $this->address;
+    }
+
+    public function setAddress(?string $address): static
+    {
+        $this->address = $address;
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(?string $city): static
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->postalCode;
+    }
+
+    public function setPostalCode(?string $postalCode): static
+    {
+        $this->postalCode = $postalCode;
+
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(?string $country): static
+    {
+        $this->country = $country;
+
+        return $this;
+    }
+
+    public function getLatitude(): ?string
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?string $latitude): static
+    {
+        $this->latitude = $latitude;
+
+        return $this;
+    }
+
+    public function getLongitude(): ?string
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?string $longitude): static
+    {
+        $this->longitude = $longitude;
+
+        return $this;
+    }
+
+    public function getDestination(): ?Destination
+    {
+        return $this->destination;
+    }
+
+    public function setDestination(?Destination $destination): static
+    {
+        $this->destination = $destination;
 
         return $this;
     }

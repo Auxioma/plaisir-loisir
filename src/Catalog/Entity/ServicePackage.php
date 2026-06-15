@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Catalog\Entity;
 
+use App\Catalog\Enum\PricingUnit;
 use App\Catalog\Repository\ServicePackageRepository;
 use App\Shared\Doctrine\TimestampableTrait;
 use App\Shared\Doctrine\UlidIdentifierTrait;
@@ -35,6 +36,9 @@ class ServicePackage
 
     #[ORM\Column(length: 3, options: ['default' => 'EUR'])]
     private string $currency = 'EUR';
+
+    #[ORM\Column(enumType: PricingUnit::class, options: ['default' => 'per_person'])]
+    private PricingUnit $pricingUnit = PricingUnit::PerPerson;
 
     #[ORM\Column(nullable: true)]
     private ?int $deliveryDays = null;
@@ -95,6 +99,18 @@ class ServicePackage
     public function setCurrency(string $currency): static
     {
         $this->currency = $currency;
+
+        return $this;
+    }
+
+    public function getPricingUnit(): PricingUnit
+    {
+        return $this->pricingUnit;
+    }
+
+    public function setPricingUnit(PricingUnit $pricingUnit): static
+    {
+        $this->pricingUnit = $pricingUnit;
 
         return $this;
     }
