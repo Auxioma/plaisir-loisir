@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Provider\Service;
 
-use App\Provider\Dto\BecomeProviderInput;
 use App\Provider\Entity\ProviderProfile;
 use App\Provider\Repository\ProviderProfileRepository;
 use App\User\Entity\User;
@@ -24,7 +23,7 @@ final class ProviderOnboardingService
     ) {
     }
 
-    public function becomeProvider(User $user, BecomeProviderInput $input): ProviderProfile
+    public function becomeProvider(User $user, string $displayName, ?string $companyName, ?string $bio): ProviderProfile
     {
         if (null !== $this->providerProfiles->findOneByUser($user)) {
             throw new ConflictHttpException('Cet utilisateur est déjà prestataire.');
@@ -32,9 +31,9 @@ final class ProviderOnboardingService
 
         $profile = new ProviderProfile();
         $profile->setUser($user);
-        $profile->setDisplayName($input->displayName);
-        $profile->setCompanyName($input->companyName);
-        $profile->setBio($input->bio);
+        $profile->setDisplayName($displayName);
+        $profile->setCompanyName($companyName);
+        $profile->setBio($bio);
 
         // Statut initial "draft" (défaut), puis soumission à vérification via le workflow.
         $this->workflowRegistry->get($profile, 'provider_verification')->apply($profile, 'submit');

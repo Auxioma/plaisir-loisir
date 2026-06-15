@@ -15,34 +15,38 @@ security:
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
 
-        # Endpoint de connexion : reçoit email+password en JSON, renvoie un JWT.
-        login:
-            pattern: ^/api/login_check$
-            stateless: true
-            provider: app_user_provider
-            json_login:
-                check_path: api_login_check
-                username_path: email
-                password_path: password
-                success_handler: lexik_jwt_authentication.handler.authentication_success
-                failure_handler: lexik_jwt_authentication.handler.authentication_failure
-
-        # Toutes les autres routes /api : authentification par token JWT (sans session).
-        api:
-            pattern: ^/api
-            stateless: true
-            provider: app_user_provider
-            jwt: ~
-
         main:
             lazy: true
             provider: app_user_provider
 
+            # Authentification classique par formulaire HTML + sessions.
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                username_parameter: _email
+                password_parameter: _password
+                enable_csrf: true
+                default_target_path: app_home
+
+            logout:
+                path: app_logout
+                target: app_home
+
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800  # 1 semaine
+                path: /
+
     # Règles d'accès (la première qui correspond s'applique).
     access_control:
-        - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
-        - { path: ^/api/docs, roles: PUBLIC_ACCESS }
-        # Les ressources protégées déclareront leurs propres règles (via ApiResource) au fil des phases.
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        - { path: ^/categories, roles: PUBLIC_ACCESS }
+        - { path: ^/services, roles: PUBLIC_ACCESS }
+        - { path: ^/account, roles: ROLE_USER }
+        - { path: ^/provider, roles: ROLE_PROVIDER }
+        - { path: ^/admin, roles: ROLE_ADMIN }
 
 when@test:
     security:

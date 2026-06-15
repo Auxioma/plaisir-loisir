@@ -9,8 +9,3 @@
 
 controllers:
     resource: routing.controllers
-
-# Endpoint de connexion JWT : aucun contrôleur, c'est le firewall "login" qui l'intercepte.
-api_login_check:
-    path: /api/login_check
-    methods: [POST]
