@@ -1,3 +1,8 @@
+/*
+ * Styles personnalisés du site.
+ * Chargé APRÈS Bootstrap (voir l'ordre des imports dans app.js) afin de pouvoir
+ * surcharger ses styles au besoin. La police Inter est préchargée dans base.html.twig.
+ */
 body {
-    background-color: skyblue;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
