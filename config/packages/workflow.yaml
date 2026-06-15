@@ -30,3 +30,36 @@ framework:
                 reinstate:
                     from: suspended
                     to: verified
+
+        booking:
+            type: state_machine
+            # Le marking est stocké via getMarking()/setMarking() (pont enum <-> string).
+            marking_store:
+                type: method
+                property: marking
+            supports:
+                - App\Booking\Entity\Booking
+            initial_marking: pending
+            places:
+                - pending
+                - confirmed
+                - in_progress
+                - completed
+                - cancelled
+                - refunded
+            transitions:
+                confirm:
+                    from: pending
+                    to: confirmed
+                start:
+                    from: confirmed
+                    to: in_progress
+                complete:
+                    from: in_progress
+                    to: completed
+                cancel:
+                    from: [pending, confirmed]
+                    to: cancelled
+                refund:
+                    from: confirmed
+                    to: refunded
