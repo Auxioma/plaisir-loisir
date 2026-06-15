@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Catalog\Entity;
 
 use App\Catalog\Enum\ActivityLevel;
+use App\Catalog\Enum\ActivityType;
 use App\Catalog\Enum\BookingType;
 use App\Catalog\Enum\CancellationPolicy;
+use App\Catalog\Enum\OpeningPeriod;
 use App\Catalog\Enum\ServiceStatus;
 use App\Catalog\Repository\ServiceRepository;
 use App\Provider\Entity\ProviderProfile;
@@ -75,6 +77,29 @@ class Service
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $included = null;
+
+    // --- Champs additionnels issus de la maquette TrouveMoi (beta, tous nullables) ---
+
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $subtitle = null;
+
+    #[ORM\Column(enumType: ActivityType::class, nullable: true)]
+    private ?ActivityType $activityType = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $minimumAge = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $programme = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $meetingPoint = null;
+
+    #[ORM\Column(enumType: OpeningPeriod::class, nullable: true)]
+    private ?OpeningPeriod $openingPeriod = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $audience = null;
 
     #[ORM\Column(enumType: CancellationPolicy::class, options: ['default' => 'flexible'])]
     private CancellationPolicy $cancellationPolicy = CancellationPolicy::Flexible;
@@ -288,6 +313,90 @@ class Service
     public function setIncluded(?string $included): static
     {
         $this->included = $included;
+
+        return $this;
+    }
+
+    public function getSubtitle(): ?string
+    {
+        return $this->subtitle;
+    }
+
+    public function setSubtitle(?string $subtitle): static
+    {
+        $this->subtitle = $subtitle;
+
+        return $this;
+    }
+
+    public function getActivityType(): ?ActivityType
+    {
+        return $this->activityType;
+    }
+
+    public function setActivityType(?ActivityType $activityType): static
+    {
+        $this->activityType = $activityType;
+
+        return $this;
+    }
+
+    public function getMinimumAge(): ?int
+    {
+        return $this->minimumAge;
+    }
+
+    public function setMinimumAge(?int $minimumAge): static
+    {
+        $this->minimumAge = $minimumAge;
+
+        return $this;
+    }
+
+    public function getProgramme(): ?string
+    {
+        return $this->programme;
+    }
+
+    public function setProgramme(?string $programme): static
+    {
+        $this->programme = $programme;
+
+        return $this;
+    }
+
+    public function getMeetingPoint(): ?string
+    {
+        return $this->meetingPoint;
+    }
+
+    public function setMeetingPoint(?string $meetingPoint): static
+    {
+        $this->meetingPoint = $meetingPoint;
+
+        return $this;
+    }
+
+    public function getOpeningPeriod(): ?OpeningPeriod
+    {
+        return $this->openingPeriod;
+    }
+
+    public function setOpeningPeriod(?OpeningPeriod $openingPeriod): static
+    {
+        $this->openingPeriod = $openingPeriod;
+
+        return $this;
+    }
+
+    public function getAudience(): ?string
+    {
+        return $this->audience;
+    }
+
+    public function setAudience(?string $audience): static
+    {
+        $this->audience = $audience;
 
         return $this;
     }
