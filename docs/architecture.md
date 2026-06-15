@@ -1,7 +1,12 @@
 # Architecture — Plaisir-Loisir
 
-> Document de référence de l'architecture backend. Sert de base à l'équipe et aux phases
-> suivantes du projet. Rédigé en phase de conception (MVP), avant implémentation.
+> Document de référence de l'architecture. Sert de base à l'équipe et aux phases
+> suivantes du projet.
+>
+> **Révision majeure (CTO Guillaume)** : le site est développé **entièrement en Twig**
+> (application web server-rendered), et non avec un front Angular séparé. On abandonne
+> **API Platform** et **Lexik JWT** au profit de **contrôleurs Symfony + Twig** et d'une
+> **authentification Symfony classique par session/cookie**.
 
 ## 1. Vision produit
 
@@ -23,15 +28,20 @@ distingués par le champ `bookingType` sur l'entité `Service`.
 
 - **Symfony 8.1** / **PHP >= 8.4**
 - **PostgreSQL 16** (via Docker)
-- **API Platform** — expose l'API REST + documentation OpenAPI auto
-- **JWT** via **LexikJWTAuthenticationBundle** — authentification stateless
+- **Twig** — moteur de templates, génère directement le HTML des pages
+- **Symfony UX (Turbo + Stimulus)** — navigations fluides et interactivité progressive sans SPA
+- **Bootstrap 5** via **AssetMapper** (importmap, servi localement) — habillage sans build Node
+- **Sécurité Symfony par session/cookie** — `form_login` (stateful), CSRF, `remember_me`, Voters
 - **Doctrine ORM** + Doctrine Migrations
-- **DTO** Input/Output — découplage API ↔ base de données
 - **Services métier** — la logique vit dans des services, pas dans contrôleurs/entités
+- **Symfony Forms** — saisie et validation des données en entrée (remplacent les DTO Input)
 - **Symfony Workflow** — transitions de statuts (booking, paiement, prestataire)
 - **Symfony Messenger** — traitements asynchrones (emails, indexation…)
 - **Elasticsearch** — recherche avancée (plus tard, derrière une interface `SearchService`)
-- **Frontend Angular** — projet séparé, développé plus tard ; le backend l'anticipe via l'API
+
+> **Abandonné** : API Platform, LexikJWTAuthenticationBundle, NelmioCorsBundle, et les couches
+> `ApiResource/`, `Dto/Input`, `Dto/Output`, `State/`. CORS devient inutile : le front (Twig) et
+> le back sont servis par la **même application sur le même domaine**.
 
 ### Identifiants : ULID
 
@@ -69,46 +79,83 @@ sont gardées minimales et conscientes (ex. `Booking` → `Catalog`).
 
 ### Structure interne d'un domaine
 
-Chaque domaine suit la même structure (convention) :
+Chaque domaine suit la même structure (convention). La **couche métier est inchangée** par la
+révision ; seule la **couche de présentation** passe d'API Platform à Twig :
 
 ```
 src/<Domaine>/
-├── Entity/          # données stockées en base
-├── Enum/            # valeurs fermées typées (statuts, types)
-├── Repository/      # requêtes vers la base
-├── Dto/Input/       # données reçues de l'API (validées)
-├── Dto/Output/      # données renvoyées par l'API (champs choisis)
-├── State/           # pont API Platform : Provider (GET) / Processor (POST/PATCH)
-├── Service/         # logique métier
-├── Event/           # faits accomplis diffusés
-├── Message/         # tâches asynchrones (+ MessageHandler/)
-└── Workflow/        # transitions de statut (déclarées en config)
+├── Entity/          # données stockées en base                          (inchangé)
+├── Enum/            # valeurs fermées typées (statuts, types)            (inchangé)
+├── Repository/      # requêtes vers la base                             (inchangé)
+├── Service/         # logique métier                                    (inchangé)
+├── Event/           # faits accomplis diffusés                          (inchangé)
+├── Message/         # tâches asynchrones (+ MessageHandler/)            (inchangé)
+├── Workflow/        # transitions de statut (déclarées en config)       (inchangé)
+├── Controller/      # 🆕 contrôleurs fins : reçoivent la requête, rendent du Twig
+├── Form/            # 🆕 FormType : saisie + validation des écritures
+└── Security/        # 🆕 Voters (autorisations fines), au besoin
+```
+
+Les vues vivent dans le dossier `templates/` racine (convention Symfony), rangées par domaine :
+
+```
+templates/
+├── base.html.twig          # layout : header, navigation, footer, messages flash, Turbo
+├── home/                   # accueil
+├── security/               # login, register
+├── catalog/                # listing, fiche prestation
+├── provider/               # espace annonceur
+└── account/                # espace utilisateur connecté
 ```
 
 ## 4. Principes d'architecture
 
-1. **La logique métier vit dans des Services.** Les contrôleurs / State API Platform ne font que
-   recevoir et déléguer ; les entités ne font que stocker.
-2. **L'API n'expose jamais les entités Doctrine** — uniquement des **DTO** (Input validés en
-   entrée, Output contrôlés en sortie). Le contrat d'API reste stable même si la base évolue ;
-   le futur frontend Angular n'est pas couplé à la structure de la base.
-3. **Coder contre des interfaces** pour les briques remplaçables : `PaymentProcessor`
-   (mock → Stripe), `SearchService` (PostgreSQL → Elasticsearch). On change l'implémentation sans
-   toucher au reste.
-4. **Symfony Workflow** déclare les transitions de statut autorisées et bloque les états illégaux
-   (ex. rembourser une réservation jamais payée).
-5. **Event vs Messenger** :
+1. **La logique métier vit dans des Services.** Les contrôleurs ne font que recevoir et
+   déléguer ; les entités ne font que stocker. Un contrôleur reste **fin**.
+2. **Flux d'une requête** :
+   - *Lecture* : HTTP `GET` → Contrôleur → Repository/Service → **template Twig** → HTML.
+   - *Écriture* : `POST` formulaire → Contrôleur → **Form** (valide la saisie) → **Service**
+     (logique métier) → Doctrine → redirection (pattern POST-Redirect-Get) + message flash.
+3. **Validation en entrée par Symfony Forms** : un `FormType` mappe la requête, applique les
+   contraintes (`Assert`, `UniqueEntity`…) et protège du CSRF. Les Forms remplacent les
+   anciens DTO Input ; la validation n'est plus un souci de couche API mais de formulaire.
+4. **Coder contre des interfaces** pour les briques remplaçables : `PaymentProcessor`
+   (mock → Stripe), `SearchService` (PostgreSQL → Elasticsearch). On change l'implémentation
+   sans toucher au reste.
+5. **Symfony Workflow** déclare les transitions de statut autorisées et bloque les états
+   illégaux (ex. rembourser une réservation jamais payée).
+6. **Event vs Messenger** :
    - *Event* = « quelque chose vient de se passer », synchrone, même requête.
    - *Message* (Messenger) = « il y a un travail à faire », asynchrone, en tâche de fond.
    - Enchaînement type : Workflow émet un Event → un listener dispatche des Messages (email,
      notif, indexation) → réponse HTTP immédiate, tâches lentes en arrière-plan.
-6. **Argent** : type `decimal` (`NUMERIC(12,2)`), jamais `float` ; devise stockée à côté.
-7. **Snapshots** : les lignes transactionnelles (`BookingItem`) figent le libellé et le prix au
+7. **Argent** : type `decimal` (`NUMERIC(12,2)`), jamais `float` ; devise stockée à côté.
+8. **Snapshots** : les lignes transactionnelles (`BookingItem`) figent le libellé et le prix au
    moment de l'achat ; elles ne suivent pas les modifications ultérieures de la prestation.
-8. **Dates** : `TIMESTAMPTZ` (avec fuseau horaire).
-9. **Soft delete** : `deletedAt` plutôt que suppression physique (avis, factures en dépendent).
+9. **Dates** : `TIMESTAMPTZ` (avec fuseau horaire).
+10. **Soft delete** : `deletedAt` plutôt que suppression physique (avis, factures en dépendent).
 
-## 5. Modèle de données (MVP)
+## 5. Sécurité — authentification par session/cookie
+
+Authentification **Symfony classique, stateful** (et non plus JWT) :
+
+- **`form_login`** : l'utilisateur soumet un formulaire HTML (route `app_login`). Symfony vérifie
+  le mot de passe (hash `auto` = bcrypt/argon), crée une **session serveur** et dépose un
+  **cookie de session**. Les requêtes suivantes sont reconnues via ce cookie, sans effort côté
+  client.
+- **CSRF** activé sur le formulaire de connexion et les formulaires d'écriture.
+- **`remember_me`** : cookie persistant (7 jours) signé avec `kernel.secret`.
+- **`logout`** : route `app_logout` interceptée par le firewall.
+- **Rôles** : `ROLE_USER` (`/account`), `ROLE_PROVIDER` (`/provider`), `ROLE_ADMIN` (`/admin`),
+  appliqués par `access_control` (grain grossier, par préfixe d'URL).
+- **Voters** : autorisations fines orientées objet (ex. « cet annonceur peut-il modifier *cette*
+  prestation ? »). Mécanisme idiomatique Symfony, remplace la logique de sécurité qui aurait
+  vécu dans les State Processors d'API Platform.
+
+L'utilisateur est chargé depuis l'entité `App\User\Entity\User`, identifié par son `email`
+(provider Doctrine).
+
+## 6. Modèle de données (MVP)
 
 Périmètre MVP : 9 entités. Enrichissement progressif ensuite.
 
@@ -157,33 +204,33 @@ pending → confirmed → in_progress → completed
    └──→ cancelled
 ```
 
-## 6. API (API Platform + JWT)
+## 7. Pages & routes (Twig)
 
-- Préfixe versionné `/api/v1`.
-- Authentification JWT (Lexik), firewall `/api` **stateless**.
-- CORS (`nelmio/cors-bundle`) pour autoriser le futur domaine Angular.
-- Ressources décrites par attributs `#[ApiResource]` ; lecture via **State Provider**, écriture
-  via **State Processor** qui délèguent aux services métier.
-
-Endpoints cibles (extrait) :
+Le site est un ensemble de pages HTML rendues par des contrôleurs. URLs en langage métier,
+servies sur le même domaine que l'application.
 
 ```
-POST  /api/v1/auth/register        POST  /api/v1/bookings
-POST  /api/v1/auth/login (JWT)     GET   /api/v1/bookings/{id}
-GET   /api/v1/me                   PATCH /api/v1/bookings/{id}/cancel
-GET   /api/v1/categories           POST  /api/v1/services            (ROLE_PROVIDER)
-GET   /api/v1/services?...         PATCH /api/v1/services/{id}
-GET   /api/v1/services/{id}        GET   /api/v1/search?q=...         (Elasticsearch plus tard)
+GET   /                         accueil (catégories racines)
+GET   /login   POST /login      connexion (form_login)
+GET   /register POST /register  inscription
+POST  /logout                   déconnexion
+GET   /account                  espace utilisateur                     (ROLE_USER)
+GET   /categories               liste des catégories
+GET   /services                 listing des prestations
+GET   /services/{id}            fiche d'une prestation
+GET   /provider                 espace annonceur                       (ROLE_PROVIDER)
+POST  /provider/services        publier une prestation                 (ROLE_PROVIDER vérifié)
+GET   /admin/...                back-office                            (ROLE_ADMIN)
 ```
 
-## 7. Recherche & Elasticsearch (plus tard)
+## 8. Recherche & Elasticsearch (plus tard)
 
 PostgreSQL reste la **source de vérité** ; Elasticsearch n'est qu'un **index de lecture
 reconstructible**. Synchronisation via événement Doctrine → message Messenger → indexation
 asynchrone. Le code parle à une interface `SearchService` (impl. `DatabaseSearch` au MVP, puis
 `ElasticsearchSearch`).
 
-## 8. Stratégie Git
+## 9. Stratégie Git
 
 - **GitHub Flow** : `master` toujours déployable et protégée ; une branche par fonctionnalité
   (`feature/<domaine>-<sujet>`, `fix/<sujet>`).
@@ -191,14 +238,17 @@ asynchrone. Le code parle à une interface `SearchService` (impl. `DatabaseSearc
 - **Conventional Commits** : `feat(...)`, `fix(...)`, `chore(...)`, `docs(...)`, `test(...)`.
 - **CI GitHub Actions** : PHPUnit + PHPStan + PHP-CS-Fixer à chaque PR.
 
-## 9. Roadmap
+## 10. Roadmap
+
+Le découpage métier des phases est conservé ; seule la **couche de présentation** de chaque phase
+passe d'endpoints JSON à des **pages Twig**.
 
 | Phase | Contenu | Jalon |
 |---|---|---|
-| **0 — Fondations** | Git/qualité/CI, `APP_SECRET`, deps (uid, api-platform, jwt, cors), `src/Shared/` (traits), mapping Doctrine par domaine, squelette sécurité+JWT, test de fumée | API documentée répond, base connectée, migrations OK, CI verte |
-| **1 — Identité** | `User`, `Address`, inscription, login JWT, `/me` | On s'inscrit et se connecte |
-| **2 — Catalogue** | `ProviderProfile` (+ workflow vérif), `Category`, `Service`, `ServicePackage`, `Media` | Un prestataire publie une prestation listée par l'API |
-| **3 — Réservations** | `Booking`, `BookingItem`, workflow booking, paiement mock, premiers Events/Messages | Un client réserve et « paie » (mock) |
+| **0 — Fondations** | Git/qualité/CI, `APP_SECRET`, retrait API Platform/JWT/CORS, socle **Twig + Bootstrap 5 (AssetMapper) + Turbo**, sécurité **session** (`form_login`), `base.html.twig` + pages d'erreur, `src/Shared/` (traits), mapping Doctrine par domaine | Le site répond en HTML, base connectée, migrations OK, CI verte |
+| **1 — Identité** | `User`, `Address`, pages **inscription / login / compte** | On s'inscrit et on se connecte via le site |
+| **2 — Catalogue** | `ProviderProfile` (+ workflow vérif), `Category`, `Service`, `ServicePackage`, `Media` ; pages accueil/listing/fiche + **formulaire de publication** annonceur | Un prestataire publie une prestation affichée sur le site |
+| **3 — Réservations** | `Booking`, `BookingItem`, workflow booking, paiement mock, premiers Events/Messages ; **tunnel de réservation** | Un client réserve et « paie » (mock) |
 | **4 — Engagement** | `Review` (anti-faux-avis), `Favorite`, `Messaging`, `Notification` | Avis, favoris, messagerie, notifications |
 | **5 — Recherche & Admin** | `SearchService` PG puis Elasticsearch, back-office, dashboard prestataire | Recherche avancée + administration |
 | **6 — Avancé** | `Availability` (calendrier), `ServiceRequest`+`Quote` (devis), Stripe réel | Modèles de transaction complets |
