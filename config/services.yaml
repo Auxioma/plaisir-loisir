@@ -19,5 +19,9 @@ services:
     App\:
         resource: '../src/'
 
+    # Le paiement est codé contre l'interface PaymentProcessor ; aujourd'hui
+    # elle est résolue vers l'implémentation mock (Stripe la remplacera).
+    App\Payment\Processor\PaymentProcessor: '@App\Payment\Processor\MockPaymentProcessor'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
