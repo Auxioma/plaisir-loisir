@@ -7,8 +7,10 @@ namespace App\Review\Service;
 use App\Booking\Entity\Booking;
 use App\Booking\Enum\BookingStatus;
 use App\Review\Entity\Review;
+use App\Review\Event\ReviewAdded;
 use App\Review\Repository\ReviewRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Logique métier des avis. Adosse chaque avis à une réservation terminée pour
@@ -19,6 +21,7 @@ final class ReviewService
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly ReviewRepository $reviews,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -49,6 +52,9 @@ final class ReviewService
 
         $this->entityManager->persist($review);
         $this->entityManager->flush();
+
+        // Émet un événement de domaine : les abonnés (ex. notification de l'annonceur) réagissent.
+        $this->eventDispatcher->dispatch(new ReviewAdded($review));
 
         return $review;
     }
