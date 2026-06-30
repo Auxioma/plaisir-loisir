@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Booking\Repository;
 
 use App\Booking\Entity\Booking;
+use App\Catalog\Entity\Service;
 use App\User\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -25,5 +26,10 @@ class BookingRepository extends ServiceEntityRepository
     public function findByClient(User $client): array
     {
         return $this->findBy(['client' => $client], ['createdAt' => 'DESC']);
+    }
+
+    public function countForService(Service $service): int
+    {
+        return $this->count(['service' => $service]);
     }
 }
