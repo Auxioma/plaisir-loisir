@@ -113,4 +113,59 @@ final class PaymentServiceTest extends TestCase
             $this->createStub(Registry::class),
         ))->pay($booking);
     }
+
+    public function testRefundMarksRefundedAndTransitionsBooking(): void
+    {
+        $booking = (new Booking())->setStatus(BookingStatus::Confirmed)->setTotalPrice('10.00');
+        $payment = (new Payment())->setBooking($booking)->setAmount('10.00')->setStatus(PaymentStatus::Paid);
+
+        $workflow = $this->createMock(WorkflowInterface::class);
+        $workflow->expects(self::once())->method('can')->with($booking, 'refund')->willReturn(true);
+        $workflow->expects(self::once())->method('apply')->with($booking, 'refund')->willReturn(new Marking());
+
+        $registry = $this->createMock(Registry::class);
+        $registry->expects(self::once())->method('get')->with($booking, 'booking')->willReturn($workflow);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::once())->method('flush');
+
+        (new PaymentService($em, $this->createStub(PaymentProcessor::class), $this->createStub(PaymentRepository::class), $registry))
+            ->refund($payment);
+
+        self::assertSame(PaymentStatus::Refunded, $payment->getStatus());
+    }
+
+    public function testRefundRejectsUnpaidPayment(): void
+    {
+        $payment = (new Payment())->setBooking(new Booking())->setAmount('10.00'); // statut Pending par défaut
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::never())->method('flush');
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new PaymentService($em, $this->createStub(PaymentProcessor::class), $this->createStub(PaymentRepository::class), $this->createStub(Registry::class)))
+            ->refund($payment);
+    }
+
+    public function testRefundRejectsNonRefundableBooking(): void
+    {
+        $booking = (new Booking())->setStatus(BookingStatus::Completed); // pas remboursable
+        $payment = (new Payment())->setBooking($booking)->setAmount('10.00')->setStatus(PaymentStatus::Paid);
+
+        $workflow = $this->createMock(WorkflowInterface::class);
+        $workflow->expects(self::once())->method('can')->with($booking, 'refund')->willReturn(false);
+        $workflow->expects(self::never())->method('apply');
+
+        $registry = $this->createMock(Registry::class);
+        $registry->expects(self::once())->method('get')->with($booking, 'booking')->willReturn($workflow);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::never())->method('flush');
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new PaymentService($em, $this->createStub(PaymentProcessor::class), $this->createStub(PaymentRepository::class), $registry))
+            ->refund($payment);
+    }
 }

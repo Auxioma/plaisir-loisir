@@ -61,4 +61,31 @@ final class PaymentService
 
         return $payment;
     }
+
+    /**
+     * Rembourse un paiement réglé et bascule la réservation en « remboursée ».
+     *
+     * @throws \InvalidArgumentException si le paiement n'est pas réglé, s'il n'a pas
+     *                                   de réservation, ou si elle n'est pas remboursable
+     */
+    public function refund(Payment $payment): void
+    {
+        if (PaymentStatus::Paid !== $payment->getStatus()) {
+            throw new \InvalidArgumentException('Seul un paiement réglé peut être remboursé.');
+        }
+
+        $booking = $payment->getBooking();
+        if (null === $booking) {
+            throw new \InvalidArgumentException('Ce paiement n\'est rattaché à aucune réservation.');
+        }
+
+        $workflow = $this->workflowRegistry->get($booking, 'booking');
+        if (!$workflow->can($booking, 'refund')) {
+            throw new \InvalidArgumentException('La réservation n\'est pas dans un état remboursable.');
+        }
+
+        $workflow->apply($booking, 'refund');
+        $payment->setStatus(PaymentStatus::Refunded);
+        $this->entityManager->flush();
+    }
 }
