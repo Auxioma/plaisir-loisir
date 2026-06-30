@@ -13,6 +13,9 @@ services:
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            # Adresse d'Elasticsearch injectée dans les services de recherche/indexation.
+            string $elasticsearchUrl: '%env(ELASTICSEARCH_URL)%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

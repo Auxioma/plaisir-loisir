@@ -19,6 +19,20 @@ class DestinationRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string[] $ids
+     *
+     * @return Destination[]
+     */
+    public function findByIds(array $ids): array
+    {
+        if ([] === $ids) {
+            return [];
+        }
+
+        return $this->findBy(['id' => $ids]);
+    }
+
+    /**
      * Recherche des destinations par nom (toutes si la requête est vide).
      *
      * @return Destination[]

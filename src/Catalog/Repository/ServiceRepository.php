@@ -27,6 +27,20 @@ class ServiceRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string[] $ids
+     *
+     * @return Service[]
+     */
+    public function findByIds(array $ids): array
+    {
+        if ([] === $ids) {
+            return [];
+        }
+
+        return $this->findBy(['id' => $ids]);
+    }
+
+    /**
      * Recherche des activités publiées par mots-clés (titre/description/ville),
      * avec filtres optionnels par catégorie et destination.
      *
