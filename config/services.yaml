@@ -23,5 +23,9 @@ services:
     # elle est résolue vers l'implémentation mock (Stripe la remplacera).
     App\Payment\Processor\PaymentProcessor: '@App\Payment\Processor\MockPaymentProcessor'
 
+    # La recherche est codée contre l'interface SearchService ; aujourd'hui
+    # résolue vers PostgreSQL (Elasticsearch la remplacera).
+    App\Search\SearchService: '@App\Search\DatabaseSearch'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
