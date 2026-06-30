@@ -7,6 +7,7 @@ namespace App\Tests\Review\Entity;
 use App\Booking\Entity\Booking;
 use App\Catalog\Entity\Service;
 use App\Review\Entity\Review;
+use App\Review\Enum\ReviewStatus;
 use App\User\Entity\User;
 use PHPUnit\Framework\TestCase;
 
@@ -30,5 +31,29 @@ final class ReviewTest extends TestCase
         self::assertSame($booking, $review->getBooking());
         self::assertSame(4, $review->getRating());
         self::assertSame('Super expérience !', $review->getComment());
+    }
+
+    public function testDefaultStatusIsPublishedAndNoReply(): void
+    {
+        $review = new Review();
+
+        self::assertSame(ReviewStatus::Published, $review->getStatus());
+        self::assertNull($review->getProviderReply());
+        self::assertNull($review->getRepliedAt());
+    }
+
+    public function testApproveRejectAndReply(): void
+    {
+        $review = new Review();
+
+        $review->reject();
+        self::assertSame(ReviewStatus::Rejected, $review->getStatus());
+
+        $review->approve();
+        self::assertSame(ReviewStatus::Published, $review->getStatus());
+
+        $review->reply('Merci pour votre retour !');
+        self::assertSame('Merci pour votre retour !', $review->getProviderReply());
+        self::assertInstanceOf(\DateTimeImmutable::class, $review->getRepliedAt());
     }
 }

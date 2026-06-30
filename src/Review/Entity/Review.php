@@ -6,6 +6,7 @@ namespace App\Review\Entity;
 
 use App\Booking\Entity\Booking;
 use App\Catalog\Entity\Service;
+use App\Review\Enum\ReviewStatus;
 use App\Review\Repository\ReviewRepository;
 use App\Shared\Doctrine\TimestampableTrait;
 use App\Shared\Doctrine\UlidIdentifierTrait;
@@ -44,6 +45,18 @@ class Review
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $comment = null;
+
+    #[ORM\Column(enumType: ReviewStatus::class, options: ['default' => 'published'])]
+    private ReviewStatus $status = ReviewStatus::Published;
+
+    /**
+     * Réponse publique de l'annonceur à l'avis (et sa date).
+     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $providerReply = null;
+
+    #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
+    private ?\DateTimeImmutable $repliedAt = null;
 
     public function getAuthor(): ?User
     {
@@ -103,5 +116,39 @@ class Review
         $this->comment = $comment;
 
         return $this;
+    }
+
+    public function getStatus(): ReviewStatus
+    {
+        return $this->status;
+    }
+
+    public function approve(): void
+    {
+        $this->status = ReviewStatus::Published;
+    }
+
+    public function reject(): void
+    {
+        $this->status = ReviewStatus::Rejected;
+    }
+
+    public function getProviderReply(): ?string
+    {
+        return $this->providerReply;
+    }
+
+    public function getRepliedAt(): ?\DateTimeImmutable
+    {
+        return $this->repliedAt;
+    }
+
+    /**
+     * Enregistre la réponse de l'annonceur (et l'horodate).
+     */
+    public function reply(string $text): void
+    {
+        $this->providerReply = $text;
+        $this->repliedAt = new \DateTimeImmutable();
     }
 }
