@@ -135,6 +135,65 @@ final class PaymentServiceTest extends TestCase
         self::assertSame(PaymentStatus::Refunded, $payment->getStatus());
     }
 
+    public function testConfirmBySessionReferenceMarksPaidAndConfirmsBooking(): void
+    {
+        $booking = $this->pendingBooking();
+        $payment = (new Payment())->setBooking($booking)->setAmount('149.70')->setReference('cs_test_1');
+
+        $payments = $this->createStub(PaymentRepository::class);
+        $payments->method('findOneByReference')->willReturn($payment);
+
+        $workflow = $this->createMock(WorkflowInterface::class);
+        $workflow->expects(self::once())->method('can')->with($booking, 'confirm')->willReturn(true);
+        $workflow->expects(self::once())->method('apply')->with($booking, 'confirm')->willReturn(new Marking());
+
+        $registry = $this->createMock(Registry::class);
+        $registry->expects(self::once())->method('get')->with($booking, 'booking')->willReturn($workflow);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::once())->method('flush');
+
+        (new PaymentService($em, $this->createStub(PaymentProcessor::class), $payments, $registry))
+            ->confirmBySessionReference('cs_test_1');
+
+        self::assertSame(PaymentStatus::Paid, $payment->getStatus());
+    }
+
+    public function testConfirmBySessionReferenceIsIdempotentWhenAlreadyPaid(): void
+    {
+        // Un paiement déjà réglé (Stripe rejoue parfois l'événement) ne doit rien
+        // rejouer : ni transition de réservation, ni nouvelle écriture en base.
+        $payment = (new Payment())->setBooking(new Booking())->setAmount('10.00')->setStatus(PaymentStatus::Paid);
+
+        $payments = $this->createStub(PaymentRepository::class);
+        $payments->method('findOneByReference')->willReturn($payment);
+
+        $registry = $this->createMock(Registry::class);
+        $registry->expects(self::never())->method('get');
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::never())->method('flush');
+
+        (new PaymentService($em, $this->createStub(PaymentProcessor::class), $payments, $registry))
+            ->confirmBySessionReference('cs_test_1');
+
+        self::assertSame(PaymentStatus::Paid, $payment->getStatus());
+    }
+
+    public function testConfirmBySessionReferenceRejectsUnknownReference(): void
+    {
+        $payments = $this->createStub(PaymentRepository::class);
+        $payments->method('findOneByReference')->willReturn(null);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::never())->method('flush');
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new PaymentService($em, $this->createStub(PaymentProcessor::class), $payments, $this->createStub(Registry::class)))
+            ->confirmBySessionReference('cs_missing');
+    }
+
     public function testRefundRejectsUnpaidPayment(): void
     {
         $payment = (new Payment())->setBooking(new Booking())->setAmount('10.00'); // statut Pending par défaut

@@ -16,6 +16,8 @@ services:
         bind:
             # Adresse d'Elasticsearch injectée dans les services de recherche/indexation.
             string $elasticsearchUrl: '%env(ELASTICSEARCH_URL)%'
+            # Secret de signature du webhook Stripe (vérifie l'authenticité des appels).
+            string $stripeWebhookSecret: '%env(STRIPE_WEBHOOK_SECRET)%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -29,6 +31,15 @@ services:
     # La recherche est codée contre l'interface SearchService ; aujourd'hui
     # résolue vers PostgreSQL (Elasticsearch la remplacera).
     App\Search\SearchService: '@App\Search\DatabaseSearch'
+
+    # Client officiel Stripe, configuré avec la clé secrète (clé de TEST en dev).
+    Stripe\StripeClient:
+        arguments:
+            $config: '%env(STRIPE_SECRET_KEY)%'
+
+    # La création de sessions de paiement est codée contre l'interface
+    # CheckoutGateway ; résolue vers l'implémentation Stripe (testable via un stub).
+    App\Payment\Stripe\CheckoutGateway: '@App\Payment\Stripe\StripeCheckoutGateway'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
