@@ -23,4 +23,13 @@ class PaymentRepository extends ServiceEntityRepository
     {
         return $this->findOneBy(['booking' => $booking]);
     }
+
+    /**
+     * Retrouve un paiement à partir de la référence du prestataire (pour Stripe,
+     * l'identifiant de la session Checkout mémorisé au démarrage du paiement).
+     */
+    public function findOneByReference(string $reference): ?Payment
+    {
+        return $this->findOneBy(['reference' => $reference]);
+    }
 }
