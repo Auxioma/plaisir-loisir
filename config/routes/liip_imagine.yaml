@@ -1,0 +1,5 @@
+# Route interne de LiipImagineBundle : génère l'image filtrée à la volée
+# lors du premier accès, puis la met en cache. Nécessaire pour le filtre Twig
+# `|imagine_filter('...')`.
+_liip_imagine:
+    resource: "@LiipImagineBundle/Resources/config/routing.yaml"
