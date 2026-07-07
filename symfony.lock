@@ -59,6 +59,9 @@
             "./.php-cs-fixer.dist.php"
         ]
     },
+    "liip/imagine-bundle": {
+        "version": "2.17.1"
+    },
     "phpstan/phpstan": {
         "version": "2.2.2"
     },

@@ -1,0 +1,39 @@
+# Génération d'images (miniatures + formats modernes webp/avif) via LiipImagineBundle.
+#
+# Driver de rendu :
+#   - en local  : GD  (la DLL php_gd est présente dans C:\php8.4\ext) ;
+#   - en prod   : Imagick (installé sur le serveur par Guillaume — meilleur pour webp/avif).
+#
+# Pour tester le rendu d'images EN LOCAL, active l'extension dans C:\php8.4\php.ini :
+#   extension=gd
+# (la DLL est déjà là, il suffit de décommenter/ajouter la ligne puis relancer le serveur).
+liip_imagine:
+    driver: gd
+
+    # Jeux de filtres réutilisables — on les affinera avec les vraies images de la maquette.
+    filter_sets:
+        # Miniature d'activité (grille, listes, favoris)
+        activity_thumb:
+            quality: 80
+            format: webp
+            filters:
+                thumbnail: { size: [400, 300], mode: outbound }
+
+        # Grande image / bannière d'activité
+        activity_cover:
+            quality: 82
+            format: webp
+            filters:
+                thumbnail: { size: [1280, 720], mode: outbound }
+
+        # Avatar / logo prestataire
+        avatar:
+            quality: 85
+            format: webp
+            filters:
+                thumbnail: { size: [128, 128], mode: outbound }
+
+# En production, on bascule sur Imagick (disponible sur le serveur).
+when@prod:
+    liip_imagine:
+        driver: imagick

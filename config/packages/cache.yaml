@@ -7,9 +7,16 @@ framework:
         # The data in this cache should persist between deploys.
         # Other options include:
 
-        # Redis
+        # Redis (PRÉPARÉ mais NON activé — voir note ci-dessous)
+        # Client : predis/predis (PHP pur, installé). URL dans .env (REDIS_URL).
+        # Pour activer le cache Redis, décommenter les 2 lignes suivantes :
         #app: cache.adapter.redis
-        #default_redis_provider: redis://localhost
+        #default_redis_provider: '%env(REDIS_URL)%'
+        #
+        # ⚠️ NE PAS activer à l'aveugle : la prod (trouvemoi.eu) est EN LIGNE.
+        # Basculer le cache/les sessions sur Redis doit être testé (serveur Redis
+        # joignable) et coordonné avec Guillaume avant un déploiement sur master.
+        # En local, Redis n'écoute pas encore sur 6379 → laisser le cache filesystem.
 
         # APCu (not recommended with heavy random-write workloads as memory fragmentation can cause perf issues)
         #app: cache.adapter.apcu
