@@ -9,4 +9,5 @@ import './stimulus_bootstrap.js';
  */
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './styles/design-system.css';
 import './styles/app.css';

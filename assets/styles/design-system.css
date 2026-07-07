@@ -1,0 +1,126 @@
+/*
+ * ============================================================================
+ *  DESIGN SYSTEM — Plaisir & Loisirs
+ *  Jetons (tokens) extraits de la maquette Figma (page DESIGN SYSTEME).
+ *  Source de vérité : fileKey pS2lc91GKOByFkhzx0qqp8.
+ *
+ *  Principe : on définit ici toutes les valeurs de la charte sous forme de
+ *  variables CSS (--pl-*), puis on branche les variables de Bootstrap (--bs-*)
+ *  dessus, pour que les composants Bootstrap héritent automatiquement du thème.
+ *  Ce fichier est chargé APRÈS Bootstrap (voir assets/app.js).
+ * ============================================================================
+ */
+
+:root {
+    /* ----- Couleurs · Marque -------------------------------------------- */
+    --pl-primary:            #061b56; /* bleu nuit principal */
+    --pl-secondary:          #0b2d73; /* bleu secondaire / header */
+    --pl-cta:                #ff7a00; /* orange — accent marketing (CTA) */
+    --pl-cta-hover-light:    #fff2e6; /* fond orange très clair au survol */
+    --pl-action:             #5d00ff; /* violet — action/lien */
+    --pl-action-light:       #f0eafb; /* violet très clair */
+
+    /* ----- Couleurs · Texte --------------------------------------------- */
+    --pl-text:               #0f172a; /* texte principal */
+    --pl-text-strong:        #131927; /* texte principal renforcé */
+    --pl-text-secondary:     #64748b; /* texte secondaire */
+    --pl-text-muted:         #6d717f; /* gris moyen */
+    --pl-text-disabled:      #9ba4bb; /* texte désactivé */
+    --pl-text-header:        #0b2d73; /* texte d'en-tête */
+    --pl-text-display:       #061b56; /* grands titres */
+    --pl-text-on-action:     #ffffff; /* texte sur fond coloré */
+
+    /* ----- Couleurs · États --------------------------------------------- */
+    --pl-info:               #2563eb;
+    --pl-success:            #16a34a;
+    --pl-warning:            #f4a911;
+    --pl-error:              #dc2626;
+
+    /* ----- Couleurs · Surfaces & bordures ------------------------------- */
+    --pl-surface:            #ffffff; /* fond par défaut */
+    --pl-surface-dashboard:  #f8fafc; /* fond de zone / dashboard */
+    --pl-surface-disabled:   #fafafb;
+    --pl-border:             #e5e7eb; /* bordure par défaut */
+    --pl-border-hover:       #eff1f3;
+    --pl-neutral-100:        #dddfe3;
+    --pl-black:              #000000;
+    --pl-white:              #ffffff;
+
+    /* ----- Typographie -------------------------------------------------- */
+    --pl-font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+    /* Tailles (px) — échelle Figma */
+    --pl-fs-display:  48px; /* Display   700 / interligne 70 */
+    --pl-fs-h2:       34px; /* Heading 2 700 / 42 */
+    --pl-fs-h3:       26px; /* Heading 3 700 / 34 */
+    --pl-fs-h4:       24px; /* Heading 4 500 / 28 */
+    --pl-fs-s1:       18px; /* Subtitle  700 / 28 */
+    --pl-fs-body:     16px; /* Body      400-600 / 24 */
+    --pl-fs-body-sm:  14px; /* Body sm   400-600 / 20 */
+    --pl-fs-caption:  12px; /* Caption   400 / 16 */
+    --pl-fs-caption-xs: 10px; /* Caption   700 / 14 */
+
+    /* Graisses */
+    --pl-fw-regular:  400;
+    --pl-fw-medium:   500;
+    --pl-fw-semibold: 600;
+    --pl-fw-bold:     700;
+
+    /* Interlignes */
+    --pl-lh-display:  70px;
+    --pl-lh-h2:       42px;
+    --pl-lh-h3:       34px;
+    --pl-lh-tight:    28px;
+    --pl-lh-base:     24px;
+    --pl-lh-sm:       20px;
+    --pl-lh-caption:  16px;
+
+    /* ----- Espacements (px) — échelle Figma ----------------------------- */
+    --pl-sp-4:   4px;
+    --pl-sp-8:   8px;
+    --pl-sp-12:  12px;
+    --pl-sp-14:  14px;
+    --pl-sp-16:  16px;
+    --pl-sp-20:  20px;
+    --pl-sp-24:  24px;
+    --pl-sp-32:  32px;
+    --pl-sp-38:  38px;
+    --pl-sp-104: 104px;
+
+    /* ----- Rayons ------------------------------------------------------- */
+    --pl-radius-none: 0;
+    --pl-radius-xs:   4px;
+    --pl-radius-sm:   8px;
+    --pl-radius-md:   12px;
+    --pl-radius-pill: 100px;
+
+    /* ----- Ombres ------------------------------------------------------- */
+    --pl-shadow-soft: 0 0 0 0 rgba(15, 23, 42, 0.06);
+    --pl-shadow-sm:   0 2px 2px 0 rgba(15, 23, 42, 0.06);
+
+    /* ----- Grille ------------------------------------------------------- */
+    --pl-container-desktop: 1440px;
+    --pl-grid-columns:      12;
+
+    /* ====================================================================
+     *  Branchement Bootstrap : on fait pointer les variables --bs-* du
+     *  thème sur notre charte. Les composants Bootstrap héritent ainsi
+     *  des bonnes couleurs, police et rayons sans recompiler le Sass.
+     * ==================================================================== */
+    --bs-primary:        var(--pl-primary);
+    --bs-secondary:      var(--pl-secondary);
+    --bs-success:        var(--pl-success);
+    --bs-info:           var(--pl-info);
+    --bs-warning:        var(--pl-warning);
+    --bs-danger:         var(--pl-error);
+
+    --bs-body-color:     var(--pl-text);
+    --bs-body-bg:        var(--pl-surface);
+    --bs-body-font-family: var(--pl-font-family);
+
+    --bs-border-color:   var(--pl-border);
+    --bs-border-radius:  var(--pl-radius-sm);
+
+    --bs-link-color:     var(--pl-action);
+    --bs-link-hover-color: var(--pl-primary);
+}
