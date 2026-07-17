@@ -1,0 +1,20 @@
+{#
+    Affiche les messages « flash » posés par les contrôleurs
+    (ex. $this->addFlash('success', '...')). On mappe nos types sur les
+    classes d'alerte Bootstrap.
+#}
+{% set flash_styles = {
+    'success': 'alert-success',
+    'error':   'alert-danger',
+    'warning': 'alert-warning',
+    'info':    'alert-info',
+} %}
+
+{% for type, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert {{ flash_styles[type] ?? 'alert-secondary' }} alert-dismissible fade show m-0 rounded-0 text-center" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+    {% endfor %}
+{% endfor %}

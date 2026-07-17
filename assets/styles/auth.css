@@ -1,0 +1,279 @@
+/*
+ * ============================================================================
+ *  PAGES D'AUTHENTIFICATION — connexion, inscription, mot de passe oublié
+ *  Mise en page en deux colonnes : à gauche l'accroche + l'illustration,
+ *  à droite la carte contenant le formulaire.
+ *  Valeurs (largeurs, espacements, couleurs) reprises de la maquette Figma.
+ * ============================================================================
+ */
+
+/* Zone « héros » : porte l'illustration de fond, sur toute la largeur du contenu. */
+.auth-hero {
+    position: relative;
+    max-width: var(--pl-container-desktop);   /* 1440px */
+    margin: 0 auto;
+    min-height: 913px;
+    padding: 82px 141px 103px 164px;
+    overflow: hidden;
+}
+
+/* L'illustration est posée en fond, derrière le contenu (z-index négatif). */
+.auth-hero__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: bottom center;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Rangée : colonne de gauche + carte de droite. */
+.auth-hero__row {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 92px;
+}
+
+/* ---- Colonne de gauche (accroche) -------------------------------------- */
+.auth-welcome { width: 590px; flex-shrink: 0; }
+
+.auth-welcome__title {
+    font-size: 44px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 52px;
+    color: var(--pl-text);
+    margin: 0 0 var(--pl-sp-12);
+}
+.auth-welcome__title .is-plaisirs { color: var(--pl-success); }  /* vert */
+.auth-welcome__title .is-loisirs  { color: var(--pl-info); }     /* bleu */
+
+.auth-welcome__subtitle {
+    font-size: var(--pl-fs-s1);              /* 18px */
+    font-weight: var(--pl-fw-medium);
+    line-height: var(--pl-lh-tight);
+    color: var(--pl-text-secondary);
+    margin: 0 0 27px;
+}
+
+.auth-features { display: flex; flex-direction: column; gap: var(--pl-sp-12); width: 304px; }
+.auth-feature { display: flex; align-items: center; gap: var(--pl-sp-12); }
+
+.auth-feature__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    background: var(--pl-surface-dashboard);
+    border-radius: var(--pl-radius-xs);
+    color: var(--pl-action);
+}
+.auth-feature__title {
+    font-size: var(--pl-fs-body);
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-text);
+}
+.auth-feature__desc {
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-sm);
+    color: var(--pl-text-secondary);
+}
+
+/* ---- Carte du formulaire ----------------------------------------------- */
+.auth-card {
+    width: 453px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--pl-sp-38);                     /* 38px entre les blocs */
+    padding: var(--pl-sp-32) var(--pl-sp-24);
+    background: var(--pl-white);
+    border-radius: 24px;
+    box-shadow: 0 8px 12px rgba(15, 23, 42, .1);
+}
+
+/* Le formulaire empile ses blocs avec le même écart que la carte. */
+.auth-form { display: flex; flex-direction: column; gap: var(--pl-sp-38); }
+
+.auth-card__header { display: flex; flex-direction: column; gap: var(--pl-sp-4); }
+.auth-card__title {
+    font-size: var(--pl-fs-h3);              /* 26px */
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-text);
+    margin: 0;
+}
+.auth-card__subtitle {
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-sm);
+    color: var(--pl-text-secondary);
+    margin: 0;
+}
+
+/* Lien retour (écrans mot de passe oublié). */
+.auth-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-sp-4);
+    color: var(--pl-text-secondary);
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-medium);
+    text-decoration: none;
+}
+.auth-back:hover { color: var(--pl-action); }
+
+/* ---- Champs de formulaire ---------------------------------------------- */
+.auth-fields { display: flex; flex-direction: column; gap: var(--pl-sp-12); }
+
+.auth-field { display: flex; flex-direction: column; gap: var(--pl-sp-8); }
+.auth-field__label {
+    font-size: var(--pl-fs-body);
+    font-weight: var(--pl-fw-medium);
+    color: var(--pl-text);
+}
+
+/* Habillage de l'input : bordure, icône à gauche, œil à droite. */
+.auth-input {
+    display: flex;
+    align-items: center;
+    gap: var(--pl-sp-12);
+    padding: var(--pl-sp-12);
+    background: var(--pl-white);
+    border: 1.5px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);       /* 12px */
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.auth-input:focus-within {
+    border-color: var(--pl-action);
+    box-shadow: 0 0 0 3px var(--pl-action-light);
+}
+.auth-input__icon { color: var(--pl-text-secondary); display: flex; }
+
+/* Le vrai champ texte : sans bordure ni contour, il occupe l'espace restant. */
+.auth-input__control {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-family: var(--pl-font-family);
+    font-size: var(--pl-fs-body);
+    color: var(--pl-text);
+}
+.auth-input__control::placeholder { color: #8390a2; }
+
+/* Bouton « œil » pour afficher / masquer le mot de passe. */
+.auth-input__eye {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--pl-text-secondary);
+    cursor: pointer;
+}
+.auth-input__eye:hover { color: var(--pl-text); }
+
+/* ---- Ligne « se souvenir de moi » / « mot de passe oublié » ------------- */
+.auth-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--pl-sp-12);
+}
+.auth-remember {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-sp-8);
+    font-size: var(--pl-fs-body);
+    color: var(--pl-text);
+    cursor: pointer;
+}
+.auth-remember input { width: 18px; height: 18px; accent-color: var(--pl-action); cursor: pointer; }
+
+.auth-link {
+    color: var(--pl-action);
+    font-weight: var(--pl-fw-semibold);
+    font-size: var(--pl-fs-body-sm);
+    text-decoration: none;
+}
+.auth-link:hover { text-decoration: underline; }
+
+/* Lien fort en ligne (« S'inscrire », « Connectez-vous », « Renvoyer »). */
+.auth-inline-link { color: var(--pl-action); font-weight: var(--pl-fw-bold); text-decoration: none; }
+.auth-inline-link:hover { text-decoration: underline; }
+
+/* ---- Zone d'actions (bouton + phrase de bascule) ----------------------- */
+.auth-actions { display: flex; flex-direction: column; gap: var(--pl-sp-12); }
+.auth-switch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: var(--pl-fs-body);
+    color: var(--pl-text);
+}
+
+/* Case à cocher des conditions (inscription). */
+.auth-terms {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--pl-sp-8);
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-sm);
+    color: var(--pl-text);
+}
+.auth-terms input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--pl-action); flex-shrink: 0; }
+
+/* ---- Séparateur « Ou » -------------------------------------------------- */
+.auth-separator {
+    display: flex;
+    align-items: center;
+    gap: var(--pl-sp-16);
+    color: var(--pl-text-secondary);
+    font-size: var(--pl-fs-body);
+    font-weight: var(--pl-fw-medium);
+}
+.auth-separator::before,
+.auth-separator::after { content: ""; flex: 1; height: 1px; background: var(--pl-border); }
+
+/* ---- Boutons de connexion sociale (Google / Facebook / Apple) ---------- */
+.auth-socials { display: flex; gap: var(--pl-sp-12); }
+.auth-social {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background: var(--pl-surface-dashboard);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+.auth-social:hover { background: var(--pl-border-hover); }
+.auth-social img { width: 20px; height: 20px; display: block; }
+
+/* ---- Message d'erreur d'authentification ------------------------------- */
+.auth-alert {
+    padding: var(--pl-sp-12);
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--pl-radius-sm);
+    color: var(--pl-error);
+    font-size: var(--pl-fs-body-sm);
+}
+
+/* ---- Adaptation pour largeurs intermédiaires (< 1200px) ---------------- */
+@media (max-width: 1200px) {
+    .auth-hero { padding: 48px var(--pl-sp-32); min-height: 0; }
+    .auth-hero__row { flex-direction: column; align-items: center; gap: var(--pl-sp-32); }
+    .auth-welcome { width: 100%; max-width: 590px; }
+    .auth-card { width: 100%; max-width: 453px; }
+}

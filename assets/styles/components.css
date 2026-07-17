@@ -1,0 +1,216 @@
+/*
+ * ============================================================================
+ *  COMPOSANTS PARTAGÉS — navbar, pied de page, boutons
+ *  Réutilisables sur tout le site (pas seulement l'authentification).
+ *  On s'appuie sur les jetons --pl-* définis dans design-system.css.
+ * ============================================================================
+ */
+
+/* Petite icône SVG générique : hérite de la couleur du texte. */
+.pl-icon {
+    display: block;
+    flex-shrink: 0;
+}
+
+/* ===========================================================================
+ *  BOUTONS
+ * ======================================================================== */
+.pl-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--pl-sp-8);
+    padding: 10px var(--pl-sp-16);
+    border: 0;
+    border-radius: var(--pl-radius-sm);      /* 8px */
+    font-family: var(--pl-font-family);
+    font-size: var(--pl-fs-body-sm);         /* 14px */
+    font-weight: var(--pl-fw-semibold);
+    line-height: var(--pl-lh-sm);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease, opacity .15s ease;
+}
+
+.pl-btn:disabled,
+.pl-btn.is-disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+/* Bouton orange « marketing » (Déposer une annonce). */
+.pl-btn--cta {
+    background: var(--pl-cta);
+    color: var(--pl-white);
+    font-weight: var(--pl-fw-medium);
+    font-size: var(--pl-fs-body);            /* 16px */
+}
+.pl-btn--cta:hover { background: #e56e00; color: var(--pl-white); }
+
+/* Bouton violet « action principale » (Se connecter, Créer un compte…). */
+.pl-btn--primary {
+    background: var(--pl-action);
+    color: var(--pl-white);
+    font-weight: var(--pl-fw-medium);
+    font-size: var(--pl-fs-body);            /* 16px */
+    min-height: 48px;
+}
+.pl-btn--primary:hover { background: #4d00d6; color: var(--pl-white); }
+
+/* Bouton contour foncé (S'inscrire dans la navbar). */
+.pl-btn--outline-dark {
+    background: var(--pl-white);
+    color: var(--pl-text);
+    border: 2px solid var(--pl-text);
+}
+.pl-btn--outline-dark:hover { background: var(--pl-text); color: var(--pl-white); }
+
+.pl-btn--block { width: 100%; }
+
+/* ===========================================================================
+ *  NAVBAR
+ * ======================================================================== */
+.pl-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    padding: 0 103px;
+    background: var(--pl-white);
+    box-shadow: var(--pl-shadow-sm);
+}
+
+.pl-navbar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: var(--pl-sp-24);
+}
+
+.pl-navbar__left {
+    display: flex;
+    align-items: center;
+    gap: var(--pl-sp-24);
+}
+
+.pl-navbar__logo { display: inline-flex; }
+.pl-navbar__logo img { height: 44px; width: auto; display: block; }
+
+.pl-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--pl-sp-8);
+}
+
+.pl-nav__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-sp-4);
+    padding: 10px;
+    color: var(--pl-text);
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-semibold);
+    line-height: var(--pl-lh-sm);
+    text-decoration: none;
+    border-radius: var(--pl-radius-xs);
+    transition: color .15s ease, background-color .15s ease;
+}
+.pl-nav__link:hover { color: var(--pl-action); background: var(--pl-action-light); }
+.pl-nav__link .pl-icon { color: var(--pl-cta); }  /* flamme / cadeau colorés */
+
+.pl-navbar__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--pl-sp-12);
+}
+
+/* Sur écran un peu plus étroit, on réduit les marges latérales de la navbar. */
+@media (max-width: 1280px) {
+    .pl-navbar { padding: 0 var(--pl-sp-32); }
+}
+
+/* ===========================================================================
+ *  PIED DE PAGE
+ * ======================================================================== */
+.pl-footer {
+    background: var(--pl-primary);
+    color: var(--pl-white);
+    padding: 64px 49px;
+}
+
+.pl-footer__inner {
+    max-width: 1345px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 46px;
+}
+
+.pl-footer__columns {
+    display: flex;
+    gap: 100px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.pl-footer__brand { max-width: 314px; }
+.pl-footer__brand-logo { height: 53px; width: auto; margin-bottom: var(--pl-sp-24); }
+.pl-footer__brand-text {
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-sm);
+    color: var(--pl-white);
+    margin-bottom: var(--pl-sp-24);
+}
+
+.pl-footer__socials { display: flex; align-items: center; gap: var(--pl-sp-24); }
+.pl-footer__socials a { color: var(--pl-white); opacity: .9; transition: opacity .15s ease; }
+.pl-footer__socials a:hover { opacity: 1; }
+
+.pl-footer__col-title {
+    font-size: var(--pl-fs-body);
+    font-weight: var(--pl-fw-bold);
+    margin-bottom: var(--pl-sp-8);
+}
+
+.pl-footer__links { display: flex; flex-direction: column; }
+.pl-footer__links a {
+    color: var(--pl-white);
+    font-size: var(--pl-fs-body-sm);
+    line-height: 28px;
+    text-decoration: none;
+    opacity: .92;
+}
+.pl-footer__links a:hover { text-decoration: underline; opacity: 1; }
+
+.pl-footer__payments { display: flex; align-items: center; gap: var(--pl-sp-20); flex-wrap: wrap; }
+
+.pl-footer__divider { height: 1px; background: rgba(255, 255, 255, .18); border: 0; margin: 0; }
+
+.pl-footer__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--pl-sp-16);
+    flex-wrap: wrap;
+    font-size: var(--pl-fs-body-sm);
+}
+
+.pl-footer__selectors { display: flex; align-items: center; gap: var(--pl-sp-8); }
+.pl-footer__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-sp-4);
+    padding: 6px 12px;
+    color: var(--pl-white);
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-semibold);
+    background: transparent;
+    border: 0;
+    border-radius: var(--pl-radius-sm);
+    cursor: pointer;
+}
+.pl-footer__chip:hover { background: rgba(255, 255, 255, .08); }

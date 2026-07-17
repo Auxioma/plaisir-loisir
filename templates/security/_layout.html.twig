@@ -1,0 +1,55 @@
+{#
+    Gabarit commun aux écrans d'authentification.
+    Il pose la mise en page en deux colonnes (accroche + illustration à gauche,
+    carte du formulaire à droite) et laisse chaque écran remplir le bloc
+    « auth_card » avec son propre contenu.
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block body %}
+    <div class="auth-hero">
+        <img class="auth-hero__bg" src="{{ asset('images/hero-auth.png') }}" alt="">
+
+        <div class="auth-hero__row">
+            {# ---- Colonne de gauche : accroche + arguments (identique partout) ---- #}
+            <section class="auth-welcome">
+                <h1 class="auth-welcome__title">
+                    Bienvenue sur<br>
+                    TrouveMoi <span class="is-plaisirs">Plaisirs</span> &amp; <span class="is-loisirs">Loisirs</span>
+                </h1>
+                <p class="auth-welcome__subtitle">
+                    Connectez-vous pour découvrir des activités incroyables, réserver
+                    vos loisirs préférés et vivre des expériences inoubliables.
+                </p>
+
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <div class="auth-feature__icon">{{ icon.compass() }}</div>
+                        <div>
+                            <div class="auth-feature__title">Découvrez</div>
+                            <div class="auth-feature__desc">Trouvez des activités et destinations qui vous ressemblent.</div>
+                        </div>
+                    </div>
+                    <div class="auth-feature">
+                        <div class="auth-feature__icon">{{ icon.calendar_check() }}</div>
+                        <div>
+                            <div class="auth-feature__title">Réservez</div>
+                            <div class="auth-feature__desc">Réservez facilement vos activités en quelques clics.</div>
+                        </div>
+                    </div>
+                    <div class="auth-feature">
+                        <div class="auth-feature__icon">{{ icon.heart() }}</div>
+                        <div>
+                            <div class="auth-feature__title">Profitez</div>
+                            <div class="auth-feature__desc">Vivez des moments uniques et partagez vos expériences.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {# ---- Colonne de droite : la carte propre à chaque écran ---- #}
+            {% block auth_card %}{% endblock %}
+        </div>
+    </div>
+{% endblock %}

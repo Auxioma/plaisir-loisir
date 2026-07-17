@@ -1,0 +1,33 @@
+{#
+    Accueil — version minimale « placeholder ».
+    Le vrai design de la page d'accueil est un écran séparé qui sera réalisé
+    plus tard. Ici on affiche juste une accroche + les catégories racines,
+    afin que « / » et la redirection après connexion fonctionnent.
+#}
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block body %}
+    <section class="container py-5 text-center">
+        <h1 class="fw-bold" style="color: var(--pl-text-display);">
+            Bienvenue sur TrouveMoi <span style="color: var(--pl-success);">Plaisirs</span> &amp; <span style="color: var(--pl-info);">Loisirs</span>
+        </h1>
+        <p class="fs-5" style="color: var(--pl-text-secondary);">
+            Trouvez et réservez les meilleures activités et loisirs près de chez vous.
+        </p>
+
+        {% if categories is defined and categories is not empty %}
+            <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
+                {% for category in categories %}
+                    <span class="badge rounded-pill text-bg-light border px-3 py-2">{{ category.name }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="mt-4 d-flex justify-content-center gap-3">
+            <a href="{{ path('app_login') }}" class="pl-btn pl-btn--primary">Se connecter</a>
+            <a href="{{ path('app_register') }}" class="pl-btn pl-btn--outline-dark">S'inscrire</a>
+        </div>
+    </section>
+{% endblock %}

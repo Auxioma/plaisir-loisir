@@ -1,0 +1,96 @@
+{#
+    Écran d'inscription.
+    ⚠️ Front-end uniquement pour l'instant : les champs sont en HTML « brut ».
+    Le branchement sur le formulaire Symfony (RegistrationFormType), la
+    validation et le traitement du POST seront faits dans la phase « câblage ».
+    Choix retenu : fidèle au design (Nom & prénom, téléphone) + on GARDE un
+    champ de confirmation du mot de passe pour la sécurité.
+#}
+{% extends 'security/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block auth_card %}
+    <div class="auth-card">
+        <div class="auth-card__header">
+            <h2 class="auth-card__title">Inscription</h2>
+            <p class="auth-card__subtitle">Nous allons tout mettre en place pour que vous puissiez accéder à votre compte personnel.</p>
+        </div>
+
+        <form class="auth-form" method="post" action="{{ path('app_register') }}">
+            <div class="auth-fields">
+                <div class="auth-field">
+                    <label class="auth-field__label" for="inputFullName">Nom &amp; prénom</label>
+                    <div class="auth-input">
+                        <span class="auth-input__icon">{{ icon.person() }}</span>
+                        <input id="inputFullName" class="auth-input__control" type="text" name="fullName"
+                               placeholder="Jean Dupont" autocomplete="name">
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label class="auth-field__label" for="inputEmail">Adresse e-mail</label>
+                    <div class="auth-input">
+                        <span class="auth-input__icon">{{ icon.mail() }}</span>
+                        <input id="inputEmail" class="auth-input__control" type="email" name="email"
+                               placeholder="Votre@email.com" autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label class="auth-field__label" for="inputPhone">Numéro de téléphone</label>
+                    <div class="auth-input">
+                        <span class="auth-input__icon">{{ icon.phone() }}</span>
+                        <input id="inputPhone" class="auth-input__control" type="tel" name="phone"
+                               placeholder="06 12 34 56 78" autocomplete="tel">
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label class="auth-field__label" for="inputPassword">Mot de passe</label>
+                    <div class="auth-input" data-controller="password-toggle">
+                        <span class="auth-input__icon">{{ icon.lock() }}</span>
+                        <input id="inputPassword" class="auth-input__control" type="password" name="password"
+                               data-password-toggle-target="input" placeholder="8 caractères minimum"
+                               autocomplete="new-password">
+                        <button type="button" class="auth-input__eye" data-action="password-toggle#toggle" aria-label="Afficher ou masquer le mot de passe">
+                            <span data-password-toggle-target="show">{{ icon.eye() }}</span>
+                            <span data-password-toggle-target="hide" hidden>{{ icon.eye_off() }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label class="auth-field__label" for="inputPasswordConfirm">Confirmer le mot de passe</label>
+                    <div class="auth-input" data-controller="password-toggle">
+                        <span class="auth-input__icon">{{ icon.lock() }}</span>
+                        <input id="inputPasswordConfirm" class="auth-input__control" type="password" name="passwordConfirm"
+                               data-password-toggle-target="input" placeholder="Retapez votre mot de passe"
+                               autocomplete="new-password">
+                        <button type="button" class="auth-input__eye" data-action="password-toggle#toggle" aria-label="Afficher ou masquer le mot de passe">
+                            <span data-password-toggle-target="show">{{ icon.eye() }}</span>
+                            <span data-password-toggle-target="hide" hidden>{{ icon.eye_off() }}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="auth-actions">
+                <label class="auth-terms">
+                    <input type="checkbox" name="agreeTerms">
+                    <span>J'accepte les <a class="auth-inline-link" href="#">conditions générales</a> et la <a class="auth-inline-link" href="#">politique de confidentialité</a></span>
+                </label>
+
+                <button type="submit" class="pl-btn pl-btn--primary pl-btn--block">Créer un compte</button>
+
+                <p class="auth-switch">
+                    Vous avez déjà un compte ?
+                    <a class="auth-inline-link" href="{{ path('app_login') }}">Connectez-vous</a>
+                </p>
+            </div>
+        </form>
+
+        {% include 'security/_social_login.html.twig' %}
+    </div>
+{% endblock %}

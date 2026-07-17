@@ -1,0 +1,28 @@
+{# Barre de navigation principale, présente en haut de toutes les pages. #}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<header class="pl-navbar">
+    <div class="pl-navbar__inner">
+        <div class="pl-navbar__left">
+            <a href="{{ path('app_home') }}" class="pl-navbar__logo" aria-label="Accueil TrouveMoi">
+                <img src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir & Loisirs">
+            </a>
+
+            <nav class="pl-nav" aria-label="Navigation principale">
+                {# Ces pages n'existent pas encore : liens provisoires (#). #}
+                <a href="#" class="pl-nav__link">Activités</a>
+                <a href="#" class="pl-nav__link">Destinations</a>
+                <a href="#" class="pl-nav__link">{{ icon.flame() }} Offres du moment</a>
+                <a href="#" class="pl-nav__link">{{ icon.gift() }} Cadeaux</a>
+                <a href="#" class="pl-nav__link">Activités privées</a>
+            </nav>
+        </div>
+
+        <div class="pl-navbar__actions">
+            <a href="#" class="pl-btn pl-btn--cta">Déposer une annonce</a>
+            <a href="{{ path('app_register') }}" class="pl-btn pl-btn--outline-dark">
+                {{ icon.person(20) }} S'inscrire
+            </a>
+        </div>
+    </div>
+</header>
