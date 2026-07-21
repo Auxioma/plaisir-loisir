@@ -1,8 +1,10 @@
 {#
-    En-tête spécifique à la page d'accueil (maquette Figma « Acceuil - Plaisirs & Loisirs »).
-    Distinct de la navbar partagée (_partials/navbar.html.twig) utilisée par les pages
-    d'authentification : ici le menu est complet et inclut « Événements ».
-    État connecté (avatar / « Paramètre du profil ») : à brancher plus tard avec l'auth.
+    En-tête spécifique à la page d'accueil (maquette « header.png »).
+    Distinct de la navbar partagée des pages d'authentification.
+    Deux menus déroulants natifs (<details>, accessibles, sans JS) :
+      - « Découvrez »  → Plaisirs & Loisirs / Plaisirs & Loisirs Events
+      - sélecteur de langue « Fran. » → Français / Anglais
+    État connecté (avatar / profil) : à brancher plus tard avec l'auth.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
@@ -14,13 +16,21 @@
             </a>
 
             <nav class="pl-nav" aria-label="Navigation principale">
-                {# Liens provisoires (#) tant que les routes dédiées n'existent pas. #}
-                <a href="#" class="pl-nav__link">Activités</a>
-                <a href="#" class="pl-nav__link">Destinations</a>
-                <a href="#" class="pl-nav__link">{{ icon.flame() }} Offres du moments</a>
-                <a href="#" class="pl-nav__link">Événements</a>
-                <a href="#" class="pl-nav__link">{{ icon.gift() }} Cadeaux</a>
-                <a href="#" class="pl-nav__link">Activités privées</a>
+                <details class="pl-dropdown">
+                    <summary class="pl-dropdown__toggle">Découvrez {{ icon.chevron_down(16) }}</summary>
+                    <div class="pl-dropdown__menu">
+                        <a href="#" class="pl-dropdown__item is-active">Plaisirs &amp; Loisirs</a>
+                        <a href="#" class="pl-dropdown__item">Plaisirs &amp; Loisirs Events</a>
+                    </div>
+                </details>
+
+                <details class="pl-dropdown pl-dropdown--lang">
+                    <summary class="pl-dropdown__toggle">{{ icon.flag_fr(20) }} Fran. {{ icon.chevron_down(16) }}</summary>
+                    <div class="pl-dropdown__menu">
+                        <a href="#" class="pl-dropdown__item is-active">{{ icon.flag_fr(20) }} Français</a>
+                        <a href="#" class="pl-dropdown__item">{{ icon.flag_gb(20) }} Anglais</a>
+                    </div>
+                </details>
             </nav>
         </div>
 

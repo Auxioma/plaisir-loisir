@@ -105,6 +105,15 @@
     <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
 {% endmacro %}
 
+{# ---- Petits drapeaux (sélecteur de langue) ------------------------------ #}
+{% macro flag_fr(size = 20) %}
+    <svg class="pl-flag" width="{{ size }}" height="{{ (size * 0.7)|round }}" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#fff"/><rect width="6.67" height="14" fill="#0055A4"/><rect x="13.33" width="6.67" height="14" fill="#EF4135"/></svg>
+{% endmacro %}
+
+{% macro flag_gb(size = 20) %}
+    <svg class="pl-flag" width="{{ size }}" height="{{ (size * 0.7)|round }}" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#012169"/><path d="M0 0 20 14M20 0 0 14" stroke="#fff" stroke-width="2.8"/><path d="M0 0 20 14M20 0 0 14" stroke="#C8102E" stroke-width="1.4"/><rect x="8" width="4" height="14" fill="#fff"/><rect y="5" width="20" height="4" fill="#fff"/><rect x="8.6" width="2.8" height="14" fill="#C8102E"/><rect y="5.6" width="20" height="2.8" fill="#C8102E"/></svg>
+{% endmacro %}
+
 {# ---- Logos des moyens de paiement (pied de page) ------------------------ #}
 {# Reproductions simples et sans dépendance, aux couleurs officielles. #}
 
