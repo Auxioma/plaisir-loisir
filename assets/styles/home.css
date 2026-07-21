@@ -14,6 +14,16 @@
 }
 
 /* ===========================================================================
+ *  EN-TÊTE DE L'ACCUEIL (spécifique)
+ *  Menu complet (6 items) : on resserre marges/espacements et on empêche
+ *  le retour à la ligne des libellés. Scopé à l'accueil (--home), la navbar
+ *  partagée des pages d'authentification n'est pas impactée.
+ * ======================================================================== */
+.pl-navbar--home { padding-inline: 48px; }
+.pl-navbar--home .pl-nav { gap: var(--pl-sp-4); }
+.pl-navbar--home .pl-nav__link { white-space: nowrap; padding-inline: var(--pl-sp-8); }
+
+/* ===========================================================================
  *  HERO
  * ======================================================================== */
 .home-hero {
@@ -303,7 +313,7 @@
     position: relative;
     z-index: 1;
     width: 100%;
-    height: 470px;
+    height: 540px;
     /* Image déjà détourée (fond transparent) : on montre l'homme entier,
        posé sur le bas, sans aucune coupe de la tête. */
     object-fit: contain;

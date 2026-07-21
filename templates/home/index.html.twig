@@ -9,6 +9,11 @@
 
 {% block title %}Accueil{% endblock %}
 
+{# En-tête propre à l'accueil (menu complet), au lieu de la navbar partagée. #}
+{% block header %}
+    {% include '_partials/navbar_home.html.twig' %}
+{% endblock %}
+
 {% block body %}
 
     {# ===================== HERO ===================== #}
