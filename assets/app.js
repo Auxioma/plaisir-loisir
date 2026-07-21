@@ -12,4 +12,5 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/design-system.css';
 import './styles/components.css';
 import './styles/auth.css';
+import './styles/home.css';
 import './styles/app.css';

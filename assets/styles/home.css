@@ -1,0 +1,370 @@
+/*
+ * ============================================================================
+ *  PAGE D'ACCUEIL — Plaisir & Loisirs
+ *  Reprend la maquette Figma (écran « Acceuil - Plaisirs & Loisirs »).
+ *  S'appuie sur les jetons --pl-* du design system.
+ * ============================================================================
+ */
+
+/* Conteneur centré, aligné sur la navbar. */
+.home-container {
+    max-width: var(--pl-container-desktop);   /* 1440px */
+    margin: 0 auto;
+    padding-inline: 100px;
+}
+
+/* ===========================================================================
+ *  HERO
+ * ======================================================================== */
+.home-hero {
+    position: relative;
+    min-height: 560px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+.home-hero__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 60% 40%;
+    z-index: 0;
+}
+.home-hero__overlay {
+    position: absolute;
+    inset: 0;
+    /* Voile clair côté gauche : le texte foncé reste lisible par-dessus la photo. */
+    background:
+        linear-gradient(90deg, rgba(255, 255, 255, .94) 0%, rgba(255, 255, 255, .82) 34%, rgba(255, 255, 255, .35) 56%, rgba(255, 255, 255, 0) 78%),
+        linear-gradient(180deg, rgba(255, 255, 255, .55) 0%, transparent 24%);
+    z-index: 1;
+}
+.home-hero__inner {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding-block: 64px 96px;
+    color: var(--pl-text);
+}
+.home-hero__title {
+    max-width: 620px;
+    font-size: 52px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 62px;
+    color: var(--pl-primary);
+    margin: 0 0 var(--pl-sp-16);
+}
+/* « souvenirs ! » en orange, souligné d'un trait dessiné à la main. */
+.home-hero__title .is-accent {
+    position: relative;
+    color: var(--pl-cta);
+    white-space: nowrap;
+}
+.home-hero__title .is-accent::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: .35em;
+    bottom: -10px;
+    height: 12px;
+    background: no-repeat center / 100% 100%
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 14' fill='none'%3E%3Cpath d='M3 10C60 4 180 2 297 8' stroke='%23ff7a00' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+.home-hero__subtitle {
+    max-width: 470px;
+    font-size: var(--pl-fs-body);
+    line-height: var(--pl-lh-base);
+    color: var(--pl-text-secondary);
+    margin: 0 0 var(--pl-sp-24);
+}
+.home-hero__actions { display: flex; gap: var(--pl-sp-12); flex-wrap: wrap; margin-bottom: var(--pl-sp-28); }
+
+/* Second bouton du hero : blanc, bord discret, texte foncé (sur voile clair). */
+.pl-btn--hero-ghost {
+    background: var(--pl-white);
+    color: var(--pl-text);
+    border: 1px solid rgba(6, 27, 86, .16);
+    font-weight: var(--pl-fw-medium);
+    font-size: var(--pl-fs-body);
+    box-shadow: var(--pl-shadow-sm);
+}
+.pl-btn--hero-ghost:hover { background: var(--pl-primary); color: var(--pl-white); border-color: var(--pl-primary); }
+
+/* Preuve sociale : 4 avatars empilés + compteur d'utilisateurs. */
+.home-hero__proof { display: flex; align-items: center; gap: var(--pl-sp-16); }
+.home-hero__avatars { display: flex; }
+.home-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 3px solid var(--pl-white);
+    box-shadow: var(--pl-shadow-sm);
+    object-fit: cover;
+    background: var(--pl-white);
+}
+.home-avatar + .home-avatar { margin-left: -14px; }
+.home-hero__proof-text { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-medium); color: var(--pl-text); }
+.home-hero__proof-text strong { font-weight: var(--pl-fw-bold); color: var(--pl-primary); }
+
+/* ===========================================================================
+ *  BARRE DE RECHERCHE (chevauche le bas du hero)
+ * ======================================================================== */
+.home-search-wrap { position: relative; z-index: 3; margin-top: -44px; }
+.home-search {
+    background: var(--pl-white);
+    border-radius: var(--pl-radius-md);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, .12);
+    overflow: hidden;
+}
+.home-search__tabs { display: flex; gap: var(--pl-sp-8); padding: var(--pl-sp-12) var(--pl-sp-16) 0; }
+.home-search__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-sp-8);
+    padding: 10px 16px;
+    border: 0;
+    background: transparent;
+    color: var(--pl-text-secondary);
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-semibold);
+    border-radius: var(--pl-radius-sm) var(--pl-radius-sm) 0 0;
+    cursor: pointer;
+}
+.home-search__tab.is-active { background: var(--pl-cta-hover-light); color: var(--pl-cta); }
+
+.home-search__fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto;
+    align-items: center;
+    gap: var(--pl-sp-8);
+    padding: var(--pl-sp-12) var(--pl-sp-16);
+    border-top: 1px solid var(--pl-border);
+}
+.home-search__field {
+    display: flex;
+    align-items: center;
+    gap: var(--pl-sp-12);
+    padding: 8px 12px;
+    border-right: 1px solid var(--pl-border);
+}
+.home-search__field:nth-child(4) { border-right: 0; }
+.home-search__field .pl-icon { color: var(--pl-action); flex-shrink: 0; }
+.home-search__field-label { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
+.home-search__field-value { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.home-search__submit { height: 100%; min-height: 52px; padding-inline: var(--pl-sp-24); }
+
+/* ===========================================================================
+ *  SECTIONS génériques
+ * ======================================================================== */
+.home-section { padding-block: 56px; }
+.home-section__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--pl-sp-24);
+    margin-bottom: var(--pl-sp-32);
+}
+.home-section__title { font-size: var(--pl-fs-h2); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0 0 var(--pl-sp-8); }
+.home-section__subtitle { max-width: 620px; font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0; }
+
+/* Bouton foncé « Voir tout ». */
+.btn-see-all {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-sp-8);
+    padding: 10px 18px;
+    background: var(--pl-primary);
+    color: var(--pl-white);
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-semibold);
+    border-radius: var(--pl-radius-sm);
+    text-decoration: none;
+    white-space: nowrap;
+}
+.btn-see-all:hover { background: var(--pl-secondary); color: var(--pl-white); }
+
+/* ===========================================================================
+ *  CARTES (activités & destinations)
+ * ======================================================================== */
+.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--pl-sp-24); }
+
+.pl-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    overflow: hidden;
+    text-decoration: none;
+    transition: box-shadow .15s ease, transform .15s ease;
+}
+.pl-card:hover { box-shadow: 0 8px 24px rgba(15, 23, 42, .1); transform: translateY(-2px); }
+
+.pl-card__media { position: relative; aspect-ratio: 3 / 2; overflow: hidden; }
+/* Image en absolu pour que le conteneur impose son ratio 3:2 (évite que la
+   hauteur naturelle d'une image portrait ne fasse gonfler la carte). */
+.pl-card__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.pl-card__tag {
+    position: absolute; top: 10px; left: 10px;
+    padding: 4px 10px;
+    font-size: var(--pl-fs-caption);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-white);
+    border-radius: var(--pl-radius-pill);
+}
+.pl-card__tag--bestseller { background: var(--pl-error); }
+.pl-card__tag--popular { background: var(--pl-info); }
+
+.pl-card__fav {
+    position: absolute; top: 10px; right: 10px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--pl-white);
+    color: var(--pl-text-secondary);
+    border: 0; border-radius: 50%;
+    box-shadow: var(--pl-shadow-sm);
+    cursor: pointer;
+}
+.pl-card__fav:hover { color: var(--pl-error); }
+
+.pl-card__body { display: flex; flex-direction: column; gap: 6px; padding: var(--pl-sp-16); }
+.pl-card__title { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.pl-card__place { display: flex; align-items: center; gap: 4px; font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
+.pl-card__place .pl-icon { color: var(--pl-text-secondary); }
+
+.pl-card__meta { display: flex; align-items: center; justify-content: space-between; margin-top: 2px; }
+/* Note affichée dans une pastille orange clair (comme la maquette). */
+.pl-card__rating {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px;
+    background: var(--pl-cta-hover-light);
+    border-radius: var(--pl-radius-pill);
+    font-size: var(--pl-fs-caption);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text);
+}
+.pl-card__rating .pl-icon { color: var(--pl-warning); }
+.pl-card__rating span { color: var(--pl-text-secondary); font-weight: var(--pl-fw-regular); }
+.pl-card__extra { display: inline-flex; align-items: center; gap: 4px; font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
+
+.pl-card__foot { display: flex; align-items: baseline; gap: 6px; margin-top: var(--pl-sp-8); padding-top: var(--pl-sp-12); border-top: 1px solid var(--pl-border); }
+.pl-card__from { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.pl-card__price { font-size: var(--pl-fs-s1); font-weight: var(--pl-fw-bold); color: var(--pl-action); }
+
+/* --- Variante carte ÉVÉNEMENT : badge catégorie, badge date, participants --- */
+.pl-card__tag--cat { background: var(--pl-action); }
+.pl-card__date {
+    position: absolute; right: 10px; bottom: 10px;
+    padding: 4px 10px;
+    background: var(--pl-white);
+    color: var(--pl-text);
+    font-size: var(--pl-fs-caption);
+    font-weight: var(--pl-fw-semibold);
+    border-radius: var(--pl-radius-pill);
+    box-shadow: var(--pl-shadow-sm);
+}
+.pl-card__event-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: var(--pl-sp-8);
+    padding-top: var(--pl-sp-12);
+    border-top: 1px solid var(--pl-border);
+}
+.pl-card__participants { display: inline-flex; align-items: center; gap: 6px; font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-medium); color: var(--pl-text); }
+.pl-card__participants .pl-icon { color: var(--pl-action); }
+.home-mini-avatars { display: inline-flex; }
+.home-mini-avatars img {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--pl-white);
+    object-fit: cover; background: var(--pl-white);
+}
+.home-mini-avatars img + img { margin-left: -10px; }
+
+/* ===========================================================================
+ *  POURQUOI NOUS CHOISIR (homme détouré sur fond bleu)
+ * ======================================================================== */
+/* Fond bleu clair dégradé, calé sur le fond studio de la photo de l'homme
+   (haut ≈ #E2E9F3 → bas ≈ #C2CFDF) pour que le personnage paraisse détouré. */
+.home-provider { background: linear-gradient(180deg, #e0e8f3 0%, #d4deec 45%, #c4d1e2 100%); }
+.home-provider__inner { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pl-sp-32); align-items: center; }
+.home-provider__title { font-size: var(--pl-fs-h2); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0 0 var(--pl-sp-12); }
+.home-provider__text { max-width: 460px; font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0 0 var(--pl-sp-20); }
+.home-provider__list { display: flex; flex-direction: column; gap: var(--pl-sp-12); margin-bottom: var(--pl-sp-24); }
+.home-provider__arg { display: flex; align-items: center; gap: var(--pl-sp-8); font-size: var(--pl-fs-body); font-weight: var(--pl-fw-medium); color: var(--pl-text); }
+.home-provider__arg .pl-icon { color: var(--pl-cta); flex-shrink: 0; }
+
+.home-provider__media { position: relative; display: flex; justify-content: center; align-items: flex-end; }
+/* Anneaux masqués : absents de la maquette « Pourquoi nous choisir ». */
+.home-provider__circles { display: none; }
+.home-provider__media img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 470px;
+    /* Image déjà détourée (fond transparent) : on montre l'homme entier,
+       posé sur le bas, sans aucune coupe de la tête. */
+    object-fit: contain;
+    object-position: center bottom;
+}
+
+/* ===========================================================================
+ *  CE QUE DISENT NOS CLIENTS (avis)
+ * ======================================================================== */
+.home-reviews { background: #f4f5f7; }
+.home-reviews__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--pl-sp-24); flex-wrap: wrap; margin-bottom: var(--pl-sp-32); }
+.home-reviews__head > .home-section__title { margin: 0; }
+.home-reviews__score { display: flex; align-items: center; gap: var(--pl-sp-32); flex-wrap: wrap; }
+.home-reviews__score-label { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
+.home-reviews__score-value { font-size: 40px; font-weight: var(--pl-fw-bold); color: var(--pl-text); line-height: 1.1; }
+.home-reviews__score-value span { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-medium); color: var(--pl-text-secondary); }
+.home-reviews__stars { display: inline-flex; gap: 2px; color: var(--pl-warning); margin: 4px 0; }
+.home-reviews__score-count { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+
+.home-reviews__grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pl-sp-24); }
+.review-card {
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    padding: var(--pl-sp-24);
+    display: flex; flex-direction: column; gap: var(--pl-sp-12);
+}
+.review-card__top { display: flex; align-items: center; justify-content: space-between; }
+.review-card__stars { display: inline-flex; gap: 2px; }
+.review-card__stars .is-on { color: var(--pl-warning); }
+.review-card__stars .is-off { color: var(--pl-border); }
+.review-card__more { background: 0; border: 0; color: var(--pl-text-secondary); cursor: pointer; padding: 0; }
+.review-card__title { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0; }
+.review-card__text { font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0; }
+.review-card__author { display: flex; align-items: center; gap: var(--pl-sp-12); margin-top: var(--pl-sp-4); }
+.review-card__avatar {
+    width: 44px; height: 44px; flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--pl-action-light);
+}
+.review-card__name { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.review-card__meta { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.review-card__foot {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: var(--pl-sp-4); padding-top: var(--pl-sp-12);
+    border-top: 1px solid var(--pl-border);
+    font-size: var(--pl-fs-caption); color: var(--pl-text-secondary);
+}
+.review-card__foot span { display: inline-flex; align-items: center; gap: 6px; }
+.review-card__foot a { color: var(--pl-action); text-decoration: none; font-weight: var(--pl-fw-semibold); }
+.review-card__foot a:hover { text-decoration: underline; }
+
+/* ===========================================================================
+ *  Adaptation largeurs intermédiaires
+ * ======================================================================== */
+@media (max-width: 1100px) {
+    .home-container { padding-inline: var(--pl-sp-32); }
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+    .home-reviews__grid { grid-template-columns: 1fr; }
+    .home-provider__inner { grid-template-columns: 1fr; }
+    .home-search__fields { grid-template-columns: 1fr 1fr; }
+    .home-search__field { border-right: 0; }
+}

@@ -1,33 +1,286 @@
 {#
-    Accueil — version minimale « placeholder ».
-    Le vrai design de la page d'accueil est un écran séparé qui sera réalisé
-    plus tard. Ici on affiche juste une accroche + les catégories racines,
-    afin que « / » et la redirection après connexion fonctionnent.
+    Page d'accueil, d'après la maquette Figma « Acceuil - Plaisirs & Loisirs ».
+    ⚠️ Front-end : le contenu (activités, destinations, catégories) est pour
+    l'instant STATIQUE et d'exemple. On branchera les vraies données
+    (Category / Service / Destination) à la phase de câblage.
 #}
 {% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}Accueil{% endblock %}
 
 {% block body %}
-    <section class="container py-5 text-center">
-        <h1 class="fw-bold" style="color: var(--pl-text-display);">
-            Bienvenue sur TrouveMoi <span style="color: var(--pl-success);">Plaisirs</span> &amp; <span style="color: var(--pl-info);">Loisirs</span>
-        </h1>
-        <p class="fs-5" style="color: var(--pl-text-secondary);">
-            Trouvez et réservez les meilleures activités et loisirs près de chez vous.
-        </p>
 
-        {% if categories is defined and categories is not empty %}
-            <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
-                {% for category in categories %}
-                    <span class="badge rounded-pill text-bg-light border px-3 py-2">{{ category.name }}</span>
-                {% endfor %}
+    {# ===================== HERO ===================== #}
+    <section class="home-hero">
+        <img class="home-hero__bg" src="{{ asset('images/home/hero.png') }}" alt="">
+        <div class="home-hero__overlay"></div>
+        <div class="home-container home-hero__inner">
+            <h1 class="home-hero__title">
+                Explore tes envies et Crée des <span class="is-accent">souvenirs&nbsp;!</span>
+            </h1>
+            <p class="home-hero__subtitle">
+                Découvrez des lieux, des événements exceptionnels, à des prix exclusifs
+                et vivez des expériences inoubliables
+            </p>
+            <div class="home-hero__actions">
+                <a href="#" class="pl-btn pl-btn--cta">Explorez nos activités {{ icon.chevron_right(18) }}</a>
+                <a href="#" class="pl-btn pl-btn--hero-ghost">Découvrez nos événements {{ icon.chevron_right(18) }}</a>
             </div>
-        {% endif %}
-
-        <div class="mt-4 d-flex justify-content-center gap-3">
-            <a href="{{ path('app_login') }}" class="pl-btn pl-btn--primary">Se connecter</a>
-            <a href="{{ path('app_register') }}" class="pl-btn pl-btn--outline-dark">S'inscrire</a>
+            {# Preuve sociale : 4 avatars empilés + compteur d'utilisateurs. #}
+            <div class="home-hero__proof">
+                <div class="home-hero__avatars" aria-hidden="true">
+                    <img class="home-avatar" src="{{ asset('images/home/avatar-1.png') }}" alt="">
+                    <img class="home-avatar" src="{{ asset('images/home/avatar-2.png') }}" alt="">
+                    <img class="home-avatar" src="{{ asset('images/home/avatar-3.png') }}" alt="">
+                    <img class="home-avatar" src="{{ asset('images/home/avatar-4.png') }}" alt="">
+                </div>
+                <span class="home-hero__proof-text"><strong>+250.000</strong> utilisateurs satisfaits.</span>
+            </div>
         </div>
     </section>
+
+    {# ===================== BARRE DE RECHERCHE ===================== #}
+    <div class="home-container">
+        <div class="home-search-wrap">
+            <div class="home-search">
+                <div class="home-search__tabs">
+                    <button type="button" class="home-search__tab is-active">{{ icon.compass(18) }} Plaisir &amp; Loisir</button>
+                    <button type="button" class="home-search__tab">{{ icon.calendar_check(18) }} Plaisir &amp; Loisir Event</button>
+                </div>
+                <div class="home-search__fields">
+                    <div class="home-search__field">
+                        {{ icon.map_pin(20) }}
+                        <div>
+                            <div class="home-search__field-label">Où voulez-vous aller ?</div>
+                            <div class="home-search__field-value">Destination, ville, lieu…</div>
+                        </div>
+                    </div>
+                    <div class="home-search__field">
+                        {{ icon.compass(20) }}
+                        <div>
+                            <div class="home-search__field-label">Activité ou loisir ?</div>
+                            <div class="home-search__field-value">Canoë, musée, VTT…</div>
+                        </div>
+                    </div>
+                    <div class="home-search__field">
+                        {{ icon.calendar_check(20) }}
+                        <div>
+                            <div class="home-search__field-label">Date</div>
+                            <div class="home-search__field-value">Choisissez une date</div>
+                        </div>
+                    </div>
+                    <div class="home-search__field">
+                        {{ icon.users(20) }}
+                        <div>
+                            <div class="home-search__field-label">Participant(s)</div>
+                            <div class="home-search__field-value">01 participant</div>
+                        </div>
+                    </div>
+                    <button type="button" class="pl-btn pl-btn--cta home-search__submit">{{ icon.search(20) }} Recherche</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ===================== ACTIVITÉS COUP DE CŒUR ===================== #}
+    {% set activities = [
+        {img: 'act-canoe.jpg',      title: 'Descente en Canoë',      place: 'Gorges de l\'Ardèche',         reviews: 256, extra: '2h-3h',   price: 25, tag: 'Bestseller'},
+        {img: 'act-vtt.jpg',        title: 'Location VTT électrique', place: 'Massif du Vercors',            reviews: 178, extra: 'Journée', price: 45, tag: null},
+        {img: 'act-labyrinthe.jpg', title: 'Visite de labyrinthe',    place: 'Labyrinthe en Provence',       reviews: 124, extra: '1h30',    price: 12, tag: null},
+        {img: 'act-musee.jpg',      title: 'Visite du Musée',         place: 'Muséum d\'Histoire Naturelle', reviews: 312, extra: '2h',      price: 16, tag: null},
+    ] %}
+    <div class="home-container">
+        <section class="home-section">
+            <div class="home-section__head">
+                <div>
+                    <h2 class="home-section__title">Activités coup de coeur</h2>
+                    <p class="home-section__subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.</p>
+                </div>
+                <a href="#" class="btn-see-all">Voir toutes les activités {{ icon.arrow_up_right(16) }}</a>
+            </div>
+            <div class="card-grid">
+                {% for a in activities %}
+                    <a href="#" class="pl-card">
+                        <div class="pl-card__media">
+                            <img src="{{ asset('images/home/' ~ a.img) }}" alt="{{ a.title }}">
+                            {% if a.tag %}<span class="pl-card__tag pl-card__tag--bestseller">{{ a.tag }}</span>{% endif %}
+                            <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(18) }}</button>
+                        </div>
+                        <div class="pl-card__body">
+                            <div class="pl-card__title">{{ a.title }}</div>
+                            <div class="pl-card__place">{{ icon.map_pin(14) }} {{ a.place }}</div>
+                            <div class="pl-card__meta">
+                                <span class="pl-card__rating">{{ icon.star(14) }} {{ a.reviews }} <span>reviews</span></span>
+                                <span class="pl-card__extra">{{ icon.clock(14) }} {{ a.extra }}</span>
+                            </div>
+                            <div class="pl-card__foot">
+                                <span class="pl-card__from">À partir de</span>
+                                <span class="pl-card__price">{{ a.price }}€</span>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    {# ===================== DESTINATIONS POPULAIRES ===================== #}
+    {% set destinations = [
+        {img: 'dest-paris.png',        title: 'Paris, France',   desc: 'Ville lumière et capitale de la culture', reviews: 256, count: '32 activités', price: 25, tag: 'Populaire'},
+        {img: 'dest-annecy.png',       title: 'Annecy, France',  desc: 'Entre lac et Montagnes',                  reviews: 178, count: '24 activités', price: 20, tag: 'Bestseller'},
+        {img: 'dest-cinqueterre.jpg',  title: 'Cinque, Italie',  desc: 'Vue à couper le souffle',                 reviews: 134, count: '18 activités', price: 30, tag: 'Tendance'},
+        {img: 'dest-bali.png',         title: 'Bali, Indonésie', desc: 'Détente, nature et spiritualité',         reviews: 312, count: '27 activités', price: 35, tag: null},
+    ] %}
+    <div class="home-container">
+        <section class="home-section">
+            <div class="home-section__head">
+                <div>
+                    <h2 class="home-section__title">Destinations populaires</h2>
+                    <p class="home-section__subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.</p>
+                </div>
+                <a href="#" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
+            </div>
+            <div class="card-grid">
+                {% for d in destinations %}
+                    <a href="#" class="pl-card">
+                        <div class="pl-card__media">
+                            <img src="{{ asset('images/home/' ~ d.img) }}" alt="{{ d.title }}">
+                            {% if d.tag %}<span class="pl-card__tag {{ d.tag == 'Bestseller' ? 'pl-card__tag--bestseller' : 'pl-card__tag--popular' }}">{{ d.tag }}</span>{% endif %}
+                            <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(18) }}</button>
+                        </div>
+                        <div class="pl-card__body">
+                            <div class="pl-card__title">{{ d.title }}</div>
+                            <div class="pl-card__place">{{ d.desc }}</div>
+                            <div class="pl-card__meta">
+                                <span class="pl-card__rating">{{ icon.star(14) }} {{ d.reviews }} <span>reviews</span></span>
+                                <span class="pl-card__extra">{{ d.count }}</span>
+                            </div>
+                            <div class="pl-card__foot">
+                                <span class="pl-card__from">À partir de</span>
+                                <span class="pl-card__price">{{ d.price }}€</span>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    {# ===================== POURQUOI NOUS CHOISIR ===================== #}
+    <section class="home-provider">
+        <div class="home-container home-section">
+            <div class="home-provider__inner">
+                <div>
+                    <h2 class="home-provider__title">Pourquoi nous choisir !</h2>
+                    <p class="home-provider__text">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget
+                        magna gravida consequat. Nunc dictum facilisis dolor ac luctus.
+                    </p>
+                    <div class="home-provider__list">
+                        <div class="home-provider__arg">{{ icon.check_badge(22) }} Réservez en quelques clics</div>
+                        <div class="home-provider__arg">{{ icon.check_badge(22) }} Meilleurs prix garantis</div>
+                        <div class="home-provider__arg">{{ icon.check_badge(22) }} Transactions 100% sécurisées</div>
+                        <div class="home-provider__arg">{{ icon.check_badge(22) }} Des milliers d'avis authentiques</div>
+                        <div class="home-provider__arg">{{ icon.check_badge(22) }} Notre équipe est à votre écoute 7j/7</div>
+                    </div>
+                    <a href="#" class="pl-btn pl-btn--cta">En savoir plus ! {{ icon.arrow_up_right(16) }}</a>
+                </div>
+                <div class="home-provider__media">
+                    <div class="home-provider__circles"></div>
+                    <img src="{{ asset('images/home/provider.png') }}" alt="Rejoignez TrouveMoi">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ===================== ÉVÉNEMENTS POPULAIRES ===================== #}
+    {% set events = [
+        {img: 'event-1.jpg', cat: 'Randonnée', title: 'Randonnée dans le Vercors',  place: 'Autrans, 38880',  time: '9h00 - 16h00',  participants: 12, date: '15 Mai 2026'},
+        {img: 'event-2.jpg', cat: 'Sports',    title: 'Match de foot amical',        place: 'Toulouse, 31000', time: '10h00 - 12h00', participants: 8,  date: '15 Mai 2026'},
+        {img: 'event-3.jpg', cat: 'Repas',     title: 'Barbecue entre amis',         place: 'Lyon, 69000',     time: '12h00 - 18h00', participants: 12, date: '18 Mai 2026'},
+        {img: 'event-4.jpg', cat: 'Bien-être', title: 'Séance de yoga en plein air', place: 'Nantes, 44000',   time: '10h00 - 11h30', participants: 12, date: '02 Juin 2026'},
+    ] %}
+    <div class="home-container">
+        <section class="home-section">
+            <div class="home-section__head">
+                <div>
+                    <h2 class="home-section__title">Événements populaires</h2>
+                    <p class="home-section__subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.</p>
+                </div>
+                <a href="#" class="btn-see-all">Voir tous les événements {{ icon.arrow_up_right(16) }}</a>
+            </div>
+            <div class="card-grid">
+                {% for e in events %}
+                    <a href="#" class="pl-card pl-card--event">
+                        <div class="pl-card__media">
+                            <img src="{{ asset('images/home/' ~ e.img) }}" alt="{{ e.title }}">
+                            <span class="pl-card__tag pl-card__tag--cat">{{ e.cat }}</span>
+                            <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(18) }}</button>
+                            <span class="pl-card__date">{{ e.date }}</span>
+                        </div>
+                        <div class="pl-card__body">
+                            <div class="pl-card__title">{{ e.title }}</div>
+                            <div class="pl-card__place">{{ icon.map_pin(14) }} {{ e.place }}</div>
+                            <div class="pl-card__meta">
+                                <span class="pl-card__extra">{{ icon.clock(14) }} {{ e.time }}</span>
+                            </div>
+                            <div class="pl-card__event-foot">
+                                <span class="pl-card__participants">{{ icon.users(16) }} {{ e.participants }} Participants</span>
+                                <span class="home-mini-avatars" aria-hidden="true"><img src="{{ asset('images/home/avatar-1.png') }}" alt=""><img src="{{ asset('images/home/avatar-2.png') }}" alt=""><img src="{{ asset('images/home/avatar-3.png') }}" alt=""></span>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    {# ===================== CE QUE DISENT NOS CLIENTS ===================== #}
+    {% set reviews = [
+        {rating: 5, title: 'Efficient and Reliable', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat.', author: 'John Mans',   place: 'France, Nantes', date: '10 Juillet 2026', avatar: 'avatar-1.png'},
+        {rating: 4, title: 'Une expérience au top',  text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc dictum facilisis dolor ac luctus, sit amet.', author: 'Marie Leroy', place: 'France, Lyon',   date: '08 Juillet 2026', avatar: 'avatar-3.png'},
+    ] %}
+    <section class="home-reviews">
+        <div class="home-container home-section">
+            <div class="home-reviews__head">
+                <h2 class="home-section__title">Ce que disent nos clients</h2>
+                <div class="home-reviews__score">
+                    <div class="home-reviews__score-box">
+                        <div class="home-reviews__score-label">Note globale</div>
+                        <div class="home-reviews__score-value">4.5<span>/5</span></div>
+                        <div class="home-reviews__stars">{{ icon.star(18) }}{{ icon.star(18) }}{{ icon.star(18) }}{{ icon.star(18) }}{{ icon.star(18) }}</div>
+                        <div class="home-reviews__score-count">Basé sur 8955 avis</div>
+                    </div>
+                    <a href="#" class="btn-see-all">Voir plus d'avis {{ icon.arrow_up_right(16) }}</a>
+                </div>
+            </div>
+            <div class="home-reviews__grid">
+                {% for r in reviews %}
+                    <article class="review-card">
+                        <div class="review-card__top">
+                            <div class="review-card__stars">
+                                {% for i in 1..5 %}<span class="{{ i <= r.rating ? 'is-on' : 'is-off' }}">{{ icon.star(16) }}</span>{% endfor %}
+                            </div>
+                            <button type="button" class="review-card__more" aria-label="Options">{{ icon.dots(20) }}</button>
+                        </div>
+                        <h3 class="review-card__title">{{ r.title }}</h3>
+                        <p class="review-card__text">{{ r.text }}</p>
+                        <div class="review-card__author">
+                            <img class="review-card__avatar" src="{{ asset('images/home/' ~ r.avatar) }}" alt="">
+                            <div>
+                                <div class="review-card__name">{{ r.author }}</div>
+                                <div class="review-card__meta">{{ r.place }} · {{ r.date }}</div>
+                            </div>
+                        </div>
+                        <div class="review-card__foot">
+                            <span>Est-ce que ça vous a aidé ? {{ icon.thumbs_up(16) }}</span>
+                            <a href="#">Traduire</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
 {% endblock %}

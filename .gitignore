@@ -18,6 +18,9 @@
 /assets/vendor/
 ###< symfony/asset-mapper ###
 
+# Images sources brutes (dump lourd) : on ne versionne que les versions optimisées de assets/images/
+/assets/home/
+
 ###> friendsofphp/php-cs-fixer ###
 /.php-cs-fixer.php
 /.php-cs-fixer.cache

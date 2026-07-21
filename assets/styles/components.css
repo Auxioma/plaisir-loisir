@@ -122,6 +122,24 @@
 .pl-nav__link:hover { color: var(--pl-action); background: var(--pl-action-light); }
 .pl-nav__link .pl-icon { color: var(--pl-cta); }  /* flamme / cadeau colorés */
 
+/* Lien avec pastille « Nouveau » (ex. Offres du moment). */
+.pl-nav__link--badged { position: relative; }
+.pl-nav__badge {
+    position: absolute;
+    left: 50%;
+    bottom: -7px;
+    transform: translateX(-50%);
+    padding: 1px 8px;
+    background: var(--pl-success);
+    color: var(--pl-white);
+    font-size: 10px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 1.5;
+    letter-spacing: .01em;
+    border-radius: var(--pl-radius-pill);
+    white-space: nowrap;
+}
+
 .pl-navbar__actions {
     display: flex;
     align-items: center;
