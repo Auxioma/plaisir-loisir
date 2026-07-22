@@ -1,0 +1,66 @@
+{#
+    Modale « Tous les avis » (écran G, spec §9) — trois états gérés par
+    assets/activities.js :
+      G.1 défaut   : en-tête « Avis clients » + note globale + barre d'outils
+      G.2 scrollé  : l'en-tête se contextualise (titre de l'activité + note)
+      G.3 tri      : dropdown « Trier par » ouvert (coche sur l'option active)
+    Fermeture : ✕, clic sur l'overlay, touche Échap. Le scroll du fond est
+    bloqué tant que la modale est ouverte.
+
+    Variables : detail (reviewsSummary, modalTitle), reviews.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<div class="reviews-modal" id="reviews-modal" role="dialog" aria-modal="true" aria-labelledby="reviews-modal-title" hidden>
+    <div class="reviews-modal__overlay" data-modal-close></div>
+    <div class="reviews-modal__panel">
+
+        <header class="reviews-modal__head">
+            <button type="button" class="reviews-modal__close" data-modal-close aria-label="Fermer les avis">{{ icon.x(20) }}</button>
+
+            {# En-tête par défaut (G.1). #}
+            <div class="reviews-modal__intro" data-modal-intro>
+                <h2 class="reviews-modal__title" id="reviews-modal-title">Avis clients</h2>
+                <div class="reviews-modal__score">
+                    <span class="reviews-modal__score-label">Note globale</span>
+                    <span class="reviews-modal__score-value">{{ detail.reviewsSummary.score }} <span>/{{ detail.reviewsSummary.outOf }}</span></span>
+                    <span class="reviews-modal__stars" aria-hidden="true">
+                        {% for i in 1..5 %}{{ icon.star(20) }}{% endfor %}
+                    </span>
+                    <span class="reviews-modal__count">D'après {{ detail.reviewsSummary.total }} avis</span>
+                </div>
+            </div>
+
+            {# En-tête contextualisé, affiché au défilement (G.2). #}
+            <div class="reviews-modal__context" data-modal-context hidden>
+                <h2 class="reviews-modal__context-title">{{ detail.modalTitle }}</h2>
+                <span class="reviews-modal__context-note">{{ icon.star(14) }} {{ detail.reviewsSummary.score }} ({{ detail.reviewsSummary.total }} avis)</span>
+            </div>
+
+            <div class="reviews-modal__tools">
+                <button type="button" class="act-tool">{{ icon.sliders(16) }} Filtre</button>
+                <div class="reviews-sort">
+                    <button type="button" class="act-tool" data-sort-toggle aria-haspopup="listbox" aria-expanded="false">
+                        {{ icon.sort(16) }} Trier par: <strong data-sort-label>Les plus récents</strong> {{ icon.chevron_down(14) }}
+                    </button>
+                    <div class="reviews-sort__menu" data-sort-menu role="listbox" aria-label="Ordre de tri" hidden>
+                        {% for option in ['Les plus récents', 'Les plus anciens', 'Les mieux notés', 'Les moins notés'] %}
+                            <button type="button" class="reviews-sort__option {{ loop.first ? 'is-selected' }}" role="option" aria-selected="{{ loop.first ? 'true' : 'false' }}" data-sort-option="{{ loop.index0 }}">
+                                <span class="reviews-sort__check" aria-hidden="true">✓</span> {{ option }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="reviews-modal__body" data-modal-body>
+            {% for r in reviews %}
+                <div class="reviews-modal__item" data-review data-stars="{{ r.stars }}" data-index="{{ loop.index0 }}">
+                    {% include 'activity/_review_card.html.twig' with { r: r } %}
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>

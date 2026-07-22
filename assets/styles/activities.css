@@ -298,8 +298,320 @@
 .act-page-btn.is-active { background: var(--pl-action); border-color: var(--pl-action); color: var(--pl-white); }
 
 /* ===========================================================================
+ *  DÉTAIL D'UNE ACTIVITÉ (écran F)
+ * ======================================================================== */
+.act-detail__subline { display: flex; align-items: center; gap: var(--pl-sp-12); flex-wrap: wrap; }
+.act-detail__reviews-link { font-size: var(--pl-fs-body-sm); color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
+.act-detail__organizer { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
+.act-detail__organizer strong { color: var(--pl-text); }
+
+/* Deux colonnes : contenu principal + panneau de réservation. */
+.act-detail__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 296px;
+    gap: var(--pl-sp-40);
+    align-items: start;
+    padding-bottom: var(--pl-sp-48);
+}
+
+/* --- Galerie mosaïque : 3 colonnes, la 1re image couvre 2×2. --- */
+.act-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 292px;   /* deux rangées de 292px, comme la maquette */
+    gap: var(--pl-sp-16);
+    margin-bottom: var(--pl-sp-16);
+}
+.act-gallery__item { position: relative; margin: 0; border-radius: var(--pl-radius-md); overflow: hidden; }
+.act-gallery__item--big { grid-column: span 2; }
+.act-gallery__item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.act-gallery__all {
+    position: absolute; right: 10px; bottom: 10px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 12px;
+    background: var(--pl-white);
+    border: 0; border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-caption);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text);
+    box-shadow: var(--pl-shadow-sm);
+    cursor: pointer;
+}
+.act-gallery__all:hover { background: var(--pl-primary); color: var(--pl-white); }
+
+/* --- Localisation + partage / favori. --- */
+.act-detail__placebar {
+    display: flex; align-items: center; gap: var(--pl-sp-12);
+    padding-bottom: var(--pl-sp-16);
+    border-bottom: 1px solid var(--pl-border);
+    margin-bottom: var(--pl-sp-16);
+}
+.act-detail__place { display: inline-flex; align-items: center; gap: 6px; font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
+.act-detail__maplink { display: inline-flex; align-items: center; gap: 4px; font-size: var(--pl-fs-body-sm); color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
+.act-detail__placebar-actions { margin-left: auto; display: inline-flex; gap: var(--pl-sp-8); }
+.pl-iconbtn--bordered { border: 1px solid var(--pl-border); }
+
+/* --- Bandeau des informations clés. --- */
+.act-facts {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--pl-sp-16);
+    flex-wrap: wrap;
+    padding-bottom: var(--pl-sp-24);
+    margin-bottom: var(--pl-sp-24);
+    border-bottom: 1px solid var(--pl-border);
+}
+.act-fact { display: flex; flex-direction: column; gap: 2px; }
+.act-fact__label { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.act-fact__value { display: inline-flex; align-items: center; gap: 4px; font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.act-fact__value .pl-icon { color: var(--pl-warning); }
+
+/* --- Blocs de contenu. --- */
+.act-block { margin-bottom: var(--pl-sp-32); }
+.act-block--boxed {
+    background: #f8f9fb;
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    padding: var(--pl-sp-24);
+}
+.act-block__title { font-size: var(--pl-fs-s1); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0 0 var(--pl-sp-12); }
+.act-block__sep { border: 0; border-top: 1px solid var(--pl-border); margin: 0 0 var(--pl-sp-16); }
+.act-block__subtitle { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0 0 var(--pl-sp-8); }
+.act-block__minititle { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: var(--pl-sp-16) 0 var(--pl-sp-8); }
+.act-block__text, .act-block__lead { font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0 0 var(--pl-sp-12); }
+.act-block__lead { color: var(--pl-text); font-weight: var(--pl-fw-semibold); }
+
+.act-bullets { margin: 0; padding-left: var(--pl-sp-20); display: flex; flex-direction: column; gap: 6px; }
+.act-bullets li { font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); }
+
+/* --- Listes à coches (inclus ✓ / exclus ✕). --- */
+.act-includes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pl-sp-24); }
+.act-checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--pl-sp-8); }
+.act-checklist li { display: flex; align-items: flex-start; gap: var(--pl-sp-8); font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); }
+.act-checklist__mark { flex-shrink: 0; font-weight: var(--pl-fw-bold); }
+.act-checklist--in .act-checklist__mark { color: var(--pl-success); }
+.act-checklist--out .act-checklist__mark { color: var(--pl-error); }
+
+/* --- Bloc logistique : carte + infos. --- */
+.act-logistics { display: grid; grid-template-columns: 394px minmax(0, 1fr); gap: var(--pl-sp-32); }
+.act-logistics__map img {
+    width: 100%; height: 445px;
+    object-fit: cover;
+    border-radius: var(--pl-radius-md);
+    display: block;
+}
+.act-logistics__map-actions { display: flex; gap: var(--pl-sp-12); margin-top: var(--pl-sp-16); }
+.act-logistics__info .act-block__minititle { margin-top: 0; }
+.act-meeting { list-style: none; margin: 0 0 var(--pl-sp-20); padding: 0; display: flex; flex-direction: column; gap: var(--pl-sp-8); }
+.act-meeting li { display: flex; flex-direction: column; font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
+.act-meeting strong { color: var(--pl-text); }
+.act-guarantees { list-style: none; margin: 0; padding: var(--pl-sp-16) 0 0; border-top: 1px solid var(--pl-border); display: flex; flex-direction: column; gap: var(--pl-sp-12); }
+.act-guarantees li { display: flex; gap: var(--pl-sp-8); font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); }
+.act-guarantees strong { color: var(--pl-text); display: block; }
+.act-guarantees__mark { color: var(--pl-success); flex-shrink: 0; }
+
+/* --- Panneau de réservation sticky. --- */
+.act-booking { position: sticky; top: 116px; display: flex; flex-direction: column; gap: var(--pl-sp-16); }
+.act-booking__panel, .act-booking__gift {
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .08);
+    padding: var(--pl-sp-16);
+}
+.act-booking__price { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); margin: 0 0 var(--pl-sp-16); }
+.act-booking__price strong { font-size: var(--pl-fs-h3); color: var(--pl-text); }
+.act-booking__field { display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--pl-sp-12); }
+.act-booking__field > span:first-child, .act-booking__field-label { font-size: var(--pl-fs-caption); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
+.act-booking__input {
+    display: flex; align-items: center; gap: var(--pl-sp-8);
+    padding: 9px 12px;
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text-secondary);
+    cursor: pointer;
+}
+.act-booking__input .pl-icon:last-child { margin-left: auto; }
+.act-booking__travellers { display: flex; flex-direction: column; gap: var(--pl-sp-8); margin-bottom: var(--pl-sp-12); }
+.act-stepper {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text);
+}
+.act-stepper small { color: var(--pl-text-secondary); }
+.act-stepper__controls { display: inline-flex; align-items: center; gap: var(--pl-sp-8); }
+.act-stepper__controls button {
+    width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: 50%;
+    color: var(--pl-text);
+    cursor: pointer;
+}
+.act-stepper__controls button:hover { border-color: var(--pl-action); color: var(--pl-action); }
+.act-stepper__controls button:disabled { opacity: .4; cursor: not-allowed; }
+.act-stepper__controls output { min-width: 20px; text-align: center; font-weight: var(--pl-fw-semibold); }
+.act-booking__total {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--pl-sp-12);
+    background: #f8f9fb;
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text);
+    margin: 0 0 var(--pl-sp-12);
+}
+.act-booking__total strong { font-size: var(--pl-fs-s1); }
+.act-booking__note { display: flex; align-items: center; gap: 6px; font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); margin: var(--pl-sp-12) 0 0; }
+.act-booking__note span[aria-hidden] { color: var(--pl-success); font-weight: var(--pl-fw-bold); }
+.act-booking__note strong { color: var(--pl-text); }
+.act-booking__gift h3 { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); margin: 0 0 var(--pl-sp-8); }
+.act-booking__gift p { font-size: var(--pl-fs-caption); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0 0 var(--pl-sp-12); }
+
+/* --- Menu « … » des cartes avis (Signaler cet avis). --- */
+.review-card__menu { position: relative; }
+.review-card__menu summary { list-style: none; }
+.review-card__menu summary::-webkit-details-marker { display: none; }
+.review-card__menu-panel {
+    position: absolute; right: 0; top: calc(100% + 6px);
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .12);
+    z-index: 20;
+}
+.review-card__menu-item {
+    padding: 10px 14px;
+    background: 0; border: 0;
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text);
+    white-space: nowrap;
+    cursor: pointer;
+}
+.review-card__menu-item:hover { color: var(--pl-error); }
+.review-card__helpful { background: 0; border: 0; padding: 0; color: var(--pl-text-secondary); cursor: pointer; }
+.review-card__helpful:hover { color: var(--pl-action); }
+
+/* --- Formulaire « Ajouter un avis ». --- */
+.act-review-form {
+    display: flex; flex-direction: column; gap: var(--pl-sp-16);
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    padding: var(--pl-sp-32);
+}
+.act-review-form__stars { display: flex; gap: var(--pl-sp-8); }
+.act-review-form__star { background: 0; border: 0; padding: 0; color: var(--pl-border); cursor: pointer; transition: color .1s ease; }
+.act-review-form__star.is-on, .act-review-form__star:hover { color: var(--pl-warning); }
+.act-review-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pl-sp-16); }
+.act-review-form input, .act-review-form textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text);
+    font-family: inherit;
+}
+.act-review-form input::placeholder, .act-review-form textarea::placeholder { color: var(--pl-text-secondary); }
+.act-review-form textarea { resize: vertical; }
+.act-review-form .pl-btn { align-self: flex-start; }
+
+/* ===========================================================================
+ *  MODALE « TOUS LES AVIS » (écran G)
+ * ======================================================================== */
+.reviews-modal { position: fixed; inset: 0; z-index: 2000; }
+.reviews-modal[hidden] { display: none; }
+.reviews-modal__overlay { position: absolute; inset: 0; background: rgba(6, 27, 86, .55); }
+.reviews-modal__panel {
+    position: relative;
+    width: min(720px, calc(100vw - 48px));
+    max-height: calc(100vh - 96px);
+    margin: 48px auto;
+    background: var(--pl-white);
+    border-radius: var(--pl-radius-md);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, .3);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+}
+.reviews-modal__head {
+    position: relative;
+    padding: var(--pl-sp-20) var(--pl-sp-24) var(--pl-sp-16);
+    border-bottom: 1px solid var(--pl-border);
+    background: var(--pl-white);
+}
+.reviews-modal__close {
+    position: absolute; left: var(--pl-sp-16); top: var(--pl-sp-16);
+    width: 36px; height: 36px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: 0; border: 0; border-radius: 50%;
+    color: var(--pl-text);
+    cursor: pointer;
+}
+.reviews-modal__close:hover { background: #f4f5f7; }
+.reviews-modal__title { text-align: center; font-size: var(--pl-fs-s1); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0 0 var(--pl-sp-8); }
+.reviews-modal__score { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: var(--pl-sp-8); }
+.reviews-modal__score-label { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.reviews-modal__score-value { font-size: 34px; font-weight: var(--pl-fw-bold); color: var(--pl-text); line-height: 1.15; }
+.reviews-modal__score-value span { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-medium); color: var(--pl-text-secondary); }
+.reviews-modal__stars { display: inline-flex; gap: 2px; color: var(--pl-warning); }
+.reviews-modal__count { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+
+/* En-tête contextualisé (état scrollé G.2). */
+.reviews-modal__context { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-right: var(--pl-sp-40); padding-left: var(--pl-sp-40); margin-bottom: var(--pl-sp-8); }
+.reviews-modal__context[hidden] { display: none; }
+.reviews-modal__context-title { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0; text-align: center; }
+.reviews-modal__context-note { display: inline-flex; align-items: center; gap: 4px; font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.reviews-modal__context-note .pl-icon { color: var(--pl-warning); }
+
+.reviews-modal__tools { display: flex; align-items: center; justify-content: space-between; gap: var(--pl-sp-12); }
+
+/* Dropdown de tri (état G.3). */
+.reviews-sort { position: relative; }
+.reviews-sort__menu {
+    position: absolute; right: 0; top: calc(100% + 8px);
+    min-width: 220px;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, .16);
+    padding: var(--pl-sp-8);
+    display: flex; flex-direction: column; gap: 2px;
+    z-index: 30;
+}
+.reviews-sort__menu[hidden] { display: none; }
+.reviews-sort__option {
+    display: flex; align-items: center; gap: var(--pl-sp-8);
+    padding: 9px 12px;
+    background: 0; border: 0;
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text);
+    text-align: left;
+    cursor: pointer;
+}
+.reviews-sort__option:hover { background: #f4f5f7; }
+.reviews-sort__check { visibility: hidden; color: var(--pl-action); font-weight: var(--pl-fw-bold); }
+.reviews-sort__option.is-selected { font-weight: var(--pl-fw-semibold); }
+.reviews-sort__option.is-selected .reviews-sort__check { visibility: visible; }
+
+.reviews-modal__body {
+    overflow-y: auto;
+    padding: var(--pl-sp-16) var(--pl-sp-24) var(--pl-sp-24);
+    display: flex; flex-direction: column; gap: var(--pl-sp-16);
+}
+/* Blocage du scroll de fond quand la modale est ouverte. */
+body.has-modal { overflow: hidden; }
+
+/* ===========================================================================
  *  Adaptation largeurs intermédiaires
  * ======================================================================== */
 @media (max-width: 1100px) {
     .act-toolbar { flex-wrap: wrap; }
+    .act-detail__layout { grid-template-columns: 1fr; }
+    .act-booking { position: static; }
+    .act-logistics { grid-template-columns: 1fr; }
+    .act-includes { grid-template-columns: 1fr; }
+    .act-review-form__row { grid-template-columns: 1fr; }
 }

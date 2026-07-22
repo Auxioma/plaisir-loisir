@@ -34,4 +34,20 @@ final class ActivityController extends AbstractController
             'filterChips' => StaticCatalog::filterChips(),
         ]);
     }
+
+    #[Route('/activites/{slug}', name: 'app_activity_show')]
+    public function show(string $slug): Response
+    {
+        $activity = StaticCatalog::activity($slug);
+        if ($activity === null) {
+            throw $this->createNotFoundException(sprintf("Activité « %s » introuvable.", $slug));
+        }
+
+        return $this->render('activity/show.html.twig', [
+            'activity' => $activity,
+            'detail' => StaticCatalog::detail($slug),
+            'reviews' => StaticCatalog::reviews(),
+            'suggestions' => StaticCatalog::suggestions(),
+        ]);
+    }
 }
