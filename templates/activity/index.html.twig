@@ -1,0 +1,177 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Toutes nos activités{% endblock %}
+{% block meta_description %}Découvrez et réservez directement en ligne des milliers d'activités inoubliables partout en France. Meilleur prix garanti - Annulation gratuite.{% endblock %}
+
+{# En-tête « connecté » propre au flow Activités (spec §2.1). #}
+{% block header %}
+    {% include '_partials/navbar_connected.html.twig' with { nav_active: 'activites' } %}
+{% endblock %}
+
+{% block body %}
+<div class="act-page">
+
+    {# ==================================================================
+       EN-TÊTE DE PAGE : fil d'Ariane, titre, recherche compacte,
+       barres d'outils et de filtres, ligne de résultats (écran C).
+       ================================================================ #}
+    <section class="act-head">
+        <div class="home-container">
+
+            <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
+                <a href="{{ path('app_home') }}">Accueil</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">Toutes les Activités</span>
+            </nav>
+
+            <h1 class="act-head__title">Toutes nos activités</h1>
+            <p class="act-head__subtitle">Découvrez et réservez directement en ligne des milliers d'activités inoubliables partout en France. Meilleur prix garanti - Annulation gratuite</p>
+
+            {# Barre de recherche compacte : lieu · mots-clés · bouton loupe. #}
+            <form class="act-search" role="search" action="{{ path('app_activities') }}" method="get">
+                <div class="act-search__bar">
+                    <label class="act-search__field">
+                        {{ icon.map_pin(18) }}
+                        <input type="text" name="lieu" value="Paris" aria-label="Lieu">
+                    </label>
+                    <span class="act-search__sep" aria-hidden="true"></span>
+                    <label class="act-search__field">
+                        {{ icon.search(18) }}
+                        <input type="text" name="q" placeholder="Recherches par mots-clés" aria-label="Mots-clés">
+                    </label>
+                </div>
+                <button type="submit" class="act-search__submit" aria-label="Rechercher">{{ icon.search(20) }}</button>
+            </form>
+
+            {# Ligne 1 : dropdowns date/budget à gauche, bascules d'affichage à droite. #}
+            <div class="act-toolbar">
+                <div class="act-toolbar__left">
+                    <button type="button" class="act-tool">{{ icon.calendar(18) }} Choisir une date {{ icon.chevron_down(16) }}</button>
+                    <button type="button" class="act-tool">Budget par personne {{ icon.chevron_down(16) }}</button>
+                </div>
+                <div class="act-toolbar__right">
+                    <button type="button" class="act-tool" id="act-map-toggle">{{ icon.map(18) }} Afficher la carte</button>
+                    <div class="act-viewswitch" role="group" aria-label="Mode d'affichage">
+                        <button type="button" class="act-viewbtn is-active" aria-label="Affichage en grille">{{ icon.grid(18) }}</button>
+                        <button type="button" class="act-viewbtn" aria-label="Affichage en liste">{{ icon.list_view(18) }}</button>
+                    </div>
+                </div>
+            </div>
+
+            {# Ligne 2 : bouton Filtre + chips de catégories défilables. #}
+            <div class="act-chipbar">
+                <button type="button" class="act-chip act-chip--filter" id="act-filter-toggle">{{ icon.sliders(16) }} Filtre</button>
+                <span class="act-chipbar__sep" aria-hidden="true"></span>
+                <div class="act-chipbar__scroll">
+                    {% for chip in filterChips %}
+                        <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">{{ chip }}</button>
+                    {% endfor %}
+                </div>
+                <button type="button" class="act-chipbar__more" aria-label="Faire défiler les filtres">{{ icon.chevron_right(16) }}</button>
+            </div>
+
+            <div class="act-results">
+                <p class="act-results__count"><strong>400+</strong> de résultats trouvés</p>
+                <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} Trier par: <strong>Les plus populaires</strong></button>
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       GRILLE PRINCIPALE : 3 rangées de 4 cartes + « Voir plus ».
+       ================================================================ #}
+    <section class="act-section">
+        <div class="home-container">
+            <div class="card-grid act-grid">
+                {% for a in gridActivities %}
+                    {% include 'activity/_card.html.twig' with { a: a } %}
+                {% endfor %}
+            </div>
+            <div class="act-more">
+                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus d'activités {{ icon.chevron_down(16) }}</button>
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       VOTRE SÉLECTION D'ACTIVITÉS : chips villes + 4 vignettes.
+       ================================================================ #}
+    <section class="act-section act-section--alt">
+        <div class="home-container">
+            <div class="home-section__head">
+                <div>
+                    <h2 class="home-section__title">Votre sélection d'activités</h2>
+                </div>
+            </div>
+            <div class="act-citybar">
+                <button type="button" class="act-citybar__nav" aria-label="Villes précédentes">{{ icon.chevron_left(16) }}</button>
+                <div class="act-citybar__scroll">
+                    {% for city in cities %}
+                        <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">{{ city }}</button>
+                    {% endfor %}
+                </div>
+                <button type="button" class="act-citybar__nav" aria-label="Villes suivantes">{{ icon.chevron_right(16) }}</button>
+            </div>
+            <div class="card-grid">
+                {% for s in selections %}
+                    {% include 'activity/_selection_card.html.twig' with { s: s } %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       ACTIVITÉS COUP DE COEUR : cartes 1-4 + pagination.
+       ================================================================ #}
+    <section class="act-section">
+        <div class="home-container">
+            <div class="home-section__head">
+                <div>
+                    <h2 class="home-section__title">Activités coup de coeur</h2>
+                </div>
+            </div>
+            <div class="card-grid">
+                {% for a in activities|slice(0, 4) %}
+                    {% include 'activity/_card.html.twig' with { a: a } %}
+                {% endfor %}
+            </div>
+            <nav class="act-pagination" aria-label="Pagination des activités coup de coeur">
+                <button type="button" class="act-page-btn" aria-label="Page précédente">{{ icon.chevron_left(16) }}</button>
+                <button type="button" class="act-page-btn is-active" aria-current="page">1</button>
+                <button type="button" class="act-page-btn">2</button>
+                <button type="button" class="act-page-btn">3</button>
+                <button type="button" class="act-page-btn">4</button>
+                <button type="button" class="act-page-btn" aria-label="Page suivante">{{ icon.chevron_right(16) }}</button>
+            </nav>
+        </div>
+    </section>
+
+    {# ==================================================================
+       OFFRES EXCLUSIVES POUR VOUS : 4 cartes remisées + pagination.
+       ================================================================ #}
+    <section class="act-section act-section--alt">
+        <div class="home-container">
+            <div class="home-section__head">
+                <div>
+                    <h2 class="home-section__title">Offres exclusives pour vous</h2>
+                </div>
+            </div>
+            <div class="card-grid">
+                {% for o in offers %}
+                    {% include 'activity/_offer_card.html.twig' with { o: o } %}
+                {% endfor %}
+            </div>
+            <nav class="act-pagination" aria-label="Pagination des offres exclusives">
+                <button type="button" class="act-page-btn" aria-label="Page précédente">{{ icon.chevron_left(16) }}</button>
+                <button type="button" class="act-page-btn is-active" aria-current="page">1</button>
+                <button type="button" class="act-page-btn">2</button>
+                <button type="button" class="act-page-btn">3</button>
+                <button type="button" class="act-page-btn">4</button>
+                <button type="button" class="act-page-btn" aria-label="Page suivante">{{ icon.chevron_right(16) }}</button>
+            </nav>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

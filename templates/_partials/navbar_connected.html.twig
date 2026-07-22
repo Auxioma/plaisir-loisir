@@ -1,0 +1,43 @@
+{#
+    En-tête « utilisateur connecté » du flow Activités (spec §2.1).
+    Fond blanc, sticky. Navigation : Activités (actif) · Destinations
+    (badge « Nouveau ») · Offres du moments (flamme) · Cadeaux (cadeau) ·
+    Activités privées (badge « Nouveau »). À droite : Déposer une annonce,
+    favoris, messagerie, notifications, avatar avec pastille « en ligne ».
+
+    Variable optionnelle `nav_active` : libellé de l'entrée active
+    (par défaut « activites »).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+{% set nav_active = nav_active|default('activites') %}
+
+<header class="pl-navbar pl-navbar--connected">
+    <div class="pl-navbar__inner">
+        <div class="pl-navbar__left">
+            <a href="{{ path('app_home') }}" class="pl-navbar__logo" aria-label="Accueil TrouveMoi">
+                <img src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir & Loisirs">
+            </a>
+
+            <nav class="pl-nav pl-nav--connected" aria-label="Navigation principale">
+                <a href="{{ path('app_activities') }}" class="pl-nav__link {{ nav_active == 'activites' ? 'is-active' }}">Activités</a>
+                <a href="#" class="pl-nav__link pl-nav__link--badged">Destinations <span class="pl-nav__badge">Nouveau</span></a>
+                <a href="#" class="pl-nav__link">{{ icon.flame(18) }} Offres du moments</a>
+                <a href="#" class="pl-nav__link">{{ icon.gift(18) }} Cadeaux</a>
+                <a href="#" class="pl-nav__link pl-nav__link--badged">Activités privées <span class="pl-nav__badge">Nouveau</span></a>
+            </nav>
+        </div>
+
+        <div class="pl-navbar__actions">
+            <a href="#" class="pl-btn pl-btn--cta">Déposer une annonce</a>
+
+            <button type="button" class="pl-iconbtn" aria-label="Mes favoris">{{ icon.heart(20) }}</button>
+            <button type="button" class="pl-iconbtn" aria-label="Messagerie">{{ icon.mail(20) }}</button>
+            <button type="button" class="pl-iconbtn" aria-label="Notifications">{{ icon.bell(20) }}</button>
+
+            <button type="button" class="pl-avatarbtn" aria-label="Paramètre du profil">
+                <img src="{{ asset('images/home/avatar-1.png') }}" alt="">
+                <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
+            </button>
+        </div>
+    </div>
+</header>

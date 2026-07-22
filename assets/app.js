@@ -13,7 +13,11 @@ import './styles/design-system.css';
 import './styles/components.css';
 import './styles/auth.css';
 import './styles/home.css';
+import './styles/activities.css';
 import './styles/app.css';
 
 // Comportement des menus déroulants de l'en-tête d'accueil.
 import './home_header.js';
+
+// Comportements du parcours Activités (compte à rebours des offres…).
+import './activities.js';

@@ -1,0 +1,305 @@
+/*
+ * ============================================================================
+ *  PARCOURS « ACTIVITÉS » — listing, filtres, vue carte, détail
+ *  (écrans C à G de la maquette Figma « Activités »).
+ *  S'appuie sur les jetons --pl-* et réutilise .pl-card / .card-grid /
+ *  .home-container / .home-section définis pour l'accueil.
+ * ============================================================================
+ */
+
+/* ===========================================================================
+ *  EN-TÊTE CONNECTÉ (spec §2.1)
+ * ======================================================================== */
+.pl-navbar--connected .pl-nav--connected { gap: var(--pl-sp-4); }
+.pl-navbar--connected .pl-nav__link.is-active { color: var(--pl-cta); }
+.pl-navbar--connected .pl-nav__link.is-active:hover { background: var(--pl-cta-hover-light); }
+
+/* Boutons ronds à icône (favoris, messagerie, notifications). */
+.pl-iconbtn {
+    width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: transparent;
+    color: var(--pl-text);
+    border: 0; border-radius: 50%;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+}
+.pl-iconbtn:hover { background: var(--pl-action-light); color: var(--pl-action); }
+
+/* Avatar utilisateur + pastille verte « en ligne ». */
+.pl-avatarbtn {
+    position: relative;
+    width: 44px; height: 44px;
+    padding: 0; border: 0; border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+}
+.pl-avatarbtn img {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+.pl-avatarbtn__dot {
+    position: absolute; right: 0; bottom: 2px;
+    width: 11px; height: 11px;
+    background: var(--pl-success);
+    border: 2px solid var(--pl-white);
+    border-radius: 50%;
+}
+
+/* ===========================================================================
+ *  EN-TÊTE DE PAGE DU LISTING (écran C)
+ * ======================================================================== */
+.act-head { padding-block: var(--pl-sp-32) var(--pl-sp-8); }
+
+.act-breadcrumb {
+    display: flex; align-items: center; gap: var(--pl-sp-8);
+    font-size: var(--pl-fs-caption);
+    color: var(--pl-text-secondary);
+    margin-bottom: var(--pl-sp-24);
+}
+.act-breadcrumb a { color: var(--pl-text-secondary); text-decoration: none; }
+.act-breadcrumb a:hover { color: var(--pl-action); text-decoration: underline; }
+.act-breadcrumb [aria-current] { color: var(--pl-text); font-weight: var(--pl-fw-semibold); }
+
+.act-head__title {
+    font-size: var(--pl-fs-h2);
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-text);
+    margin: 0 0 var(--pl-sp-8);
+}
+.act-head__subtitle {
+    max-width: 760px;
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-base);
+    color: var(--pl-text-secondary);
+    margin: 0 0 var(--pl-sp-20);
+}
+
+/* --- Recherche compacte : lieu | mots-clés | bouton carré orange. --- */
+.act-search { display: flex; gap: 0; max-width: 757px; margin-bottom: var(--pl-sp-20); }
+.act-search__bar {
+    flex: 1;
+    display: flex; align-items: center;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm) 0 0 var(--pl-radius-sm);
+    padding-inline: var(--pl-sp-20);
+    min-height: 56px;
+}
+.act-search__field { flex: 1; display: flex; align-items: center; gap: var(--pl-sp-12); }
+.act-search__field .pl-icon { color: var(--pl-text-secondary); flex-shrink: 0; }
+.act-search__field input {
+    width: 100%;
+    border: 0; outline: 0;
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-medium);
+    color: var(--pl-text);
+    background: transparent;
+}
+.act-search__field input::placeholder { color: var(--pl-text-secondary); font-weight: var(--pl-fw-regular); }
+.act-search__sep { width: 1px; height: 20px; background: var(--pl-border); margin-inline: var(--pl-sp-20); }
+.act-search__submit {
+    width: 56px; height: 56px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pl-cta);
+    color: var(--pl-white);
+    border: 0;
+    border-radius: 0 var(--pl-radius-sm) var(--pl-radius-sm) 0;
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+.act-search__submit:hover { background: #e56e00; }
+
+/* --- Barre d'outils (date, budget, carte, grille/liste). --- */
+.act-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--pl-sp-16);
+    margin-bottom: var(--pl-sp-16);
+}
+.act-toolbar__left, .act-toolbar__right { display: flex; align-items: center; gap: var(--pl-sp-12); }
+
+.act-tool {
+    display: inline-flex; align-items: center; gap: var(--pl-sp-8);
+    padding: 9px 14px;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-medium);
+    color: var(--pl-text);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color .15s ease, color .15s ease;
+}
+.act-tool:hover { border-color: var(--pl-action); color: var(--pl-action); }
+.act-tool--plain { border: 0; background: transparent; }
+.act-tool--plain strong { font-weight: var(--pl-fw-semibold); }
+
+.act-viewswitch { display: inline-flex; gap: 6px; }
+.act-viewbtn {
+    width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pl-white);
+    color: var(--pl-text-secondary);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    cursor: pointer;
+    transition: color .15s ease, border-color .15s ease, background-color .15s ease;
+}
+.act-viewbtn:hover { color: var(--pl-action); border-color: var(--pl-action); }
+.act-viewbtn.is-active { background: var(--pl-action-light); color: var(--pl-action); border-color: var(--pl-action); }
+
+/* --- Chips de filtres / villes. --- */
+.act-chipbar {
+    display: flex; align-items: center; gap: var(--pl-sp-8);
+    margin-bottom: var(--pl-sp-16);
+}
+.act-chipbar__sep { width: 1px; height: 40px; background: var(--pl-border); margin-inline: var(--pl-sp-4); }
+.act-chipbar__scroll { display: flex; align-items: center; gap: var(--pl-sp-8); overflow-x: auto; scrollbar-width: none; }
+.act-chipbar__scroll::-webkit-scrollbar { display: none; }
+.act-chipbar__more {
+    width: 40px; height: 40px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: 50%;
+    color: var(--pl-text);
+    cursor: pointer;
+}
+.act-chipbar__more:hover { color: var(--pl-action); border-color: var(--pl-action); }
+
+.act-chip {
+    display: inline-flex; align-items: center; gap: var(--pl-sp-8);
+    padding: 9px 16px;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-pill);
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-medium);
+    color: var(--pl-text);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.act-chip:hover { border-color: var(--pl-action); color: var(--pl-action); }
+.act-chip.is-active,
+.act-chip--filter {
+    background: var(--pl-action);
+    border-color: var(--pl-action);
+    color: var(--pl-white);
+}
+.act-chip.is-active:hover, .act-chip--filter:hover { background: #4d00d6; color: var(--pl-white); }
+
+/* --- Ligne de résultats. --- */
+.act-results {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--pl-sp-16);
+    padding-block: var(--pl-sp-8);
+}
+.act-results__count { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); margin: 0; }
+.act-results__count strong { color: var(--pl-text); font-weight: var(--pl-fw-bold); }
+
+/* ===========================================================================
+ *  SECTIONS & GRILLE DU LISTING
+ * ======================================================================== */
+.act-section { padding-block: var(--pl-sp-32) var(--pl-sp-40); }
+.act-section--alt { background: #f4f5f7; }
+.act-section .home-section__head { margin-bottom: var(--pl-sp-20); }
+
+.act-more { display: flex; justify-content: center; margin-top: var(--pl-sp-32); }
+
+/* Bouton contour violet (Voir plus, Voir l'offre). */
+.pl-btn--outline-action {
+    background: var(--pl-white);
+    color: var(--pl-action);
+    border: 1.5px solid var(--pl-action);
+    font-weight: var(--pl-fw-semibold);
+    font-size: var(--pl-fs-body-sm);
+}
+.pl-btn--outline-action:hover { background: var(--pl-action); color: var(--pl-white); }
+
+/* --- Compléments de la carte activité (badge note or, durée). --- */
+.act-card__meta { display: flex; align-items: center; gap: var(--pl-sp-8); margin-top: 2px; }
+.act-rating {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 7px;
+    background: var(--pl-warning);
+    color: var(--pl-white);
+    border-radius: var(--pl-radius-pill);
+    font-size: var(--pl-fs-caption);
+    font-weight: var(--pl-fw-bold);
+}
+.act-card__reviews { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.act-card__duration {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-left: auto;
+    font-size: var(--pl-fs-caption);
+    color: var(--pl-text-secondary);
+}
+
+/* --- Carte « sélection » : titre + volume seulement. --- */
+.sel-card__count { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
+
+/* --- Carte « offre exclusive ». --- */
+.offer-card { position: relative; }
+.offer-card__timer {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 8px 12px;
+    background: rgba(6, 27, 86, .78);
+    color: var(--pl-white);
+    font-size: var(--pl-fs-caption);
+    text-align: center;
+}
+.offer-card__timer strong { font-weight: var(--pl-fw-bold); }
+.offer-card__timer.is-expired { background: rgba(220, 38, 38, .85); }
+.offer-card__old {
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text-secondary);
+    text-decoration: line-through;
+}
+.offer-card__cta { margin-top: var(--pl-sp-12); justify-content: center; }
+
+/* --- Chips de villes (« Votre sélection d'activités »). --- */
+.act-citybar { display: flex; align-items: center; gap: var(--pl-sp-8); margin-bottom: var(--pl-sp-24); }
+.act-citybar__scroll { display: flex; align-items: center; gap: var(--pl-sp-8); overflow-x: auto; scrollbar-width: none; }
+.act-citybar__scroll::-webkit-scrollbar { display: none; }
+.act-citybar__nav {
+    width: 36px; height: 36px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: 50%;
+    color: var(--pl-text);
+    cursor: pointer;
+}
+.act-citybar__nav:hover { color: var(--pl-action); border-color: var(--pl-action); }
+
+/* --- Pagination ‹ 1 2 3 4 ›. --- */
+.act-pagination {
+    display: flex; align-items: center; justify-content: center;
+    gap: var(--pl-sp-12);
+    margin-top: var(--pl-sp-32);
+}
+.act-page-btn {
+    width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: 50%;
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text);
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.act-page-btn:hover { border-color: var(--pl-action); color: var(--pl-action); }
+.act-page-btn.is-active { background: var(--pl-action); border-color: var(--pl-action); color: var(--pl-white); }
+
+/* ===========================================================================
+ *  Adaptation largeurs intermédiaires
+ * ======================================================================== */
+@media (max-width: 1100px) {
+    .act-toolbar { flex-wrap: wrap; }
+}

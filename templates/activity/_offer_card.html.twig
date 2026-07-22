@@ -1,0 +1,32 @@
+{#
+    Carte « offre exclusive » (spec §2.5) : badge de réduction rouge,
+    compte à rebours en bas d'image (décompté par assets/activities.js),
+    prix barré + prix remisé, bouton « Voir l'offre ».
+    Variables : o (place, title, rating, reviews, discount, oldPrice,
+    price, remaining, image, slug), href (lien, défaut « # »).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<div class="pl-card offer-card">
+    <div class="pl-card__media">
+        <img src="{{ asset(o.image) }}" alt="{{ o.title }}">
+        <span class="pl-card__tag pl-card__tag--bestseller">{{ o.discount }}%</span>
+        <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</button>
+        <span class="offer-card__timer" data-countdown="{{ o.remaining }}">
+            Se termine dans <strong class="offer-card__timer-value">…</strong>
+        </span>
+    </div>
+    <div class="pl-card__body">
+        <span class="pl-card__place">{{ icon.map_pin(14) }} {{ o.place }}</span>
+        <span class="pl-card__title">{{ o.title }}</span>
+        <div class="act-card__meta">
+            <span class="act-rating">{{ icon.star(12) }} {{ o.rating }}</span>
+            <span class="act-card__reviews">{{ o.reviews }} reviews</span>
+        </div>
+        <div class="pl-card__foot">
+            <span class="offer-card__old">{{ o.oldPrice }}€</span>
+            <span class="pl-card__price">{{ o.price }}€</span>
+        </div>
+        <a href="{{ href|default('#') }}" class="pl-btn pl-btn--outline-action offer-card__cta">Voir l'offre</a>
+    </div>
+</div>

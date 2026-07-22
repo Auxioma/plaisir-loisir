@@ -1,0 +1,13 @@
+{#
+    Carte « sélection » (spec §2.4) : image + titre + « X activités ».
+    Ni note, ni prix. Variable : s (title, count, image).
+#}
+<a href="#" class="pl-card sel-card">
+    <div class="pl-card__media">
+        <img src="{{ asset(s.image) }}" alt="{{ s.title }}">
+    </div>
+    <div class="pl-card__body">
+        <span class="pl-card__title">{{ s.title }}</span>
+        <span class="sel-card__count">{{ s.count }} activités</span>
+    </div>
+</a>
