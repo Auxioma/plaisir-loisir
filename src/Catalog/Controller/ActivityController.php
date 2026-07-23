@@ -32,6 +32,7 @@ final class ActivityController extends AbstractController
             'selections' => StaticCatalog::selections(),
             'cities' => StaticCatalog::cities(),
             'filterChips' => StaticCatalog::filterChips(),
+            'clusters' => StaticCatalog::mapClusters(),
         ]);
     }
 

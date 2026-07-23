@@ -30,4 +30,8 @@ return [
     'bootstrap' => ['version' => '5.3.8'],
     '@popperjs/core' => ['version' => '2.11.8'],
     'bootstrap/dist/css/bootstrap.min.css' => ['version' => '5.3.8', 'type' => 'css'],
+    // Leaflet vendorisé en local (le téléchargement importmap:require échoue
+    // derrière l'OpenSSL de ce poste) — vue carte du listing d'activités.
+    'leaflet' => ['path' => './assets/lib/leaflet/leaflet-src.esm.js'],
+    'leaflet/dist/leaflet.css' => ['path' => './assets/lib/leaflet/leaflet.css', 'type' => 'css'],
 ];

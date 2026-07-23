@@ -9,6 +9,7 @@ import './stimulus_bootstrap.js';
  */
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'leaflet/dist/leaflet.css';   /* vue carte du listing d'activités */
 import './styles/design-system.css';
 import './styles/components.css';
 import './styles/auth.css';

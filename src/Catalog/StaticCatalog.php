@@ -38,6 +38,8 @@ final class StaticCatalog
                 'price' => 25,
                 'badge' => 'Bestseller',
                 'image' => 'images/home/act-canoe.jpg',
+                'lat' => 44.405,
+                'lng' => 4.395,
             ],
             'location-vtt-electrique' => [
                 'slug' => 'location-vtt-electrique',
@@ -49,6 +51,8 @@ final class StaticCatalog
                 'price' => 45,
                 'badge' => null,
                 'image' => 'images/home/act-vtt.jpg',
+                'lat' => 45.050,
+                'lng' => 5.400,
             ],
             'visite-guidee-de-labyrinthe' => [
                 'slug' => 'visite-guidee-de-labyrinthe',
@@ -60,6 +64,8 @@ final class StaticCatalog
                 'price' => 12,
                 'badge' => null,
                 'image' => 'images/home/act-labyrinthe.jpg',
+                'lat' => 43.830,
+                'lng' => 5.050,
             ],
             'visite-du-musee' => [
                 'slug' => 'visite-du-musee',
@@ -71,6 +77,8 @@ final class StaticCatalog
                 'price' => 16,
                 'badge' => null,
                 'image' => 'images/home/act-musee.jpg',
+                'lat' => 48.842,
+                'lng' => 2.356,
             ],
             'atelier-cuisine-provencale' => [
                 'slug' => 'atelier-cuisine-provencale',
@@ -82,6 +90,8 @@ final class StaticCatalog
                 'price' => 25,
                 'badge' => null,
                 'image' => 'images/activities/cuisine.jpg',
+                'lat' => 43.530,
+                'lng' => 5.450,
             ],
             'vol-en-montgolfiere' => [
                 'slug' => 'vol-en-montgolfiere',
@@ -93,6 +103,8 @@ final class StaticCatalog
                 'price' => 180,
                 'badge' => null,
                 'image' => 'images/activities/montgolfiere.jpg',
+                'lat' => 43.900,
+                'lng' => 6.000,
             ],
             'seance-de-yoga-en-pleine-nature' => [
                 'slug' => 'seance-de-yoga-en-pleine-nature',
@@ -104,6 +116,8 @@ final class StaticCatalog
                 'price' => 25,
                 'badge' => null,
                 'image' => 'images/activities/yoga.jpg',
+                'lat' => 45.360,
+                'lng' => 4.800,
             ],
             'concert-live-soiree-musique' => [
                 'slug' => 'concert-live-soiree-musique',
@@ -115,6 +129,8 @@ final class StaticCatalog
                 'price' => 30,
                 'badge' => null,
                 'image' => 'images/activities/soiree.jpg',
+                'lat' => 45.760,
+                'lng' => 4.840,
             ],
         ];
     }
@@ -222,6 +238,21 @@ final class StaticCatalog
     public static function filterChips(): array
     {
         return ['Sports & Aventures', 'Toutes', 'Natures & Plein-air', 'Cultures & Découverte', 'Ateliers & Créations', 'Bien-être'];
+    }
+
+    /**
+     * Groupes d'activités affichés en « clusters » sur la vue carte
+     * (pastilles violettes avec compteur, écran E).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function mapClusters(): array
+    {
+        return [
+            ['lat' => 43.55, 'lng' => 7.02, 'count' => 2],   // Côte d'Azur
+            ['lat' => 45.90, 'lng' => 6.13, 'count' => 3],   // Annecy
+            ['lat' => 44.84, 'lng' => -0.58, 'count' => 4],  // Bordeaux
+        ];
     }
 
     /**

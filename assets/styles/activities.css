@@ -298,6 +298,247 @@
 .act-page-btn.is-active { background: var(--pl-action); border-color: var(--pl-action); color: var(--pl-white); }
 
 /* ===========================================================================
+ *  SIDEBAR DE FILTRES (écran D) — la page bascule via .has-filters :
+ *  la sidebar s'affiche à gauche et la grille passe de 4 à 3 colonnes.
+ * ======================================================================== */
+.act-page.has-filters .act-body {
+    display: grid;
+    grid-template-columns: 296px minmax(0, 1fr);
+    gap: var(--pl-sp-32);
+    max-width: var(--pl-container-desktop);
+    margin: 0 auto;
+    padding-inline: 100px;
+}
+/* Dans la colonne droite, les conteneurs internes n'ont plus à se centrer. */
+.act-page.has-filters .act-content .home-container { max-width: none; padding-inline: 0; }
+.act-page.has-filters .act-content .card-grid { grid-template-columns: repeat(3, 1fr); }
+
+.act-filters {
+    position: sticky;
+    top: 116px;
+    align-self: start;
+    max-height: calc(100vh - 132px);
+    overflow-y: auto;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    padding: var(--pl-sp-20);
+    margin-block: var(--pl-sp-32);
+    display: flex; flex-direction: column; gap: var(--pl-sp-16);
+}
+.act-filters[hidden] { display: none; }
+.act-filters__head { display: flex; align-items: center; justify-content: space-between; }
+.act-filters__title { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.act-filters__reset { background: 0; border: 0; padding: 0; font-size: var(--pl-fs-body-sm); color: var(--pl-action); font-weight: var(--pl-fw-semibold); cursor: pointer; }
+.act-filters__reset:hover { text-decoration: underline; }
+.act-filters__applied { display: flex; flex-wrap: wrap; gap: var(--pl-sp-8); }
+.act-filters__applied:empty { display: none; }
+
+.act-filters__field { display: flex; flex-direction: column; gap: 4px; }
+.act-filters__field > span:first-child, .act-filters__group > legend {
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text);
+}
+.act-filters__input {
+    display: flex; align-items: center; gap: var(--pl-sp-8);
+    padding: 9px 12px;
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    color: var(--pl-text-secondary);
+}
+.act-filters__input input { width: 100%; border: 0; outline: 0; font-size: var(--pl-fs-body-sm); color: var(--pl-text); background: transparent; }
+.act-filters__input input::placeholder { color: var(--pl-text-secondary); }
+
+.act-filters__group { border: 0; margin: 0; padding: var(--pl-sp-12) 0 0; border-top: 1px solid var(--pl-border); display: flex; flex-direction: column; gap: var(--pl-sp-8); }
+.act-filters__group > legend { margin-bottom: var(--pl-sp-8); }
+
+.act-filters__dest {
+    display: flex; align-items: center; gap: var(--pl-sp-8);
+    padding: 8px 10px;
+    background: 0; border: 0;
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text-secondary);
+    text-align: left;
+    cursor: pointer;
+}
+.act-filters__dest:hover { background: #f4f5f7; color: var(--pl-text); }
+.act-filters__dest.is-active { background: var(--pl-action-light); color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
+
+.act-filters__check {
+    display: flex; align-items: center; gap: var(--pl-sp-8);
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text-secondary);
+    cursor: pointer;
+}
+.act-filters__check input { width: 16px; height: 16px; accent-color: var(--pl-action); }
+.act-filters__stars { display: inline-flex; gap: 2px; }
+.act-filters__stars .is-on { color: var(--pl-warning); }
+.act-filters__stars .is-off { color: var(--pl-border); }
+
+/* Slider double du budget : deux <input type=range> superposés. */
+.act-budget__slider { position: relative; height: 24px; }
+.act-budget__track {
+    position: absolute; top: 10px; left: 0; right: 0; height: 4px;
+    background: var(--pl-border);
+    border-radius: 2px;
+}
+.act-budget__range { position: absolute; top: 10px; height: 4px; background: var(--pl-action); border-radius: 2px; }
+.act-budget__slider input[type="range"] {
+    position: absolute; inset: 0;
+    width: 100%;
+    appearance: none; -webkit-appearance: none;
+    background: transparent;
+    pointer-events: none;   /* seul le pouce est cliquable */
+    margin: 0;
+}
+.act-budget__slider input[type="range"]::-webkit-slider-thumb {
+    appearance: none; -webkit-appearance: none;
+    width: 18px; height: 18px;
+    margin-top: 1px;
+    background: var(--pl-white);
+    border: 2px solid var(--pl-action);
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: var(--pl-shadow-sm);
+}
+.act-budget__bounds { display: flex; justify-content: space-between; font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.act-budget__inputs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pl-sp-8); }
+.act-budget__inputs input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text);
+    text-align: center;
+}
+.act-filters__count { margin: 0; text-align: center; font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.act-filters__count strong { color: var(--pl-text); }
+
+/* Pastille compteur du bouton « Filtre » (① quand la sidebar est ouverte). */
+.act-chip__counter {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px;
+    background: var(--pl-white);
+    color: var(--pl-action);
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: var(--pl-fw-bold);
+}
+
+/* ===========================================================================
+ *  VUE CARTE (écran E) — split liste horizontale / carte Leaflet.
+ * ======================================================================== */
+.act-mapview {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 0;
+    height: calc(100vh - 100px);
+}
+.act-mapview[hidden] { display: none; }
+.act-mapview__list {
+    overflow-y: auto;
+    padding: var(--pl-sp-24) var(--pl-sp-24) var(--pl-sp-24) 100px;
+    display: flex; flex-direction: column; gap: var(--pl-sp-16);
+    scrollbar-width: thin;   /* scrollbar visible, comme la maquette */
+}
+.act-mapview__map { position: relative; }
+.act-mapview__map #act-map { position: absolute; inset: 0; z-index: 0; }
+.act-mapview__close {
+    position: absolute; top: var(--pl-sp-16); right: var(--pl-sp-16);
+    z-index: 500;
+    display: inline-flex; align-items: center; gap: var(--pl-sp-8);
+    padding: 10px 16px;
+    background: var(--pl-white);
+    border: 0;
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, .18);
+    cursor: pointer;
+}
+.act-mapview__close:hover { background: var(--pl-primary); color: var(--pl-white); }
+
+/* --- Carte activité horizontale (panneau liste). --- */
+.act-card--horizontal { flex-direction: row; min-height: 168px; }
+.act-card--horizontal .pl-card__media { flex: 0 0 220px; aspect-ratio: auto; }
+.act-card--horizontal .pl-card__body { flex: 1; }
+.act-card--horizontal.is-hot { border-color: var(--pl-action); box-shadow: 0 8px 24px rgba(93, 0, 255, .18); }
+
+/* --- Marqueurs Leaflet personnalisés. --- */
+.act-marker {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 10px;
+    background: var(--pl-white);
+    border-radius: var(--pl-radius-pill);
+    font-size: var(--pl-fs-caption);
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-text);
+    box-shadow: 0 3px 10px rgba(15, 23, 42, .25);
+    border: 2px solid transparent;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: transform .12s ease, border-color .12s ease;
+}
+.act-marker .pl-icon { color: var(--pl-warning); }
+.act-marker.is-hot, .act-marker:hover { transform: scale(1.12); border-color: var(--pl-action); z-index: 1000 !important; }
+
+.act-cluster {
+    display: flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px;
+    background: var(--pl-action);
+    color: var(--pl-white);
+    border: 3px solid var(--pl-white);
+    border-radius: 50%;
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-bold);
+    box-shadow: 0 3px 10px rgba(15, 23, 42, .3);
+    cursor: pointer;
+}
+
+/* Tooltip violet des clusters (« 2 activités disponibles »). */
+.act-cluster-tip {
+    background: var(--pl-action);
+    color: var(--pl-white);
+    border: 0;
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-caption);
+    font-weight: var(--pl-fw-semibold);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .3);
+    padding: 8px 12px;
+}
+.act-cluster-tip::before { border-top-color: var(--pl-action); }
+
+/* Popup « activité sélectionnée » : on neutralise le style Leaflet et on
+   glisse une mini-carte activité dans le contenu. */
+.act-map-popup .leaflet-popup-content-wrapper { padding: 0; border-radius: var(--pl-radius-md); overflow: hidden; box-shadow: 0 12px 32px rgba(15, 23, 42, .28); }
+.act-map-popup .leaflet-popup-content { margin: 0; width: 260px !important; }
+.act-map-popup .leaflet-popup-close-button {
+    z-index: 10;
+    width: 26px; height: 26px;
+    top: 8px; right: 8px;
+    background: var(--pl-white);
+    border-radius: 50%;
+    font-size: 16px;
+    line-height: 26px;
+    color: var(--pl-text);
+    box-shadow: var(--pl-shadow-sm);
+}
+.act-popup__media { position: relative; height: 130px; }
+.act-popup__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.act-popup__body { padding: var(--pl-sp-12); display: flex; flex-direction: column; gap: 4px; font-family: inherit; }
+.act-popup__place { display: flex; align-items: center; gap: 4px; font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.act-popup__title { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.act-popup__meta { display: flex; align-items: center; gap: var(--pl-sp-8); font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.act-popup__foot { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; padding-top: var(--pl-sp-8); border-top: 1px solid var(--pl-border); }
+.act-popup__from { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.act-popup__price { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-action); }
+
+/* ===========================================================================
  *  DÉTAIL D'UNE ACTIVITÉ (écran F)
  * ======================================================================== */
 .act-detail__subline { display: flex; align-items: center; gap: var(--pl-sp-12); flex-wrap: wrap; }

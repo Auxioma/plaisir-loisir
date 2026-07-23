@@ -79,6 +79,87 @@
     </section>
 
     {# ==================================================================
+       ZONE COMMUTABLE : [D] sidebar de filtres + contenu (3 col.) —
+       masquée en mode carte [E]. Bascules JS sans rechargement (spec §0).
+       ================================================================ #}
+    <div class="act-body" id="act-body">
+
+    {# --- Sidebar de filtres (écran D), repliée par défaut. --- #}
+    <aside class="act-filters" id="act-filters" aria-label="Filtres" hidden>
+        <div class="act-filters__head">
+            <span class="act-filters__title">Filtres</span>
+            <button type="button" class="act-filters__reset" id="act-filters-reset">Réinitialiser</button>
+        </div>
+
+        <div class="act-filters__applied" id="act-filters-applied">
+            <button type="button" class="act-chip is-active" data-applied-chip>Sports &amp; Aventures {{ icon.x(14) }}</button>
+        </div>
+
+        <label class="act-filters__field">
+            <span>Où voulez-vous partir ?</span>
+            <span class="act-filters__input">{{ icon.map_pin(16) }}<input type="text" placeholder="Destination, ville, lieu…"></span>
+        </label>
+        <label class="act-filters__field">
+            <span>Date</span>
+            <span class="act-filters__input">{{ icon.calendar(16) }}<input type="text" placeholder="Sélectionnez une date"></span>
+        </label>
+        <label class="act-filters__field">
+            <span>Participants</span>
+            <span class="act-filters__input">{{ icon.users(16) }}<input type="text" placeholder="01 participant"></span>
+        </label>
+
+        <fieldset class="act-filters__group">
+            <legend>Type de destination</legend>
+            <button type="button" class="act-filters__dest is-active" data-dest-type>{{ icon.globe(18) }} Toutes les destinations</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.building(18) }} Villes</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_hiking(18) }} Montagnes</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.beach(18) }} Mers &amp; Plages</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.tree(18) }} Campagnes</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_canoe(18) }} Lacs &amp; Rivières</button>
+        </fieldset>
+
+        <fieldset class="act-filters__group">
+            <legend>Activités populaires</legend>
+            {% for c in ['Sport & Aventure', 'Nature & Plein air', 'Bien-être', 'En famille', 'Ateliers & Créations', 'Soirées & Evénements'] %}
+                <label class="act-filters__check">
+                    <input type="checkbox" data-filter-check {{ loop.first ? 'checked' }}> {{ c }}
+                </label>
+            {% endfor %}
+        </fieldset>
+
+        <fieldset class="act-filters__group" id="act-budget">
+            <legend>Budget (par personne)</legend>
+            <div class="act-budget__slider">
+                <div class="act-budget__track" aria-hidden="true"></div>
+                <div class="act-budget__range" data-budget-range aria-hidden="true"></div>
+                <input type="range" min="0" max="1050" step="1" value="154" data-budget-min aria-label="Budget minimum">
+                <input type="range" min="0" max="1050" step="1" value="1050" data-budget-max aria-label="Budget maximum">
+            </div>
+            <div class="act-budget__bounds"><span>0€</span><span>1050€ et +</span></div>
+            <div class="act-budget__inputs">
+                <input type="text" inputmode="numeric" value="154€" data-budget-input-min aria-label="Budget minimum en euros">
+                <input type="text" inputmode="numeric" value="1050+€" data-budget-input-max aria-label="Budget maximum en euros">
+            </div>
+        </fieldset>
+
+        <fieldset class="act-filters__group">
+            <legend>Note des utilisateurs</legend>
+            {% for n in [5, 4, 3, 2, 1] %}
+                <label class="act-filters__check act-filters__check--stars">
+                    <input type="checkbox" data-filter-check>
+                    <span class="act-filters__stars" aria-label="{{ n }} étoile{{ n > 1 ? 's' }} et plus">
+                        {% for i in 1..5 %}<span class="{{ i <= n ? 'is-on' : 'is-off' }}">{{ icon.star(16) }}</span>{% endfor %}
+                    </span>
+                </label>
+            {% endfor %}
+        </fieldset>
+
+        <button type="button" class="pl-btn pl-btn--primary pl-btn--block">Affichez les résultats</button>
+        <p class="act-filters__count"><strong id="act-found-count">412</strong> activités trouvées</p>
+    </aside>
+
+    <div class="act-content">
+    {# ==================================================================
        GRILLE PRINCIPALE : 3 rangées de 4 cartes + « Voir plus ».
        ================================================================ #}
     <section class="act-section">
@@ -170,6 +251,34 @@
                 <button type="button" class="act-page-btn">4</button>
                 <button type="button" class="act-page-btn" aria-label="Page suivante">{{ icon.chevron_right(16) }}</button>
             </nav>
+        </div>
+    </section>
+    </div>{# /.act-content #}
+    </div>{# /.act-body #}
+
+    {# ==================================================================
+       VUE CARTE (écran E) : liste horizontale + carte Leaflet.
+       Affichée par le toggle « Afficher la carte », initialisée
+       paresseusement par assets/activities.js.
+       ================================================================ #}
+    <section class="act-mapview" id="act-mapview" hidden aria-label="Résultats sur la carte">
+        <div class="act-mapview__list">
+            {% for a in activities %}
+                {% include 'activity/_card.html.twig' with { a: a, horizontal: true } %}
+            {% endfor %}
+            <div class="act-more">
+                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus d'activités {{ icon.chevron_down(16) }}</button>
+            </div>
+        </div>
+        <div class="act-mapview__map">
+            <button type="button" class="act-mapview__close" id="act-map-close">Fermer la carte {{ icon.x(16) }}</button>
+            <div id="act-map"
+                 data-markers="{{ activities|map(a => {
+                     title: a.title, place: a.place, rating: a.rating, reviews: a.reviews,
+                     duration: a.duration, price: a.price, badge: a.badge, image: asset(a.image),
+                     lat: a.lat, lng: a.lng,
+                 })|json_encode|e('html_attr') }}"
+                 data-clusters="{{ clusters|json_encode|e('html_attr') }}"></div>
         </div>
     </section>
 
