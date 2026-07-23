@@ -418,6 +418,227 @@
 .review-card__foot a:hover { text-decoration: underline; }
 
 /* ===========================================================================
+ *  ACCUEIL CONNECTÉ (écrans A et B du flow Activités)
+ * ======================================================================== */
+
+/* --- Hero kayak : voile foncé à gauche, textes clairs. --- */
+.home-hero--connected { min-height: 580px; align-items: flex-start; }
+.home-hero__overlay--dark {
+    background:
+        linear-gradient(90deg, rgba(4, 18, 60, .78) 0%, rgba(4, 18, 60, .55) 34%, rgba(4, 18, 60, .18) 60%, rgba(4, 18, 60, 0) 80%),
+        linear-gradient(180deg, rgba(4, 18, 60, .35) 0%, transparent 30%);
+}
+.home-hero--connected .home-hero__inner { padding-block: 88px 120px; }
+.home-hero__title--light { color: var(--pl-white); max-width: 900px; }
+/* La partie orange occupe toute la 2e ligne, comme sur la maquette. */
+.home-hero__title--light .is-accent-line { display: block; color: var(--pl-cta); }
+.home-hero__subtitle--light { color: rgba(255, 255, 255, .88); max-width: 520px; }
+
+/* Pilules de réassurance sur la photo. */
+.home-hero__assurances { display: flex; gap: var(--pl-sp-12); flex-wrap: wrap; }
+.home-pill {
+    display: inline-flex; align-items: center; gap: var(--pl-sp-8);
+    padding: 7px 14px;
+    background: rgba(255, 255, 255, .92);
+    color: var(--pl-text);
+    font-size: var(--pl-fs-caption);
+    font-weight: var(--pl-fw-semibold);
+    border-radius: var(--pl-radius-pill);
+}
+.home-pill .pl-icon { color: var(--pl-success); }
+
+/* --- Barre de recherche : champs cliquables + panneaux déroulants (écran B). --- */
+.home-search { position: relative; overflow: visible; }
+.home-search__field { background: transparent; border-block: 0; border-left: 0; text-align: left; cursor: pointer; }
+.home-search__field > span:last-child { display: flex; flex-direction: column; }
+.home-search__field:hover .home-search__field-label { color: var(--pl-action); }
+.home-search__field.is-open .home-search__field-label { color: var(--pl-action); }
+
+.home-search__panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    min-width: 272px;
+    max-height: 488px;
+    overflow-y: auto;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    box-shadow: 0 16px 40px rgba(15, 23, 42, .18);
+    padding: var(--pl-sp-12);
+    display: flex; flex-direction: column; gap: var(--pl-sp-4);
+    z-index: 60;
+}
+.home-search__panel[hidden] { display: none; }
+.home-search__panel[data-search-panel="destination"] { left: var(--pl-sp-16); }
+.home-search__panel[data-search-panel="activite"] { left: 22%; }
+.home-search__panel[data-search-panel="date"] { left: 44%; min-width: 311px; }
+.home-search__panel[data-search-panel="participants"] { right: var(--pl-sp-16); min-width: 335px; }
+.home-search__panel--travellers { gap: var(--pl-sp-12); padding: var(--pl-sp-20); }
+
+.home-search__option {
+    padding: 10px 12px;
+    background: 0; border: 0;
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text);
+    text-align: left;
+    cursor: pointer;
+}
+.home-search__option:hover { background: #f4f5f7; }
+.home-search__option.is-active { background: var(--pl-action-light); color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
+
+/* --- Calendrier du panneau Date. --- */
+.home-cal { padding: var(--pl-sp-8); }
+.home-cal__head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: var(--pl-sp-12);
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text);
+}
+.home-cal__head button {
+    width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: 0; border: 0; border-radius: 50%;
+    color: var(--pl-text);
+    cursor: pointer;
+}
+.home-cal__head button:hover { background: #f4f5f7; color: var(--pl-action); }
+.home-cal__days, .home-cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.home-cal__days { margin-bottom: var(--pl-sp-8); }
+.home-cal__days span { text-align: center; font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.home-cal__grid button {
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    justify-self: center;
+    background: 0; border: 0; border-radius: 50%;
+    font-size: var(--pl-fs-caption);
+    color: var(--pl-text);
+    cursor: pointer;
+}
+.home-cal__grid button:hover { background: var(--pl-action-light); color: var(--pl-action); }
+.home-cal__grid button.is-muted { color: var(--pl-border); }
+.home-cal__grid button.is-selected { background: var(--pl-action); color: var(--pl-white); font-weight: var(--pl-fw-bold); }
+
+/* --- Créer votre activité privée (fond lavande). --- */
+.home-private { background: #f1edff; }
+.home-private__inner { display: grid; grid-template-columns: 2fr 1fr; gap: var(--pl-sp-24); align-items: stretch; }
+.home-private__panel {
+    display: grid; grid-template-columns: 1fr 1fr; gap: var(--pl-sp-24);
+    background: var(--pl-white);
+    border-radius: var(--pl-radius-md);
+    padding: var(--pl-sp-32);
+}
+.home-private__text .home-section__title { margin-bottom: var(--pl-sp-8); }
+.is-violet { color: var(--pl-action); }
+.home-checklist { list-style: none; margin: var(--pl-sp-16) 0 var(--pl-sp-24); padding: 0; display: flex; flex-direction: column; gap: var(--pl-sp-12); }
+.home-checklist li { display: flex; align-items: center; gap: var(--pl-sp-8); font-size: var(--pl-fs-body); font-weight: var(--pl-fw-medium); color: var(--pl-text); }
+.home-checklist .pl-icon { color: var(--pl-success); flex-shrink: 0; }
+.home-checklist--orange .pl-icon { color: var(--pl-cta); }
+
+.home-private__collage { position: relative; min-height: 320px; }
+.home-private__photo {
+    position: absolute;
+    border-radius: var(--pl-radius-md);
+    border: 4px solid var(--pl-white);
+    box-shadow: 0 10px 26px rgba(15, 23, 42, .18);
+    object-fit: cover;
+}
+.home-private__photo--1 { top: 0; left: 0; width: 62%; height: 46%; transform: rotate(-3deg); }
+.home-private__photo--2 { top: 26%; right: 0; width: 52%; height: 56%; transform: rotate(2.5deg); z-index: 1; }
+.home-private__photo--3 { bottom: 0; left: 6%; width: 48%; height: 42%; transform: rotate(-1.5deg); }
+.home-private__deco { position: absolute; z-index: 2; }
+.home-private__deco--pin { top: -6px; right: 26%; color: var(--pl-action); }
+.home-private__deco--heart { bottom: 10%; right: 6%; color: var(--pl-error); }
+
+.home-private__how {
+    background: var(--pl-white);
+    border-radius: var(--pl-radius-md);
+    padding: var(--pl-sp-32);
+    display: flex; flex-direction: column;
+}
+.home-private__how h3 { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0 0 var(--pl-sp-20); }
+.home-private__steps { list-style: none; margin: 0 0 var(--pl-sp-24); padding: 0; display: flex; flex-direction: column; gap: var(--pl-sp-16); flex: 1; }
+.home-private__steps li { display: flex; gap: var(--pl-sp-12); font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
+.home-private__steps strong { display: block; color: var(--pl-text); }
+.home-private__step-icon {
+    flex-shrink: 0;
+    width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pl-action-light);
+    color: var(--pl-action);
+    border-radius: 50%;
+}
+.home-private__how .pl-btn { align-self: flex-start; }
+
+/* --- Carrousel des catégories populaires. --- */
+.home-cats { display: flex; align-items: center; gap: var(--pl-sp-12); }
+.home-cats__nav {
+    flex-shrink: 0;
+    width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: 50%;
+    color: var(--pl-text);
+    cursor: pointer;
+}
+.home-cats__nav:hover { color: var(--pl-action); border-color: var(--pl-action); }
+.home-cats__scroll { display: flex; gap: var(--pl-sp-16); overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; }
+.home-cats__scroll::-webkit-scrollbar { display: none; }
+.home-cat {
+    flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: center; gap: var(--pl-sp-8);
+    min-width: 128px;
+    padding: var(--pl-sp-8);
+    text-decoration: none;
+}
+.home-cat__icon {
+    width: 60px; height: 60px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pl-action-light);
+    color: var(--pl-action);
+    border-radius: 50%;
+    transition: background-color .15s ease, color .15s ease, transform .15s ease;
+}
+.home-cat:hover .home-cat__icon { background: var(--pl-action); color: var(--pl-white); transform: translateY(-2px); }
+.home-cat__label { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); color: var(--pl-text); text-align: center; }
+
+.home-section--soft { background: #f8f9fb; }
+
+/* --- Pas d'idée de cadeau ? (fond violet clair). --- */
+.home-gift { background: #ece5ff; }
+.home-gift__inner { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pl-sp-32); align-items: center; }
+.home-gift__visual img { width: 100%; max-height: 420px; object-fit: contain; }
+
+/* --- Vous êtes prestataires ? (fond crème + cercles concentriques). --- */
+.home-pro { background: #fdf3e7; overflow: hidden; }
+.home-pro__inner { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pl-sp-32); align-items: center; }
+.home-pro__media { position: relative; display: flex; justify-content: center; align-items: flex-end; min-height: 480px; }
+.home-pro__circles {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 470px; height: 470px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 2px solid rgba(255, 122, 0, .25);
+    box-shadow:
+        inset 0 0 0 39px rgba(255, 122, 0, .0),
+        inset 0 0 0 40px rgba(255, 122, 0, .22),
+        inset 0 0 0 84px rgba(255, 122, 0, .0),
+        inset 0 0 0 85px rgba(255, 122, 0, .19),
+        inset 0 0 0 129px rgba(255, 122, 0, .0),
+        inset 0 0 0 130px rgba(255, 122, 0, .16);
+}
+.home-pro__media img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 480px;
+    object-fit: contain;
+    object-position: center bottom;
+}
+
+/* ===========================================================================
  *  Adaptation largeurs intermédiaires
  * ======================================================================== */
 @media (max-width: 1100px) {
@@ -427,4 +648,5 @@
     .home-provider__inner { grid-template-columns: 1fr; }
     .home-search__fields { grid-template-columns: 1fr 1fr; }
     .home-search__field { border-right: 0; }
+    .home-private__inner, .home-private__panel, .home-gift__inner, .home-pro__inner { grid-template-columns: 1fr; }
 }

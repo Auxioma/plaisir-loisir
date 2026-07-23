@@ -1,0 +1,331 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Accueil{% endblock %}
+{% block meta_description %}Trouvez votre prochain plaisir et vivez l'exceptionnel : des milliers d'activités et loisirs partout en France, aux meilleurs prix.{% endblock %}
+
+{# Accueil « utilisateur connecté » (écran A) ; la barre de recherche
+   déployée (écran B) est portée par les panneaux ci-dessous + JS. #}
+{% block header %}
+    {% include '_partials/navbar_connected.html.twig' with { nav_active: 'activites' } %}
+{% endblock %}
+
+{% block body %}
+<div class="home-connected">
+
+    {# ==================================================================
+       HERO : kayak + overlay foncé à gauche, 2 CTA, pilules réassurance.
+       ================================================================ #}
+    <section class="home-hero home-hero--connected">
+        <img class="home-hero__bg" src="{{ asset('images/home/hero-kayak.jpg') }}" alt="">
+        <div class="home-hero__overlay home-hero__overlay--dark" aria-hidden="true"></div>
+        <div class="home-container home-hero__inner">
+            <h1 class="home-hero__title home-hero__title--light">
+                Trouvez votre prochain <span class="is-accent-line">plaisir et vivez l'exceptionnel.</span>
+            </h1>
+            <p class="home-hero__subtitle home-hero__subtitle--light">Découvrez des lieux, des événements exceptionnels, à des prix exclusifs et vivez des expériences inoubliables</p>
+            <div class="home-hero__actions">
+                <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--cta">Réservez une activité {{ icon.chevron_right(16) }}</a>
+                <a href="#" class="pl-btn pl-btn--hero-ghost">Découvrez nos événements {{ icon.chevron_right(16) }}</a>
+            </div>
+            <div class="home-hero__assurances">
+                <span class="home-pill">{{ icon.check_badge(18) }} + 5.000 activités</span>
+                <span class="home-pill">{{ icon.check_badge(18) }} Réservation instantanée</span>
+                <span class="home-pill">{{ icon.check_badge(18) }} Annulation facile</span>
+                <span class="home-pill">{{ icon.check_badge(18) }} Meilleur prix garanti</span>
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       BARRE DE RECHERCHE (§2.9) flottante + 4 panneaux (écran B).
+       ================================================================ #}
+    <div class="home-container home-search-wrap" id="home-search">
+        <div class="home-search">
+            <div class="home-search__tabs">
+                <button type="button" class="home-search__tab is-active">{{ icon.users(18) }} Activités public</button>
+                <button type="button" class="home-search__tab">{{ icon.person(18) }} Activités privées</button>
+            </div>
+            <div class="home-search__fields">
+                <button type="button" class="home-search__field" data-search-field="destination">
+                    {{ icon.map_pin(20) }}
+                    <span>
+                        <span class="home-search__field-label">Où voulez-vous aller ?</span>
+                        <span class="home-search__field-value" data-field-value>Choisissez une destination</span>
+                    </span>
+                </button>
+                <button type="button" class="home-search__field" data-search-field="activite">
+                    {{ icon.compass(20) }}
+                    <span>
+                        <span class="home-search__field-label">Activité ou loisir ?</span>
+                        <span class="home-search__field-value" data-field-value>Choisissez une activité</span>
+                    </span>
+                </button>
+                <button type="button" class="home-search__field" data-search-field="date">
+                    {{ icon.calendar(20) }}
+                    <span>
+                        <span class="home-search__field-label">Date</span>
+                        <span class="home-search__field-value" data-field-value>Choisissez une date</span>
+                    </span>
+                </button>
+                <button type="button" class="home-search__field" data-search-field="participants">
+                    {{ icon.users(20) }}
+                    <span>
+                        <span class="home-search__field-label">Participant(s)</span>
+                        <span class="home-search__field-value" data-field-value>2 adultes</span>
+                    </span>
+                </button>
+                <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--cta home-search__submit">{{ icon.search(18) }} Recherche</a>
+            </div>
+
+            {# --- Panneau 1 : destinations. --- #}
+            <div class="home-search__panel" data-search-panel="destination" hidden>
+                {% for d in ['Île-de-France', 'Auvergne-Rhône-Alpes', 'Nouvelle-Aquitaine', "l'Auvergne", "La Côte d'Azur", 'Lyon', 'Toulouse', 'Lille', 'Paris'] %}
+                    <button type="button" class="home-search__option {{ loop.index == 5 ? 'is-active' }}" data-option>{{ d }}</button>
+                {% endfor %}
+            </div>
+
+            {# --- Panneau 2 : activités. --- #}
+            <div class="home-search__panel" data-search-panel="activite" hidden>
+                {% for a in ['Descente en Canoë', 'Musée', 'Location VTT électrique', 'Visite de labyrinthe', 'Visite du Musée', 'Visite guidée', 'Randonnée', 'Atelier créatif', 'Sports & sensations'] %}
+                    <button type="button" class="home-search__option {{ loop.first ? 'is-active' }}" data-option>{{ a }}</button>
+                {% endfor %}
+            </div>
+
+            {# --- Panneau 3 : calendrier (Juillet 2026, 16 sélectionné). --- #}
+            <div class="home-search__panel home-search__panel--calendar" data-search-panel="date" hidden>
+                <div class="home-cal" data-calendar data-year="2026" data-month="7" data-selected="16">
+                    <div class="home-cal__head">
+                        <button type="button" data-cal-prev aria-label="Mois précédent">{{ icon.chevron_left(18) }}</button>
+                        <strong data-cal-title>Juillet 2026</strong>
+                        <button type="button" data-cal-next aria-label="Mois suivant">{{ icon.chevron_right(18) }}</button>
+                    </div>
+                    <div class="home-cal__days" aria-hidden="true">
+                        <span>lun</span><span>mar</span><span>mer</span><span>jeu</span><span>ven</span><span>sam</span><span>dim</span>
+                    </div>
+                    <div class="home-cal__grid" data-cal-grid></div>
+                </div>
+            </div>
+
+            {# --- Panneau 4 : participants (steppers + Valider). --- #}
+            <div class="home-search__panel home-search__panel--travellers" data-search-panel="participants" hidden>
+                <div class="act-stepper" data-stepper data-min="1" data-count="2">
+                    <span>Adulte <small>(18 et +)</small></span>
+                    <span class="act-stepper__controls">
+                        <button type="button" data-step="-1" aria-label="Moins d'adultes">{{ icon.minus(14) }}</button>
+                        <output data-stepper-value>2</output>
+                        <button type="button" data-step="1" aria-label="Plus d'adultes">{{ icon.plus(14) }}</button>
+                    </span>
+                </div>
+                <div class="act-stepper" data-stepper data-min="0" data-count="0">
+                    <span>Enfants <small>(0 à 17 ans)</small></span>
+                    <span class="act-stepper__controls">
+                        <button type="button" data-step="-1" aria-label="Moins d'enfants">{{ icon.minus(14) }}</button>
+                        <output data-stepper-value>0</output>
+                        <button type="button" data-step="1" aria-label="Plus d'enfants">{{ icon.plus(14) }}</button>
+                    </span>
+                </div>
+                <button type="button" class="pl-btn pl-btn--outline-action pl-btn--block" data-travellers-validate>Valider</button>
+            </div>
+        </div>
+    </div>
+
+    {# ==================================================================
+       CRÉER VOTRE ACTIVITÉ PRIVÉE — GRATUITEMENT (fond lavande).
+       ================================================================ #}
+    <section class="home-section home-private">
+        <div class="home-container home-private__inner">
+            <div class="home-private__panel">
+                <div class="home-private__text">
+                    <h2 class="home-section__title">Créer votre activité privée — <span class="is-violet">Gratuitement</span></h2>
+                    <p class="home-section__subtitle">Organisez des moments inoubliables entre amis, en famille ou en groupe.</p>
+                    <ul class="home-checklist">
+                        <li>{{ icon.check_badge(20) }} Activités 100% privée</li>
+                        <li>{{ icon.check_badge(20) }} Partagez vos photos</li>
+                        <li>{{ icon.check_badge(20) }} Aucun prestataire, 100% gratuit</li>
+                    </ul>
+                    <a href="#" class="btn-see-all">{{ icon.users(18) }} Créer une activité privée</a>
+                </div>
+                <div class="home-private__collage" aria-hidden="true">
+                    <img class="home-private__photo home-private__photo--1" src="{{ asset('images/home/prive-2.jpg') }}" alt="">
+                    <img class="home-private__photo home-private__photo--2" src="{{ asset('images/home/prive-1.jpg') }}" alt="">
+                    <img class="home-private__photo home-private__photo--3" src="{{ asset('images/home/prive-3.jpg') }}" alt="">
+                    <span class="home-private__deco home-private__deco--pin">{{ icon.map_pin(22) }}</span>
+                    <span class="home-private__deco home-private__deco--heart">{{ icon.heart_solid(22) }}</span>
+                </div>
+            </div>
+            <aside class="home-private__how">
+                <h3>Comment créer une activité privée</h3>
+                <ol class="home-private__steps">
+                    <li>
+                        <span class="home-private__step-icon">{{ icon.calendar_check(20) }}</span>
+                        <span><strong>Créer votre activité privée</strong> Indiquez où, quand et avec qui.</span>
+                    </li>
+                    <li>
+                        <span class="home-private__step-icon">{{ icon.mail(20) }}</span>
+                        <span><strong>Invitez vos proches</strong> Partagez votre activité facilement.</span>
+                    </li>
+                    <li>
+                        <span class="home-private__step-icon">{{ icon.heart(20) }}</span>
+                        <span><strong>Profitez et partagez vos souvenirs</strong> Indiquez où, quand et avec qui.</span>
+                    </li>
+                </ol>
+                <a href="#" class="pl-btn pl-btn--outline-dark">En savoir plus</a>
+            </aside>
+        </div>
+    </section>
+
+    {# ==================================================================
+       CATEGORIES POPULAIRES : carrousel de vignettes à icône.
+       ================================================================ #}
+    <section class="home-section">
+        <div class="home-container">
+            <div class="home-section__head">
+                <div>
+                    <h2 class="home-section__title">Categories populaires</h2>
+                    <p class="home-section__subtitle">Envie d'aventure, de détente ou de découvertes ? Explorez nos catégories et trouvez l'activité qui vous ressemble.</p>
+                </div>
+                <a href="#" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
+            </div>
+            <div class="home-cats">
+                <button type="button" class="home-cats__nav" data-cats-prev aria-label="Catégories précédentes">{{ icon.chevron_left(16) }}</button>
+                <div class="home-cats__scroll" data-cats-scroll>
+                    {% set cats = [
+                        ['Canoë / Kayak', 'canoe'], ['VTT / Vélo', 'bike'], ['Randonnée', 'hiking'],
+                        ['Sports & Sensations', 'sports'], ['Visites culturelles', 'culture'],
+                        ['Ateliers & Créations', 'crafts'], ['Bien-être', 'wellness'], ['En famille', 'family'],
+                    ] %}
+                    {% for c in cats %}
+                        <a href="{{ path('app_activities') }}" class="home-cat">
+                            <span class="home-cat__icon">
+                                {%- if c[1] == 'canoe' %}{{ icon.cat_canoe(26) }}
+                                {%- elseif c[1] == 'bike' %}{{ icon.cat_bike(26) }}
+                                {%- elseif c[1] == 'hiking' %}{{ icon.cat_hiking(26) }}
+                                {%- elseif c[1] == 'sports' %}{{ icon.cat_sports(26) }}
+                                {%- elseif c[1] == 'culture' %}{{ icon.cat_culture(26) }}
+                                {%- elseif c[1] == 'crafts' %}{{ icon.cat_crafts(26) }}
+                                {%- elseif c[1] == 'wellness' %}{{ icon.cat_wellness(26) }}
+                                {%- else %}{{ icon.cat_family(26) }}
+                                {%- endif %}
+                            </span>
+                            <span class="home-cat__label">{{ c[0] }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+                <button type="button" class="home-cats__nav" data-cats-next aria-label="Catégories suivantes">{{ icon.chevron_right(16) }}</button>
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       ACTIVITÉS COUP DE COEUR.
+       ================================================================ #}
+    <section class="home-section home-section--soft">
+        <div class="home-container">
+            <div class="home-section__head">
+                <div>
+                    <h2 class="home-section__title">Activités coup de coeur</h2>
+                    <p class="home-section__subtitle">Les expériences préférées de nos voyageurs, sélectionnées pour vous.</p>
+                </div>
+                <a href="{{ path('app_activities') }}" class="btn-see-all">Voir toutes les activités {{ icon.arrow_up_right(16) }}</a>
+            </div>
+            <div class="card-grid">
+                {% for a in activities|slice(0, 4) %}
+                    {% include 'activity/_card.html.twig' with { a: a } %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       PAS D'IDÉE DE CADEAU ? (fond violet clair).
+       ================================================================ #}
+    <section class="home-section home-gift">
+        <div class="home-container home-gift__inner">
+            <div>
+                <h2 class="home-section__title">Pas d'idée de cadeau ?</h2>
+                <p class="home-section__subtitle">Offrez la carte cadeau aux multiples activités !</p>
+                <ul class="home-checklist">
+                    <li>{{ icon.check_badge(20) }} Par mail instantanément</li>
+                    <li>{{ icon.check_badge(20) }} 12 mois pour la réservation</li>
+                    <li>{{ icon.check_badge(20) }} Utilisable en plusieurs fois</li>
+                </ul>
+                <a href="#" class="pl-btn pl-btn--primary">{{ icon.gift(18) }} Offrir</a>
+            </div>
+            <div class="home-gift__visual">
+                <img src="{{ asset('images/home/gift-cards.png') }}" alt="Cartes cadeaux Plaisirs & Loisirs">
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       DESTINATIONS POPULAIRES.
+       ================================================================ #}
+    <section class="home-section">
+        <div class="home-container">
+            <div class="home-section__head">
+                <div>
+                    <h2 class="home-section__title">Destinations populaires</h2>
+                    <p class="home-section__subtitle">Des villes d'art aux paysages grandioses : choisissez votre prochaine destination.</p>
+                </div>
+                <a href="#" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
+            </div>
+            {% set destinations = [
+                {img: 'dest-paris.png',       title: 'Paris, France',   desc: 'Ville lumière et capitale de la culture', reviews: 256, count: '32 activités', price: 25, tag: 'Populaire'},
+                {img: 'dest-annecy.png',      title: 'Annecy, France',  desc: 'Entre lac et Montagnes',                  reviews: 178, count: '24 activités', price: 20, tag: 'Bestseller'},
+                {img: 'dest-cinqueterre.jpg', title: 'Cinque, Italie',  desc: 'Vue à couper le souffle',                 reviews: 134, count: '18 activités', price: 30, tag: 'Tendance'},
+                {img: 'dest-bali.png',        title: 'Bali, Indonésie', desc: 'Détente, nature et spiritualité',         reviews: 312, count: '27 activités', price: 35, tag: null},
+            ] %}
+            <div class="card-grid">
+                {% for d in destinations %}
+                    <a href="#" class="pl-card">
+                        <div class="pl-card__media">
+                            <img src="{{ asset('images/home/' ~ d.img) }}" alt="{{ d.title }}">
+                            {% if d.tag %}
+                                <span class="pl-card__tag {{ d.tag == 'Bestseller' ? 'pl-card__tag--bestseller' : 'pl-card__tag--popular' }}">{{ d.tag }}</span>
+                            {% endif %}
+                            <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</button>
+                        </div>
+                        <div class="pl-card__body">
+                            <span class="pl-card__place">{{ icon.map_pin(14) }} {{ d.desc }}</span>
+                            <span class="pl-card__title">{{ d.title }}</span>
+                            <div class="act-card__meta">
+                                <span class="act-rating">{{ icon.star(12) }} 4.8</span>
+                                <span class="act-card__reviews">{{ d.reviews }} reviews</span>
+                                <span class="act-card__duration">{{ d.count }}</span>
+                            </div>
+                            <div class="pl-card__foot">
+                                <span class="pl-card__from">À partir de</span>
+                                <span class="pl-card__price">{{ d.price }}€</span>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       VOUS ÊTES PRESTATAIRES ? (fond crème, cercles concentriques).
+       ================================================================ #}
+    <section class="home-section home-pro">
+        <div class="home-container home-pro__inner">
+            <div class="home-pro__text">
+                <h2 class="home-section__title">Vous êtes prestataires ?</h2>
+                <p class="home-section__subtitle">Rejoignez la plateforme et développez votre activité auprès de milliers de clients.</p>
+                <ul class="home-checklist home-checklist--orange">
+                    <li>{{ icon.check_badge(20) }} Plus de visibilité</li>
+                    <li>{{ icon.check_badge(20) }} Réservation en ligne</li>
+                    <li>{{ icon.check_badge(20) }} Gestion simplifiée</li>
+                </ul>
+                <a href="#" class="pl-btn pl-btn--cta">Découvrez nos abonnements</a>
+            </div>
+            <div class="home-pro__media">
+                <span class="home-pro__circles" aria-hidden="true"></span>
+                <img src="{{ asset('images/home/provider.png') }}" alt="Prestataire souriant, bras croisés">
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

@@ -22,3 +22,6 @@ import './home_header.js';
 
 // Comportements du parcours Activités (compte à rebours des offres…).
 import './activities.js';
+
+// Barre de recherche de l'accueil connecté (panneaux déroulants, calendrier).
+import './home_search.js';
