@@ -1,0 +1,52 @@
+/*
+ * ============================================================================
+ *  FLOW « DESTINATIONS » — 7 écrans de la maquette.
+ *  S'appuie sur les jetons --pl-* et réutilise les composants du flow
+ *  Activités (act-head, act-search, act-chipbar, pl-card, review-card…).
+ * ============================================================================
+ */
+
+/* --- Signature typographique du flow : H1/H2 très grands, NON gras. --- */
+.dest-title { font-weight: var(--pl-fw-medium); }
+.dest-page .home-section__title { font-weight: var(--pl-fw-medium); }
+
+/* Barre d'outils réduite aux bascules d'affichage (droite seule). */
+.dest-toolbar { justify-content: flex-end; }
+
+/* Chip « Filtre » : outline tant que le panneau est fermé (écrans 2-4) ;
+   l'état ouvert (violet plein + chevron ‹) est posé par JS à l'écran 5. */
+.dest-page .act-chip--filter {
+    background: var(--pl-white);
+    color: var(--pl-text);
+    border: 1px solid var(--pl-border);
+}
+.dest-page .act-chip--filter.is-open {
+    background: var(--pl-action);
+    color: var(--pl-white);
+    border-color: var(--pl-action);
+}
+
+/* Badge « Tendance » (vert) des cartes destination. */
+.pl-card__tag--trend { background: var(--pl-success); }
+
+/* Favori actif : cœur plein rouge (carte New York, écran 2). */
+.pl-card__fav.is-active { color: var(--pl-error); }
+
+/* Bouton « S'inscrire » de l'en-tête visiteur. */
+.pl-btn--signup { display: inline-flex; align-items: center; gap: var(--pl-sp-8); }
+
+/* ===========================================================================
+ *  BANDEAU « CE QUE DISENT LES VOYAGEURS » (spec §1.14)
+ * ======================================================================== */
+.dest-reviews { background: #f4f5f7; }
+.dest-reviews__title { color: var(--pl-primary); margin-bottom: var(--pl-sp-24); }
+.dest-reviews__score {
+    display: flex; align-items: center; gap: var(--pl-sp-16);
+    flex-wrap: wrap;
+    margin-bottom: var(--pl-sp-32);
+}
+.dest-reviews__score-label { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
+/* Variante « dans la colonne » (écrans 5-7) : le fond gris reste borné à la
+   colonne de droite, avec son propre padding interne. */
+.dest-reviews--column { border-radius: var(--pl-radius-md); padding: var(--pl-sp-32); }
+.dest-reviews--column .home-reviews__grid { grid-template-columns: 1fr 1fr; }

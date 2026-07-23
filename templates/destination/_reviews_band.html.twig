@@ -1,0 +1,31 @@
+{#
+    Bandeau « Ce que disent les voyageurs » (spec Destinations §1.14) :
+    fond gris, titre navy, note globale 4.5/5 + « Basé sur 999.589 avis »,
+    puis 2 cartes d'avis (réutilise activity/_review_card).
+    Variables : reviews (liste), in_column (bool, défaut false — sur les
+    écrans avec sidebar le bandeau reste dans la colonne de droite).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<section class="home-section dest-reviews {{ in_column|default(false) ? 'dest-reviews--column' }}">
+    <div class="{{ in_column|default(false) ? '' : 'home-container' }}">
+        <h2 class="home-section__title dest-reviews__title">Ce que disent les voyageurs</h2>
+
+        <div class="dest-reviews__score">
+            <span class="dest-reviews__score-label">Note globale</span>
+            <span class="home-reviews__score-value">4.5 <span>/5</span></span>
+            <span class="home-reviews__stars" aria-label="4,5 étoiles sur 5">
+                {% for i in 1..5 %}
+                    <span class="{{ i <= 4 ? 'is-on' : 'is-off' }}">{{ icon.star(18) }}</span>
+                {% endfor %}
+            </span>
+            <span class="home-reviews__score-count">Basé sur 999.589 avis</span>
+        </div>
+
+        <div class="home-reviews__grid">
+            {% for r in reviews %}
+                {% include 'activity/_review_card.html.twig' with { r: r } %}
+            {% endfor %}
+        </div>
+    </div>
+</section>

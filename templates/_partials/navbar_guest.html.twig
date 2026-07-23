@@ -1,15 +1,12 @@
 {#
-    En-tête « utilisateur connecté » du flow Activités (spec §2.1).
-    Fond blanc, sticky. Navigation : Activités (actif) · Destinations
-    (badge « Nouveau ») · Offres du moments (flamme) · Cadeaux (cadeau) ·
-    Activités privées (badge « Nouveau »). À droite : Déposer une annonce,
-    favoris, messagerie, notifications, avatar avec pastille « en ligne ».
+    En-tête « visiteur » (variante B des écrans Destinations 3-4) :
+    même navigation que l'en-tête connecté, mais les actions de droite
+    se limitent à « Déposer une annonce » et « S'inscrire ».
 
-    Variable optionnelle `nav_active` : libellé de l'entrée active
-    (par défaut « activites »).
+    Variable optionnelle `nav_active` : entrée active (défaut : aucune).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
-{% set nav_active = nav_active|default('activites') %}
+{% set nav_active = nav_active|default('') %}
 
 <header class="pl-navbar pl-navbar--connected">
     <div class="pl-navbar__inner">
@@ -29,15 +26,7 @@
 
         <div class="pl-navbar__actions">
             <a href="#" class="pl-btn pl-btn--cta">Déposer une annonce</a>
-
-            <button type="button" class="pl-iconbtn" aria-label="Mes favoris">{{ icon.heart(20) }}</button>
-            <button type="button" class="pl-iconbtn" aria-label="Messagerie">{{ icon.mail(20) }}</button>
-            <button type="button" class="pl-iconbtn" aria-label="Notifications">{{ icon.bell(20) }}</button>
-
-            <button type="button" class="pl-avatarbtn" aria-label="Paramètre du profil">
-                <img src="{{ asset('images/home/avatar-1.png') }}" alt="">
-                <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
-            </button>
+            <a href="{{ path('app_register') }}" class="pl-btn pl-btn--outline-dark pl-btn--signup">{{ icon.person(18) }} S'inscrire</a>
         </div>
     </div>
 </header>

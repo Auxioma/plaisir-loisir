@@ -1,0 +1,40 @@
+{#
+    Section « Votre sélection d'activités » (spec Destinations §1.12) :
+    carrousel de villes + cartes simplifiées + pagination optionnelle.
+    Variables : selections, cities, with_pagination (défaut true).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<section class="act-section">
+    <div class="home-container">
+        <div class="home-section__head">
+            <div>
+                <h2 class="home-section__title">Votre sélection d'activités</h2>
+            </div>
+        </div>
+        <div class="act-citybar">
+            <button type="button" class="act-citybar__nav" aria-label="Villes précédentes">{{ icon.chevron_left(16) }}</button>
+            <div class="act-citybar__scroll">
+                {% for city in cities %}
+                    <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">{{ city }}</button>
+                {% endfor %}
+            </div>
+            <button type="button" class="act-citybar__nav" aria-label="Villes suivantes">{{ icon.chevron_right(16) }}</button>
+        </div>
+        <div class="card-grid">
+            {% for s in selections %}
+                {% include 'activity/_selection_card.html.twig' with { s: s } %}
+            {% endfor %}
+        </div>
+        {% if with_pagination|default(true) %}
+            <nav class="act-pagination" aria-label="Pagination de la sélection">
+                <button type="button" class="act-page-btn" aria-label="Page précédente">{{ icon.chevron_left(16) }}</button>
+                <button type="button" class="act-page-btn is-active" aria-current="page">1</button>
+                <button type="button" class="act-page-btn">2</button>
+                <button type="button" class="act-page-btn">3</button>
+                <button type="button" class="act-page-btn">4</button>
+                <button type="button" class="act-page-btn" aria-label="Page suivante">{{ icon.chevron_right(16) }}</button>
+            </nav>
+        {% endif %}
+    </div>
+</section>

@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Destinations populaires{% endblock %}
+{% block meta_description %}Découvrez les meilleures destinations et réservez vos activités : meilleur prix garanti, annulation gratuite.{% endblock %}
+
+{% block header %}
+    {% if connected %}
+        {% include '_partials/navbar_connected.html.twig' with { nav_active: 'destinations' } %}
+    {% else %}
+        {% include '_partials/navbar_guest.html.twig' with { nav_active: 'destinations' } %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+<div class="act-page dest-page">
+
+    {# ==================================================================
+       EN-TÊTE DE PAGE (écran 2) : fil d'Ariane, titre non gras, intro,
+       recherche compacte, outils d'affichage, chips, ligne de résultats.
+       ================================================================ #}
+    <section class="act-head">
+        <div class="home-container">
+
+            <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
+                <a href="{{ path('app_home') }}">Accueil</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ path('app_destinations') }}">Destinations</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">Destination populaires</span>
+            </nav>
+
+            <h1 class="act-head__title dest-title">Destinations populaires</h1>
+            <p class="act-head__subtitle">Découvrez les meilleures destinations à explorer. Choisissez parmi un choix varié d'expériences pour créer des souvenirs inoubliables, en famille ou entre amis. Meilleur prix garanti - Annulation gratuite</p>
+
+            <form class="act-search" role="search" action="{{ path('app_destinations_popular') }}" method="get">
+                <div class="act-search__bar">
+                    <label class="act-search__field">
+                        {{ icon.map_pin(18) }}
+                        <input type="text" name="lieu" value="Lille" aria-label="Lieu">
+                    </label>
+                    <span class="act-search__sep" aria-hidden="true"></span>
+                    <label class="act-search__field">
+                        {{ icon.search(18) }}
+                        <input type="text" name="q" placeholder="Recherches par mots-clés" aria-label="Mots-clés">
+                    </label>
+                </div>
+                <button type="submit" class="act-search__submit" aria-label="Rechercher">{{ icon.search(20) }}</button>
+            </form>
+
+            {# Outils d'affichage, alignés à droite (spec §1.6). #}
+            <div class="act-toolbar dest-toolbar">
+                <div class="act-toolbar__right">
+                    <button type="button" class="act-tool">{{ icon.map(18) }} Afficher la carte</button>
+                    <div class="act-viewswitch" role="group" aria-label="Mode d'affichage">
+                        <button type="button" class="act-viewbtn" id="dest-filter-toggle" aria-label="Ouvrir les filtres">{{ icon.sliders(18) }}</button>
+                        <button type="button" class="act-viewbtn is-active" aria-label="Affichage en grille">{{ icon.list_view(18) }}</button>
+                    </div>
+                </div>
+            </div>
+
+            {# Chips de catégories (spec §1.7) : Filtre + Toutes active. #}
+            <div class="act-chipbar">
+                <button type="button" class="act-chip act-chip--filter" id="dest-chip-filter">{{ icon.sliders(16) }} Filtre</button>
+                <span class="act-chipbar__sep" aria-hidden="true"></span>
+                <div class="act-chipbar__scroll">
+                    {% for chip in ['Toutes', 'Natures & Plein-air', 'Cultures & Découverte', 'Ateliers & Créations', 'Soirées & Évènements', 'Bien-être'] %}
+                        <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">{{ chip }}</button>
+                    {% endfor %}
+                </div>
+                <button type="button" class="act-chipbar__more" aria-label="Faire défiler les filtres">{{ icon.chevron_right(16) }}</button>
+            </div>
+
+            <div class="act-results">
+                <p class="act-results__count"><strong>400+</strong> de résultats trouvés</p>
+                <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} Trier par: <strong>Les plus populaires</strong></button>
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       GRILLE 4×4 DES DESTINATIONS (écran 2).
+       ================================================================ #}
+    <section class="act-section">
+        <div class="home-container">
+            <div class="card-grid">
+                {% for d in destinations %}
+                    {% include 'destination/_card.html.twig' with { d: d } %}
+                {% endfor %}
+            </div>
+            <div class="act-more">
+                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus de destinations {{ icon.chevron_down(16) }}</button>
+            </div>
+        </div>
+    </section>
+
+    {# Votre sélection d'activités + pagination (spec §1.12-1.13). #}
+    {% include 'destination/_selection.html.twig' with { selections: selections, cities: cities } %}
+
+    {# Ce que disent les voyageurs (spec §1.14), pleine largeur. #}
+    {% include 'destination/_reviews_band.html.twig' with { reviews: reviews } %}
+
+</div>
+{% endblock %}

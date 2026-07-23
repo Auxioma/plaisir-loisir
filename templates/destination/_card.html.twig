@@ -1,0 +1,33 @@
+{#
+    Carte « destination » (spec Destinations §1.9) : badge optionnel,
+    favori (cœur plein rouge si d.favorite), tagline, note en pastille,
+    reviews, nombre d'activités, prix « À partir de ».
+    Variables : d (name, tagline, rating, reviews, count, price, badge,
+    favorite, image), href (défaut : page ville Lille).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<a href="{{ href|default(path('app_destination_city', { ville: 'lille' })) }}" class="pl-card dest-card">
+    <div class="pl-card__media">
+        <img src="{{ asset(d.image) }}" alt="{{ d.name }}">
+        {% if d.badge %}
+            <span class="pl-card__tag {{ { 'Populaire': 'pl-card__tag--popular', 'Bestseller': 'pl-card__tag--bestseller', 'Tendance': 'pl-card__tag--trend' }[d.badge] }}">{{ d.badge }}</span>
+        {% endif %}
+        <button type="button" class="pl-card__fav {{ d.favorite ? 'is-active' }}" aria-label="Ajouter aux favoris" aria-pressed="{{ d.favorite ? 'true' : 'false' }}">
+            {{ d.favorite ? icon.heart_solid(16) : icon.heart(16) }}
+        </button>
+    </div>
+    <div class="pl-card__body">
+        <span class="pl-card__place">{{ icon.map_pin(14) }} {{ d.tagline }}</span>
+        <span class="pl-card__title">{{ d.name }}</span>
+        <div class="act-card__meta">
+            <span class="act-rating">{{ icon.star(12) }} {{ d.rating }}</span>
+            <span class="act-card__reviews">{{ d.reviews }} reviews</span>
+            <span class="act-card__duration">{{ d.count }} activités</span>
+        </div>
+        <div class="pl-card__foot">
+            <span class="pl-card__from">À partir de</span>
+            <span class="pl-card__price">{{ d.price }}€</span>
+        </div>
+    </div>
+</a>
