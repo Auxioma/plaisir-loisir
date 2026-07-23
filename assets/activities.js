@@ -303,6 +303,18 @@ async function initLeafletMap(mapview) {
     // Vue France entière d'emblée (tous les marqueurs sont visibles même si
     // le recadrage différé ci-dessous n'a pas encore tourné).
     leafletMap = L.map(el, { zoomControl: false, center: [46.2, 3.4], zoom: 6 });
+    // Bouton « localisation » au-dessus du zoom (maquette écran E).
+    const locate = L.control({ position: 'bottomright' });
+    locate.onAdd = () => {
+        const btn = L.DomUtil.create('a', 'leaflet-bar act-map-locate');
+        btn.href = '#';
+        btn.title = 'Ma position';
+        btn.setAttribute('aria-label', 'Centrer sur ma position');
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4m12 0h4M12 2v4m0 12v4"/><circle cx="12" cy="12" r="5"/></svg>';
+        L.DomEvent.on(btn, 'click', (e) => { L.DomEvent.preventDefault(e); leafletMap.locate({ setView: true, maxZoom: 10 }); });
+        return btn;
+    };
+    locate.addTo(leafletMap);
     L.control.zoom({ position: 'bottomright' }).addTo(leafletMap);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',

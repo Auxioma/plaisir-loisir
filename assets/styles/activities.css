@@ -312,6 +312,10 @@
 /* Dans la colonne droite, les conteneurs internes n'ont plus à se centrer. */
 .act-page.has-filters .act-content .home-container { max-width: none; padding-inline: 0; }
 .act-page.has-filters .act-content .card-grid { grid-template-columns: repeat(3, 1fr); }
+/* Volumes de la maquette D : 2 rangées de 3 dans la grille principale,
+   3 cartes par section ailleurs. */
+.act-page.has-filters .act-grid > :nth-child(n+7) { display: none; }
+.act-page.has-filters .act-content .card-grid:not(.act-grid) > :nth-child(n+4) { display: none; }
 
 .act-filters {
     position: sticky;
@@ -486,6 +490,16 @@
 }
 .act-marker .pl-icon { color: var(--pl-warning); }
 .act-marker.is-hot, .act-marker:hover { transform: scale(1.12); border-color: var(--pl-action); z-index: 1000 !important; }
+
+.act-map-locate {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    background: var(--pl-white);
+    color: var(--pl-text);
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+.act-map-locate:hover { color: var(--pl-action); }
 
 .act-cluster {
     display: flex; align-items: center; justify-content: center;
