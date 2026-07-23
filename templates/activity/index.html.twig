@@ -277,6 +277,7 @@
                      title: a.title, place: a.place, rating: a.rating, reviews: a.reviews,
                      duration: a.duration, price: a.price, badge: a.badge, image: asset(a.image),
                      lat: a.lat, lng: a.lng,
+                     url: a.slug ? path('app_activity_show', { slug: a.slug }) : null,
                  })|json_encode|e('html_attr') }}"
                  data-clusters="{{ clusters|json_encode|e('html_attr') }}"></div>
         </div>

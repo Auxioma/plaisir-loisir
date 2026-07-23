@@ -12,7 +12,7 @@
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% set card_href = href|default(a.slug is defined and a.slug ? path('app_activity_show', { slug: a.slug }) : '#') %}
+{% set card_href = href|default(a.slug is defined and a.slug ? path('app_activity_show', { slug: a.slug }) : path('app_activities')) %}
 <a href="{{ card_href }}" class="pl-card act-card {{ horizontal|default(false) ? 'act-card--horizontal' }}">
     <div class="pl-card__media">
         <img src="{{ asset(a.image) }}" alt="{{ a.title }}">

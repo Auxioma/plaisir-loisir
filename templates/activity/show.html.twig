@@ -265,7 +265,7 @@
             </div>
             <div class="card-grid">
                 {% for a in suggestions %}
-                    {% include 'activity/_card.html.twig' with { a: a, href: a.slug ? path('app_activity_show', { slug: a.slug }) : '#' } %}
+                    {% include 'activity/_card.html.twig' with { a: a } %}
                 {% endfor %}
             </div>
         </div>

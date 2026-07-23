@@ -27,6 +27,6 @@
             <span class="offer-card__old">{{ o.oldPrice }}€</span>
             <span class="pl-card__price">{{ o.price }}€</span>
         </div>
-        <a href="{{ href|default('#') }}" class="pl-btn pl-btn--outline-action offer-card__cta">Voir l'offre</a>
+        <a href="{{ href|default(o.slug is defined and o.slug ? path('app_activity_show', { slug: o.slug }) : path('app_activities')) }}" class="pl-btn pl-btn--outline-action offer-card__cta">Voir l'offre</a>
     </div>
 </div>

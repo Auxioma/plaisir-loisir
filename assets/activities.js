@@ -332,7 +332,9 @@ async function initLeafletMap(mapview) {
                 <div class="act-popup__media"><img src="${m.image}" alt=""></div>
                 <div class="act-popup__body">
                     <span class="act-popup__place">${m.place}</span>
-                    <span class="act-popup__title">${m.title}</span>
+                    ${m.url
+                        ? `<a class="act-popup__title" href="${m.url}">${m.title}</a>`
+                        : `<span class="act-popup__title">${m.title}</span>`}
                     <span class="act-popup__meta">${starSvg} ${m.rating} (${m.reviews} reviews) · ${m.duration}</span>
                     <span class="act-popup__foot"><span class="act-popup__from">À partir de</span><span class="act-popup__price">${m.price}€</span></span>
                 </div>

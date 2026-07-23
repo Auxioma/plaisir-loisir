@@ -2,7 +2,7 @@
     Carte « sélection » (spec §2.4) : image + titre + « X activités ».
     Ni note, ni prix. Variable : s (title, count, image).
 #}
-<a href="#" class="pl-card sel-card">
+<a href="{{ path('app_activities') }}" class="pl-card sel-card">
     <div class="pl-card__media">
         <img src="{{ asset(s.image) }}" alt="{{ s.title }}">
     </div>
