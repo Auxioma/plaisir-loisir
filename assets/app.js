@@ -26,3 +26,6 @@ import './activities.js';
 
 // Barre de recherche de l'accueil connecté (panneaux déroulants, calendrier).
 import './home_search.js';
+
+// Comportements du parcours Destinations (dropdown localisation, filtres…).
+import './destinations.js';

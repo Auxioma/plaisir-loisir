@@ -1,0 +1,122 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Activités à {{ city }}{% endblock %}
+{% block meta_description %}Découvrez les meilleures activités à faire à {{ city }} : expériences variées, meilleur prix garanti, annulation gratuite.{% endblock %}
+
+{% block header %}
+    {% if connected %}
+        {% include '_partials/navbar_connected.html.twig' with { nav_active: 'destinations' } %}
+    {% else %}
+        {% include '_partials/navbar_guest.html.twig' with { nav_active: 'destinations' } %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+<div class="act-page dest-page">
+
+    {# ==================================================================
+       EN-TÊTE DE PAGE (écrans 3-4) : identique à l'écran 2, mais H1
+       « Activités à Lille » et dropdown de localisation sur le champ lieu.
+       ================================================================ #}
+    <section class="act-head">
+        <div class="home-container">
+
+            <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
+                <a href="{{ path('app_home') }}">Accueil</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ path('app_destinations') }}">Destinations</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">{{ city }}</span>
+            </nav>
+
+            <h1 class="act-head__title dest-title">Activités à {{ city }}</h1>
+            <p class="act-head__subtitle">Découvrez les meilleures activités à faire à {{ city }}. Choisissez parmi un choix varié d'expériences pour créer des souvenirs inoubliables, en famille ou entre amis. Meilleur prix garanti - Annulation gratuite</p>
+
+            <form class="act-search" role="search" action="{{ path('app_destination_city', { ville: city|lower }) }}" method="get">
+                <div class="act-search__bar">
+                    <label class="act-search__field dest-locfield">
+                        {{ icon.map_pin(18) }}
+                        <input type="text" name="lieu" value="{{ city }}" aria-label="Lieu"
+                               id="dest-loc-input" autocomplete="off"
+                               role="combobox" aria-expanded="false" aria-controls="dest-locpanel">
+                    </label>
+                    <span class="act-search__sep" aria-hidden="true"></span>
+                    <label class="act-search__field">
+                        {{ icon.search(18) }}
+                        <input type="text" name="q" placeholder="Recherches par mots-clés" aria-label="Mots-clés">
+                    </label>
+                </div>
+                <button type="submit" class="act-search__submit" aria-label="Rechercher">{{ icon.search(20) }}</button>
+
+                {# Dropdown de localisation (écran 4). #}
+                <div class="dest-locpanel" id="dest-locpanel" role="listbox" aria-label="Choisir une localisation" hidden>
+                    <button type="button" class="dest-locpanel__item" role="option" aria-selected="false" data-loc-anywhere>
+                        {{ icon.send(18) }} N'importe où
+                    </button>
+                    <button type="button" class="dest-locpanel__item" role="option" aria-selected="false" data-loc-nearby>
+                        {{ icon.crosshair(18) }} Autour de moi
+                    </button>
+                    <div class="dest-locpanel__sep" aria-hidden="true"></div>
+                    <p class="dest-locpanel__label">Suggestions</p>
+                    <div class="dest-locpanel__scroll">
+                        {% for v in ['Lille', 'Paris', 'Bordeaux', 'Toulouse', 'Annecy', 'Nice', 'Marseille', 'Grenoble'] %}
+                            <button type="button" class="dest-locpanel__item" role="option" aria-selected="{{ loop.first ? 'true' : 'false' }}" data-loc-city>
+                                {{ icon.map_pin(18) }} {{ v }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                </div>
+            </form>
+
+            <div class="act-toolbar dest-toolbar">
+                <div class="act-toolbar__right">
+                    <button type="button" class="act-tool">{{ icon.map(18) }} Afficher la carte</button>
+                    <div class="act-viewswitch" role="group" aria-label="Mode d'affichage">
+                        <button type="button" class="act-viewbtn" aria-label="Ouvrir les filtres">{{ icon.sliders(18) }}</button>
+                        <button type="button" class="act-viewbtn is-active" aria-label="Affichage en grille">{{ icon.list_view(18) }}</button>
+                    </div>
+                </div>
+            </div>
+
+            {# Chips : aucune n'est active sur cet écran (spec écran 3). #}
+            <div class="act-chipbar">
+                <button type="button" class="act-chip act-chip--filter">{{ icon.sliders(16) }} Filtre</button>
+                <span class="act-chipbar__sep" aria-hidden="true"></span>
+                <div class="act-chipbar__scroll">
+                    {% for chip in ['Toutes', 'Natures & Plein-air', 'Cultures & Découverte', 'Ateliers & Créations', 'Soirées & Évènements', 'Bien-être'] %}
+                        <button type="button" class="act-chip">{{ chip }}</button>
+                    {% endfor %}
+                </div>
+                <button type="button" class="act-chipbar__more" aria-label="Faire défiler les filtres">{{ icon.chevron_right(16) }}</button>
+            </div>
+
+            <div class="act-results">
+                <p class="act-results__count"><strong>400+</strong> de résultats trouvés</p>
+                <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} Trier par: <strong>Les plus populaires</strong></button>
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       GRILLE 4×3 DES ACTIVITÉS (mode « catégorie », libellé rouge).
+       ================================================================ #}
+    <section class="act-section">
+        <div class="home-container">
+            <div class="card-grid">
+                {% for a in activities %}
+                    {% include 'activity/_card.html.twig' with { a: a } %}
+                {% endfor %}
+            </div>
+            <div class="act-more">
+                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus d'activités {{ icon.chevron_down(16) }}</button>
+            </div>
+        </div>
+    </section>
+
+    {% include 'destination/_selection.html.twig' with { selections: selections, cities: cities } %}
+
+    {% include 'destination/_reviews_band.html.twig' with { reviews: reviews } %}
+
+</div>
+{% endblock %}

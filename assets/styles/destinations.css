@@ -36,6 +36,66 @@
 .pl-btn--signup { display: inline-flex; align-items: center; gap: var(--pl-sp-8); }
 
 /* ===========================================================================
+ *  CARTE ACTIVITÉ EN MODE « CATÉGORIE » (écrans 3-4, spec §1.10)
+ * ======================================================================== */
+.act-card__cat {
+    display: flex; align-items: center; gap: 4px;
+    font-size: var(--pl-fs-body-sm);
+    color: #dc2626;                    /* libellé de catégorie brique (maquette) */
+}
+.act-card__cat .pl-icon { color: #dc2626; flex-shrink: 0; }
+
+/* ===========================================================================
+ *  DROPDOWN DE LOCALISATION (écran 4, spec)
+ * ======================================================================== */
+.act-search { position: relative; }
+.dest-locpanel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 272px;
+    padding: var(--pl-sp-8);
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+    z-index: 70;                       /* recouvre la barre de chips (voulu) */
+    display: flex; flex-direction: column; gap: 2px;
+}
+.dest-locpanel[hidden] { display: none; }
+.dest-locpanel__item {
+    display: flex; align-items: center; gap: 10px;
+    height: 40px;
+    padding: 0 var(--pl-sp-16);
+    background: 0; border: 0;
+    border-radius: var(--pl-radius-xs);
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text);
+    cursor: pointer;
+    text-align: left;
+}
+.dest-locpanel__item:hover { background: #f4f5f7; }
+.dest-locpanel__item:focus-visible { outline: 2px solid var(--pl-action); outline-offset: -2px; }
+.dest-locpanel__item .pl-icon { color: var(--pl-text-secondary); flex-shrink: 0; }
+.dest-locpanel__item.is-loading { opacity: .6; pointer-events: none; }
+.dest-locpanel__sep { height: 1px; background: var(--pl-border); margin: var(--pl-sp-4) 0; }
+.dest-locpanel__label {
+    margin: 4px 0 2px;
+    padding: 0 var(--pl-sp-16);
+    font-size: var(--pl-fs-caption);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text-secondary);
+    text-transform: uppercase; letter-spacing: .04em;
+}
+.dest-locpanel__scroll { max-height: 208px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.dest-locpanel__error {
+    margin: 2px 0 4px;
+    padding: 0 var(--pl-sp-16);
+    font-size: var(--pl-fs-caption);
+    color: var(--pl-error);
+}
+
+/* ===========================================================================
  *  BANDEAU « CE QUE DISENT LES VOYAGEURS » (spec §1.14)
  * ======================================================================== */
 .dest-reviews { background: #f4f5f7; }
