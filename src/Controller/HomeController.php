@@ -33,7 +33,7 @@ final class HomeController extends AbstractController
     #[Route('/', name: 'app_home')]
     public function index(Request $request): Response
     {
-        $connected = $this->getUser() !== null
+        $connected = null !== $this->getUser()
             || ($this->debug && $request->query->getBoolean('connecte'));
 
         if ($connected) {

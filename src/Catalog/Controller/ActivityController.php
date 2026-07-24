@@ -40,8 +40,8 @@ final class ActivityController extends AbstractController
     public function show(string $slug): Response
     {
         $activity = StaticCatalog::activity($slug);
-        if ($activity === null) {
-            throw $this->createNotFoundException(sprintf("Activité « %s » introuvable.", $slug));
+        if (null === $activity) {
+            throw $this->createNotFoundException(sprintf('Activité « %s » introuvable.', $slug));
         }
 
         return $this->render('activity/show.html.twig', [

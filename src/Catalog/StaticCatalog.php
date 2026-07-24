@@ -294,7 +294,7 @@ final class StaticCatalog
                     "Passer sous l'arche naturelle du Pont d'Arc, emblème des Gorges",
                     "Traverser la Réserve Naturelle des Gorges de l'Ardèche",
                     'Admirer des paysages spectaculaires inaccessibles par la route',
-                    "Profiter de pauses baignade dans une eau limpide",
+                    'Profiter de pauses baignade dans une eau limpide',
                 ],
             ],
             'included' => [

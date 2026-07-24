@@ -84,7 +84,7 @@ final class StaticDestinations
             $a = $all[$slug];
             $a['category'] = $categories[$slug];
             // La maquette pose un 2e Bestseller sur le yoga (rangées 2-3).
-            if ($slug === 'seance-de-yoga-en-pleine-nature') {
+            if ('seance-de-yoga-en-pleine-nature' === $slug) {
                 $a['badge'] = 'Bestseller';
             }
             $cards[] = $a;
@@ -109,7 +109,7 @@ final class StaticDestinations
             'duration' => $duration,
             'price' => $price,
             'badge' => $badge,
-            'image' => 'images/destinations/' . $image,
+            'image' => 'images/destinations/'.$image,
         ];
 
         return [
@@ -140,7 +140,7 @@ final class StaticDestinations
         $t = static fn (string $name, int $count, string $image, string $span, int $col, int $row, string $align = 'left'): array => [
             'name' => $name,
             'count' => $count,
-            'image' => 'images/destinations/' . $image,
+            'image' => 'images/destinations/'.$image,
             'span' => $span,
             'col' => $col,
             'row' => $row,
@@ -207,7 +207,7 @@ final class StaticDestinations
             [
                 'stars' => 5,
                 'title' => 'Efficient and Reliable',
-                'text' => "Réservation simple et rapide, prestataire au top et activité conforme à la description. On sent que la plateforme sélectionne bien ses partenaires — je recommande les yeux fermés.",
+                'text' => 'Réservation simple et rapide, prestataire au top et activité conforme à la description. On sent que la plateforme sélectionne bien ses partenaires — je recommande les yeux fermés.',
                 'author' => 'John Mans',
                 'meta' => 'France, Nantes',
                 'date' => '10 Juillet 2026',

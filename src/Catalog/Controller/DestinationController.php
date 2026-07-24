@@ -58,7 +58,7 @@ final class DestinationController extends AbstractController
     #[Route('/destinations/{ville}', name: 'app_destination_city', requirements: ['ville' => '(?!populaires$)[a-z0-9\-]+'])]
     public function city(Request $request, string $ville): Response
     {
-        if ($ville !== 'lille') {
+        if ('lille' !== $ville) {
             throw $this->createNotFoundException(sprintf('Destination « %s » inconnue.', $ville));
         }
 
@@ -74,7 +74,7 @@ final class DestinationController extends AbstractController
 
     private function isConnected(Request $request): bool
     {
-        return $this->getUser() !== null
+        return null !== $this->getUser()
             || ($this->debug && $request->query->getBoolean('connecte'));
     }
 }
