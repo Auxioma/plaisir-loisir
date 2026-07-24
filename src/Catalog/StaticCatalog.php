@@ -135,7 +135,11 @@ final class StaticCatalog
         ];
     }
 
-    /** Une activité par son slug (ou null si inconnue). */
+    /**
+     * Une activité par son slug (ou null si inconnue).
+     *
+     * @return array<string, mixed>|null
+     */
     public static function activity(string $slug): ?array
     {
         return self::activities()[$slug] ?? null;
