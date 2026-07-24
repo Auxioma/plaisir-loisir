@@ -185,7 +185,7 @@
                     <h2 class="home-section__title">Categories populaires</h2>
                     <p class="home-section__subtitle">Envie d'aventure, de détente ou de découvertes ? Explorez nos catégories et trouvez l'activité qui vous ressemble.</p>
                 </div>
-                <a href="#" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
+                <a href="{{ path('app_destinations') }}" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
             </div>
             <div class="home-cats">
                 <button type="button" class="home-cats__nav" data-cats-prev aria-label="Catégories précédentes">{{ icon.chevron_left(16) }}</button>
@@ -268,7 +268,7 @@
                     <h2 class="home-section__title">Destinations populaires</h2>
                     <p class="home-section__subtitle">Des villes d'art aux paysages grandioses : choisissez votre prochaine destination.</p>
                 </div>
-                <a href="#" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
+                <a href="{{ path('app_destinations') }}" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
             </div>
             {% set destinations = [
                 {img: 'dest-paris.png',       title: 'Paris, France',   desc: 'Ville lumière et capitale de la culture', reviews: 256, count: '32 activités', price: 25, tag: 'Populaire'},
@@ -278,7 +278,7 @@
             ] %}
             <div class="card-grid">
                 {% for d in destinations %}
-                    <a href="#" class="pl-card">
+                    <a href="{{ path('app_destinations_popular') }}" class="pl-card">
                         <div class="pl-card__media">
                             <img src="{{ asset('images/home/' ~ d.img) }}" alt="{{ d.title }}">
                             {% if d.tag %}

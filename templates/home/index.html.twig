@@ -144,7 +144,7 @@
                     <h2 class="home-section__title">Destinations populaires</h2>
                     <p class="home-section__subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.</p>
                 </div>
-                <a href="#" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
+                <a href="{{ path('app_destinations') }}" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
             </div>
             <div class="card-grid">
                 {% for d in destinations %}
