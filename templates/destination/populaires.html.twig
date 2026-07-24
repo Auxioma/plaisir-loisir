@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block body %}
-<div class="act-page dest-page">
+<div class="act-page dest-page" id="dest-page">
 
     {# ==================================================================
        EN-TÊTE DE PAGE (écran 2) : fil d'Ariane, titre non gras, intro,
@@ -37,7 +37,7 @@
                 <div class="act-search__bar">
                     <label class="act-search__field">
                         {{ icon.map_pin(18) }}
-                        <input type="text" name="lieu" value="Lille" aria-label="Lieu">
+                        <input type="text" name="lieu" value="Lille" data-dest-lieu aria-label="Lieu">
                     </label>
                     <span class="act-search__sep" aria-hidden="true"></span>
                     <label class="act-search__field">
@@ -59,11 +59,17 @@
                 </div>
             </div>
 
-            {# Chips de catégories (spec §1.7) : Filtre + Toutes active. #}
+            {# Chips (spec §1.7). « ‹ Filtre » violet + « Gastronomies » en
+               violet clair apparaissent quand le panneau est ouvert (écran 5). #}
             <div class="act-chipbar">
-                <button type="button" class="act-chip act-chip--filter" id="dest-chip-filter">{{ icon.sliders(16) }} Filtre</button>
+                <button type="button" class="act-chip act-chip--filter" id="dest-chip-filter" aria-expanded="false" aria-controls="dest-filters">
+                    <span class="dest-chip-filter__back" hidden>{{ icon.chevron_left(14) }}</span>
+                    {{ icon.sliders(16) }} Filtre
+                    <span class="act-chip__counter" id="dest-filter-counter" hidden>1</span>
+                </button>
                 <span class="act-chipbar__sep" aria-hidden="true"></span>
                 <div class="act-chipbar__scroll">
+                    <button type="button" class="act-chip act-chip--soft" id="dest-chip-gastro" hidden>Gastronomies</button>
                     {% for chip in ['Toutes', 'Natures & Plein-air', 'Cultures & Découverte', 'Ateliers & Créations', 'Soirées & Évènements', 'Bien-être'] %}
                         <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">{{ chip }}</button>
                     {% endfor %}
@@ -73,17 +79,168 @@
 
             <div class="act-results">
                 <p class="act-results__count"><strong>400+</strong> de résultats trouvés</p>
-                <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} Trier par: <strong>Les plus populaires</strong></button>
+                <div class="dest-sort">
+                    <button type="button" class="act-tool act-tool--plain" id="dest-sort-toggle" aria-expanded="false" aria-controls="dest-sort-menu">
+                        {{ icon.sort(16) }} Trier par: <strong id="dest-sort-label">Les plus populaires</strong> {{ icon.chevron_down(14) }}
+                    </button>
+                    {# Dropdown de tri (écran 7.B) : visuel « case à cocher »,
+                       comportement exclusif (radiogroup) — point signalé designer. #}
+                    <div class="dest-sort__menu" id="dest-sort-menu" role="radiogroup" aria-label="Trier les résultats" hidden>
+                        {% for s in ['Les plus populaires', 'Les plus récents', 'Note des voyageurs', 'Prix croissant', 'Prix décroissant', 'Durée'] %}
+                            <button type="button" class="dest-sort__option {{ loop.first ? 'is-checked' }}" role="radio" aria-checked="{{ loop.first ? 'true' : 'false' }}" data-sort-option>
+                                <span class="dest-sort__box" aria-hidden="true"></span> {{ s }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
     {# ==================================================================
-       GRILLE 4×4 DES DESTINATIONS (écran 2).
+       ZONE COMMUTABLE : sidebar de filtres (écran 5) + contenu.
        ================================================================ #}
-    <section class="act-section">
+    <div class="act-body" id="dest-body">
+
+    <aside class="act-filters" id="dest-filters" aria-label="Filtres" hidden>
+        <div class="act-filters__head">
+            <span class="act-filters__title">Filtres</span>
+            <button type="button" class="act-filters__reset" id="dest-filters-reset">Réinitialiser</button>
+        </div>
+
+        <div class="act-filters__applied">
+            <span class="act-filters__label">Filtres appliqués</span>
+            <button type="button" class="act-chip is-active" id="dest-applied-gastro">{{ icon.cat_crafts(14) }} Gastronomie {{ icon.x(14) }}</button>
+        </div>
+
+        {# Date : readonly, ouvre le calendrier de plage (écran 6). #}
+        <label class="act-filters__field dest-anchor">
+            <span>Date</span>
+            <span class="act-filters__input">
+                {{ icon.calendar(16) }}
+                <input type="text" placeholder="Sélectionnez une date" readonly id="dest-date-input" aria-haspopup="dialog">
+            </span>
+        </label>
+
+        {# Calendrier « Choisir vos dates » (écran 6). #}
+        <div class="dest-popover dest-popover--cal" id="dest-cal" role="dialog" aria-label="Choisir vos dates" hidden
+             data-year="2026" data-month="7" data-start="16" data-end="17">
+            <div class="dest-popover__head">
+                <strong>Choisir vos dates</strong>
+                <button type="button" class="dest-popover__close" data-cal-close aria-label="Fermer">{{ icon.x(16) }}</button>
+            </div>
+            <div class="dest-cal__nav">
+                <button type="button" data-cal-prev aria-label="Mois précédent">{{ icon.chevron_left(16) }}</button>
+                <strong data-cal-title>Juillet 2026</strong>
+                <button type="button" data-cal-next aria-label="Mois suivant">{{ icon.chevron_right(16) }}</button>
+            </div>
+            <div class="dest-cal__days" aria-hidden="true">
+                <span>lun.</span><span>mar.</span><span>mer.</span><span>jeu.</span><span>ven.</span><span>sam.</span><span>dim.</span>
+            </div>
+            <div class="dest-cal__grid" data-cal-grid></div>
+            <div class="dest-popover__foot">
+                <button type="button" class="dest-popover__reset" data-cal-reset>Réinitialiser</button>
+                <button type="button" class="pl-btn pl-btn--primary" data-cal-apply>Appliquer</button>
+            </div>
+        </div>
+
+        {# Participants : readonly, ouvre le popover voyageurs (écran 7.A). #}
+        <label class="act-filters__field dest-anchor">
+            <span>Participants</span>
+            <span class="act-filters__input">
+                {{ icon.users(16) }}
+                <input type="text" value="01 participant" readonly id="dest-trav-input" aria-haspopup="dialog">
+            </span>
+        </label>
+
+        {# Popover « Nombre de voyageurs » (écran 7.A). #}
+        <div class="dest-popover dest-popover--trav" id="dest-trav" role="dialog" aria-label="Nombre de voyageurs" hidden>
+            <div class="dest-popover__head">
+                <strong>Nombre de voyageurs</strong>
+                <button type="button" class="dest-popover__close" data-trav-close aria-label="Fermer">{{ icon.x(16) }}</button>
+            </div>
+            <p class="dest-popover__note" data-trav-note>*Vous pouvez choisir jusqu'à 10 voyageurs au total</p>
+            <div class="act-stepper" data-stepper data-min="1" data-count="2">
+                <span>Adulte <small>(18 et +)</small></span>
+                <span class="act-stepper__controls">
+                    <button type="button" data-step="-1" aria-label="Moins d'adultes">{{ icon.minus(14) }}</button>
+                    <output data-stepper-value>2</output>
+                    <button type="button" data-step="1" aria-label="Plus d'adultes">{{ icon.plus(14) }}</button>
+                </span>
+            </div>
+            <div class="dest-popover__sep" aria-hidden="true"></div>
+            <div class="act-stepper" data-stepper data-min="0" data-count="0">
+                <span>Enfants <small>(0 à 17 ans)</small></span>
+                <span class="act-stepper__controls">
+                    <button type="button" data-step="-1" aria-label="Moins d'enfants">{{ icon.minus(14) }}</button>
+                    <output data-stepper-value>0</output>
+                    <button type="button" data-step="1" aria-label="Plus d'enfants">{{ icon.plus(14) }}</button>
+                </span>
+            </div>
+            <div class="dest-popover__foot">
+                <button type="button" class="dest-popover__reset" data-trav-reset>Réinitialiser</button>
+                <button type="button" class="pl-btn pl-btn--primary" data-trav-apply>Appliquer</button>
+            </div>
+        </div>
+
+        <fieldset class="act-filters__group">
+            <legend>Type de destination</legend>
+            <button type="button" class="act-filters__dest is-active" data-dest-type>{{ icon.globe(18) }} Toutes les destinations</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.building(18) }} Villes</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_hiking(18) }} Montagnes</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.beach(18) }} Mers &amp; Plages</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.tree(18) }} Campagnes</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_canoe(18) }} Lacs &amp; Rivières</button>
+        </fieldset>
+
+        <fieldset class="act-filters__group">
+            <legend>Activités populaires</legend>
+            {% for c in ['Sports & Aventures', 'Bien-être', 'Culture & Découverte', 'En famille', 'Romantique', 'Gastronomie'] %}
+                <label class="act-filters__check">
+                    <input type="checkbox" data-filter-check {{ loop.last ? 'checked' }}> {{ c }}
+                </label>
+            {% endfor %}
+        </fieldset>
+
+        <fieldset class="act-filters__group" id="dest-budget">
+            <legend>Budget (par personne)</legend>
+            <div class="act-budget__slider">
+                <div class="act-budget__track" aria-hidden="true"></div>
+                <div class="act-budget__range" data-budget-range aria-hidden="true"></div>
+                <input type="range" min="0" max="1050" step="1" value="154" data-budget-min aria-label="Budget minimum">
+                <input type="range" min="0" max="1050" step="1" value="1050" data-budget-max aria-label="Budget maximum">
+            </div>
+            <div class="act-budget__bounds"><span>0€</span><span>1050€ et +</span></div>
+            <div class="act-budget__inputs">
+                <input type="text" inputmode="numeric" value="154€" data-budget-input-min aria-label="Budget minimum en euros">
+                <input type="text" inputmode="numeric" value="1050+€" data-budget-input-max aria-label="Budget maximum en euros">
+            </div>
+        </fieldset>
+
+        <fieldset class="act-filters__group">
+            <legend>Note des utilisateurs</legend>
+            {% for n in [5, 4, 3, 2, 1] %}
+                <label class="act-filters__check act-filters__check--stars">
+                    <input type="checkbox" data-filter-check>
+                    <span class="act-filters__stars" aria-label="{{ n }} étoile{{ n > 1 ? 's' }} et plus">
+                        {% for i in 1..5 %}<span class="{{ i <= n ? 'is-on' : 'is-off' }}">{{ icon.star(16) }}</span>{% endfor %}
+                    </span>
+                </label>
+            {% endfor %}
+        </fieldset>
+
+        <button type="button" class="pl-btn pl-btn--primary pl-btn--block">Affichez les résultats</button>
+        <p class="act-filters__count"><strong id="dest-found-count">126</strong> activités trouvées</p>
+    </aside>
+
+    <div class="act-content">
+
+    {# ==================================================================
+       GRILLE PAR DÉFAUT (écran 2) : 16 destinations, 4×4.
+       ================================================================ #}
+    <section class="act-section" id="dest-grid-default">
         <div class="home-container">
-            <div class="card-grid">
+            <div class="card-grid dest-default-grid">
                 {% for d in destinations %}
                     {% include 'destination/_card.html.twig' with { d: d } %}
                 {% endfor %}
@@ -94,11 +251,31 @@
         </div>
     </section>
 
+    {# ==================================================================
+       GRILLE FILTRÉE (écran 5) : 12 activités Gastronomie, 3×4.
+       ================================================================ #}
+    <section class="act-section" id="dest-grid-filtered" hidden>
+        <div class="home-container">
+            <div class="card-grid dest-gastro-grid">
+                {% for a in gastronomy %}
+                    {% include 'activity/_card.html.twig' with { a: a } %}
+                {% endfor %}
+            </div>
+            <div class="act-more">
+                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus d'activités {{ icon.chevron_down(16) }}</button>
+            </div>
+        </div>
+    </section>
+
     {# Votre sélection d'activités + pagination (spec §1.12-1.13). #}
     {% include 'destination/_selection.html.twig' with { selections: selections, cities: cities } %}
 
-    {# Ce que disent les voyageurs (spec §1.14), pleine largeur. #}
+    {# Ce que disent les voyageurs (spec §1.14) : pleine largeur par
+       défaut, borné à la colonne quand la sidebar est ouverte. #}
     {% include 'destination/_reviews_band.html.twig' with { reviews: reviews } %}
+
+    </div>{# /.act-content #}
+    </div>{# /.act-body #}
 
 </div>
 {% endblock %}

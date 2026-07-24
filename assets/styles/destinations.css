@@ -96,6 +96,271 @@
 }
 
 /* ===========================================================================
+ *  ÉCRAN 1 — LANDING DESTINATIONS
+ * ======================================================================== */
+/* --- Hero plage : voile blanc à gauche, titre 3 lignes accent orange. --- */
+.dest-hero { position: relative; min-height: 436px; display: flex; align-items: center; overflow: hidden; }
+.dest-hero__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 60%; }
+.dest-hero__overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(255, 255, 255, .95) 0%, rgba(255, 255, 255, .78) 34%, rgba(255, 255, 255, .25) 62%, rgba(255, 255, 255, 0) 82%);
+}
+.dest-hero__inner { position: relative; z-index: 1; width: 100%; padding-block: 56px; }
+.dest-hero__title {
+    max-width: 580px;
+    margin: 0 0 var(--pl-sp-16);
+    font-size: 42px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 1.25;
+    color: var(--pl-text);
+}
+.dest-hero__title .is-accent-line { color: var(--pl-cta); }
+.dest-hero__subtitle { max-width: 512px; margin: 0; font-size: var(--pl-fs-body); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); }
+
+/* --- Carrousel des catégories populaires (cartes horizontales). --- */
+.dest-cats { display: flex; align-items: center; gap: var(--pl-sp-12); }
+.dest-cats__scroll { display: flex; gap: var(--pl-sp-12); overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; flex: 1; }
+.dest-cats__scroll::-webkit-scrollbar { display: none; }
+.dest-cat {
+    flex: 0 0 215px;
+    display: flex; align-items: center; gap: var(--pl-sp-12);
+    padding: var(--pl-sp-16);
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    text-decoration: none;
+    transition: box-shadow .15s ease, transform .15s ease;
+}
+.dest-cat:hover { box-shadow: 0 8px 24px rgba(15, 23, 42, .1); transform: translateY(-2px); }
+.dest-cat__icon {
+    flex-shrink: 0;
+    width: 52px; height: 52px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pl-action-light);
+    color: var(--pl-action);
+    border-radius: 50%;
+}
+.dest-cat > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.dest-cat__label { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
+.dest-cat__count { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+
+/* --- Mosaïque « Toutes nos destinations » : grille 8 colonnes. --- */
+.dest-mosaic {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-auto-rows: 306px;
+    gap: var(--pl-sp-16);
+}
+.dest-tile {
+    position: relative;
+    display: block;
+    border-radius: var(--pl-radius-md);
+    overflow: hidden;
+    text-decoration: none;
+}
+.dest-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .3s ease; }
+.dest-tile:hover img { transform: scale(1.04); }
+/* Voile pour la lisibilité du nom de ville (exigence contraste). */
+.dest-tile::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(6, 27, 86, 0) 45%, rgba(6, 27, 86, .55) 100%);
+}
+.dest-tile__badge {
+    position: absolute; top: 12px; right: 12px; z-index: 1;
+    padding: 4px 10px;
+    background: var(--pl-action);
+    color: var(--pl-white);
+    font-size: var(--pl-fs-caption);
+    font-weight: var(--pl-fw-semibold);
+    border-radius: var(--pl-radius-pill);
+}
+.dest-tile__name {
+    position: absolute; left: 16px; right: 16px; bottom: 14px; z-index: 1;
+    color: var(--pl-white);
+    font-size: var(--pl-fs-body);
+    font-weight: var(--pl-fw-bold);
+}
+.dest-tile--center .dest-tile__name { text-align: center; }
+
+/* --- Bannière « Partez à la découverte du monde ». --- */
+.dest-banner {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    align-items: center;
+    gap: var(--pl-sp-32);
+    min-height: 416px;
+    padding: var(--pl-sp-32) 48px;
+    border-radius: var(--pl-radius-md);
+    overflow: hidden;
+}
+.dest-banner__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.dest-banner__overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(6, 27, 86, .88) 0%, rgba(6, 27, 86, .62) 46%, rgba(6, 27, 86, .25) 100%);
+}
+.dest-banner__text { position: relative; z-index: 1; max-width: 480px; }
+.dest-banner__text h2 { margin: 0 0 var(--pl-sp-12); font-size: var(--pl-fs-h2); font-weight: var(--pl-fw-medium); color: var(--pl-white); }
+.dest-banner__text h2 span { color: #9db8ff; }
+.dest-banner__text p { margin: 0 0 var(--pl-sp-24); font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: rgba(255, 255, 255, .85); }
+.dest-banner__ideas {
+    position: relative; z-index: 1;
+    background: var(--pl-white);
+    border-radius: var(--pl-radius-md);
+    padding: var(--pl-sp-20);
+    display: flex; flex-direction: column; gap: var(--pl-sp-12);
+    box-shadow: 0 12px 32px rgba(6, 27, 86, .25);
+}
+.dest-banner__ideas h3 { margin: 0 0 var(--pl-sp-4); font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.dest-idea { display: flex; align-items: center; gap: var(--pl-sp-12); text-decoration: none; border-radius: var(--pl-radius-sm); padding: 4px; }
+.dest-idea:hover { background: #f4f5f7; }
+.dest-idea img { width: 40px; height: 40px; border-radius: var(--pl-radius-xs); object-fit: cover; flex-shrink: 0; }
+.dest-idea span { display: flex; flex-direction: column; }
+.dest-idea strong { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
+.dest-idea small { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+
+@media (max-width: 1100px) {
+    .dest-mosaic { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 240px; }
+    .dest-mosaic .dest-tile { grid-column: auto / span 1 !important; grid-row: auto / span 1 !important; }
+    .dest-banner { grid-template-columns: 1fr; }
+}
+
+/* ===========================================================================
+ *  ÉCRAN 5 — SIDEBAR DE FILTRES & ÉTATS DES CHIPS
+ * ======================================================================== */
+/* Chip « Gastronomies » : filtre appliqué en violet clair. */
+.act-chip--soft { background: var(--pl-action-light); color: var(--pl-action); border-color: transparent; font-weight: var(--pl-fw-semibold); }
+.act-chip--soft[hidden] { display: none; }
+
+/* Libellé « Filtres appliqués » au-dessus de la chip. */
+.act-filters__label { width: 100%; font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
+
+/* La sidebar sticky crée son propre contexte d'empilement : on la place
+   au-dessus du contenu pour que ses popovers (fixed) ne passent pas sous
+   les cartes de la colonne de droite. */
+.dest-page .act-filters { z-index: 40; }
+
+/* Grille filtrée : les 12 cartes gastronomie restent toutes visibles
+   (annule la règle générique de volumes du flow Activités — même
+   spécificité, mais chargée après). */
+.dest-page.has-filters .act-content .card-grid.dest-gastro-grid > :nth-child(n+4) { display: flex; }
+
+/* Sous filtre, le bandeau d'avis reste borné à la colonne de droite. */
+.dest-page.has-filters .dest-reviews { border-radius: var(--pl-radius-md); padding-inline: var(--pl-sp-32); }
+
+/* Les titres des cartes gastronomie peuvent occuper 2 lignes : hauteur
+   minimale pour garder meta et prix alignés dans la rangée (spec 5.B). */
+.dest-gastro-grid .pl-card__title { min-height: 2.7em; }
+
+/* ===========================================================================
+ *  POPOVERS (écrans 6-7) : calendrier de plage, voyageurs, tri
+ * ======================================================================== */
+.dest-anchor { position: relative; }
+.dest-popover {
+    position: absolute;
+    z-index: 50;
+    width: 330px;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .15);
+    padding: var(--pl-sp-20);
+    display: flex; flex-direction: column; gap: var(--pl-sp-12);
+}
+.dest-popover[hidden] { display: none; }
+/* Ancrés sur les champs de la sidebar mais en position fixe (calculée en
+   JS à l'ouverture) : ils débordent ainsi de la sidebar, au-dessus du
+   contenu principal, sans être rognés par son overflow (spec écrans 6-7). */
+.dest-popover--cal, .dest-popover--trav { position: fixed; top: 0; left: 0; }
+.dest-popover--trav { width: 300px; }
+.dest-popover__head { display: flex; align-items: center; justify-content: space-between; font-size: var(--pl-fs-body); color: var(--pl-text); }
+.dest-popover__close { background: 0; border: 0; padding: 2px; color: var(--pl-text-secondary); cursor: pointer; border-radius: 4px; }
+.dest-popover__close:hover { color: var(--pl-text); background: #f4f5f7; }
+.dest-popover__note { margin: 0; font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.dest-popover__note.is-danger { color: var(--pl-error); }
+.dest-popover__sep { height: 1px; background: var(--pl-border); }
+.dest-popover__foot { display: flex; align-items: center; justify-content: space-between; margin-top: var(--pl-sp-4); }
+.dest-popover__reset { background: 0; border: 0; padding: 0; font-size: var(--pl-fs-body-sm); color: var(--pl-text); text-decoration: underline; cursor: pointer; }
+
+/* --- Calendrier de plage. --- */
+.dest-cal__nav { display: flex; align-items: center; justify-content: space-between; font-size: var(--pl-fs-body-sm); color: var(--pl-text); }
+.dest-cal__nav button {
+    width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: 0; border: 0; border-radius: 50%;
+    color: var(--pl-text); cursor: pointer;
+}
+.dest-cal__nav button:hover { background: #f4f5f7; color: var(--pl-action); }
+.dest-cal__days, .dest-cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+.dest-cal__days span { text-align: center; font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.dest-cal__grid button {
+    width: 36px; height: 36px;
+    display: inline-flex; align-items: center; justify-content: center;
+    justify-self: center;
+    background: 0; border: 1px solid transparent;
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text);
+    cursor: pointer;
+}
+.dest-cal__grid button:hover { background: var(--pl-action-light); }
+.dest-cal__grid button.is-muted { color: var(--pl-border); pointer-events: none; }
+.dest-cal__grid button.is-start { background: var(--pl-action); color: var(--pl-white); font-weight: var(--pl-fw-bold); }
+.dest-cal__grid button.is-end { border-color: var(--pl-action); color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
+.dest-cal__grid button.is-between { background: var(--pl-action-light); border-radius: 0; }
+
+/* --- Dropdown de tri (écran 7.B). --- */
+.dest-sort { position: relative; }
+.dest-sort__menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    width: 200px;
+    padding: 6px;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+    z-index: 60;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.dest-sort__menu[hidden] { display: none; }
+.dest-sort__option {
+    display: flex; align-items: center; gap: var(--pl-sp-8);
+    height: 36px;
+    padding: 0 10px;
+    background: 0; border: 0;
+    border-radius: var(--pl-radius-xs);
+    font-size: 13px;
+    color: var(--pl-text);
+    cursor: pointer;
+    text-align: left;
+}
+.dest-sort__option:hover { background: #f4f5f7; }
+.dest-sort__option.is-checked { background: #f4f5f7; }
+.dest-sort__box {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px;
+    border: 1px solid var(--pl-border);
+    border-radius: 4px;
+    color: transparent;
+    flex-shrink: 0;
+}
+.dest-sort__option.is-checked .dest-sort__box { background: var(--pl-action); border-color: var(--pl-action); }
+.dest-sort__option.is-checked .dest-sort__box::after {
+    content: "";
+    width: 8px; height: 5px;
+    border-left: 2px solid var(--pl-white);
+    border-bottom: 2px solid var(--pl-white);
+    transform: rotate(-45deg) translateY(-1px);
+}
+
+/* Chevron « replier » du bouton Filtre ouvert. */
+.dest-chip-filter__back { display: inline-flex; }
+.dest-chip-filter__back[hidden] { display: none; }
+
+/* ===========================================================================
  *  BANDEAU « CE QUE DISENT LES VOYAGEURS » (spec §1.14)
  * ======================================================================== */
 .dest-reviews { background: #f4f5f7; }

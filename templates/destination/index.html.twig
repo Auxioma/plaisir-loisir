@@ -1,0 +1,152 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Destinations{% endblock %}
+{% block meta_description %}Tourisme dans toute la France : toutes les destinations. Des lieux exceptionnels, à des prix exclusifs, pour des expériences inoubliables.{% endblock %}
+
+{% block header %}
+    {% if connected %}
+        {% include '_partials/navbar_connected.html.twig' with { nav_active: 'destinations' } %}
+    {% else %}
+        {% include '_partials/navbar_guest.html.twig' with { nav_active: 'destinations' } %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+<div class="dest-page dest-landing">
+
+    {# ==================================================================
+       HERO (écran 1) : plage + voile blanc à gauche, H1 sur 3 lignes
+       avec « toutes les destinations » en orange.
+       ================================================================ #}
+    <section class="dest-hero">
+        <img class="dest-hero__bg" src="{{ asset('images/destinations/hero-plage.jpg') }}" alt="">
+        <div class="dest-hero__overlay" aria-hidden="true"></div>
+        <div class="home-container dest-hero__inner">
+            <h1 class="dest-hero__title">Tourisme dans toute la France&nbsp;: <span class="is-accent-line">toutes les destinations</span></h1>
+            <p class="dest-hero__subtitle">Découvrez toutes nos incroyables destinations, des lieux exceptionnels, à des prix exclusifs et vivez des expériences inoubliables.</p>
+        </div>
+    </section>
+
+    {# ==================================================================
+       CATÉGORIES POPULAIRES : fil d'Ariane + carrousel de 5 cartes.
+       ================================================================ #}
+    <section class="act-section">
+        <div class="home-container">
+            <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
+                <a href="{{ path('app_home') }}">Accueil</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">Destinations</span>
+            </nav>
+
+            <div class="home-section__head">
+                <div>
+                    <h2 class="home-section__title">Catégories populaires</h2>
+                    <p class="home-section__subtitle">Envie d'aventure, de détente ou de découvertes ? Explorez nos catégories et trouvez l'activité qui vous ressemble.</p>
+                </div>
+                <a href="{{ path('app_destinations_popular') }}" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
+            </div>
+
+            <div class="dest-cats">
+                <button type="button" class="home-cats__nav" data-dest-cats-prev aria-label="Voir les catégories précédentes">{{ icon.chevron_left(16) }}</button>
+                <div class="dest-cats__scroll" data-dest-cats-scroll>
+                    {% for c in categories %}
+                        <a href="{{ path('app_activities') }}" class="dest-cat">
+                            <span class="dest-cat__icon">
+                                {%- if c.icon == 'cat_canoe' %}{{ icon.cat_canoe(24) }}
+                                {%- elseif c.icon == 'cat_bike' %}{{ icon.cat_bike(24) }}
+                                {%- elseif c.icon == 'cat_hiking' %}{{ icon.cat_hiking(24) }}
+                                {%- elseif c.icon == 'cat_sports' %}{{ icon.cat_sports(24) }}
+                                {%- else %}{{ icon.cat_culture(24) }}
+                                {%- endif %}
+                            </span>
+                            <span>
+                                <span class="dest-cat__label">{{ c.label }}</span>
+                                <span class="dest-cat__count">{{ c.count }}</span>
+                            </span>
+                        </a>
+                    {% endfor %}
+                </div>
+                <button type="button" class="home-cats__nav" data-dest-cats-next aria-label="Voir les catégories suivantes">{{ icon.chevron_right(16) }}</button>
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       TOUTES NOS DESTINATIONS : mosaïque 15 tuiles à spans variables.
+       ================================================================ #}
+    <section class="act-section">
+        <div class="home-container">
+            <div class="home-section__head">
+                <div>
+                    <h2 class="home-section__title">Toutes nos destinations</h2>
+                </div>
+            </div>
+            <div class="dest-mosaic">
+                {% for t in mosaic %}
+                    <a href="{{ path('app_destination_city', { ville: 'lille' }) }}"
+                       class="dest-tile dest-tile--{{ t.span }} {{ t.align == 'center' ? 'dest-tile--center' }}"
+                       style="grid-column: {{ t.col }} / span {{ t.span == 'xwide' ? 4 : (t.span == 'wide' ? 3 : 2) }}; grid-row: {{ t.row }} / span {{ t.span == 'tall' ? 2 : 1 }};">
+                        <img src="{{ asset(t.image) }}" alt="{{ t.name }}">
+                        <span class="dest-tile__badge">{{ t.count }} Activités</span>
+                        <span class="dest-tile__name">{{ t.name }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+            <div class="act-more">
+                <a href="{{ path('app_destinations_popular') }}" class="pl-btn pl-btn--outline-action">Voir plus de destinations {{ icon.chevron_down(16) }}</a>
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       BANNIÈRE « PARTEZ À LA DÉCOUVERTE DU MONDE » + Idées du moment.
+       ================================================================ #}
+    <section class="act-section">
+        <div class="home-container">
+            <div class="dest-banner">
+                <img class="dest-banner__bg" src="{{ asset('images/destinations/banniere-monde.jpg') }}" alt="">
+                <div class="dest-banner__overlay" aria-hidden="true"></div>
+                <div class="dest-banner__text">
+                    <h2>Partez à la <span>découverte du monde</span></h2>
+                    <p>Explorez des destinations d'exception, près de chez vous ou à l'autre bout de la France.</p>
+                    <a href="{{ path('app_activities') }}#carte" class="pl-btn pl-btn--cta">Explorer la carte {{ icon.map(18) }}</a>
+                </div>
+                <aside class="dest-banner__ideas">
+                    <h3>Idées du moment</h3>
+                    {% for i in ideas %}
+                        <a href="{{ path('app_activities') }}" class="dest-idea">
+                            <img src="{{ asset(i.image) }}" alt="">
+                            <span>
+                                <strong>{{ i.title }}</strong>
+                                <small>{{ i.subtitle }}</small>
+                            </span>
+                        </a>
+                    {% endfor %}
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       DESTINATIONS POPULAIRES : 4 cartes + lien vers le listing.
+       ================================================================ #}
+    <section class="act-section">
+        <div class="home-container">
+            <div class="home-section__head">
+                <div>
+                    <h2 class="home-section__title">Destinations populaires</h2>
+                    <p class="home-section__subtitle">Des villes d'art aux paysages grandioses : choisissez votre prochaine destination.</p>
+                </div>
+                <a href="{{ path('app_destinations_popular') }}" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
+            </div>
+            <div class="card-grid">
+                {% for d in destinations %}
+                    {% include 'destination/_card.html.twig' with { d: d } %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}
