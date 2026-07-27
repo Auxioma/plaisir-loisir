@@ -35,11 +35,16 @@ final class HomeController extends AbstractController
         $connected = null !== $this->getUser()
             || ($this->debug && $request->query->getBoolean('connecte'));
 
-        // Depuis la génération de maquette du 21/07, visiteurs et connectés
-        // partagent la même page ; seul l'en-tête change (S'inscrire vs avatar).
-        return $this->render('home/connected.html.twig', [
-            'activities' => array_values(StaticCatalog::activities()),
-            'connected' => $connected,
-        ]);
+        // Deux pages distinctes (précision du 27/07) : l'accueil plateforme
+        // (« Crée des souvenirs », navbar Découvrez/langue) pour les visiteurs,
+        // et l'accueil Activités (hero kayak, navbar complète) une fois connecté.
+        if ($connected) {
+            return $this->render('home/connected.html.twig', [
+                'activities' => array_values(StaticCatalog::activities()),
+                'connected' => true,
+            ]);
+        }
+
+        return $this->render('home/index.html.twig');
     }
 }

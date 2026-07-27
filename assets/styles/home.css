@@ -14,6 +14,66 @@
 }
 
 /* ===========================================================================
+ *  EN-TÊTE DE L'ACCUEIL (spécifique)
+ *  « Découvrez » + sélecteur de langue, en menus déroulants natifs (<details>).
+ *  Scopé à l'accueil (--home) : la navbar partagée des pages d'authentification
+ *  n'est pas impactée.
+ * ======================================================================== */
+.pl-navbar--home { padding-inline: 48px; }
+.pl-navbar--home .pl-nav { gap: var(--pl-sp-8); }
+
+.pl-dropdown { position: relative; }
+.pl-dropdown__toggle {
+    list-style: none;
+    display: inline-flex; align-items: center; gap: var(--pl-sp-4);
+    padding: 10px var(--pl-sp-8);
+    color: var(--pl-text);
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-semibold);
+    line-height: var(--pl-lh-sm);
+    white-space: nowrap;
+    border-radius: var(--pl-radius-xs);
+    cursor: pointer;
+    transition: color .15s ease, background-color .15s ease;
+}
+.pl-dropdown__toggle::-webkit-details-marker { display: none; }   /* retire le triangle natif */
+.pl-dropdown__toggle:hover { color: var(--pl-action); background: var(--pl-action-light); }
+.pl-dropdown[open] > .pl-dropdown__toggle { color: var(--pl-action); }
+.pl-dropdown[open] > .pl-dropdown__toggle > .pl-icon:last-child { transform: rotate(180deg); }
+
+.pl-dropdown__menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    min-width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--pl-sp-8);
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, .14);
+    z-index: 1100;
+}
+.pl-dropdown--lang .pl-dropdown__menu { min-width: 170px; }
+.pl-dropdown__item {
+    display: flex; align-items: center; gap: var(--pl-sp-8);
+    padding: 10px 12px;
+    color: var(--pl-text);
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-medium);
+    text-decoration: none;
+    border-radius: var(--pl-radius-sm);
+    white-space: nowrap;
+}
+.pl-dropdown__item:hover { background: #f4f5f7; }
+.pl-dropdown__item.is-active { background: var(--pl-action-light); color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
+
+/* Petit drapeau du sélecteur de langue. */
+.pl-flag { display: block; border-radius: 2px; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(0, 0, 0, .08); }
+
+/* ===========================================================================
  *  HERO
  * ======================================================================== */
 .home-hero {
@@ -376,8 +436,8 @@
 }
 .home-hero--connected .home-hero__inner { padding-block: 44px 200px; }
 .home-connected .home-search-wrap { margin-top: -160px; }
-/* Maquette : ~86px entre les boutons du hero et les pilules de réassurance. */
-.home-hero--connected .home-hero__actions { margin-bottom: 86px; }
+/* Maquette : 25px (~0,5 cm) entre les boutons du hero et les pilules. */
+.home-hero--connected .home-hero__actions { margin-bottom: 25px; }
 .home-hero--connected .home-hero__bg { object-position: center; }
 .home-hero__title--light { color: var(--pl-white); max-width: 900px; }
 /* La partie orange occupe toute la 2e ligne, comme sur la maquette. */
