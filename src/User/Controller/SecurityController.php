@@ -53,6 +53,18 @@ final class SecurityController extends AbstractController
      * ------------------------------------------------------------------------
      */
 
+    /**
+     * Tout premier écran du flow d'authentification (maquette du 27/07) :
+     * choix du profil — Professionnel / Prestataire à gauche, Client à droite.
+     * Front navigable en attendant le back : chaque tuile mène à l'inscription
+     * avec le type présélectionné.
+     */
+    #[Route('/authentification', name: 'app_auth_choice')]
+    public function authChoice(): Response
+    {
+        return $this->render('security/choice.html.twig');
+    }
+
     #[Route('/mot-de-passe-oublie', name: 'app_forgot_password_request')]
     public function forgotPasswordRequest(): Response
     {

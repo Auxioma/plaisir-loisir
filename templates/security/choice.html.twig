@@ -1,0 +1,40 @@
+{#
+    Écran d'entrée du flow d'authentification (maquette du 27/07) :
+    choix du profil avant connexion / inscription.
+    Professionnel / Prestataire à gauche — Client à droite.
+    ⚠️ Construit d'après la description en attendant l'export Figma de la
+    frame « Connexion » (849:69450) pour le calage au pixel.
+#}
+{% extends 'security/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Bienvenue{% endblock %}
+
+{% block auth_card %}
+    <div class="auth-card">
+        <div class="auth-card__header">
+            <h2 class="auth-card__title">Bienvenue !</h2>
+            <p class="auth-card__subtitle">Dites-nous qui vous êtes pour continuer.</p>
+        </div>
+
+        <div class="auth-choice">
+            <a class="auth-choice__tile" href="{{ path('app_register', { type: 'pro' }) }}">
+                <span class="auth-choice__icon">{{ icon.building(28) }}</span>
+                <span class="auth-choice__name">Professionnel</span>
+                <span class="auth-choice__desc">Prestataire : proposez vos activités et développez votre clientèle.</span>
+            </a>
+            <a class="auth-choice__tile" href="{{ path('app_register', { type: 'client' }) }}">
+                <span class="auth-choice__icon">{{ icon.person(28) }}</span>
+                <span class="auth-choice__name">Client</span>
+                <span class="auth-choice__desc">Réservez des activités et vivez des expériences inoubliables.</span>
+            </a>
+        </div>
+
+        <div class="auth-actions">
+            <p class="auth-switch">
+                Vous avez déjà un compte ?
+                <a class="auth-inline-link" href="{{ path('app_login') }}">Connectez-vous</a>
+            </p>
+        </div>
+    </div>
+{% endblock %}

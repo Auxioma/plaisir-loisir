@@ -127,6 +127,36 @@
 }
 .auth-back:hover { color: var(--pl-action); }
 
+/* ---- Écran d'entrée : choix Professionnel / Client ---------------------- */
+.auth-choice { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pl-sp-16); }
+.auth-choice__tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--pl-sp-8);
+    padding: var(--pl-sp-24) var(--pl-sp-16);
+    background: var(--pl-white);
+    border: 1.5px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    text-align: center;
+    text-decoration: none;
+    transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+.auth-choice__tile:hover {
+    border-color: var(--pl-action);
+    box-shadow: 0 8px 24px rgba(93, 0, 255, .12);
+    transform: translateY(-2px);
+}
+.auth-choice__icon {
+    width: 56px; height: 56px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pl-action-light);
+    color: var(--pl-action);
+    border-radius: 50%;
+}
+.auth-choice__name { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.auth-choice__desc { font-size: var(--pl-fs-caption); line-height: var(--pl-lh-sm); color: var(--pl-text-secondary); }
+
 /* ---- Type de compte : Client / Professionnel ---------------------------- */
 .auth-acctype {
     display: flex;
