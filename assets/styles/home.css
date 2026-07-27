@@ -14,6 +14,101 @@
 }
 
 /* ===========================================================================
+ *  HERO
+ * ======================================================================== */
+.home-hero {
+    position: relative;
+    min-height: 560px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+.home-hero__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 60% 40%;
+    z-index: 0;
+}
+.home-hero__overlay {
+    position: absolute;
+    inset: 0;
+    /* Voile clair côté gauche : le texte foncé reste lisible par-dessus la photo. */
+    background:
+        linear-gradient(90deg, rgba(255, 255, 255, .94) 0%, rgba(255, 255, 255, .82) 34%, rgba(255, 255, 255, .35) 56%, rgba(255, 255, 255, 0) 78%),
+        linear-gradient(180deg, rgba(255, 255, 255, .55) 0%, transparent 24%);
+    z-index: 1;
+}
+.home-hero__inner {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding-block: 64px 96px;
+    color: var(--pl-text);
+}
+.home-hero__title {
+    max-width: 620px;
+    font-size: 52px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 62px;
+    color: var(--pl-primary);
+    margin: 0 0 var(--pl-sp-16);
+}
+/* « souvenirs ! » en orange, souligné d'un trait dessiné à la main. */
+.home-hero__title .is-accent {
+    position: relative;
+    color: var(--pl-cta);
+    white-space: nowrap;
+}
+.home-hero__title .is-accent::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: .35em;
+    bottom: -10px;
+    height: 12px;
+    background: no-repeat center / 100% 100%
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 14' fill='none'%3E%3Cpath d='M3 10C60 4 180 2 297 8' stroke='%23ff7a00' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+.home-hero__subtitle {
+    max-width: 470px;
+    font-size: var(--pl-fs-body);
+    line-height: var(--pl-lh-base);
+    color: var(--pl-text-secondary);
+    margin: 0 0 var(--pl-sp-24);
+}
+.home-hero__actions { display: flex; gap: var(--pl-sp-12); flex-wrap: wrap; margin-bottom: var(--pl-sp-28); }
+
+/* Second bouton du hero : blanc, bord discret, texte foncé (sur voile clair). */
+.pl-btn--hero-ghost {
+    background: var(--pl-white);
+    color: var(--pl-text);
+    border: 1px solid rgba(6, 27, 86, .16);
+    font-weight: var(--pl-fw-medium);
+    font-size: var(--pl-fs-body);
+    box-shadow: var(--pl-shadow-sm);
+}
+.pl-btn--hero-ghost:hover { background: var(--pl-primary); color: var(--pl-white); border-color: var(--pl-primary); }
+
+/* Preuve sociale : 4 avatars empilés + compteur d'utilisateurs. */
+.home-hero__proof { display: flex; align-items: center; gap: var(--pl-sp-16); }
+.home-hero__avatars { display: flex; }
+.home-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 3px solid var(--pl-white);
+    box-shadow: var(--pl-shadow-sm);
+    object-fit: cover;
+    background: var(--pl-white);
+}
+.home-avatar + .home-avatar { margin-left: -14px; }
+.home-hero__proof-text { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-medium); color: var(--pl-text); }
+.home-hero__proof-text strong { font-weight: var(--pl-fw-bold); color: var(--pl-primary); }
+
+/* ===========================================================================
  *  BARRE DE RECHERCHE (chevauche le bas du hero)
  * ======================================================================== */
 .home-search-wrap { position: relative; z-index: 3; margin-top: -44px; }
@@ -23,21 +118,24 @@
     box-shadow: 0 10px 30px rgba(15, 23, 42, .12);
     overflow: hidden;
 }
-.home-search__tabs { display: flex; gap: var(--pl-sp-8); padding: var(--pl-sp-12) var(--pl-sp-16) 0; }
+/* Onglets « classeur » au-dessus de la carte : l'actif est blanc et fusionne
+   avec la carte, l'inactif est gris translucide sur la photo. */
+.home-search__tabs { display: flex; gap: 2px; }
 .home-search__tab {
     display: inline-flex;
     align-items: center;
     gap: var(--pl-sp-8);
-    padding: 10px 16px;
+    padding: 12px 20px;
     border: 0;
-    background: transparent;
-    color: var(--pl-text-secondary);
+    background: rgba(210, 214, 222, .8);
+    color: var(--pl-text);
     font-size: var(--pl-fs-body-sm);
     font-weight: var(--pl-fw-semibold);
     border-radius: var(--pl-radius-sm) var(--pl-radius-sm) 0 0;
     cursor: pointer;
 }
-.home-search__tab.is-active { background: var(--pl-cta-hover-light); color: var(--pl-cta); }
+.home-search__tab.is-active { background: var(--pl-white); color: var(--pl-cta); }
+.home-search__tab.is-active .pl-icon { color: var(--pl-cta); }
 
 .home-search__fields {
     display: grid;
@@ -55,7 +153,7 @@
     border-right: 1px solid var(--pl-border);
 }
 .home-search__field:nth-child(4) { border-right: 0; }
-.home-search__field .pl-icon { color: var(--pl-action); flex-shrink: 0; }
+.home-search__field .pl-icon { color: var(--pl-primary); flex-shrink: 0; }
 .home-search__field-label { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
 .home-search__field-value { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
 .home-search__submit { height: 100%; min-height: 52px; padding-inline: var(--pl-sp-24); }
@@ -71,7 +169,8 @@
     gap: var(--pl-sp-24);
     margin-bottom: var(--pl-sp-32);
 }
-.home-section__title { font-size: var(--pl-fs-h2); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0 0 var(--pl-sp-8); }
+/* Maquette 21/07 : grands titres de section (~40px, demi-gras). */
+.home-section__title { font-size: 38px; font-weight: var(--pl-fw-semibold); color: var(--pl-text); margin: 0 0 var(--pl-sp-8); letter-spacing: -.01em; }
 .home-section__subtitle { max-width: 620px; font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0; }
 
 /* Bouton foncé « Voir tout ». */
@@ -267,13 +366,16 @@
  * ======================================================================== */
 
 /* --- Hero kayak : voile foncé à gauche, textes clairs. --- */
-.home-hero--connected { min-height: 580px; align-items: flex-start; }
+/* Proportions maquette : hero ~665px, carte de recherche en chevauchement
+   profond (-160px), voile navy plus soutenu jusqu'à droite. */
+.home-hero--connected { min-height: 660px; align-items: flex-start; }
 .home-hero__overlay--dark {
     background:
-        linear-gradient(90deg, rgba(4, 18, 60, .78) 0%, rgba(4, 18, 60, .55) 34%, rgba(4, 18, 60, .18) 60%, rgba(4, 18, 60, 0) 80%),
+        linear-gradient(90deg, rgba(4, 18, 60, .82) 0%, rgba(4, 18, 60, .6) 38%, rgba(4, 18, 60, .38) 64%, rgba(4, 18, 60, .22) 100%),
         linear-gradient(180deg, rgba(4, 18, 60, .35) 0%, transparent 30%);
 }
-.home-hero--connected .home-hero__inner { padding-block: 88px 120px; }
+.home-hero--connected .home-hero__inner { padding-block: 44px 200px; }
+.home-connected .home-search-wrap { margin-top: -160px; }
 .home-hero__title--light { color: var(--pl-white); max-width: 900px; }
 /* La partie orange occupe toute la 2e ligne, comme sur la maquette. */
 .home-hero__title--light .is-accent-line { display: block; color: var(--pl-cta); }
@@ -283,19 +385,21 @@
 .home-hero__assurances { display: flex; gap: var(--pl-sp-12); flex-wrap: wrap; }
 .home-pill {
     display: inline-flex; align-items: center; gap: var(--pl-sp-8);
-    padding: 7px 14px;
-    background: rgba(255, 255, 255, .92);
-    color: var(--pl-text);
+    padding: 8px 14px;
+    background: var(--pl-white);
+    color: var(--pl-primary);
     font-size: var(--pl-fs-caption);
     font-weight: var(--pl-fw-semibold);
-    border-radius: var(--pl-radius-pill);
+    border-radius: var(--pl-radius-sm);
 }
-.home-pill .pl-icon { color: var(--pl-success); }
+.home-pill .pl-icon { color: var(--pl-primary); }
 
 /* --- Barre de recherche : champs cliquables + panneaux déroulants (écran B). --- */
 .home-search { position: relative; overflow: visible; }
 .home-search__field { background: transparent; border-block: 0; border-left: 0; text-align: left; cursor: pointer; }
-.home-search__field > span:last-child { display: flex; flex-direction: column; }
+.home-search__field > span:not(.pl-icon) { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+/* Chevron d'affordance à droite de chaque champ (maquette). */
+.home-search__field > .pl-icon:last-child { margin-left: auto; color: var(--pl-text-secondary); align-self: center; }
 .home-search__field:hover .home-search__field-label { color: var(--pl-action); }
 .home-search__field.is-open .home-search__field-label { color: var(--pl-action); }
 
@@ -364,21 +468,28 @@
 .home-cal__grid button.is-muted { color: var(--pl-border); }
 .home-cal__grid button.is-selected { background: var(--pl-action); color: var(--pl-white); font-weight: var(--pl-fw-bold); }
 
-/* --- Créer votre activité privée (fond lavande). --- */
-.home-private { background: #f1edff; }
+/* --- Créer votre activité privée : carte bleu clair sur fond blanc + carte
+   blanche « Comment créer » (maquette 21/07, gamme BLEUE, pas violette). --- */
+.home-private { background: var(--pl-white); }
 .home-private__inner { display: grid; grid-template-columns: 2fr 1fr; gap: var(--pl-sp-24); align-items: stretch; }
 .home-private__panel {
     display: grid; grid-template-columns: 1fr 1fr; gap: var(--pl-sp-24);
-    background: var(--pl-white);
-    border-radius: var(--pl-radius-md);
+    background: #e9effd;
+    border-radius: 20px;
     padding: var(--pl-sp-32);
 }
-.home-private__text .home-section__title { margin-bottom: var(--pl-sp-8); }
+.home-private__title { font-size: 30px; font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0 0 var(--pl-sp-8); line-height: 1.2; }
 .is-violet { color: var(--pl-action); }
+.is-blue { color: #2563eb; }
 .home-checklist { list-style: none; margin: var(--pl-sp-16) 0 var(--pl-sp-24); padding: 0; display: flex; flex-direction: column; gap: var(--pl-sp-12); }
 .home-checklist li { display: flex; align-items: center; gap: var(--pl-sp-8); font-size: var(--pl-fs-body); font-weight: var(--pl-fw-medium); color: var(--pl-text); }
 .home-checklist .pl-icon { color: var(--pl-success); flex-shrink: 0; }
+.home-checklist--blue .pl-icon { color: #2563eb; }
 .home-checklist--orange .pl-icon { color: var(--pl-cta); }
+/* Variante « carrés cochés » (cadeau, prestataires) : texte plus grand. */
+.home-checklist--squares { gap: var(--pl-sp-16); }
+.home-checklist--squares li { font-size: 19px; }
+.home-checklist--violet .pl-icon { color: var(--pl-action); }
 
 .home-private__collage { position: relative; min-height: 320px; }
 .home-private__photo {
@@ -397,11 +508,12 @@
 
 .home-private__how {
     background: var(--pl-white);
+    border: 1px solid var(--pl-border);
     border-radius: var(--pl-radius-md);
     padding: var(--pl-sp-32);
     display: flex; flex-direction: column;
 }
-.home-private__how h3 { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0 0 var(--pl-sp-20); }
+.home-private__how h3 { font-size: 22px; font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0 0 var(--pl-sp-20); max-width: 260px; }
 .home-private__steps { list-style: none; margin: 0 0 var(--pl-sp-24); padding: 0; display: flex; flex-direction: column; gap: var(--pl-sp-16); flex: 1; }
 .home-private__steps li { display: flex; gap: var(--pl-sp-12); font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
 .home-private__steps strong { display: block; color: var(--pl-text); }
@@ -409,11 +521,11 @@
     flex-shrink: 0;
     width: 40px; height: 40px;
     display: inline-flex; align-items: center; justify-content: center;
-    background: var(--pl-action-light);
-    color: var(--pl-action);
-    border-radius: 50%;
+    background: #e9effd;
+    color: #2563eb;
+    border-radius: var(--pl-radius-sm);
 }
-.home-private__how .pl-btn { align-self: flex-start; }
+.home-private__how .pl-btn { align-self: stretch; justify-content: center; }
 
 /* --- Carrousel des catégories populaires. --- */
 .home-cats { display: flex; align-items: center; gap: var(--pl-sp-12); }
@@ -433,8 +545,10 @@
 .home-cat {
     flex-shrink: 0;
     display: flex; flex-direction: column; align-items: center; gap: var(--pl-sp-8);
-    min-width: 128px;
-    padding: var(--pl-sp-8);
+    min-width: 146px;
+    padding: var(--pl-sp-16) var(--pl-sp-12);
+    background: #f8fafc;
+    border-radius: var(--pl-radius-md);
     text-decoration: none;
 }
 .home-cat__icon {
@@ -450,35 +564,36 @@
 
 .home-section--soft { background: #f8f9fb; }
 
-/* --- Pas d'idée de cadeau ? (fond violet clair). --- */
-.home-gift { background: #ece5ff; }
-.home-gift__inner { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pl-sp-32); align-items: center; }
+/* --- Pas d'idée de cadeau ? : bloc violet clair + carte au liseré violet. --- */
+.home-gift { background: var(--pl-white); }
+.home-gift__card {
+    display: grid; grid-template-columns: 1fr 1.1fr; gap: var(--pl-sp-32); align-items: center;
+    background: #efe6ff;
+    border: 1.5px solid var(--pl-action);
+    border-radius: 20px;
+    padding: 48px 56px;
+}
+.home-gift__title { font-size: 38px; font-weight: var(--pl-fw-semibold); color: var(--pl-action); margin: 0 0 var(--pl-sp-4); }
+.home-gift__subtitle { font-size: 20px; font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0; }
+.home-gift__card .pl-btn { padding: 12px 40px; }
 .home-gift__visual img { width: 100%; max-height: 420px; object-fit: contain; }
 
-/* --- Vous êtes prestataires ? (fond crème + cercles concentriques). --- */
-.home-pro { background: #fdf3e7; overflow: hidden; }
+/* --- Vous êtes prestataires ? (fond crème ; visuel repris de la maquette,
+   cercles inclus dans l'image). --- */
+.home-pro { background: #fff2e6; overflow: hidden; }
 .home-pro__inner { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pl-sp-32); align-items: center; }
 .home-pro__media { position: relative; display: flex; justify-content: center; align-items: flex-end; min-height: 480px; }
-.home-pro__circles {
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 470px; height: 470px;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    border: 2px solid rgba(255, 122, 0, .25);
-    box-shadow:
-        inset 0 0 0 39px rgba(255, 122, 0, .0),
-        inset 0 0 0 40px rgba(255, 122, 0, .22),
-        inset 0 0 0 84px rgba(255, 122, 0, .0),
-        inset 0 0 0 85px rgba(255, 122, 0, .19),
-        inset 0 0 0 129px rgba(255, 122, 0, .0),
-        inset 0 0 0 130px rgba(255, 122, 0, .16);
-}
+.home-pro__circles { display: none; }
+/* La photo (cercles inclus) est ancrée au bas de la section, comme la maquette. */
+.home-pro.home-section { padding-block: 0; }
+.home-pro__text { padding-block: 64px; }
+.home-pro__media { align-items: flex-end; min-height: 0; }
 .home-pro__media img {
     position: relative;
     z-index: 1;
     width: 100%;
-    height: 480px;
+    max-width: 640px;
+    height: auto;
     object-fit: contain;
     object-position: center bottom;
 }

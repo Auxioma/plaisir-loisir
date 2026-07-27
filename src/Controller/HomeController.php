@@ -14,11 +14,10 @@ use Symfony\Component\Routing\Attribute\Route;
 /**
  * Page d'accueil du site.
  *
- * Deux variantes d'après la maquette : l'accueil public (« Crée des
- * souvenirs ») et l'accueil connecté (hero kayak + recherche déployée).
- * La variante connectée s'affiche dès qu'un utilisateur est en session ;
- * en environnement de dev, « /?connecte=1 » permet de la prévisualiser
- * sans se connecter.
+ * Une seule page (hero kayak + recherche déployée) pour visiteurs et
+ * connectés — seule la navbar diffère. L'état connecté s'active dès
+ * qu'un utilisateur est en session ; en environnement de dev,
+ * « /?connecte=1 » permet de le prévisualiser sans se connecter.
  *
  * NB : front statique d'après la maquette — le câblage des vraies
  * données (catégories, destinations à la une) viendra ensuite.
@@ -36,12 +35,11 @@ final class HomeController extends AbstractController
         $connected = null !== $this->getUser()
             || ($this->debug && $request->query->getBoolean('connecte'));
 
-        if ($connected) {
-            return $this->render('home/connected.html.twig', [
-                'activities' => array_values(StaticCatalog::activities()),
-            ]);
-        }
-
-        return $this->render('home/index.html.twig');
+        // Depuis la génération de maquette du 21/07, visiteurs et connectés
+        // partagent la même page ; seul l'en-tête change (S'inscrire vs avatar).
+        return $this->render('home/connected.html.twig', [
+            'activities' => array_values(StaticCatalog::activities()),
+            'connected' => $connected,
+        ]);
     }
 }

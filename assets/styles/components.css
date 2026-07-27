@@ -68,6 +68,16 @@
 
 .pl-btn--block { width: 100%; }
 
+/* Gamme bleue de la section « activité privée » (maquette accueil 21/07). */
+.pl-btn--blue { background: #2563eb; color: var(--pl-white); }
+.pl-btn--blue:hover { background: #1d4fc7; color: var(--pl-white); }
+.pl-btn--outline-blue {
+    background: var(--pl-white);
+    color: #2563eb;
+    border: 1.5px solid #2563eb;
+}
+.pl-btn--outline-blue:hover { background: #e9effd; }
+
 /* ===========================================================================
  *  NAVBAR
  * ======================================================================== */
