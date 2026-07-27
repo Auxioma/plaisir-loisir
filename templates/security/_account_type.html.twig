@@ -1,0 +1,17 @@
+{#
+    Sélecteur « type de compte » (demande client du 2026-07-27) :
+    la connexion et l'inscription distinguent Client et Professionnel.
+    Front-end pur : la valeur (accountType) sera traitée au câblage back.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<div class="auth-acctype" role="radiogroup" aria-label="Type de compte">
+    <label class="auth-acctype__opt">
+        <input type="radio" name="accountType" value="client" checked>
+        <span class="auth-acctype__pill">{{ icon.person(18) }} Client</span>
+    </label>
+    <label class="auth-acctype__opt">
+        <input type="radio" name="accountType" value="pro">
+        <span class="auth-acctype__pill">{{ icon.building(18) }} Professionnel</span>
+    </label>
+</div>

@@ -24,6 +24,8 @@
                 <div class="auth-alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
             {% endif %}
 
+            {% include 'security/_account_type.html.twig' %}
+
             <div class="auth-fields">
                 <div class="auth-field">
                     <label class="auth-field__label" for="inputEmail">Adresse e-mail</label>

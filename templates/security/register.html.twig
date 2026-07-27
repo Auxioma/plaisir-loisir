@@ -19,6 +19,8 @@
         </div>
 
         <form class="auth-form" method="post" action="{{ path('app_register') }}">
+            {% include 'security/_account_type.html.twig' %}
+
             <div class="auth-fields">
                 <div class="auth-field">
                     <label class="auth-field__label" for="inputFullName">Nom &amp; prénom</label>
@@ -44,6 +46,26 @@
                         <span class="auth-input__icon">{{ icon.phone() }}</span>
                         <input id="inputPhone" class="auth-input__control" type="tel" name="phone"
                                placeholder="06 12 34 56 78" autocomplete="tel">
+                    </div>
+                </div>
+
+                {# Champ réservé aux professionnels (demande client) : révélé
+                   en CSS quand « Professionnel » est coché (:has, sans JS). #}
+                <div class="auth-field auth-field--pro">
+                    <label class="auth-field__label" for="inputLegalStatus">Statut juridique</label>
+                    <div class="auth-input auth-input--select">
+                        <span class="auth-input__icon">{{ icon.building() }}</span>
+                        <select id="inputLegalStatus" class="auth-input__control" name="legalStatus">
+                            <option value="" selected disabled>Choisissez votre statut</option>
+                            <option value="ei">Entreprise individuelle (EI)</option>
+                            <option value="micro">Micro-entreprise</option>
+                            <option value="eurl">EURL</option>
+                            <option value="sarl">SARL</option>
+                            <option value="sas">SAS</option>
+                            <option value="sasu">SASU</option>
+                            <option value="association">Association</option>
+                            <option value="autre">Autre</option>
+                        </select>
                     </div>
                 </div>
 

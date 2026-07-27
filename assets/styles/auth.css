@@ -127,6 +127,48 @@
 }
 .auth-back:hover { color: var(--pl-action); }
 
+/* ---- Type de compte : Client / Professionnel ---------------------------- */
+.auth-acctype {
+    display: flex;
+    gap: var(--pl-sp-8);
+}
+.auth-acctype__opt { flex: 1; cursor: pointer; }
+.auth-acctype__opt input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.auth-acctype__pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--pl-sp-8);
+    padding: var(--pl-sp-12);
+    background: var(--pl-white);
+    border: 1.5px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    font-size: var(--pl-fs-body);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text-secondary);
+    transition: border-color .15s ease, color .15s ease, background-color .15s ease;
+}
+.auth-acctype__opt:hover .auth-acctype__pill { border-color: var(--pl-action); }
+.auth-acctype__opt input:checked + .auth-acctype__pill {
+    border-color: var(--pl-action);
+    background: var(--pl-action-light);
+    color: var(--pl-action);
+}
+.auth-acctype__opt input:focus-visible + .auth-acctype__pill {
+    box-shadow: 0 0 0 3px var(--pl-action-light);
+}
+
+/* Champ « Statut juridique » : visible seulement quand « Professionnel »
+   est coché (aucun JavaScript nécessaire). */
+.auth-field.auth-field--pro { display: none; }
+.auth-form:has(.auth-acctype input[value="pro"]:checked) .auth-field.auth-field--pro { display: flex; }
+
+.auth-input--select select { cursor: pointer; }
+
 /* ---- Champs de formulaire ---------------------------------------------- */
 .auth-fields { display: flex; flex-direction: column; gap: var(--pl-sp-12); }
 
