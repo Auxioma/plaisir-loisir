@@ -183,6 +183,17 @@
             </div>
         </div>
 
+        {# Distinction validée par le client (« Option 1 », 2026-07-27). #}
+        <fieldset class="act-filters__group">
+            <legend>Type d'activité</legend>
+            <label class="act-filters__check">
+                <input type="checkbox" checked> <span>🎟️ Activités professionnelles</span>
+            </label>
+            <label class="act-filters__check">
+                <input type="checkbox"> <span>👥 Activités entre particuliers « Gratuite »</span>
+            </label>
+        </fieldset>
+
         <fieldset class="act-filters__group">
             <legend>Type de destination</legend>
             <button type="button" class="act-filters__dest is-active" data-dest-type>{{ icon.globe(18) }} Toutes les destinations</button>

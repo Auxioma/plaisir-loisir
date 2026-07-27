@@ -108,6 +108,17 @@
             <span class="act-filters__input">{{ icon.users(16) }}<input type="text" placeholder="01 participant"></span>
         </label>
 
+        {# Distinction validée par le client (« Option 1 », 2026-07-27). #}
+        <fieldset class="act-filters__group">
+            <legend>Type d'activité</legend>
+            <label class="act-filters__check">
+                <input type="checkbox" data-filter-check checked> <span>🎟️ Activités professionnelles</span>
+            </label>
+            <label class="act-filters__check">
+                <input type="checkbox" data-filter-check> <span>👥 Activités entre particuliers « Gratuite »</span>
+            </label>
+        </fieldset>
+
         <fieldset class="act-filters__group">
             <legend>Type de destination</legend>
             <button type="button" class="act-filters__dest is-active" data-dest-type>{{ icon.globe(18) }} Toutes les destinations</button>
