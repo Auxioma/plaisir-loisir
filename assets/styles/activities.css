@@ -244,6 +244,22 @@
 /* --- Carte « sélection » : titre + volume seulement. --- */
 .sel-card__count { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
 
+/* --- Logo type d'activité (pro payante / privée gratuite), coin bas-gauche
+   de la photo — demande Loïc (commentaire maquette du 2026-07-27). --- */
+.act-card__kind {
+    position: absolute; left: 10px; bottom: 10px;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: var(--pl-fw-bold);
+    border-radius: var(--pl-radius-pill);
+    color: var(--pl-white);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .25);
+}
+.act-card__kind--pro { background: var(--pl-action); }
+.act-card__kind--free { background: var(--pl-success); }
+.pl-card__price--free { color: var(--pl-success); }
+
 /* --- Carte « offre exclusive ». --- */
 .offer-card { position: relative; }
 /* Pilule blanche centrée en bas d'image (maquette) : horloge orange + texte. */

@@ -22,6 +22,12 @@
             <span class="pl-card__tag {{ a.badge == 'Nouvelle activité' ? 'pl-card__tag--popular' : 'pl-card__tag--bestseller' }}">{{ a.badge }}</span>
         {% endif %}
         <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</button>
+        {# Logo type demandé par Loïc : activité pro payante vs privée gratuite. #}
+        {% if a.free is defined and a.free %}
+            <span class="act-card__kind act-card__kind--free">👥 Gratuite</span>
+        {% else %}
+            <span class="act-card__kind act-card__kind--pro">🎟️ Pro</span>
+        {% endif %}
     </div>
     <div class="pl-card__body">
         {% if a.category is defined and a.category %}
@@ -44,8 +50,13 @@
             <span class="act-card__duration">{{ icon.clock(14) }} {{ a.duration }}</span>
         </div>
         <div class="pl-card__foot">
-            <span class="pl-card__from">À partir de</span>
-            <span class="pl-card__price">{{ a.price }}€</span>
+            {% if a.free is defined and a.free %}
+                <span class="pl-card__from">Entre particuliers</span>
+                <span class="pl-card__price pl-card__price--free">Gratuit</span>
+            {% else %}
+                <span class="pl-card__from">À partir de</span>
+                <span class="pl-card__price">{{ a.price }}€</span>
+            {% endif %}
         </div>
     </div>
 </a>
