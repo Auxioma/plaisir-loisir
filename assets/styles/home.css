@@ -371,11 +371,14 @@
 .home-hero--connected { min-height: 660px; align-items: flex-start; }
 .home-hero__overlay--dark {
     background:
-        linear-gradient(90deg, rgba(4, 18, 60, .82) 0%, rgba(4, 18, 60, .6) 38%, rgba(4, 18, 60, .38) 64%, rgba(4, 18, 60, .22) 100%),
-        linear-gradient(180deg, rgba(4, 18, 60, .35) 0%, transparent 30%);
+        linear-gradient(90deg, rgba(4, 18, 60, .96) 0%, rgba(4, 18, 60, .88) 26%, rgba(4, 18, 60, .5) 52%, rgba(4, 18, 60, .2) 72%, rgba(4, 18, 60, .12) 100%),
+        linear-gradient(180deg, rgba(4, 18, 60, .3) 0%, transparent 28%);
 }
 .home-hero--connected .home-hero__inner { padding-block: 44px 200px; }
 .home-connected .home-search-wrap { margin-top: -160px; }
+/* Maquette : ~86px entre les boutons du hero et les pilules de réassurance. */
+.home-hero--connected .home-hero__actions { margin-bottom: 86px; }
+.home-hero--connected .home-hero__bg { object-position: center; }
 .home-hero__title--light { color: var(--pl-white); max-width: 900px; }
 /* La partie orange occupe toute la 2e ligne, comme sur la maquette. */
 .home-hero__title--light .is-accent-line { display: block; color: var(--pl-cta); }
