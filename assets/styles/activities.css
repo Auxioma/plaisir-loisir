@@ -11,8 +11,6 @@
  *  EN-TÊTE CONNECTÉ (spec §2.1)
  * ======================================================================== */
 .pl-navbar--connected .pl-nav--connected { gap: var(--pl-sp-4); }
-.pl-navbar--connected .pl-nav__link.is-active { color: var(--pl-cta); }
-.pl-navbar--connected .pl-nav__link.is-active:hover { background: var(--pl-cta-hover-light); }
 
 /* Boutons ronds à icône (favoris, messagerie, notifications). */
 .pl-iconbtn {

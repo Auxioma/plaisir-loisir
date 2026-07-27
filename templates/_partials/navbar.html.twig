@@ -1,28 +1,47 @@
-{# Barre de navigation principale, présente en haut de toutes les pages. #}
-{% import '_partials/_icons.html.twig' as icon %}
+{#
+    En-tête commun à TOUTES les pages (maquette : le même header partout).
 
-<header class="pl-navbar">
+    Variables optionnelles :
+      - connected (bool, défaut false) : à droite, icônes + avatar au lieu
+        du bouton « S'inscrire ».
+      - nav_active : acceptée pour compatibilité, sans effet visuel — la
+        maquette peint « Activités » en violet sur tous les écrans et laisse
+        les autres entrées en foncé.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+{% set connected = connected|default(false) %}
+
+<header class="pl-navbar pl-navbar--connected">
     <div class="pl-navbar__inner">
         <div class="pl-navbar__left">
             <a href="{{ path('app_home') }}" class="pl-navbar__logo" aria-label="Accueil TrouveMoi">
                 <img src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir & Loisirs">
             </a>
 
-            <nav class="pl-nav" aria-label="Navigation principale">
-                {# Ces pages n'existent pas encore : liens provisoires (#). #}
-                <a href="{{ path('app_activities') }}" class="pl-nav__link">Activités</a>
-                <a href="{{ path('app_destinations') }}" class="pl-nav__link">Destinations</a>
-                <a href="#" class="pl-nav__link pl-nav__link--badged">{{ icon.flame() }} Offres du moment<span class="pl-nav__badge">Nouveau</span></a>
-                <a href="#" class="pl-nav__link">{{ icon.gift() }} Cadeaux</a>
-                <a href="#" class="pl-nav__link">Activités privées</a>
+            <nav class="pl-nav pl-nav--connected" aria-label="Navigation principale">
+                <a href="{{ path('app_activities') }}" class="pl-nav__link is-active">Activités</a>
+                <a href="{{ path('app_destinations') }}" class="pl-nav__link pl-nav__link--badged">Destinations <span class="pl-nav__badge">Nouveau</span></a>
+                <a href="#" class="pl-nav__link pl-nav__link--offres">{{ icon.flame(18) }} Offres du moments</a>
+                <a href="#" class="pl-nav__link">{{ icon.gift(18) }} Cadeaux</a>
+                <a href="#" class="pl-nav__link pl-nav__link--badged">Activités privées <span class="pl-nav__badge">Nouveau</span></a>
             </nav>
         </div>
 
         <div class="pl-navbar__actions">
             <a href="#" class="pl-btn pl-btn--cta">Déposer une annonce</a>
-            <a href="{{ path('app_register') }}" class="pl-btn pl-btn--outline-dark">
-                {{ icon.person(20) }} S'inscrire
-            </a>
+
+            {% if connected %}
+                <button type="button" class="pl-iconbtn" aria-label="Mes favoris">{{ icon.heart(20) }}</button>
+                <button type="button" class="pl-iconbtn" aria-label="Messagerie">{{ icon.mail(20) }}</button>
+                <button type="button" class="pl-iconbtn" aria-label="Notifications">{{ icon.bell(20) }}</button>
+
+                <button type="button" class="pl-avatarbtn" aria-label="Paramètre du profil">
+                    <img src="{{ asset('images/home/avatar-1.png') }}" alt="">
+                    <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
+                </button>
+            {% else %}
+                <a href="{{ path('app_register') }}" class="pl-btn pl-btn--outline-dark pl-btn--signup">{{ icon.person(18) }} S'inscrire</a>
+            {% endif %}
         </div>
     </div>
 </header>

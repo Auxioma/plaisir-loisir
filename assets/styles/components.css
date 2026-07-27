@@ -120,7 +120,15 @@
     transition: color .15s ease, background-color .15s ease;
 }
 .pl-nav__link:hover { color: var(--pl-action); background: var(--pl-action-light); }
-.pl-nav__link .pl-icon { color: var(--pl-cta); }  /* flamme / cadeau colorés */
+.pl-nav__link { white-space: nowrap; }
+
+/* Maquette : « Activités » en violet sur tous les écrans, le reste en foncé. */
+.pl-nav__link.is-active { color: var(--pl-action); }
+.pl-nav__link.is-active:hover { background: var(--pl-action-light); }
+
+/* Seule la flamme « Offres du moments » est colorée ; le cadeau reste foncé. */
+.pl-nav__link .pl-icon { color: currentColor; }
+.pl-nav__link--offres .pl-icon { color: var(--pl-cta); }
 
 /* Lien avec pastille « Nouveau » (ex. Offres du moment). */
 .pl-nav__link--badged { position: relative; }
