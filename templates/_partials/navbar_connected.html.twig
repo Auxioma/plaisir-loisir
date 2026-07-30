@@ -1,2 +1,2 @@
 {# Alias conservé pour les templates existants : header commun, variante connectée. #}
-{% include '_partials/navbar.html.twig' with { connected: true } %}
+{% include '_partials/navbar.html.twig' with { connected: true, nav_active: nav_active|default('') } %}

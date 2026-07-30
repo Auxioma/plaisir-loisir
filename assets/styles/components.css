@@ -140,6 +140,10 @@
 .pl-nav__link .pl-icon { color: currentColor; }
 .pl-nav__link--offres .pl-icon { color: var(--pl-cta); }
 
+/* Sur le flow Offres : « Offres du moments » actif en orange (maquette). */
+.pl-nav__link.is-active-cta { color: var(--pl-cta); }
+.pl-nav__link.is-active-cta:hover { background: var(--pl-cta-hover-light); color: var(--pl-cta); }
+
 /* Lien avec pastille « Nouveau » (ex. Offres du moment). */
 .pl-nav__link--badged { position: relative; }
 .pl-nav__badge {

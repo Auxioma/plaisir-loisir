@@ -4,12 +4,13 @@
     Variables optionnelles :
       - connected (bool, défaut false) : à droite, icônes + avatar au lieu
         du bouton « S'inscrire ».
-      - nav_active : acceptée pour compatibilité, sans effet visuel — la
-        maquette peint « Activités » en violet sur tous les écrans et laisse
-        les autres entrées en foncé.
+      - nav_active : la maquette peint « Activités » en violet sur tous les
+        écrans, SAUF sur le flow Offres où « Offres du moments » passe en
+        orange et « Activités » redevient foncé (export Offres du moment1).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 {% set connected = connected|default(false) %}
+{% set nav_active = nav_active|default('') %}
 
 <header class="pl-navbar pl-navbar--connected">
     <div class="pl-navbar__inner">
@@ -19,9 +20,9 @@
             </a>
 
             <nav class="pl-nav pl-nav--connected" aria-label="Navigation principale">
-                <a href="{{ path('app_activities') }}" class="pl-nav__link is-active">Activités</a>
+                <a href="{{ path('app_activities') }}" class="pl-nav__link {{ nav_active != 'offres' ? 'is-active' }}">Activités</a>
                 <a href="{{ path('app_destinations') }}" class="pl-nav__link pl-nav__link--badged">Destinations <span class="pl-nav__badge">Nouveau</span></a>
-                <a href="#" class="pl-nav__link pl-nav__link--offres">{{ icon.flame(18) }} Offres du moments</a>
+                <a href="{{ path('app_offers') }}" class="pl-nav__link pl-nav__link--offres {{ nav_active == 'offres' ? 'is-active-cta' }}">{{ icon.flame(18) }} Offres du moments</a>
                 <a href="#" class="pl-nav__link">{{ icon.gift(18) }} Cadeaux</a>
                 <a href="#" class="pl-nav__link pl-nav__link--badged">Activités privées <span class="pl-nav__badge">Nouveau</span></a>
             </nav>
