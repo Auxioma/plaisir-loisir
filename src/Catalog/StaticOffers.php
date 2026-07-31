@@ -31,13 +31,62 @@ final class StaticOffers
     }
 
     /**
-     * « Offres exclusives pour vous » : les 4 offres du socle Activités.
+     * « Offres exclusives pour vous » : les 4 offres de la maquette (Canoë, Massage, Montgolfière, Visite guidée).
      *
      * @return list<array<string, mixed>>
      */
     public static function exclusives(): array
     {
-        return StaticCatalog::offers();
+        return [
+            [
+                'place' => "Gorges de l'Ardèche",
+                'title' => 'Descente en Canoë',
+                'rating' => '4.8',
+                'reviews' => 256,
+                'discount' => -30,
+                'oldPrice' => 32,
+                'price' => 25,
+                'remaining' => 92040,
+                'image' => 'images/activities/canoe.jpg',
+                'slug' => 'descente-en-canoe-gorges-ardeche',
+            ],
+            [
+                'place' => 'Aix-en-provence',
+                'title' => 'Massage relaxant',
+                'rating' => '4.9',
+                'reviews' => 178,
+                'discount' => -25,
+                'oldPrice' => 80,
+                'price' => 60,
+                'remaining' => 92040,
+                'image' => 'images/offers/massage.jpg',
+                'slug' => null,
+            ],
+            [
+                'place' => 'Labyrinthe en Provence',
+                'title' => 'Vol en montgolfière',
+                'rating' => '4.7',
+                'reviews' => 134,
+                'discount' => -20,
+                'oldPrice' => 225,
+                'price' => 180,
+                'remaining' => 92040,
+                'image' => 'images/activities/montgolfiere.jpg',
+                'slug' => 'vol-en-montgolfiere',
+            ],
+            [
+                'place' => "Saint-Tropez, côte d'azur",
+                'title' => 'Visite guidée',
+                'rating' => '4.6',
+                'reviews' => 312,
+                'discount' => -15,
+                'oldPrice' => 30,
+                'price' => 25,
+                'remaining' => 92040,
+                'image' => 'images/home/act-musee.jpg',
+                'slug' => null,
+            ],
+        ];
     }
 
     /**
