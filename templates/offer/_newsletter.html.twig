@@ -1,0 +1,27 @@
+{#
+    <NewsletterBanner> (spec C2) : bloc bleu, cercles concentriques à gauche,
+    palmiers à droite, titre 2 lignes, champ e-mail + bouton S'abonner.
+    Typos maquette corrigées : « ne manquer », placeholder français.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<section class="of-news" aria-label="Newsletter">
+    <svg class="of-news__circles" viewBox="0 0 320 320" fill="none" stroke="rgba(255,255,255,.35)" aria-hidden="true">
+        {% for r in [40, 70, 100, 130, 160] %}
+            <circle cx="110" cy="230" r="{{ r }}" stroke-width="1.5"/>
+        {% endfor %}
+    </svg>
+    <svg class="of-news__palms" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="1.2" aria-hidden="true">
+        <path d="M12 22c0-6 1-10 3-13M15 9c-2-3-5-4-8-3 3 0 5 1 8 3zM15 9c0-3 2-5 5-6-2 2-3 4-5 6zM15 9c3-1 5 0 7 2-3-1-5-1-7-2z"/>
+    </svg>
+
+    <h2 class="of-news__title">Abonnez-vous pour ne manquer<br>aucune offre&nbsp;!</h2>
+    <form class="of-news__form" data-newsletter novalidate>
+        <div class="of-news__bar">
+            {{ icon.mail(18) }}
+            <input type="email" name="email" placeholder="Votre adresse e-mail" aria-label="Votre adresse e-mail" required>
+            <button type="submit" class="of-news__submit">S'abonner</button>
+        </div>
+        <p class="of-news__msg" data-newsletter-msg hidden></p>
+    </form>
+</section>

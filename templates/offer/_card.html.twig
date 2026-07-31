@@ -1,0 +1,56 @@
+{#
+    <OfferCard> du flow Offres (spec C1) : badge de réduction coloré par
+    palier, compte à rebours (ou libellé rouge « aujourd'hui » / « Demain »
+    en mode Dernière minutes), prix barré + prix promo BLEU, bouton
+    « Voir l'offre » outline bleu. Pas de durée dans la ligne meta.
+
+    Variables : o (place, title, rating, reviews, discount, oldPrice, price,
+    image, slug, remaining? ou ends?), href optionnel.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% set pct = o.discount|abs %}
+{% set isLast = o.ends is defined and o.ends %}
+{# Palier de remise (spec) : ≥30 rouge/orange foncé · ≥25 vert · ≥20 orange · ≥10 bleu.
+   En mode Dernière minutes, la maquette passe tous les badges en rouge. #}
+{% if isLast %}
+    {% set badge = 'is-red' %}
+{% elseif pct >= 30 %}
+    {% set badge = 'is-deep' %}
+{% elseif pct >= 25 %}
+    {% set badge = 'is-green' %}
+{% elseif pct >= 20 %}
+    {% set badge = 'is-orange' %}
+{% else %}
+    {% set badge = 'is-blue' %}
+{% endif %}
+
+<div class="pl-card of-card">
+    <div class="pl-card__media">
+        <img src="{{ asset(o.image) }}" alt="{{ o.title }}">
+        <span class="of-card__badge {{ badge }}">{{ o.discount }}%</span>
+        <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</button>
+        {% if isLast %}
+            <span class="offer-card__timer">
+                {{ icon.clock(14) }} Se termine dans <strong class="of-card__ends">{{ o.ends }}</strong>
+            </span>
+        {% else %}
+            <span class="offer-card__timer" data-countdown="{{ o.remaining }}">
+                {{ icon.clock(14) }} Se termine dans <strong class="offer-card__timer-value">…</strong>
+            </span>
+        {% endif %}
+    </div>
+    <div class="pl-card__body">
+        <span class="pl-card__place">{{ icon.map_pin(14) }} {{ o.place }}</span>
+        <span class="pl-card__title">{{ o.title }}</span>
+        <div class="act-card__meta">
+            <span class="act-rating">{{ icon.star(12) }} {{ o.rating }}</span>
+            <span class="act-card__reviews">{{ o.reviews }} reviews</span>
+        </div>
+        <div class="pl-card__foot of-card__prices">
+            <span class="of-card__old">{{ o.oldPrice }}€</span>
+            <span class="of-card__price">{{ o.price }}€</span>
+        </div>
+        <a href="{{ href|default(o.slug is defined and o.slug ? path('app_activity_show', { slug: o.slug }) : path('app_offers_all')) }}" class="of-card__cta">Voir l'offre</a>
+    </div>
+</div>

@@ -118,6 +118,9 @@ final class StaticCatalog
                 'image' => 'images/activities/yoga.jpg',
                 'lat' => 45.360,
                 'lng' => 4.800,
+                // Exemple d'activité entre particuliers (logo « Gratuite » sur
+                // la carte — demande Loïc du 2026-07-27).
+                'free' => true,
             ],
             'concert-live-soiree-musique' => [
                 'slug' => 'concert-live-soiree-musique',

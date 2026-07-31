@@ -53,7 +53,7 @@
                 <div class="act-toolbar__right">
                     <button type="button" class="act-tool" id="act-map-toggle">{{ icon.map(18) }} Afficher la carte</button>
                     <div class="act-viewswitch" role="group" aria-label="Mode d'affichage">
-                        <button type="button" class="act-viewbtn is-active" aria-label="Affichage en grille">{{ icon.grid(18) }}</button>
+                        <button type="button" class="act-viewbtn is-active" aria-label="Affichage en grille">{{ icon.sliders(18) }}</button>
                         <button type="button" class="act-viewbtn" aria-label="Affichage en liste">{{ icon.list_view(18) }}</button>
                     </div>
                 </div>
@@ -65,7 +65,16 @@
                 <span class="act-chipbar__sep" aria-hidden="true"></span>
                 <div class="act-chipbar__scroll">
                     {% for chip in filterChips %}
-                        <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">{{ chip }}</button>
+                        <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">
+                            {%- if chip == 'Toutes' %}{{ icon.grid(16) }}
+                            {%- elseif chip starts with 'Natures' %}{{ icon.tree(16) }}
+                            {%- elseif chip starts with 'Cultures' %}{{ icon.cat_culture(16) }}
+                            {%- elseif chip starts with 'Ateliers' %}{{ icon.cat_crafts(16) }}
+                            {%- elseif chip starts with 'Soirées' %}{{ icon.flame(16) }}
+                            {%- elseif chip starts with 'Bien' %}{{ icon.cat_wellness(16) }}
+                            {%- else %}{{ icon.cat_canoe(16) }}
+                            {%- endif %} {{ chip }}
+                        </button>
                     {% endfor %}
                 </div>
                 <button type="button" class="act-chipbar__more" aria-label="Faire défiler les filtres">{{ icon.chevron_right(16) }}</button>
@@ -107,6 +116,17 @@
             <span>Participants</span>
             <span class="act-filters__input">{{ icon.users(16) }}<input type="text" placeholder="01 participant"></span>
         </label>
+
+        {# Distinction validée par le client (« Option 1 », 2026-07-27). #}
+        <fieldset class="act-filters__group">
+            <legend>Type d'activité</legend>
+            <label class="act-filters__check">
+                <input type="checkbox" data-filter-check checked> <span>🎟️ Activités professionnelles</span>
+            </label>
+            <label class="act-filters__check">
+                <input type="checkbox" data-filter-check> <span>👥 Activités entre particuliers « Gratuite »</span>
+            </label>
+        </fieldset>
 
         <fieldset class="act-filters__group">
             <legend>Type de destination</legend>

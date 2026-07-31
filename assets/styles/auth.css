@@ -127,6 +127,174 @@
 }
 .auth-back:hover { color: var(--pl-action); }
 
+/* ---- Écran d'entrée du flow (maquette register01) ------------------------
+   Page centrée : titre bicolore, carte à deux panneaux Pro (violet) /
+   Client (vert) séparés par « ou », bande sécurité bleue. */
+.auth-choice-page { padding: 56px 0 72px; background: var(--pl-white); }
+
+.auth-choice-page__title {
+    margin: 0 0 var(--pl-sp-16);
+    text-align: center;
+    font-size: 40px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 1.3;
+    color: var(--pl-text);
+}
+.auth-choice-page__title .is-plaisirs { color: var(--pl-success); }
+.auth-choice-page__title .is-loisirs { color: var(--pl-info); }
+.auth-choice-page__subtitle {
+    max-width: 620px;
+    margin: 0 auto var(--pl-sp-32);
+    text-align: center;
+    font-size: var(--pl-fs-body);
+    line-height: var(--pl-lh-base);
+    color: var(--pl-text-secondary);
+}
+
+.auth-choice-card {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: var(--pl-sp-24);
+    padding: var(--pl-sp-32);
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    box-shadow: var(--pl-shadow-sm);
+}
+
+.auth-choice-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--pl-sp-12);
+    padding: var(--pl-sp-32) var(--pl-sp-24);
+    border-radius: var(--pl-radius-md);
+}
+.auth-choice-panel--pro { background: #fbf9ff; }
+.auth-choice-panel--client { background: #fbfffd; }
+
+.auth-choice-panel__badge {
+    width: 48px; height: 48px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--pl-white);
+    border-radius: var(--pl-radius-sm);
+}
+.auth-choice-panel--pro .auth-choice-panel__badge { background: var(--pl-action); }
+.auth-choice-panel--client .auth-choice-panel__badge { background: #16a34a; }
+
+.auth-choice-panel__name { margin: 0; font-size: var(--pl-fs-body-lg); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.auth-choice-panel__desc { margin: 0; font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-sm); color: var(--pl-text-secondary); }
+
+.auth-choice-feats {
+    list-style: none;
+    width: 100%;
+    margin: var(--pl-sp-8) 0 var(--pl-sp-16);
+    padding: 0;
+    display: flex; flex-direction: column; gap: var(--pl-sp-16);
+    text-align: left;
+}
+.auth-choice-feats li { display: flex; gap: var(--pl-sp-12); font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-sm); color: var(--pl-text-secondary); }
+.auth-choice-feats strong { display: block; color: var(--pl-text); font-weight: var(--pl-fw-bold); }
+.auth-choice-feats__icon {
+    flex-shrink: 0;
+    width: 44px; height: 44px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: var(--pl-radius-sm);
+}
+.auth-choice-panel--pro .auth-choice-feats__icon { background: var(--pl-action-light); color: var(--pl-action); }
+.auth-choice-panel--client .auth-choice-feats__icon { background: #e8f6ed; color: #16a34a; }
+
+/* Bouton vert du panneau Client. */
+.pl-btn--client { background: #16a34a; color: var(--pl-white); }
+.pl-btn--client:hover { background: #128a3f; color: var(--pl-white); }
+
+.auth-choice-panel__more { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); text-decoration: none; }
+.auth-choice-panel--pro .auth-choice-panel__more { color: var(--pl-action); }
+.auth-choice-panel--client .auth-choice-panel__more { color: #16a34a; }
+.auth-choice-panel__more:hover { text-decoration: underline; }
+
+/* Séparateur vertical + pastille « ou ». */
+.auth-choice-card__sep { position: relative; width: 1px; background: var(--pl-border); }
+.auth-choice-card__sep span {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 8px 12px;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text);
+}
+
+/* Bande « Une expérience sécurisée pour tous ». */
+.auth-choice-band {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--pl-sp-24);
+    flex-wrap: wrap;
+    margin-top: var(--pl-sp-32);
+    padding: var(--pl-sp-24) var(--pl-sp-32);
+    background: #e9effd;
+    border-radius: var(--pl-radius-md);
+}
+.auth-choice-band__intro { display: flex; align-items: center; gap: var(--pl-sp-16); color: #2563eb; }
+.auth-choice-band__intro div { display: flex; flex-direction: column; }
+.auth-choice-band__intro strong { font-size: var(--pl-fs-body); color: #2563eb; }
+.auth-choice-band__intro span { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); max-width: 360px; }
+.auth-choice-band__points { list-style: none; display: flex; gap: var(--pl-sp-24); margin: 0; padding: 0; }
+.auth-choice-band__points li { display: flex; align-items: center; gap: var(--pl-sp-8); font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-medium); color: var(--pl-text); }
+.auth-choice-band__points .pl-icon { color: #2563eb; }
+
+@media (max-width: 1100px) {
+    .auth-choice-card { grid-template-columns: 1fr; }
+    .auth-choice-card__sep { display: none; }
+}
+
+/* ---- Type de compte : Client / Professionnel ---------------------------- */
+.auth-acctype {
+    display: flex;
+    gap: var(--pl-sp-8);
+}
+.auth-acctype__opt { flex: 1; cursor: pointer; }
+.auth-acctype__opt input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.auth-acctype__pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--pl-sp-8);
+    padding: var(--pl-sp-12);
+    background: var(--pl-white);
+    border: 1.5px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    font-size: var(--pl-fs-body);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text-secondary);
+    transition: border-color .15s ease, color .15s ease, background-color .15s ease;
+}
+.auth-acctype__opt:hover .auth-acctype__pill { border-color: var(--pl-action); }
+.auth-acctype__opt input:checked + .auth-acctype__pill {
+    border-color: var(--pl-action);
+    background: var(--pl-action-light);
+    color: var(--pl-action);
+}
+.auth-acctype__opt input:focus-visible + .auth-acctype__pill {
+    box-shadow: 0 0 0 3px var(--pl-action-light);
+}
+
+/* Champ « Statut juridique » : visible seulement quand « Professionnel »
+   est coché (aucun JavaScript nécessaire). */
+.auth-field.auth-field--pro { display: none; }
+.auth-form:has(.auth-acctype input[value="pro"]:checked) .auth-field.auth-field--pro { display: flex; }
+
+.auth-input--select select { cursor: pointer; }
+
 /* ---- Champs de formulaire ---------------------------------------------- */
 .auth-fields { display: flex; flex-direction: column; gap: var(--pl-sp-12); }
 

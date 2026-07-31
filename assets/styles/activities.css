@@ -11,8 +11,6 @@
  *  EN-TÊTE CONNECTÉ (spec §2.1)
  * ======================================================================== */
 .pl-navbar--connected .pl-nav--connected { gap: var(--pl-sp-4); }
-.pl-navbar--connected .pl-nav__link.is-active { color: var(--pl-cta); }
-.pl-navbar--connected .pl-nav__link.is-active:hover { background: var(--pl-cta-hover-light); }
 
 /* Boutons ronds à icône (favoris, messagerie, notifications). */
 .pl-iconbtn {
@@ -61,7 +59,7 @@
 }
 .act-breadcrumb a { color: var(--pl-text-secondary); text-decoration: none; }
 .act-breadcrumb a:hover { color: var(--pl-action); text-decoration: underline; }
-.act-breadcrumb [aria-current] { color: var(--pl-text); font-weight: var(--pl-fw-semibold); }
+.act-breadcrumb [aria-current] { color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
 
 .act-head__title {
     font-size: var(--pl-fs-h2);
@@ -137,19 +135,23 @@
 .act-tool--plain { border: 0; background: transparent; }
 .act-tool--plain strong { font-weight: var(--pl-fw-semibold); }
 
+/* Maquette : icônes nues, l'active sur un carré gris clair. */
 .act-viewswitch { display: inline-flex; gap: 6px; }
 .act-viewbtn {
     width: 40px; height: 40px;
     display: inline-flex; align-items: center; justify-content: center;
-    background: var(--pl-white);
-    color: var(--pl-text-secondary);
-    border: 1px solid var(--pl-border);
+    background: transparent;
+    color: #8798b4;
+    border: 0;
     border-radius: var(--pl-radius-sm);
     cursor: pointer;
-    transition: color .15s ease, border-color .15s ease, background-color .15s ease;
+    transition: color .15s ease, background-color .15s ease;
 }
-.act-viewbtn:hover { color: var(--pl-action); border-color: var(--pl-action); }
-.act-viewbtn.is-active { background: var(--pl-action-light); color: var(--pl-action); border-color: var(--pl-action); }
+.act-viewbtn:hover { color: var(--pl-action); background: var(--pl-action-light); }
+.act-viewbtn.is-active { background: #eef1f5; color: var(--pl-text); }
+
+/* « Afficher la carte » : liseré bleuté et fond très clair (maquette). */
+#act-map-toggle { border-color: #b9c9e8; background: #f6f9ff; }
 
 /* --- Chips de filtres / villes. --- */
 .act-chipbar {
@@ -242,18 +244,40 @@
 /* --- Carte « sélection » : titre + volume seulement. --- */
 .sel-card__count { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
 
+/* --- Logo type d'activité (pro payante / privée gratuite), coin bas-gauche
+   de la photo — demande Loïc (commentaire maquette du 2026-07-27). --- */
+.act-card__kind {
+    position: absolute; left: 10px; bottom: 10px;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: var(--pl-fw-bold);
+    border-radius: var(--pl-radius-pill);
+    color: var(--pl-white);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .25);
+}
+.act-card__kind--pro { background: var(--pl-action); }
+.act-card__kind--free { background: var(--pl-success); }
+.pl-card__price--free { color: var(--pl-success); }
+
 /* --- Carte « offre exclusive ». --- */
 .offer-card { position: relative; }
+/* Pilule blanche centrée en bas d'image (maquette) : horloge orange + texte. */
 .offer-card__timer {
-    position: absolute; left: 0; right: 0; bottom: 0;
-    padding: 8px 12px;
-    background: rgba(6, 27, 86, .78);
-    color: var(--pl-white);
+    position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    background: var(--pl-white);
+    color: var(--pl-text);
     font-size: var(--pl-fs-caption);
-    text-align: center;
+    font-weight: var(--pl-fw-semibold);
+    border-radius: var(--pl-radius-pill);
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .18);
 }
-.offer-card__timer strong { font-weight: var(--pl-fw-bold); }
-.offer-card__timer.is-expired { background: rgba(220, 38, 38, .85); }
+.offer-card__timer .pl-icon { color: var(--pl-cta); flex-shrink: 0; }
+.offer-card__timer strong { font-weight: var(--pl-fw-bold); color: var(--pl-cta); }
+.offer-card__timer.is-expired { background: #fdecec; color: var(--pl-error); }
 .offer-card__old {
     font-size: var(--pl-fs-body-sm);
     color: var(--pl-text-secondary);
@@ -312,8 +336,9 @@
 /* Dans la colonne droite, les conteneurs internes n'ont plus à se centrer. */
 .act-page.has-filters .act-content .home-container { max-width: none; padding-inline: 0; }
 .act-page.has-filters .act-content .card-grid { grid-template-columns: repeat(3, 1fr); }
-/* Volumes de la maquette D : 2 rangées de 3 dans la grille principale,
-   3 cartes par section ailleurs. */
+/* Volumes de la maquette : 2 rangées de 4 par défaut (écran C), 2 rangées
+   de 3 quand la sidebar est ouverte (écran D), 3 cartes par section ailleurs. */
+.act-grid > :nth-child(n+9) { display: none; }
 .act-page.has-filters .act-grid > :nth-child(n+7) { display: none; }
 .act-page.has-filters .act-content .card-grid:not(.act-grid) > :nth-child(n+4) { display: none; }
 

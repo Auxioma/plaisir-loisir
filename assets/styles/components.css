@@ -68,6 +68,16 @@
 
 .pl-btn--block { width: 100%; }
 
+/* Gamme bleue de la section « activité privée » (maquette accueil 21/07). */
+.pl-btn--blue { background: #2563eb; color: var(--pl-white); }
+.pl-btn--blue:hover { background: #1d4fc7; color: var(--pl-white); }
+.pl-btn--outline-blue {
+    background: var(--pl-white);
+    color: #2563eb;
+    border: 1.5px solid #2563eb;
+}
+.pl-btn--outline-blue:hover { background: #e9effd; }
+
 /* ===========================================================================
  *  NAVBAR
  * ======================================================================== */
@@ -120,7 +130,19 @@
     transition: color .15s ease, background-color .15s ease;
 }
 .pl-nav__link:hover { color: var(--pl-action); background: var(--pl-action-light); }
-.pl-nav__link .pl-icon { color: var(--pl-cta); }  /* flamme / cadeau colorés */
+.pl-nav__link { white-space: nowrap; }
+
+/* Maquette : « Activités » en violet sur tous les écrans, le reste en foncé. */
+.pl-nav__link.is-active { color: var(--pl-action); }
+.pl-nav__link.is-active:hover { background: var(--pl-action-light); }
+
+/* Seule la flamme « Offres du moments » est colorée ; le cadeau reste foncé. */
+.pl-nav__link .pl-icon { color: currentColor; }
+.pl-nav__link--offres .pl-icon { color: var(--pl-cta); }
+
+/* Sur le flow Offres : « Offres du moments » actif en orange (maquette). */
+.pl-nav__link.is-active-cta { color: var(--pl-cta); }
+.pl-nav__link.is-active-cta:hover { background: var(--pl-cta-hover-light); color: var(--pl-cta); }
 
 /* Lien avec pastille « Nouveau » (ex. Offres du moment). */
 .pl-nav__link--badged { position: relative; }

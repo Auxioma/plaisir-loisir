@@ -1,0 +1,111 @@
+{#
+    Tout premier écran du flow d'authentification (maquette register01.png) :
+    « Bienvenue sur TrouveMoi Plaisirs & Loisirs » — Pro Prestataire à gauche
+    (violet), Client à droite (vert), séparés par « ou », bande sécurité bleue.
+    En-tête = navbar de l'accueil plateforme (Découvrez + langue).
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Bienvenue — choix du compte{% endblock %}
+{% block meta_description %}Choisissez le type de compte qui vous correspond : professionnel prestataire ou client.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_home.html.twig' %}
+{% endblock %}
+
+{% block body %}
+<div class="auth-choice-page">
+    <div class="home-container">
+
+        <h1 class="auth-choice-page__title">
+            Bienvenue sur TrouveMoi<br>
+            <span class="is-plaisirs">Plaisirs</span> &amp; <span class="is-loisirs">Loisirs</span>
+        </h1>
+        <p class="auth-choice-page__subtitle">
+            Choisissez le type de compte qui vous correspond pour accéder aux
+            fonctionnalités adaptées à vos besoins.
+        </p>
+
+        <div class="auth-choice-card">
+
+            {# ---- Panneau Pro Prestataire (violet, à gauche) ---- #}
+            <section class="auth-choice-panel auth-choice-panel--pro">
+                <span class="auth-choice-panel__badge">{{ icon.compass(24) }}</span>
+                <h2 class="auth-choice-panel__name">Pro Prestataire</h2>
+                <p class="auth-choice-panel__desc">
+                    Vous proposez des activités, des services ou des loisirs.
+                    Créez votre compte professionnel pour développer votre
+                    visibilité et gérer vos prestations.
+                </p>
+                <ul class="auth-choice-feats">
+                    <li>
+                        <span class="auth-choice-feats__icon">{{ icon.compass(20) }}</span>
+                        <span><strong>Déposez et gérez vos activités</strong> Publiez vos offres et gérez vos disponibilités.</span>
+                    </li>
+                    <li>
+                        <span class="auth-choice-feats__icon">{{ icon.calendar_check(20) }}</span>
+                        <span><strong>Gérez vos réservations</strong> Suivez vos réservations, vos clients et vos paiements.</span>
+                    </li>
+                    <li>
+                        <span class="auth-choice-feats__icon">{{ icon.eye(20) }}</span>
+                        <span><strong>Développez votre visibilité</strong> Recevez plus de demandes et fidélisez vos clients.</span>
+                    </li>
+                </ul>
+                <a class="pl-btn pl-btn--primary pl-btn--block" href="{{ path('app_register', { type: 'pro' }) }}">
+                    Je suis un pro prestataire {{ icon.chevron_right(16) }}
+                </a>
+                <a class="auth-choice-panel__more" href="#">En savoir plus sur l'espace pro</a>
+            </section>
+
+            <div class="auth-choice-card__sep" aria-hidden="true"><span>ou</span></div>
+
+            {# ---- Panneau Client (vert, à droite) ---- #}
+            <section class="auth-choice-panel auth-choice-panel--client">
+                <span class="auth-choice-panel__badge">{{ icon.compass(24) }}</span>
+                <h2 class="auth-choice-panel__name">Client</h2>
+                <p class="auth-choice-panel__desc">
+                    Vous recherchez des activités, des loisirs ou des expériences
+                    à vivre. Créez votre compte pour réserver et profiter de nos
+                    meilleures offres.
+                </p>
+                <ul class="auth-choice-feats">
+                    <li>
+                        <span class="auth-choice-feats__icon">{{ icon.search(20) }}</span>
+                        <span><strong>Trouvez des activités</strong> Découvrez des activités et expériences uniques.</span>
+                    </li>
+                    <li>
+                        <span class="auth-choice-feats__icon">{{ icon.calendar_check(20) }}</span>
+                        <span><strong>Réservez en toute simplicité</strong> Réservez facilement en quelques clics.</span>
+                    </li>
+                    <li>
+                        <span class="auth-choice-feats__icon">{{ icon.check_badge(20) }}</span>
+                        <span><strong>Profitez en toute sérénité</strong> Vivez vos expériences et partagez vos avis.</span>
+                    </li>
+                </ul>
+                <a class="pl-btn pl-btn--client pl-btn--block" href="{{ path('app_register', { type: 'client' }) }}">
+                    Je suis un client {{ icon.chevron_right(16) }}
+                </a>
+                <a class="auth-choice-panel__more" href="#">En savoir plus sur l'espace client</a>
+            </section>
+        </div>
+
+        {# ---- Bande « expérience sécurisée » ---- #}
+        <aside class="auth-choice-band">
+            <div class="auth-choice-band__intro">
+                {{ icon.calendar_check(30) }}
+                <div>
+                    <strong>Une expérience sécurisée pour tous</strong>
+                    <span>Vos données sont protégées et votre expérience est notre priorité.</span>
+                </div>
+            </div>
+            <ul class="auth-choice-band__points">
+                <li>{{ icon.card(20) }} Paiement sécurisé</li>
+                <li>{{ icon.lock(20) }} Données protégées</li>
+                <li>{{ icon.headset(20) }} Support dédié</li>
+            </ul>
+        </aside>
+
+    </div>
+</div>
+{% endblock %}

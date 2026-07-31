@@ -1,0 +1,70 @@
+name: Déploiement préproduction
+
+# ---------------------------------------------------------------------------
+#  Déploie automatiquement la branche `develop` sur l'environnement de
+#  préproduction (ex. https://preprod.trouvemoi.eu), pour que toute l'équipe
+#  (développement, design, CTO) suive l'intégration des interfaces en direct.
+#
+#  Flux Git prévu :
+#    branche feature  --PR-->  develop  --(ce workflow)-->  PRÉPROD
+#                                develop  --PR-->  master  --(déploiement prod)
+#
+#  ⚠️ Bonne pratique : PROTÉGER la branche `develop` sur GitHub
+#     (Settings > Branches) pour n'y fusionner que via une Pull Request dont
+#     le workflow « CI » est vert. Ainsi, seul du code validé est déployé.
+#
+#  Secrets à définir dans GitHub (Settings > Secrets and variables > Actions) :
+#    STAGING_SSH_HOST  : hôte du serveur de préprod (IP ou domaine)
+#    STAGING_SSH_USER  : utilisateur SSH de déploiement
+#    STAGING_SSH_KEY   : clé privée SSH (dont la clé publique est autorisée sur le serveur)
+#    STAGING_SSH_PORT  : port SSH (souvent 22)
+#    STAGING_PATH      : chemin absolu du projet sur le serveur (ex. /var/www/preprod)
+# ---------------------------------------------------------------------------
+
+on:
+  push:
+    branches: [develop]
+
+# Un seul déploiement à la fois ; un nouveau push annule le précédent en attente.
+concurrency:
+  group: deploy-preprod
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Déployer sur la préproduction
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Connexion SSH et mise à jour du serveur
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.STAGING_SSH_HOST }}
+          username: ${{ secrets.STAGING_SSH_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          port: ${{ secrets.STAGING_SSH_PORT }}
+          script_stop: true
+          script: |
+            set -e
+            cd "${{ secrets.STAGING_PATH }}"
+
+            # 1. Récupérer la dernière version de develop
+            git fetch --all --prune
+            git reset --hard origin/develop
+
+            # 2. Dépendances PHP (sans les paquets de dev, autoloader optimisé)
+            composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+
+            # 3. Base de données : appliquer les migrations éventuelles
+            php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+
+            # 4. Assets (AssetMapper) : télécharger les libs JS puis compiler vers public/assets
+            php bin/console importmap:install
+            php bin/console asset-map:compile
+
+            # 5. Vider et préchauffer le cache applicatif
+            php bin/console cache:clear
+
+            # 6. Recharger PHP pour prendre en compte le nouveau code.
+            #    À DÉCOMMENTER/ADAPTER selon l'hébergement (php-fpm, FrankenPHP, Docker…) :
+            # sudo systemctl reload php8.4-fpm

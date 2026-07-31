@@ -13,7 +13,7 @@
         <span class="pl-card__tag pl-card__tag--bestseller">{{ o.discount }}%</span>
         <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</button>
         <span class="offer-card__timer" data-countdown="{{ o.remaining }}">
-            Se termine dans <strong class="offer-card__timer-value">…</strong>
+            {{ icon.clock(14) }} Se termine dans <strong class="offer-card__timer-value">…</strong>
         </span>
     </div>
     <div class="pl-card__body">
