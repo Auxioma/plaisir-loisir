@@ -1,0 +1,39 @@
+{#
+    <SettingRow> (spec étapes 2 et 6) : icône dans un carré teinté + titre
+    + description + contrôle à droite (toggle OU select).
+    Variables : ico (nom de macro), color, title, desc,
+    control ('toggle'|'select'), on (toggle), options/value (select).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<div class="ev-setting">
+    <span class="ev-setting__icon ev-ico--{{ color }}">
+        {%- if ico == 'bell' %}{{ icon.bell(20) }}
+        {%- elseif ico == 'footprints' %}{{ icon.footprints(20) }}
+        {%- elseif ico == 'sun' %}{{ icon.sun(20) }}
+        {%- elseif ico == 'clock' %}{{ icon.clock(20) }}
+        {%- elseif ico == 'person' %}{{ icon.person(20) }}
+        {%- elseif ico == 'users' %}{{ icon.users(20) }}
+        {%- elseif ico == 'hourglass' %}{{ icon.hourglass(20) }}
+        {%- elseif ico == 'eye' %}{{ icon.eye(20) }}
+        {%- elseif ico == 'person_plus' %}{{ icon.person_plus(20) }}
+        {%- elseif ico == 'comment' %}{{ icon.comment(20) }}
+        {%- elseif ico == 'mail' %}{{ icon.mail(20) }}
+        {%- else %}{{ icon.bell(20) }}
+        {%- endif %}
+    </span>
+    <span class="ev-setting__text"><strong>{{ title }}</strong>{{ desc }}</span>
+    {% if control == 'toggle' %}
+        <label class="ev-toggle">
+            <input type="checkbox" {{ on|default(false) ? 'checked' }}>
+            <span aria-hidden="true"></span>
+            <span class="visually-hidden">{{ title }}</span>
+        </label>
+    {% else %}
+        <div class="ev-select ev-select--inline">
+            <select aria-label="{{ title }}">
+                <option selected>{{ value }}</option>
+            </select>
+        </div>
+    {% endif %}
+</div>

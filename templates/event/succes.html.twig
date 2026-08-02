@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Événement créé avec succès{% endblock %}
+{% block meta_description %}Votre événement a été créé avec succès : partagez-le avec vos proches.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_events.html.twig' %}
+{% endblock %}
+
+{% block body %}
+{# Écran de succès (typo maquette corrigée : « crée avec succés »). #}
+<div class="ev-success">
+    <h1 class="ev-success__title">Événement créé avec succès</h1>
+    <img class="ev-success__badge" src="{{ asset('images/events/success-badge.jpg') }}" alt="">
+    <p class="ev-success__text">C'est officiel, notre prochain événement est créé !<br>Préparez-vous à passer un moment inoubliable !</p>
+    <div class="ev-success__actions">
+        <a href="{{ path('app_event_create', { etape: 8 }) }}" class="pl-btn ev-btn-ghost">Voir votre événement</a>
+        <a href="#" class="pl-btn pl-btn--primary">Partager votre événement {{ icon.share(16) }}</a>
+    </div>
+</div>
+{% endblock %}

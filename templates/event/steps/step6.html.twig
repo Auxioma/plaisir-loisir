@@ -1,0 +1,38 @@
+{# Étape 6 — Options et paramètres. #}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ev-main__title">6. Options et paramètres</h2>
+<p class="ev-main__lead">Personnalisez les paramètres de votre événement selon vos besoins.</p>
+
+<h3 class="ev-main__subheading">Type d'événement</h3>
+<div class="ev-visibility ev-visibility--bordered" role="radiogroup" aria-label="Type d'événement">
+    <label class="ev-visibility__item">
+        <span class="ev-visibility__icon">{{ icon.lock(20) }}</span>
+        <span class="ev-visibility__text"><strong>Événement privé</strong>Seulement sur invitation ou personnes invitées</span>
+        <input type="radio" name="visibility" value="private">
+    </label>
+    <label class="ev-visibility__item">
+        <span class="ev-visibility__icon">{{ icon.globe(20) }}</span>
+        <span class="ev-visibility__text"><strong>Événement public</strong>Ouvert à tous les membres de la communauté</span>
+        <input type="radio" name="visibility" value="public" checked>
+    </label>
+    <label class="ev-visibility__item">
+        <span class="ev-visibility__icon">{{ icon.users(20) }}</span>
+        <span class="ev-visibility__text"><strong>Groupe / Club</strong>Événement réservé aux membres du groupe ou du club</span>
+        <input type="radio" name="visibility" value="group">
+    </label>
+</div>
+
+<h3 class="ev-main__subheading">Paramètres d'inscription</h3>
+{% include 'event/_setting_row.html.twig' with { ico: 'person', color: 'orange', title: 'Inscription requise', desc: "Les participants doivent s'inscrire pour participer.", control: 'toggle', on: true } %}
+{% include 'event/_setting_row.html.twig' with { ico: 'users', color: 'blue', title: 'Limite de participants', desc: 'Définissez le nombre maximum de participants.', control: 'select', value: '50 participants' } %}
+{% include 'event/_setting_row.html.twig' with { ico: 'hourglass', color: 'green', title: "Liste d'attente", desc: "Activer automatiquement une liste d'attente si l'événement est complet.", control: 'toggle', on: false } %}
+
+<h3 class="ev-main__subheading">Visibilité et confidentialité</h3>
+{% include 'event/_setting_row.html.twig' with { ico: 'eye', color: 'red', title: 'Afficher la liste des participants', desc: 'Permettre aux participants de voir la liste des inscrits.', control: 'toggle', on: true } %}
+{% include 'event/_setting_row.html.twig' with { ico: 'person_plus', color: 'blue', title: 'Autoriser les invités', desc: "Les participants peuvent inviter d'autres personnes.", control: 'toggle', on: true } %}
+{% include 'event/_setting_row.html.twig' with { ico: 'comment', color: 'green', title: 'Commentaires', desc: "Autoriser les participants à commenter l'événement.", control: 'toggle', on: false } %}
+
+<h3 class="ev-main__subheading">Rappels et communications</h3>
+{% include 'event/_setting_row.html.twig' with { ico: 'bell', color: 'violet', title: "Envoyer un rappel avant l'événement", desc: 'Les participants recevront un rappel avant le début', control: 'select', value: '24 heures avant' } %}
+{% include 'event/_setting_row.html.twig' with { ico: 'mail', color: 'orange', title: 'Mises à jour par email', desc: 'Envoyer les mises à jour et changements par email', control: 'toggle', on: true } %}

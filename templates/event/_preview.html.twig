@@ -1,0 +1,63 @@
+{#
+    <EventPreview> (spec COL 3) : projection en lecture seule du brouillon.
+    - preview_photo : photo de couverture visible (étapes 2+).
+    - preview_filled : vraies métadonnées + description (étapes 7-8).
+    Typo maquette corrigée : « 24 mai 202 » → « 24 mai 2024 ».
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<aside class="ev-card ev-preview" aria-label="Aperçu de l'événement">
+    <h2 class="ev-preview__heading">Aperçu de l'événement</h2>
+
+    <div class="ev-preview__cover {{ preview_photo ? '' : 'is-empty' }}">
+        {% if preview_photo %}
+            <img src="{{ asset('images/events/preview-yoga.jpg') }}" alt="Image de couverture de l'événement">
+        {% else %}
+            <span class="ev-preview__cover-icon">{{ icon.img_off(40) }}</span>
+        {% endif %}
+        <button type="button" class="ev-preview__addphoto">{{ icon.image(16) }} Ajouter une photo</button>
+    </div>
+
+    <p class="ev-preview__name">Nom de l'événement</p>
+
+    <div class="ev-preview__meta">
+        {% if preview_filled %}
+            <span class="ev-pill">{{ icon.calendar(14) }} 24 mai 2024</span>
+            <span class="ev-pill">{{ icon.calendar(14) }} 18:00 - 22:30</span>
+            <span class="ev-pill">{{ icon.map_pin(14) }} Parc de la tête d'Or, 6900 Lyon</span>
+            <span class="ev-pill">{{ icon.tag(14) }} Activité de plein air</span>
+        {% else %}
+            <span class="ev-pill">{{ icon.calendar(14) }} Date</span>
+            <span class="ev-pill">{{ icon.clock(14) }} Heure</span>
+            <span class="ev-pill">{{ icon.map_pin(14) }} Lieu</span>
+        {% endif %}
+    </div>
+
+    <p class="ev-preview__label">Organisé par</p>
+    <div class="ev-preview__organizer">
+        <img src="{{ asset('images/home/avatar-1.png') }}" alt="">
+        <strong>Martin Thomas</strong>
+    </div>
+
+    <p class="ev-preview__label">Participants</p>
+    <div class="ev-preview__people">
+        <img src="{{ asset('images/events/avatar-marie.jpg') }}" alt="">
+        <img src="{{ asset('images/events/avatar-thomas.jpg') }}" alt="">
+        <img src="{{ asset('images/events/avatar-lucas.jpg') }}" alt="">
+        <img src="{{ asset('images/events/avatar-sophie.jpg') }}" alt="">
+        <img src="{{ asset('images/events/avatar-chloe.jpg') }}" alt="">
+        <button type="button" class="ev-preview__more" aria-label="Voir tous les participants">{{ icon.plus(16) }}</button>
+    </div>
+
+    {% if preview_filled %}
+        <p class="ev-preview__desc">Profitez d'une soirée conviviale autour d'un pique-nique au bord du lac ! Apportez votre bonne humeur et quelque chose à partager.</p>
+    {% else %}
+        <p class="ev-preview__desc">Courte description de votre événement apparaîtra ici…</p>
+    {% endif %}
+
+    <div class="ev-preview__actions">
+        <button type="button">{{ icon.share(16) }} Partager</button>
+        <button type="button">{{ icon.heart(16) }} Partager</button>
+        <button type="button">{{ icon.person(16) }} Partager</button>
+    </div>
+</aside>

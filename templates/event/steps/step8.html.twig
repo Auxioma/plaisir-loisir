@@ -1,0 +1,45 @@
+{# Étape 8 — Publier votre événement. #}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ev-main__title">8. Publier votre événement</h2>
+<p class="ev-main__lead">Vérifiez les informations de votre événement avant de le publier.</p>
+
+{# Bloc récapitulatif (bordure pointillée) + vignette. #}
+<div class="ev-recap">
+    <dl class="ev-recap__list">
+        <div><dt>{{ icon.list_ul(16) }} Titre</dt><dd>: Pique-nique au bord du lac</dd></div>
+        <div><dt>{{ icon.calendar(16) }} Date et heure</dt><dd>: 24 mai 2024 de 18:00 à 22:30</dd></div>
+        <div><dt>{{ icon.map_pin(16) }} Lieu</dt><dd>: Parc de la Tête d'Or, 69006 Lyon</dd></div>
+        <div><dt>{{ icon.grid(16) }} Catégorie</dt><dd>: Activités de plein air</dd></div>
+        <div><dt>{{ icon.person(16) }} Organisé par</dt><dd>: Vous</dd></div>
+        <div><dt>{{ icon.person_plus(16) }} Participants</dt><dd>: 8 invités</dd></div>
+    </dl>
+    <img class="ev-recap__thumb" src="{{ asset('images/events/preview-yoga.jpg') }}" alt="Aperçu de l'événement">
+</div>
+
+<h3 class="ev-main__subheading">Publier maintenant</h3>
+
+<div class="ev-publish" role="radiogroup" aria-label="Mode de publication">
+    <label class="ev-publish__item">
+        <input type="radio" name="publishMode" value="now" checked>
+        <span class="ev-publish__text"><strong>Publier maintenant</strong>Votre événement sera visible immédiatement par les personnes invitées.</span>
+        <span class="ev-publish__icon">{{ icon.globe(20) }}</span>
+    </label>
+    <label class="ev-publish__item">
+        <input type="radio" name="publishMode" value="scheduled">
+        <span class="ev-publish__text"><strong>Programmer la publication</strong>Choisissez une date et une heure pour publier votre événement plus tard.</span>
+        <span class="ev-publish__icon">{{ icon.clock(20) }}</span>
+    </label>
+    <label class="ev-publish__item">
+        <input type="radio" name="publishMode" value="draft">
+        <span class="ev-publish__text"><strong>Enregistrer en brouillon</strong>Votre événement sera enregistré et restera privé jusqu'à sa publication.</span>
+        <span class="ev-publish__icon">{{ icon.lock(20) }}</span>
+    </label>
+</div>
+
+<div class="ev-tip ev-tip--row">
+    <p>{{ icon.info(16) }} Votre événement sera visible uniquement par les personnes que vous invitez.</p>
+</div>
+
+<a href="{{ path('app_event_create_success') }}" class="pl-btn pl-btn--primary pl-btn--block ev-publish-btn">{{ icon.send(18) }} Publier l'événement</a>
+<p class="ev-publish-terms">En publiant, vous acceptez nos <a href="#">Conditions d'utilisation</a>.</p>

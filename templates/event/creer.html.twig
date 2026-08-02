@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Créer un événement — {{ steps[step - 1].title }}{% endblock %}
+{% block meta_description %}Créez votre événement en 8 étapes : détails, date, lieu, catégorie, images, options, invitations et publication.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_events.html.twig' %}
+{% endblock %}
+
+{% block body %}
+<div class="ev-page">
+    <div class="home-container">
+
+        <nav class="act-breadcrumb ev-breadcrumb" aria-label="Fil d'Ariane">
+            <a href="{{ path('app_home') }}">Accueil</a>
+            <span aria-hidden="true">/</span>
+            <a href="{{ path('app_event_create') }}">Créer un événement</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{{ steps[step - 1].title }}</span>
+        </nav>
+
+        {# En-tête : H1 + sous-titre + actions contextuelles (spec layout). #}
+        <div class="ev-head">
+            <div>
+                <h1 class="ev-head__title">Créer un événement</h1>
+                <p class="ev-head__subtitle">Organisez facilement vos activités, sorties ou rencontres et invitez vos proches à participer.</p>
+            </div>
+            <div class="ev-head__actions">
+                <button type="button" class="pl-btn ev-btn-ghost">Enregistrer en brouillon</button>
+                {% if step == 1 %}
+                    <a href="{{ path('app_event_create', { etape: 2 }) }}" class="pl-btn pl-btn--primary">Publier l'événement</a>
+                {% else %}
+                    <a href="{{ path('app_event_create', { etape: step - 1 }) }}" class="pl-btn ev-btn-ghost">Précédent</a>
+                    <a href="{{ step < 8 ? path('app_event_create', { etape: step + 1 }) : path('app_event_create_success') }}" class="pl-btn pl-btn--primary">Suivant</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="ev-grid">
+
+            {# COL 1 : stepper + « Besoin d'aide ? ». #}
+            <div class="ev-col ev-col--left">
+                {% include 'event/_stepper.html.twig' with { steps: steps, step: step } %}
+
+                <aside class="ev-card ev-help">
+                    <img src="{{ asset('images/events/help-manual.jpg') }}" alt="">
+                    <h2 class="ev-help__title">Besoin d'aide ?</h2>
+                    <p class="ev-help__text">Seulement sur invitation ou personnes invitées</p>
+                    <button type="button" class="pl-btn pl-btn--outline-action">Voir le guide</button>
+                </aside>
+            </div>
+
+            {# COL 2 : le contenu de l'étape active. #}
+            <div class="ev-card ev-main">
+                {% include 'event/steps/step' ~ step ~ '.html.twig' %}
+            </div>
+
+            {# COL 3 : aperçu live + conseil contextuel. #}
+            <div class="ev-col ev-col--right">
+                {% include 'event/_preview.html.twig' with { preview_photo: preview_photo, preview_filled: preview_filled } %}
+
+                <aside class="ev-card ev-advice">
+                    <h2 class="ev-advice__title">{{ icon.bulb(18) }} Conseil</h2>
+                    {% if advice.intro %}
+                        <p class="ev-advice__intro">{{ advice.intro }}</p>
+                    {% endif %}
+                    <ul class="ev-advice__list">
+                        {% for item in advice.items %}
+                            <li>{{ icon.check(15) }} <span>{{ item }}</span></li>
+                        {% endfor %}
+                    </ul>
+                </aside>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

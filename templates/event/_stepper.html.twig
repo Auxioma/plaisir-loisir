@@ -1,0 +1,29 @@
+{#
+    <StepperNav> (spec COL 1) : 8 étapes, pastille d'état — carré vert à
+    check (complétée), cercle violet numéroté + ligne surlignée (active),
+    cercle gris numéroté (à venir). Les étapes complétées sont cliquables.
+    Variables : steps, step (n° actif, 1-8).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<nav class="ev-card ev-stepper" aria-label="Étapes de création">
+    {% for s in steps %}
+        {% set n = loop.index %}
+        {% if n < step %}
+            <a href="{{ path('app_event_create', { etape: n }) }}" class="ev-step ev-step--done">
+                <span class="ev-step__dot">{{ icon.check(14) }}</span>
+                <span class="ev-step__text"><strong>{{ s.title }}</strong><small>{{ s.subtitle }}</small></span>
+            </a>
+        {% elseif n == step %}
+            <span class="ev-step ev-step--active" aria-current="step">
+                <span class="ev-step__dot">{{ n }}</span>
+                <span class="ev-step__text"><strong>{{ s.title }}</strong><small>{{ s.subtitle }}</small></span>
+            </span>
+        {% else %}
+            <span class="ev-step">
+                <span class="ev-step__dot">{{ n }}</span>
+                <span class="ev-step__text"><strong>{{ s.title }}</strong><small>{{ s.subtitle }}</small></span>
+            </span>
+        {% endif %}
+    {% endfor %}
+</nav>
