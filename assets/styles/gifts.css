@@ -1,0 +1,313 @@
+/* ==========================================================================
+ *  FLOW « BON CADEAUX » — 8 écrans de la maquette (landing, listings,
+ *  tunnel « Offrir un cadeau »).
+ *  S'appuie sur les jetons --pl-* et réutilise .pl-card / .card-grid /
+ *  .act-* (recherche, chips, sidebar de filtres) des autres flows.
+ * ========================================================================== */
+
+/* Jetons propres au flow (spec Cadeaux). */
+:root {
+    --gift-purple: #5d00ff;      /* accents carte cadeau (violet action) */
+    --gift-form-bg: #f7f8fb;     /* fond de la zone formulaire du tunnel */
+    --gift-field-border: #e5e7eb;
+    --gift-field-icon: #9ca3af;
+    --gift-required: #ef4444;
+}
+
+/* --------------------------------------------------------------------------
+ *  ÉCRAN 1 — HERO
+ * ------------------------------------------------------------------------ */
+
+.gift-hero { position: relative; background: var(--pl-white); overflow: hidden; }
+.gift-hero__img {
+    position: absolute; right: 0; top: 0; height: 100%; width: auto;
+    object-fit: cover; object-position: right center;
+}
+.gift-hero__inner { position: relative; z-index: 1; padding: 76px 0 84px; }
+.gift-hero__title {
+    margin: 0 0 14px; color: var(--pl-cta);
+    font-size: 42px; font-weight: 700; line-height: 1.1;
+}
+.gift-hero__subtitle {
+    margin: 0 0 30px; color: var(--pl-text-strong);
+    font-size: 20px; font-weight: 700; line-height: 1.4;
+}
+
+.gift-amounts { display: flex; align-items: center; gap: 22px; margin-bottom: 34px; }
+.gift-amount {
+    min-width: 122px; height: 40px; padding: 0 18px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    border: 1.5px solid var(--gift-purple); border-radius: 8px;
+    background: var(--pl-white); color: var(--gift-purple);
+    font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.gift-amount.is-active { background: var(--gift-purple); color: var(--pl-white); }
+.gift-amount--custom { background: #efe6ff; border-color: var(--gift-purple); cursor: default; justify-content: space-between; }
+.gift-amount__steps { display: inline-flex; flex-direction: column; }
+.gift-amount__steps button {
+    border: 0; background: none; padding: 0; line-height: 0;
+    color: var(--gift-purple); cursor: pointer;
+}
+.gift-amount__steps button:first-child .pl-icon { transform: rotate(180deg); }
+.gift-hero__cta { width: 194px; }
+
+/* Rangée d'arguments : 4 pastilles teintées. */
+.gift-args-section { padding: 46px 0 26px; }
+.gift-args { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.gift-arg {
+    display: flex; align-items: center; gap: 20px;
+    border-radius: 10px; padding: 34px 28px;
+    font-size: 22px; font-weight: 700; line-height: 1.3;
+}
+.gift-arg .pl-icon { flex: none; }
+.gift-arg--violet { background: #efe6ff; color: var(--gift-purple); }
+.gift-arg--blue   { background: #e9effd; color: var(--pl-info); }
+.gift-arg--green  { background: #e6f6ec; color: var(--pl-success); }
+.gift-arg--orange { background: #fff2e6; color: var(--pl-cta); }
+
+/* --------------------------------------------------------------------------
+ *  MOSAÏQUE DE CATÉGORIES (écrans 1 et 2-3) — tuiles-images maquette.
+ * ------------------------------------------------------------------------ */
+
+.gift-mosaic {
+    display: grid; grid-template-columns: repeat(8, 1fr);
+    grid-auto-rows: 306px; grid-auto-flow: dense; gap: 15px;
+}
+.gift-tile { display: block; border-radius: 12px; overflow: hidden; }
+.gift-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gift-tile--small { grid-column: span 2; }
+.gift-tile--tall  { grid-column: span 2; grid-row: span 2; }
+.gift-tile--wide  { grid-column: span 3; }
+
+/* --------------------------------------------------------------------------
+ *  DOUBLE BANNIÈRE CTA (bleu entreprise / jaune montant libre).
+ * ------------------------------------------------------------------------ */
+
+.gift-duo-section { background: var(--pl-surface-dashboard); padding: 46px 0; }
+.gift-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.gift-banner {
+    position: relative; overflow: hidden; border-radius: 12px;
+    min-height: 293px; padding: 42px 36px;
+    display: flex; align-items: flex-start;
+}
+.gift-banner--blue { background: #2b59e0; }
+.gift-banner--yellow { background: #fcd951; }
+.gift-banner__text { position: relative; z-index: 1; max-width: 46%; }
+.gift-banner__title { margin: 0 0 12px; font-size: 27px; font-weight: 700; line-height: 1.25; }
+.gift-banner--blue .gift-banner__title { color: var(--pl-white); }
+.gift-banner--yellow .gift-banner__title { color: var(--gift-purple); }
+.gift-banner__desc { margin: 0 0 26px; font-size: 15px; line-height: 1.5; }
+.gift-banner--blue .gift-banner__desc { color: rgb(255 255 255 / .92); }
+.gift-banner--yellow .gift-banner__desc { color: var(--gift-purple); }
+.gift-banner__btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 42px; padding: 0 20px; border-radius: 8px;
+    background: var(--pl-white); color: #2b59e0;
+    font-size: 14px; font-weight: 600; text-decoration: none;
+}
+.gift-banner__btn--violet { background: var(--gift-purple); color: var(--pl-white); }
+.gift-banner__img {
+    position: absolute; right: 0; bottom: 0; top: 0; height: 100%;
+    max-width: 52%; object-fit: contain; object-position: right bottom;
+}
+
+/* Titre de section seul (sans bouton à droite). */
+.gift-solo-title { margin-bottom: var(--pl-sp-24); }
+
+/* --------------------------------------------------------------------------
+ *  CARTES CADEAUX (spec §1.F) + badges verts/orange.
+ * ------------------------------------------------------------------------ */
+
+.pl-card__tag--new { background: var(--pl-success); }
+.pl-card__tag--hot { background: var(--pl-cta); }
+
+.gift-card__tagline { color: var(--pl-text-secondary); font-size: 14px; }
+.gift-card__label { color: var(--pl-error); font-size: 14px; font-weight: 500; }
+.gift-card .pl-card__title { font-size: 17px; }
+
+/* --------------------------------------------------------------------------
+ *  BANNIÈRE « POUR OFFRIR UN CADEAU ? » (fond crème).
+ * ------------------------------------------------------------------------ */
+
+.gift-why {
+    position: relative; overflow: hidden; border-radius: 16px;
+    background: #fdf1e3; padding: 60px 48px; min-height: 520px;
+}
+.gift-why__text { position: relative; z-index: 1; max-width: 46%; }
+.gift-why__title { margin: 0 0 26px; color: var(--pl-cta); font-size: 38px; font-weight: 600; }
+.gift-why__list { list-style: none; margin: 0 0 30px; padding: 0; display: grid; gap: 20px; }
+.gift-why__list li { display: flex; align-items: flex-start; gap: 16px; }
+.gift-why__icon {
+    flex: none; width: 44px; height: 44px; border-radius: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pl-white); color: var(--pl-cta);
+}
+.gift-why__list strong { display: block; font-size: 19px; font-weight: 700; color: var(--pl-text-strong); }
+.gift-why__list small { display: block; margin-top: 2px; font-size: 14px; color: var(--pl-text-secondary); }
+.gift-why__actions { display: flex; align-items: center; gap: 26px; }
+.gift-why__link { color: var(--pl-cta); font-size: 15px; font-weight: 600; text-decoration: none; }
+.gift-why__link:hover { text-decoration: underline; }
+.gift-why__img {
+    position: absolute; right: 0; top: 0; height: 100%;
+    object-fit: cover; object-position: right center;
+}
+
+/* Destinataires : 4 tuiles-images. */
+.gift-recipients { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.gift-recipients .gift-tile { height: 306px; }
+
+/* --------------------------------------------------------------------------
+ *  ÉCRAN 4 — état « image manquante » des cartes filtrées.
+ * ------------------------------------------------------------------------ */
+
+.gift-ph { background: #d7d9de; display: flex; align-items: center; justify-content: center; }
+.gift-ph__badge {
+    position: absolute; top: 12px; left: 12px;
+    padding: 4px 12px; border-radius: 999px;
+    background: rgb(255 255 255 / .55); color: #5a6070;
+    font-size: 12px; font-weight: 600;
+}
+.gift-ph__icon { color: #9aa0ab; line-height: 0; }
+
+/* Le compteur du chip « Filtre » du listing Cadeaux. */
+.gift-chip-filter__back { display: inline-flex; line-height: 0; }
+.gift-chip-filter__back[hidden] { display: none; }
+
+/* Grille filtrée : 3 colonnes, les 12 cartes visibles (écran 4). */
+.gift-fgrid { grid-template-columns: repeat(3, 1fr); }
+.gift-fgrid .pl-card__title { min-height: 2.7em; }
+
+/* --------------------------------------------------------------------------
+ *  TUNNEL « OFFRIR UN CADEAU » (écrans 5-8).
+ * ------------------------------------------------------------------------ */
+
+.gift-tunnel-page { padding: 24px 0 64px; }
+.gift-tunnel-page .act-breadcrumb { margin-bottom: 28px; }
+.gift-tunnel {
+    display: grid; grid-template-columns: 1fr 400px;
+    gap: 16px; align-items: start;
+}
+
+/* Colonne gauche : panneau gris clair contenant les cartes blanches. */
+.gift-steps { background: var(--gift-form-bg); border-radius: 12px; padding: 40px; }
+.gift-formcard {
+    background: var(--pl-white); border-radius: 12px;
+    padding: 32px 24px; margin-bottom: 28px;
+}
+.gift-formcard--pay { background: none; padding: 0; margin: 0; }
+.gift-formcard__title { margin: 0 0 18px; font-size: 28px; font-weight: 700; color: var(--pl-text-strong); }
+.gift-formcard__lead { margin: 0 0 6px; font-size: 16px; font-weight: 700; color: var(--pl-text-strong); }
+.gift-formcard__required { margin: 0 0 22px; font-size: 14px; color: var(--pl-text); }
+
+/* Champs (spec C5) : icône préfixe, états focus / rempli / erreur. */
+.gift-field { margin-bottom: 20px; }
+.gift-field__label { display: block; margin-bottom: 8px; font-size: 15px; font-weight: 600; color: var(--pl-text-strong); }
+.gift-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.gift-input { position: relative; }
+.gift-input__icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--gift-field-icon); line-height: 0;
+}
+.gift-input input {
+    width: 100%; height: 52px; padding: 0 14px 0 44px;
+    border: 1px solid var(--gift-field-border); border-radius: 8px;
+    font-size: 15px; color: var(--pl-text-strong); background: var(--pl-white);
+}
+.gift-input input::placeholder { color: var(--pl-text-disabled); }
+.gift-input input:focus { outline: none; border-color: var(--gift-purple); box-shadow: 0 0 0 3px rgb(93 0 255 / .08); }
+.gift-field.has-error .gift-input input { border-color: var(--gift-required); }
+.gift-field__error { margin: 6px 0 0; font-size: 13px; color: var(--gift-required); }
+.gift-field__hint { margin: 8px 0 0; font-size: 13px; color: var(--pl-text-disabled); }
+
+.gift-textarea textarea {
+    width: 100%; padding: 14px; resize: vertical; min-height: 110px;
+    border: 1px solid var(--gift-field-border); border-radius: 8px;
+    font-size: 15px; color: var(--pl-text-strong); font-family: inherit;
+}
+.gift-textarea textarea::placeholder { color: var(--pl-text-disabled); }
+.gift-textarea textarea:focus { outline: none; border-color: var(--gift-purple); box-shadow: 0 0 0 3px rgb(93 0 255 / .08); }
+.gift-field__counter { margin: 6px 0 0; font-size: 13px; color: var(--pl-text-muted); }
+
+.gift-consent { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--pl-text); cursor: pointer; }
+.gift-consent input { width: 18px; height: 18px; accent-color: var(--gift-purple); flex: none; }
+
+.gift-tunnel__foot {
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 22px; padding: 4px 8px 8px;
+}
+.gift-tunnel__total { margin: 0; font-size: 18px; font-weight: 700; color: var(--pl-text-strong); }
+.gift-next { min-width: 108px; }
+
+/* Modes de paiement (spec C7). */
+.gift-pays { display: grid; gap: 18px; }
+.gift-pay {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--pl-white); border: 1px solid transparent; border-radius: 10px;
+    padding: 22px 20px; cursor: pointer;
+    font-size: 16px; font-weight: 700; color: var(--pl-text-strong);
+}
+.gift-pay input { width: 20px; height: 20px; accent-color: var(--gift-purple); flex: none; }
+.gift-pay:has(input:checked) { border-color: var(--gift-purple); }
+
+/* --------------------------------------------------------------------------
+ *  RÉCAPITULATIF DE COMMANDE (spec C3), colonne droite sticky.
+ * ------------------------------------------------------------------------ */
+
+.gift-summary {
+    position: sticky; top: 24px;
+    background: var(--pl-white); border: 1px solid var(--pl-border);
+    border-radius: 12px; padding: 24px;
+}
+.gift-summary__cards { width: 100%; display: block; margin-bottom: 14px; }
+
+.gift-valid {
+    display: flex; align-items: flex-start; gap: 14px;
+    background: #f4f5f8; border-radius: 10px; padding: 18px 16px;
+    margin-bottom: 8px; color: var(--pl-text-strong);
+}
+.gift-valid .pl-icon { flex: none; margin-top: 2px; }
+.gift-valid p { margin: 0; font-size: 15px; line-height: 1.55; }
+
+.gift-summary__total {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 0; border-bottom: 1px solid var(--pl-border);
+    font-size: 15px; font-weight: 600; color: var(--pl-text-strong);
+}
+.gift-summary__total strong { font-size: 18px; font-weight: 700; }
+
+/* Accordéons « + / × » synchronisés avec le formulaire. */
+.gift-acc { border-bottom: 1px solid var(--pl-border); }
+.gift-acc:last-child { border-bottom: 0; }
+.gift-acc summary {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 0; cursor: pointer; list-style: none;
+    font-size: 16px; font-weight: 700; color: var(--pl-text-strong);
+}
+.gift-acc summary::-webkit-details-marker { display: none; }
+.gift-acc__toggle { position: relative; width: 16px; height: 16px; flex: none; }
+.gift-acc__toggle::before,
+.gift-acc__toggle::after {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%); background: var(--pl-text-strong);
+}
+.gift-acc__toggle::before { width: 16px; height: 2px; }
+.gift-acc__toggle::after { width: 2px; height: 16px; }
+.gift-acc[open] .gift-acc__toggle { transform: rotate(45deg); }
+.gift-acc__body { padding: 0 0 18px; }
+.gift-acc__body p { margin: 0 0 6px; font-size: 15px; color: var(--pl-text-strong); }
+.gift-acc__label { font-weight: 700; }
+
+/* --------------------------------------------------------------------------
+ *  RESPONSIVE.
+ * ------------------------------------------------------------------------ */
+
+@media (max-width: 1100px) {
+    .gift-hero__img { opacity: .35; }
+    .gift-args { grid-template-columns: repeat(2, 1fr); }
+    .gift-duo { grid-template-columns: 1fr; }
+    .gift-tunnel { grid-template-columns: 1fr; }
+    .gift-why__text { max-width: 100%; }
+    .gift-why__img { display: none; }
+    .gift-recipients { grid-template-columns: repeat(2, 1fr); }
+    .gift-mosaic { grid-auto-rows: 220px; }
+}

@@ -20,10 +20,10 @@
             </a>
 
             <nav class="pl-nav pl-nav--connected" aria-label="Navigation principale">
-                <a href="{{ path('app_activities') }}" class="pl-nav__link {{ nav_active != 'offres' ? 'is-active' }}">Activités</a>
+                <a href="{{ path('app_activities') }}" class="pl-nav__link {{ nav_active not in ['offres', 'cadeaux'] ? 'is-active' }}">Activités</a>
                 <a href="{{ path('app_destinations') }}" class="pl-nav__link pl-nav__link--badged">Destinations <span class="pl-nav__badge">Nouveau</span></a>
                 <a href="{{ path('app_offers') }}" class="pl-nav__link pl-nav__link--offres {{ nav_active == 'offres' ? 'is-active-cta' }}">{{ icon.flame(18) }} Offres du moments</a>
-                <a href="#" class="pl-nav__link">{{ icon.gift(18) }} Cadeaux</a>
+                <a href="{{ path('app_gifts') }}" class="pl-nav__link {{ nav_active == 'cadeaux' ? 'is-active' }}">{{ icon.gift(18) }} Cadeaux</a>
                 <a href="#" class="pl-nav__link pl-nav__link--badged">Activités privées <span class="pl-nav__badge">Nouveau</span></a>
             </nav>
         </div>

@@ -1,0 +1,203 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Bon cadeaux{% endblock %}
+{% block meta_description %}Offrez un bon cadeau TrouveMoi : plus de 20.000 activités partout en France, envoyé par email instantanément, valable 12 mois.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar.html.twig' with { connected: true, nav_active: 'cadeaux' } %}
+{% endblock %}
+
+{% block body %}
+<div class="gift-page">
+
+    {# ==================================================================
+       HERO : titre orange + sélecteur de montant + coffret cadeau violet.
+       ================================================================ #}
+    <section class="gift-hero">
+        <img class="gift-hero__img" src="{{ asset('images/gifts/hero-coffret.jpg') }}" alt="Coffret cadeau « Plaisir d'offrir, bonheur de vivre »">
+        <div class="home-container gift-hero__inner">
+            <h1 class="gift-hero__title">Bon cadeaux</h1>
+            <p class="gift-hero__subtitle">Faites plaisir à vos proche avec un bon pour<br>une activités inoubliables.</p>
+            <div class="gift-amounts" role="group" aria-label="Choisissez un montant">
+                <button type="button" class="gift-amount" data-gift-amount>50€</button>
+                <button type="button" class="gift-amount" data-gift-amount>100€</button>
+                <button type="button" class="gift-amount" data-gift-amount>200€</button>
+                <span class="gift-amount gift-amount--custom">
+                    <output data-gift-custom>20€</output>
+                    <span class="gift-amount__steps">
+                        <button type="button" data-gift-step="10" aria-label="Augmenter le montant">{{ icon.chevron_down(12) }}</button>
+                        <button type="button" data-gift-step="-10" aria-label="Diminuer le montant">{{ icon.chevron_down(12) }}</button>
+                    </span>
+                </span>
+            </div>
+            <a href="{{ path('app_gifts_offer') }}" class="pl-btn pl-btn--primary gift-hero__cta">Offrir !</a>
+        </div>
+    </section>
+
+    {# Rangée d'arguments : 4 pastilles colorées. #}
+    <section class="home-section gift-args-section">
+        <div class="home-container">
+            <div class="gift-args">
+                <div class="gift-arg gift-arg--violet">{{ icon.book_open(34) }} <span>20.000<br>activités</span></div>
+                <div class="gift-arg gift-arg--blue">{{ icon.mail(34) }} <span>Par email<br>instantanément</span></div>
+                <div class="gift-arg gift-arg--green">{{ icon.calendar(34) }} <span>12 mois pour<br>réserver</span></div>
+                <div class="gift-arg gift-arg--orange">{{ icon.puzzle(34) }} <span>Utilisable en<br>plusieurs fois</span></div>
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       CATÉGORIES POPULAIRES : mosaïque de tuiles.
+       ================================================================ #}
+    <section class="home-section">
+        <div class="home-container">
+            <div class="home-section__head">
+                <h2 class="home-section__title">Catégories populaires</h2>
+                <a href="{{ path('app_gifts_category') }}" class="btn-see-all">Voir toutes les catégories {{ icon.arrow_up_right(16) }}</a>
+            </div>
+            {% include 'gift/_mosaic.html.twig' with { categories: categories } %}
+        </div>
+    </section>
+
+    {# ==================================================================
+       DOUBLE BANNIÈRE CTA : entreprise (bleu) + montant libre (jaune).
+       ================================================================ #}
+    <section class="home-section gift-duo-section">
+        <div class="home-container">
+            <div class="gift-duo">
+                <div class="gift-banner gift-banner--blue">
+                    <div class="gift-banner__text">
+                        <h2 class="gift-banner__title">Vous êtes entreprise?</h2>
+                        <p class="gift-banner__desc">Offrez des expériences à vos clients ou collaborateurs.</p>
+                        <a href="#" class="gift-banner__btn">Demander un devis</a>
+                    </div>
+                    <img class="gift-banner__img" src="{{ asset('images/gifts/banner-entreprise.jpg') }}" alt="">
+                </div>
+                <div class="gift-banner gift-banner--yellow">
+                    <div class="gift-banner__text">
+                        <h2 class="gift-banner__title">Un montant libre ?</h2>
+                        <p class="gift-banner__desc">Choisissez le montant et laissez le choix à vos proches .</p>
+                        <a href="{{ path('app_gifts_offer') }}" class="gift-banner__btn gift-banner__btn--violet">Offrir un montant libre</a>
+                    </div>
+                    <img class="gift-banner__img" src="{{ asset('images/gifts/banner-montant.jpg') }}" alt="">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       + 20.000 ACTIVITÉS PARTOUT EN FRANCE : villes + grille 4×2.
+       ================================================================ #}
+    <section class="act-section">
+        <div class="home-container">
+            <div class="home-section__head">
+                <h2 class="home-section__title">+ 20.000 activités partout en France</h2>
+                <a href="{{ path('app_gifts_category') }}" class="btn-see-all">Voir toutes les catégories {{ icon.arrow_up_right(16) }}</a>
+            </div>
+            <div class="act-citybar">
+                <button type="button" class="act-citybar__nav" aria-label="Villes précédentes">{{ icon.chevron_left(16) }}</button>
+                <div class="act-citybar__scroll">
+                    {% for city in cities %}
+                        <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">{{ city }}</button>
+                    {% endfor %}
+                </div>
+                <button type="button" class="act-citybar__nav" aria-label="Villes suivantes">{{ icon.chevron_right(16) }}</button>
+            </div>
+            <div class="card-grid">
+                {% for g in cards %}
+                    {% include 'gift/_card.html.twig' with { g: g } %}
+                {% endfor %}
+            </div>
+            <nav class="act-pagination" aria-label="Pagination des activités">
+                <button type="button" class="act-page-btn" aria-label="Page précédente">{{ icon.chevron_left(16) }}</button>
+                <button type="button" class="act-page-btn is-active" aria-current="page">1</button>
+                <button type="button" class="act-page-btn">2</button>
+                <button type="button" class="act-page-btn">3</button>
+                <button type="button" class="act-page-btn">4</button>
+                <button type="button" class="act-page-btn" aria-label="Page suivante">{{ icon.chevron_right(16) }}</button>
+            </nav>
+        </div>
+    </section>
+
+    {# ==================================================================
+       MEILLEURS VENTES.
+       ================================================================ #}
+    <section class="act-section">
+        <div class="home-container">
+            <h2 class="home-section__title gift-solo-title">Meilleurs ventes</h2>
+            <div class="card-grid">
+                {% for g in bestSellers %}
+                    {% include 'gift/_card.html.twig' with { g: g } %}
+                {% endfor %}
+            </div>
+            <div class="act-more">
+                <a href="{{ path('app_gifts_category') }}" class="pl-btn pl-btn--outline-action">Voir tous les bons cadeaux {{ icon.chevron_right(16) }}</a>
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       BANNIÈRE « POUR OFFRIR UN CADEAU ? » : fond crème + coffrets dorés.
+       ================================================================ #}
+    <section class="home-section">
+        <div class="home-container">
+            <div class="gift-why">
+                <div class="gift-why__text">
+                    <h2 class="gift-why__title">Pour offrir un cadeau ?</h2>
+                    <ul class="gift-why__list">
+                        <li>
+                            <span class="gift-why__icon">{{ icon.gift(22) }}</span>
+                            <span><strong>Le cadeau qui fait toujours plaisir</strong><small>Offrez une expérience unique et mémorable .</small></span>
+                        </li>
+                        <li>
+                            <span class="gift-why__icon">{{ icon.calendar(22) }}</span>
+                            <span><strong>Simple et flexible</strong><small>Le bénéficiaire choisis la date qui lui convient</small></span>
+                        </li>
+                        <li>
+                            <span class="gift-why__icon">{{ icon.calendar(22) }}</span>
+                            <span><strong>Valable 12 mois</strong><small>Pour profitez de l'expérience en toutes sérenité.</small></span>
+                        </li>
+                        <li>
+                            <span class="gift-why__icon">{{ icon.calendar(22) }}</span>
+                            <span><strong>Le cadeau qui fait toujours plaisir</strong><small>Des milliers d'activités au choix</small></span>
+                        </li>
+                    </ul>
+                    <div class="gift-why__actions">
+                        <a href="{{ path('app_gifts_offer') }}" class="pl-btn pl-btn--cta">Offrir un cadeau maintenant</a>
+                        <a href="#" class="gift-why__link">Ou j'utilise ma carte cadeau</a>
+                    </div>
+                </div>
+                <img class="gift-why__img" src="{{ asset('images/gifts/banner-creme.jpg') }}" alt="">
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       TROUVER LE CADEAU PAR DESTINATAIRES.
+       ================================================================ #}
+    <section class="act-section">
+        <div class="home-container">
+            <h2 class="home-section__title gift-solo-title">Trouver le cadeau par destinataires</h2>
+            <div class="gift-recipients">
+                {% for r in recipients %}
+                    <a href="{{ path('app_gifts_category') }}" class="gift-tile" aria-label="{{ r.name }}">
+                        <img src="{{ asset(r.image) }}" alt="{{ r.name }}">
+                    </a>
+                {% endfor %}
+            </div>
+            <nav class="act-pagination" aria-label="Pagination des destinataires">
+                <button type="button" class="act-page-btn" aria-label="Page précédente">{{ icon.chevron_left(16) }}</button>
+                <button type="button" class="act-page-btn is-active" aria-current="page">1</button>
+                <button type="button" class="act-page-btn">2</button>
+                <button type="button" class="act-page-btn">3</button>
+                <button type="button" class="act-page-btn">4</button>
+                <button type="button" class="act-page-btn" aria-label="Page suivante">{{ icon.chevron_right(16) }}</button>
+            </nav>
+        </div>
+    </section>
+
+    {% include 'destination/_reviews_band.html.twig' with { reviews: reviews } %}
+
+</div>
+{% endblock %}
