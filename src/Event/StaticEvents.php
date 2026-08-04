@@ -17,6 +17,8 @@ final class StaticEvents
      * Les 12 événements récurrents de la maquette (grille 4×3 du listing,
      * réutilisés sur le landing, le calendrier et les événements privés).
      * Couleur du badge mappée à la catégorie (spec §E1).
+     *
+     * @return list<array<string, string>>
      */
     public static function events(): array
     {
@@ -93,6 +95,8 @@ final class StaticEvents
      * mêmes 8 premières cartes, mais la 3ᵉ ligne de la maquette y échange
      * badges et visuels (Barbecue « En famille » photo famille, Randonnée
      * « Culture » photo catacombes, Match « Jeu », Yoga « Loisirs »).
+     *
+     * @return list<array<string, string>>
      */
     public static function eventsListing(): array
     {
@@ -127,6 +131,8 @@ final class StaticEvents
     /**
      * Grille filtrée affichée quand la sidebar est ouverte (capture 9) :
      * 9 cartes, 3 colonnes, ordre propre à la maquette.
+     *
+     * @return list<array<string, string>>
      */
     public static function eventsFiltered(): array
     {
@@ -145,7 +151,11 @@ final class StaticEvents
         ];
     }
 
-    /** Carousel « Categories populaires » du landing (icônes rondes violettes). */
+    /**
+     * Carousel « Categories populaires » du landing (icônes rondes violettes).
+     *
+     * @return list<array{label: string, icon: string}>
+     */
     public static function categories(): array
     {
         return [
@@ -164,6 +174,8 @@ final class StaticEvents
      * Les 16 groupes du listing E (grille 4×4). Coquilles maquette
      * corrigées : « nouritures » → nourritures, « FRance » → France,
      * « societé » → société.
+     *
+     * @return list<array<string, string|null>>
      */
     public static function groups(): array
     {
@@ -193,6 +205,8 @@ final class StaticEvents
      * Cartes « Vous aimerez peut-être aussi » / « événements similaires à
      * proximité » (cartes de type groupe, incohérence assumée par la
      * maquette — point à trancher n°1 documenté dans les templates).
+     *
+     * @return list<array<string, string|null>>
      */
     public static function similar(): array
     {
@@ -207,7 +221,11 @@ final class StaticEvents
         ];
     }
 
-    /** Les 12 participants de l'écran D (badges de rôle optionnels). */
+    /**
+     * Les 12 participants de l'écran D (badges de rôle optionnels).
+     *
+     * @return list<array<string, string|null>>
+     */
     public static function participants(): array
     {
         return [
@@ -230,6 +248,8 @@ final class StaticEvents
      * Onglet Membres du groupe : 7 lignes « Richard » (maquette). Coquilles
      * corrigées : « Dernièrer visiste » → Dernière visite. Les lignes 2 et
      * 6 sont à l'état survolé sur la capture (icône message visible).
+     *
+     * @return list<array{name: string, avatar: string, hovered: bool}>
      */
     public static function members(): array
     {
@@ -260,6 +280,8 @@ final class StaticEvents
      * Grille d'albums de l'onglet Photos (12 cartes). Coquilles corrigées :
      * Disneymland → Disneyland, bièrre → bière, Atélier → Atelier,
      * Auvergnbe → Auvergne, Championat → Championnat.
+     *
+     * @return list<array<string, string>>
      */
     public static function albums(): array
     {
@@ -289,6 +311,8 @@ final class StaticEvents
      * Calendrier mensuel « Juillet 2026 » reproduit tel quel de la maquette
      * (numérotation ET pastilles) : jour courant 30 en violet, pastilles
      * colorées « Nom événement… / Heure ».
+     *
+     * @return list<list<array{int, bool, bool, string|null}>>
      */
     public static function calendar(): array
     {
@@ -302,7 +326,11 @@ final class StaticEvents
         ];
     }
 
-    /** Cartes de l'onglet Événements du groupe (grille 4×3, type groupe). */
+    /**
+     * Cartes de l'onglet Événements du groupe (grille 4×3, type groupe).
+     *
+     * @return list<array<string, string|null>>
+     */
     public static function groupEvents(): array
     {
         $lorem = 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum';
@@ -318,7 +346,11 @@ final class StaticEvents
         return array_merge($row, $row, $row);
     }
 
-    /** Section « Votre sélection D'événements » (cartes catégorie). */
+    /**
+     * Section « Votre sélection D'événements » (cartes catégorie).
+     *
+     * @return list<array{title: string, count: string, image: string}>
+     */
     public static function selections(): array
     {
         return [
@@ -329,13 +361,21 @@ final class StaticEvents
         ];
     }
 
-    /** Carrousel de villes de la sélection. */
+    /**
+     * Carrousel de villes de la sélection.
+     *
+     * @return list<string>
+     */
     public static function cities(): array
     {
         return ['Paris', 'Bordeaux', 'Toulouse', 'Reims', 'Annecy', 'Nice', 'Marseille', 'Grenoble', 'Dijon'];
     }
 
-    /** Pile d'avatars des cartes (4 visibles + pile). */
+    /**
+     * Pile d'avatars des cartes (4 visibles + pile).
+     *
+     * @return list<string>
+     */
     public static function avatars(): array
     {
         return [
