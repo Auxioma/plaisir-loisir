@@ -1,0 +1,32 @@
+{#
+    Section « Votre sélection D'événements » : carrousel de villes +
+    cartes catégorie avec compteur d'événements (écrans B, H, I).
+    Variables : selections, cities.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<section class="act-section evn-selection">
+    <div class="home-container">
+        <h2 class="evn-section__title evn-selection__title">Votre sélection D'événements</h2>
+        <div class="act-citybar">
+            <button type="button" class="act-citybar__nav" aria-label="Villes précédentes">{{ icon.chevron_left(16) }}</button>
+            <div class="act-citybar__scroll">
+                {% for city in cities %}
+                    <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">{{ city }}</button>
+                {% endfor %}
+            </div>
+            <button type="button" class="act-citybar__nav" aria-label="Villes suivantes">{{ icon.chevron_right(16) }}</button>
+        </div>
+        <div class="card-grid evn-sel-grid">
+            {% for s in selections %}
+                <a href="{{ path('app_events_all') }}" class="pl-card evn-sel-card">
+                    <div class="pl-card__media"><img src="{{ asset(s.image) }}" alt="{{ s.title }}"></div>
+                    <div class="pl-card__body">
+                        <span class="pl-card__title">{{ s.title }}</span>
+                        <span class="evn-sel-card__count">{{ icon.book_open(16) }} {{ s.count }}</span>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>

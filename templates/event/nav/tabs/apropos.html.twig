@@ -1,0 +1,131 @@
+{#
+    Onglet « À propos » du détail groupe (captures 12-13, état rempli) :
+    description + cards latérales Créateurs / Membres (152), événements à
+    venir / passés (25), photos (250), discussions (5) vide, derniers avis.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<div class="evn-about">
+    <div class="evn-about__main">
+        <h2 class="evn-gh2">À propos de nous</h2>
+        <div class="evn-about__text">
+            <p>Tu as envie de bouger, t'amuser et retrouver la forme dans une ambiance survoltée ?<br>
+            Rejoins le tout nouveau groupe de fitness de Lyon pour des sessions de sport ludiques, conviviales et accessibles à tous ! Que tu sois débutant(e), sportif(ve) confirmé(e), en famille ou entre amis, viens dépenser ton énergie, te dépasser et faire de super rencontres.</p>
+            <p>🗓️ Fréquence : Tous les 15 jours<br>
+            📍 Lieu : [Nom du lieu ou parc], Lyon<br>
+            🎯 Objectif : Créer une communauté lyonnaise motivée et dynamique — et bientôt, lancer des défis &amp; mini-tournois sportifs !</p>
+            <p>Apporte ta tenue de sport, ta gourde, et surtout toute ta bonne humeur. On s'occupe du reste !</p>
+        </div>
+        <button type="button" class="evn-more-link" data-evn-about-toggle>En savoir moins</button>
+    </div>
+
+    <aside class="evn-about__side">
+        <div class="evn-side-card">
+            <p class="evn-side-card__title">Créateurs</p>
+            <div class="evn-creator">
+                <img src="{{ asset('images/events/avatar-thomas.jpg') }}" alt="">
+                <span>
+                    <strong>Martin Thomas</strong>
+                    <a href="#">Message</a>
+                </span>
+            </div>
+        </div>
+        <div class="evn-side-card">
+            <p class="evn-side-card__title">Membres <span>(152)</span> <a href="{{ path('app_group_detail', { onglet: 'membres' }) }}" class="evn-side-card__more">Voir plus</a></p>
+            <div class="evn-side-card__avatars">
+                {% for i in 0..14 %}
+                    <img src="{{ asset(avatars[i % 5]) }}" alt="">
+                {% endfor %}
+            </div>
+        </div>
+    </aside>
+</div>
+
+<section class="evn-gsection">
+    <div class="evn-section__head">
+        <h2 class="evn-gh2">Événements à venir <span class="evn-gh2__count">(25)</span></h2>
+        <a href="{{ path('app_group_detail', { onglet: 'evenements' }) }}" class="evn-btn-dark">Tout voir {{ icon.arrow_up_right(15) }}</a>
+    </div>
+    <div class="card-grid evn-gcards3">
+        {% for g in [
+            { name: 'Barbecue entre amis', image: 'images/events/ev-famille.jpg', description: 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum', location: 'Autrans, 38880', members: '12', badge: null },
+            { name: 'Randonnée dans le Vercors', image: 'images/events/ev-catacombes.jpg', description: 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum', location: 'Lyon, 69000', members: '12', badge: null },
+            { name: 'Randonnée dans le Vercors', image: 'images/events/ev-catacombes.jpg', description: 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum', location: 'Lyon, 69000', members: '12', badge: null },
+        ] %}
+            {% include 'event/nav/_group_card.html.twig' with { g: g, avatars: avatars } %}
+        {% endfor %}
+    </div>
+</section>
+
+<section class="evn-gsection">
+    <div class="evn-section__head">
+        <h2 class="evn-gh2">Événements passés <span class="evn-gh2__count">(25)</span></h2>
+        <a href="{{ path('app_group_detail', { onglet: 'evenements' }) }}" class="evn-btn-dark">Tout voir {{ icon.arrow_up_right(15) }}</a>
+    </div>
+    <div class="card-grid evn-gcards3">
+        {% for g in [
+            { name: 'Barbecue entre amis', image: 'images/events/ev-famille.jpg', description: 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum', location: 'Autrans, 38880', members: '12', badge: null },
+            { name: 'Randonnée dans le Vercors', image: 'images/events/ev-catacombes.jpg', description: 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum', location: 'Lyon, 69000', members: '12', badge: null },
+            { name: 'Randonnée dans le Vercors', image: 'images/events/ev-catacombes.jpg', description: 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum', location: 'Lyon, 69000', members: '12', badge: null },
+        ] %}
+            {% include 'event/nav/_group_card.html.twig' with { g: g, avatars: avatars } %}
+        {% endfor %}
+    </div>
+</section>
+
+<section class="evn-gsection">
+    <div class="evn-section__head">
+        <h2 class="evn-gh2">Photos <span class="evn-gh2__count">(250)</span></h2>
+        <a href="{{ path('app_group_detail', { onglet: 'photos' }) }}" class="evn-btn-dark">Tout voir {{ icon.arrow_up_right(15) }}</a>
+    </div>
+    <div class="evn-gphotos">
+        <button type="button" class="evn-gphotos__nav" aria-label="Photos précédentes">{{ icon.chevron_left(16) }}</button>
+        <img src="{{ asset('images/events/ph-kayak1.jpg') }}" alt="Photo du groupe">
+        <img src="{{ asset('images/events/ph-kayak2.jpg') }}" alt="Photo du groupe">
+        <a href="{{ path('app_group_detail', { onglet: 'photos' }) }}" class="evn-gphotos__more">
+            <img src="{{ asset('images/events/ph-kayak3.jpg') }}" alt="Photo du groupe">
+        </a>
+    </div>
+</section>
+
+<section class="evn-gsection">
+    <div class="evn-section__head">
+        <h2 class="evn-gh2">Discussions <span class="evn-gh2__count">(5)</span></h2>
+        <a href="{{ path('app_group_detail', { onglet: 'discussions' }) }}" class="evn-btn-dark">Tout voir {{ icon.arrow_up_right(15) }}</a>
+    </div>
+    {% include 'event/nav/_empty.html.twig' with {
+        image: 'images/events/empty-chat.jpg',
+        title: "On dirait que c'est calme pour l'instant. Pourquoi ne pas<br>commencer la conversation ?"|raw,
+    } %}
+</section>
+
+<section class="evn-gsection">
+    <div class="evn-section__head">
+        <h2 class="evn-gh2">Les derniers avis</h2>
+        <a href="#" class="evn-btn-dark">Tout voir {{ icon.arrow_up_right(15) }}</a>
+    </div>
+    <div class="evn-reviews">
+        <div class="dest-reviews__score evn-reviews__score">
+            <span class="dest-reviews__score-label">Note globale</span>
+            <span class="home-reviews__score-value">4.5 <span>/5</span></span>
+            <span class="home-reviews__stars" aria-label="4,5 étoiles sur 5">
+                {% for i in 1..5 %}
+                    <span class="{{ i <= 4 ? 'is-on' : 'is-off' }}">{{ icon.star(18) }}</span>
+                {% endfor %}
+            </span>
+            <span class="home-reviews__score-count">Basé sur 999.589 avis</span>
+        </div>
+        {% for r in [1, 2] %}
+            {% include 'activity/_review_card.html.twig' with { r: {
+                stars: 4,
+                title: 'Efficient and Reliable',
+                text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.',
+                author: 'John Mans',
+                meta: 'France, Nantes',
+                date: '10 Juillet 2026',
+                avatar: 'images/events/avatar-marie.jpg',
+                reportable: true,
+            } } %}
+        {% endfor %}
+    </div>
+</section>

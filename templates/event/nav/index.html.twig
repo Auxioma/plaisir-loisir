@@ -1,0 +1,191 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Événements{% endblock %}
+{% block meta_description %}Trouvez, rejoignez et partagez des moments uniques : événements privés et gratuits près de chez vous ou partout en France.{% endblock %}
+
+{% block header %}
+    {# Captures 1-2 : landing en DÉCONNECTÉ (bouton S'inscrire). #}
+    {% include '_partials/navbar_events.html.twig' with { connected: false, nav_active: 'evenements' } %}
+{% endblock %}
+
+{% block body %}
+<div class="evn-page evn-landing">
+
+    {# ==================================================================
+       HERO (spec A.1) : photo d'amis qui trinquent, fond navy, titre 2
+       lignes (2ᵉ orange), 3 pills d'arguments. Typos corrigées :
+       privivés → privés, Activivtés → Activités, Conviviabilité →
+       Convivialité.
+       ================================================================ #}
+    <section class="evn-hero">
+        <img class="evn-hero__img" src="{{ asset('images/events/hero-friends-right.jpg') }}" alt="">
+        <div class="home-container evn-hero__inner">
+            <h1 class="evn-hero__title">Trouvez, rejoignez et partagez<br><span>des moments uniques.</span></h1>
+            <p class="evn-hero__subtitle">Découvrez des événements privés près de chez vous ou partout en France.<br>Activités entre amis, en famille ou entre passionnées</p>
+            <div class="evn-hero__pills">
+                <span class="evn-hero-pill">{{ icon.lock(16) }} 100% privées</span>
+                <span class="evn-hero-pill">{{ icon.card(16) }} Gratuit &amp; sans prestataire</span>
+                <span class="evn-hero-pill">{{ icon.emoji(16) }} Partage &amp; Convivialité</span>
+            </div>
+        </div>
+    </section>
+
+    {# Recherche multi-critères à cheval sur le bas du hero (spec A.2). #}
+    <div class="home-container">
+        <form class="evn-search" role="search" action="{{ path('app_events_all') }}" method="get">
+            <div class="evn-search__inner">
+            <label class="evn-search__field">
+                {{ icon.map_pin(18) }}
+                <span class="evn-search__labels">
+                    <strong>Où voulez-vous aller ?</strong>
+                    <input type="text" placeholder="Destination, ville, lieu..." aria-label="Destination">
+                </span>
+                <span class="evn-search__chev">{{ icon.chevron_down(16) }}</span>
+            </label>
+            <span class="evn-search__sep" aria-hidden="true"></span>
+            <label class="evn-search__field">
+                {{ icon.calendar(18) }}
+                <span class="evn-search__labels">
+                    <strong>Quand</strong>
+                    <input type="text" placeholder="Toutes les dates" readonly aria-label="Dates">
+                </span>
+                <span class="evn-search__chev">{{ icon.chevron_down(16) }}</span>
+            </label>
+            <span class="evn-search__sep" aria-hidden="true"></span>
+            <label class="evn-search__field">
+                {{ icon.tag(18) }}
+                <span class="evn-search__labels">
+                    <strong>Catégories</strong>
+                    <input type="text" placeholder="Toutes les catégories" readonly aria-label="Catégories">
+                </span>
+                <span class="evn-search__chev">{{ icon.chevron_down(16) }}</span>
+            </label>
+            <span class="evn-search__sep" aria-hidden="true"></span>
+            <label class="evn-search__field">
+                {{ icon.card(18) }}
+                <span class="evn-search__labels">
+                    <strong>Type d'événement</strong>
+                    <input type="text" placeholder="Tous les types" readonly aria-label="Type d'événement">
+                </span>
+                <span class="evn-search__chev">{{ icon.chevron_down(16) }}</span>
+            </label>
+            <button type="submit" class="evn-search__submit">Recherche {{ icon.search(18) }}</button>
+            </div>
+        </form>
+    </div>
+
+    {# ==================================================================
+       CATEGORIES POPULAIRES : carousel d'icônes rondes violettes.
+       ================================================================ #}
+    <section class="evn-section">
+        <div class="home-container">
+            <div class="evn-section__head">
+                <div>
+                    <h2 class="evn-section__title">Categories populaires</h2>
+                    <p class="evn-section__lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat.<br>Nunc dictum facilisis dolor ac luctus.</p>
+                </div>
+                <a href="{{ path('app_events_all') }}" class="evn-btn-dark">Voir tous les  événements {{ icon.arrow_up_right(15) }}</a>
+            </div>
+            <div class="evn-cats">
+                <button type="button" class="evn-cats__nav" aria-label="Catégories précédentes">{{ icon.chevron_left(16) }}</button>
+                {% for c in categories %}
+                    <a href="{{ path('app_events_all') }}" class="evn-cat">
+                        <span class="evn-cat__icon">
+                            {%- if c.icon == 'cat_canoe' %}{{ icon.cat_canoe(24) }}
+                            {%- elseif c.icon == 'cat_bike' %}{{ icon.cat_bike(24) }}
+                            {%- elseif c.icon == 'cat_hiking' %}{{ icon.cat_hiking(24) }}
+                            {%- elseif c.icon == 'cat_sports' %}{{ icon.cat_sports(24) }}
+                            {%- elseif c.icon == 'cat_culture' %}{{ icon.cat_culture(24) }}
+                            {%- elseif c.icon == 'cat_crafts' %}{{ icon.cat_crafts(24) }}
+                            {%- elseif c.icon == 'cat_wellness' %}{{ icon.cat_wellness(24) }}
+                            {%- else %}{{ icon.cat_family(24) }}
+                            {%- endif %}
+                        </span>
+                        <span class="evn-cat__label">{{ c.label }}</span>
+                    </a>
+                {% endfor %}
+                <button type="button" class="evn-cats__nav" aria-label="Catégories suivantes">{{ icon.chevron_right(16) }}</button>
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       EVÉNEMENTS DE VOS GROUPES (spec A.3) : état vide + dropdown
+       mini-calendrier « Aujourd'hui » (capture 2, events.js). Typo
+       corrigée : « Aujourd'h'ui » → Aujourd'hui.
+       ================================================================ #}
+    <section class="evn-section">
+        <div class="home-container">
+            <div class="evn-section__head">
+                <h2 class="evn-section__title">Evénements de vos groupes</h2>
+                <div class="evn-today">
+                    <button type="button" class="evn-btn-dark" id="evn-today-toggle" aria-expanded="false" aria-controls="evn-today-cal">Aujourd'hui {{ icon.chevron_down(15) }}</button>
+                    <div class="evn-today__cal" id="evn-today-cal" role="dialog" aria-label="Choisir une date" hidden>
+                        <div class="evn-today__nav">
+                            <button type="button" aria-label="Mois précédent">{{ icon.chevron_left(16) }}</button>
+                            <strong>Juillet 2026</strong>
+                            <button type="button" aria-label="Mois suivant">{{ icon.chevron_right(16) }}</button>
+                        </div>
+                        <div class="evn-today__days" aria-hidden="true">
+                            <span>lun.</span><span>mar.</span><span>mer.</span><span>jeu.</span><span>ven.</span><span>sam</span><span>dim.</span>
+                        </div>
+                        <div class="evn-today__grid">
+                            {% for d in [29, 30] %}<span class="is-out">{{ d }}</span>{% endfor %}
+                            {% for d in 1..31 %}<span class="{{ d == 16 ? 'is-today' }}">{{ d }}</span>{% endfor %}
+                            {% for d in [1, 2] %}<span class="is-out">{{ d }}</span>{% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% include 'event/nav/_empty.html.twig' with {
+                image: 'images/events/empty-doc.jpg',
+                title: 'Vos groupes sont calmes pour l\'instant',
+                text: 'Explorez de nouveaux événements et restez connecté à<br>ce qui se passe autour de vous.',
+                cta: 'Découvrez les événements',
+                cta_href: path('app_events_all'),
+            } %}
+        </div>
+    </section>
+
+    {# ==================================================================
+       ÉVÉNEMENTS À VENIR : grille 4×3 <EventCard>.
+       ================================================================ #}
+    <section class="evn-section">
+        <div class="home-container">
+            <div class="evn-section__head">
+                <div>
+                    <h2 class="evn-section__title">Événements à venir</h2>
+                    <p class="evn-section__lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat.<br>Nunc dictum facilisis dolor ac luctus.</p>
+                </div>
+                <a href="{{ path('app_events_all') }}" class="evn-btn-dark">Voir tous les  événements {{ icon.arrow_up_right(15) }}</a>
+            </div>
+            <div class="evn-grid">
+                {% for e in events %}
+                    {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {# ==================================================================
+       VOS GROUPES (0) : état vide « À la recherche de votre communauté ? ».
+       ================================================================ #}
+    <section class="evn-section evn-section--last">
+        <div class="home-container">
+            <div class="evn-section__head">
+                <h2 class="evn-section__title">Vos groupes (0)</h2>
+                <a href="{{ path('app_groups') }}" class="evn-btn-dark">Voir tout {{ icon.arrow_up_right(15) }}</a>
+            </div>
+            {% include 'event/nav/_empty.html.twig' with {
+                image: 'images/events/empty-community.jpg',
+                title: 'À la recherche de votre communauté ?',
+                text: "Rejoignez un groupe qui partage vos passions et<br>commencez à vous connecter dès aujourd'hui.",
+                cta: 'Explorez les groupes',
+                cta_href: path('app_groups'),
+            } %}
+        </div>
+    </section>
+
+</div>
+{% endblock %}

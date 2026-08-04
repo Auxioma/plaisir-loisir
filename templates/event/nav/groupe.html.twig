@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Cours collectifs de fitness à Lyon{% endblock %}
+{% block meta_description %}Le groupe Cours collectifs de fitness à Lyon : événements, membres, photos et discussions de la communauté.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'groupes' } %}
+{% endblock %}
+
+{% block body %}
+<div class="evn-page evn-group">
+    <div class="home-container">
+
+        <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
+            <a href="{{ path('app_home') }}">Accueil</a>
+            <span aria-hidden="true">/</span>
+            <a href="{{ path('app_groups') }}">Groupes</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page" class="evn-crumb-current">Groupe détails</span>
+        </nav>
+
+        {% include 'event/nav/_group_header.html.twig' with { tab: tab } %}
+
+        {% if tab == 'apropos' %}
+            {% include 'event/nav/tabs/apropos.html.twig' %}
+        {% elseif tab == 'evenements' %}
+            {% include 'event/nav/tabs/evenements.html.twig' %}
+        {% elseif tab == 'membres' %}
+            {% include 'event/nav/tabs/membres.html.twig' %}
+        {% elseif tab == 'photos' %}
+            {% include 'event/nav/tabs/photos.html.twig' %}
+        {% else %}
+            {% include 'event/nav/tabs/discussions.html.twig' %}
+        {% endif %}
+
+        {# « événements similaires à proximité » — commun aux onglets. #}
+        <section class="evn-section evn-section--similar">
+            <div class="evn-section__head">
+                <h2 class="evn-section__title evn-section__title--lower">événements similaires à proximité</h2>
+                <a href="{{ path('app_events_all') }}" class="evn-btn-dark">Tout voir {{ icon.arrow_up_right(15) }}</a>
+            </div>
+            <div class="card-grid evn-similar-grid">
+                {% for g in similar %}
+                    {% include 'event/nav/_group_card.html.twig' with { g: g, avatars: avatars } %}
+                {% endfor %}
+            </div>
+        </section>
+
+    </div>
+
+    {% include 'event/nav/_join_modal.html.twig' %}
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{#
+    Onglet « Événements » du détail groupe (captures 15-16) : sous-onglets
+    Liste des événements / Calendrier (bascule client, events.js) + filtre
+    « A venir ». Le doublon de dropdown « A venir » de la capture 16 est
+    corrigé (point à trancher n°5) : un seul filtre.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<section class="evn-gsection">
+    <h2 class="evn-gh2 evn-gh2--tab">Événements <span class="evn-gh2__count">(25)</span></h2>
+
+    <div class="evn-subtabs">
+        <div class="evn-subtabs__pills">
+            <button type="button" class="evn-pill is-active" data-evn-subtab="liste" aria-controls="evn-gtab-liste" aria-selected="true">Liste des événements</button>
+            <button type="button" class="evn-pill" data-evn-subtab="calendrier" aria-controls="evn-gtab-calendrier" aria-selected="false">Calendrier</button>
+        </div>
+        <button type="button" class="act-tool evn-avenir">A venir {{ icon.chevron_down(14) }}</button>
+    </div>
+
+    <div id="evn-gtab-liste">
+        <div class="card-grid evn-grid evn-groups-grid">
+            {% for g in group_events %}
+                {% include 'event/nav/_group_card.html.twig' with { g: g, avatars: avatars, href: path('app_events_detail') } %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="evn-gtab-calendrier" hidden>
+        {% include 'event/nav/_month_calendar.html.twig' with { calendar: calendar } %}
+    </div>
+</section>

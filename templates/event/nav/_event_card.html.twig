@@ -1,0 +1,27 @@
+{#
+    <EventCard> (spec §E1) : badge catégorie coloré, cœur, pastille date
+    navy translucide en bas de l'image, titre, lieu (pin), horaire
+    (horloge), participants + pile d'avatars. Pas de prix (événements
+    communautaires). Variables : e, avatars.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<a href="{{ path('app_events_detail') }}" class="evn-card">
+    <div class="evn-card__media">
+        <img src="{{ asset(e.image) }}" alt="{{ e.title }}">
+        <span class="evn-badge evn-badge--{{ e.color }}">{{ e.category }}</span>
+        <span class="evn-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</span>
+        <span class="evn-card__date">{{ e.date }}</span>
+    </div>
+    <div class="evn-card__body">
+        <span class="evn-card__title">{{ e.title }}</span>
+        <span class="evn-card__meta">{{ icon.map_pin(15) }} {{ e.location }}</span>
+        <span class="evn-card__meta">{{ icon.clock(15) }} {{ e.hours }}</span>
+        <span class="evn-card__foot">
+            <span class="evn-card__meta">{{ icon.person(15) }} {{ e.participants }} Participants</span>
+            <span class="evn-avatars">
+                {% for a in avatars %}<img src="{{ asset(a) }}" alt="">{% endfor %}
+            </span>
+        </span>
+    </div>
+</a>

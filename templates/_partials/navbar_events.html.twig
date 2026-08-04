@@ -1,12 +1,19 @@
 {#
     En-tête du contexte « Événements » (variante C de la spec Événements) :
     même structure que le header commun mais navigation propre au flow
-    (Événements actif violet, Groupe & Clubs, Calendrier, Événements
-    privés) et CTA « Créer un événement » en VIOLET plein (≠ orange).
+    (Événements, Groupe & Clubs, Calendrier, Événements privés) et CTA
+    « Créer un événement » en VIOLET plein (≠ orange).
     Typos maquette corrigées : « Créer un évenement » → événement,
     « Evénément privées » → Événements privés, « S'incrire » → S'inscrire.
+
+    Variables :
+      - connected (bool, défaut false) : icônes + avatar au lieu du bouton
+        « S'inscrire » (le landing est en déconnecté, le reste en connecté).
+      - nav_active : evenements | groupes | calendrier | prives.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
+{% set connected = connected|default(false) %}
+{% set nav_active = nav_active|default('evenements') %}
 
 <header class="pl-navbar pl-navbar--connected">
     <div class="pl-navbar__inner">
@@ -16,16 +23,28 @@
             </a>
 
             <nav class="pl-nav pl-nav--connected" aria-label="Navigation principale">
-                <a href="{{ path('app_event_create') }}" class="pl-nav__link is-active">Événements</a>
-                <a href="#" class="pl-nav__link">Groupe &amp; Clubs</a>
-                <a href="#" class="pl-nav__link">Calendrier</a>
-                <a href="#" class="pl-nav__link pl-nav__link--badged">Événements privés <span class="pl-nav__badge">Nouveau</span></a>
+                <a href="{{ path('app_events') }}" class="pl-nav__link {{ nav_active == 'evenements' ? 'is-active' }}">Événements</a>
+                <a href="{{ path('app_groups') }}" class="pl-nav__link {{ nav_active == 'groupes' ? 'is-active' }}">Groupe &amp; Clubs</a>
+                <a href="{{ path('app_events_calendar') }}" class="pl-nav__link {{ nav_active == 'calendrier' ? 'is-active' }}">Calendrier</a>
+                <a href="{{ path('app_events_private') }}" class="pl-nav__link pl-nav__link--badged {{ nav_active == 'prives' ? 'is-active' }}">Événements privés <span class="pl-nav__badge">Nouveau</span></a>
             </nav>
         </div>
 
         <div class="pl-navbar__actions">
             <a href="{{ path('app_event_create') }}" class="pl-btn pl-btn--primary">Créer un événement</a>
-            <a href="{{ path('app_auth_choice') }}" class="pl-btn pl-btn--outline-dark pl-btn--signup">{{ icon.person(18) }} S'inscrire</a>
+
+            {% if connected %}
+                <button type="button" class="pl-iconbtn" aria-label="Mes favoris">{{ icon.heart(20) }}</button>
+                <button type="button" class="pl-iconbtn" aria-label="Messagerie">{{ icon.mail(20) }}</button>
+                <button type="button" class="pl-iconbtn" aria-label="Notifications">{{ icon.bell(20) }}</button>
+
+                <button type="button" class="pl-avatarbtn" aria-label="Paramètre du profil">
+                    <img src="{{ asset('images/home/avatar-1.png') }}" alt="">
+                    <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
+                </button>
+            {% else %}
+                <a href="{{ path('app_auth_choice') }}" class="pl-btn pl-btn--outline-dark pl-btn--signup">{{ icon.person(18) }} S'inscrire</a>
+            {% endif %}
         </div>
     </div>
 </header>

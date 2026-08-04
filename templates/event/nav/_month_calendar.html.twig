@@ -1,0 +1,35 @@
+{#
+    <MonthCalendar> (spec §E3) : grille 7 colonnes, en-tête « ‹ Juillet
+    2026 › », jour courant en carré violet, pastilles « Nom événement… /
+    Heure » colorées (fond teinté + barre latérale) cliquables vers le
+    détail. La numérotation reproduit la maquette telle quelle.
+    Variable : calendar (lignes de cellules [numéro, hors-mois, courant,
+    couleur|null]).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<div class="evn-cal">
+    <div class="evn-cal__nav">
+        <button type="button" aria-label="Mois précédent">{{ icon.chevron_left(18) }}</button>
+        <strong>Juillet 2026</strong>
+        <button type="button" aria-label="Mois suivant">{{ icon.chevron_right(18) }}</button>
+    </div>
+    <div class="evn-cal__days" aria-hidden="true">
+        <span>Lundi</span><span>Mardi</span><span>Mercredi</span><span>Jeudi</span><span>Vendredi</span><span>Samedi</span><span>Dimanche</span>
+    </div>
+    {% for row in calendar %}
+        <div class="evn-cal__row">
+            {% for cell in row %}
+                <div class="evn-cal__cell {{ cell[1] ? 'is-out' }}">
+                    <span class="evn-cal__num {{ cell[2] ? 'is-today' }}">{{ cell[0] }}</span>
+                    {% if cell[3] %}
+                        <a href="{{ path('app_events_detail') }}" class="evn-cal__event evn-cal__event--{{ cell[3] }}">
+                            <strong>Nom événement…</strong>
+                            <span>Heure</span>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</div>

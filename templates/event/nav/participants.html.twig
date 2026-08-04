@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Participants — Compétitions Canoë / Kayak{% endblock %}
+{% block meta_description %}La liste des participants de l'événement Compétitions Canoë / Kayak 2026.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'evenements' } %}
+{% endblock %}
+
+{% block body %}
+<div class="evn-page evn-participants">
+    <div class="home-container">
+
+        <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
+            <a href="{{ path('app_home') }}">Accueil</a>
+            <span aria-hidden="true">/</span>
+            <a href="{{ path('app_events') }}">Événements</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page" class="evn-crumb-current">Compétitions Canoë / Kayak</span>
+        </nav>
+
+        {# Colonne centrée, légèrement en retrait comme la maquette. #}
+        <div class="evn-participants__col">
+            <a href="{{ path('app_events_detail') }}" class="evn-back">← Retour</a>
+
+            <h1 class="evn-participants__title">Participants</h1>
+            <p class="evn-participants__subtitle">Compétitions  Canoë / Kayak 2026</p>
+
+            {# Typo maquette corrigée : « Pertinance » → Pertinence. #}
+            <div class="evn-participants__tools">
+                <label class="evn-input-search">
+                    {{ icon.search(18) }}
+                    <input type="text" placeholder="Recherche des participants" aria-label="Recherche des participants">
+                </label>
+                <button type="button" class="act-tool act-tool--plain evn-sort-right">{{ icon.sort(16) }} Trier par: <strong>Pertinence</strong> {{ icon.chevron_down(14) }}</button>
+            </div>
+
+            <span class="evn-chip-count">{{ icon.check(14) }} 12 participants</span>
+
+            <div class="evn-plist">
+                {% for p in participants %}
+                    <div class="evn-prow">
+                        <img class="evn-prow__avatar" src="{{ asset(p.avatar) }}" alt="">
+                        <span class="evn-prow__id">
+                            <span class="evn-prow__name">{{ p.name }}</span>
+                            {% if p.role %}
+                                <span class="evn-role-badge">
+                                    {{ p.icon == 'party' ? icon.party(13) : icon.crown(13) }} {{ p.role }}
+                                </span>
+                            {% endif %}
+                        </span>
+                        <button type="button" class="evn-prow__btn">Voir le profil</button>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="act-more">
+                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus de participant {{ icon.chevron_down(16) }}</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,92 @@
+{#
+    En-tête commun des listings du flow navigation Événements (écrans B,
+    E, H, I) : fil d'Ariane, bannière CTA, onglets Événements/Groupes,
+    titre, intro, recherche, outils d'affichage, chips, ligne résultats.
+    Typos maquette corrigées : « Acceuil » → Accueil, « Touts » → Tous,
+    « Toutes les événements » → Tous les événements.
+
+    Variables : crumb (libellé courant), banner_text/banner_cta (optionnels),
+    tabs_active (optionnel), title, intro (bool, défaut true), chips
+    (liste {icon, label, active}), sort (défaut Les plus populaires),
+    with_filters (bool : chip Filtre reliée à la sidebar #evn-filters).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<section class="act-head evn-head">
+    <div class="home-container">
+        <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
+            <a href="{{ path('app_home') }}">Accueil</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page" class="evn-crumb-current">{{ crumb }}</span>
+        </nav>
+
+        {% if banner_text is defined %}
+            {% include 'event/nav/_banner.html.twig' with { text: banner_text, cta: banner_cta, cta_href: banner_href|default(null) } %}
+        {% endif %}
+
+        {% if tabs_active is defined %}
+            {% include 'event/nav/_tabs.html.twig' with { active: tabs_active } %}
+        {% endif %}
+
+        <h1 class="act-head__title evn-title">{{ title }}</h1>
+        {% if intro|default(true) %}
+            <p class="act-head__subtitle">Découvrez les meilleures activités à faire à Lille. Choississez parmi un choix varié d'expériences pour créer des souvenirs inoubliables, en famille ou entre amis. Meilleur prix garanti. Annulation gratuites</p>
+        {% endif %}
+
+        <form class="act-search" role="search" action="" method="get">
+            <div class="act-search__bar">
+                <label class="act-search__field">
+                    {{ icon.map_pin(18) }}
+                    <input type="text" name="lieu" value="Paris" aria-label="Lieu">
+                </label>
+                <span class="act-search__sep" aria-hidden="true"></span>
+                <label class="act-search__field">
+                    {{ icon.search(18) }}
+                    <input type="text" name="q" placeholder="Recherches par mots-clés" aria-label="Mots-clés">
+                </label>
+            </div>
+            <button type="submit" class="act-search__submit" aria-label="Rechercher">{{ icon.search(20) }}</button>
+        </form>
+
+        <div class="act-toolbar evn-toolbar">
+            <div class="act-toolbar__right">
+                <button type="button" class="act-tool evn-map-tool">{{ icon.map(18) }} Afficher la carte</button>
+                <div class="act-viewswitch" role="group" aria-label="Mode d'affichage">
+                    <button type="button" class="act-viewbtn" {% if with_filters|default(false) %}id="evn-filter-toggle" aria-label="Ouvrir les filtres"{% else %}aria-label="Affichage en grille"{% endif %}>{{ icon.sliders(18) }}</button>
+                    <button type="button" class="act-viewbtn" aria-label="Affichage en liste">{{ icon.list_view(18) }}</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="act-chipbar evn-chipbar">
+            <button type="button" class="act-chip act-chip--filter" {% if with_filters|default(false) %}id="evn-chip-filter" aria-expanded="false" aria-controls="evn-filters"{% endif %}>
+                {{ icon.sliders(16) }} Filtre
+                <span class="act-chip__counter" id="evn-filter-counter" {{ not app.request.query.has('filtres') ? 'hidden' }}>2</span>
+            </button>
+            <span class="act-chipbar__sep" aria-hidden="true"></span>
+            <div class="act-chipbar__scroll">
+                {% if with_filters|default(false) %}
+                    <button type="button" class="act-chip evn-chip-applied" id="evn-chip-applied" {{ not app.request.query.has('filtres') ? 'hidden' }}>{{ icon.tree(16) }} Nature &amp; Plein air</button>
+                {% endif %}
+                {% for chip in chips %}
+                    <button type="button" class="act-chip {{ chip.active|default(false) ? 'is-active' }}" {% if chip.id is defined %}id="{{ chip.id }}"{% endif %}>
+                        {%- if chip.icon == 'grid' %}{{ icon.grid(16) }}
+                        {%- elseif chip.icon == 'person_plus' %}{{ icon.person_plus(16) }}
+                        {%- elseif chip.icon == 'person' %}{{ icon.person(16) }}
+                        {%- elseif chip.icon == 'palette' %}{{ icon.palette(16) }}
+                        {%- elseif chip.icon == 'wellness' %}{{ icon.cat_wellness(16) }}
+                        {%- elseif chip.icon == 'culture' %}{{ icon.cat_culture(16) }}
+                        {%- elseif chip.icon == 'family' %}{{ icon.cat_family(16) }}
+                        {%- endif %} {{ chip.label }}
+                    </button>
+                {% endfor %}
+            </div>
+            <button type="button" class="act-chipbar__more" aria-label="Faire défiler les filtres">{{ icon.chevron_right(16) }}</button>
+        </div>
+
+        <div class="act-results">
+            <p class="act-results__count"><strong>400+</strong> de résultats trouvés</p>
+            <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} Trier par: <strong>{{ sort|default('Les plus populaires') }}</strong> {{ icon.chevron_down(14) }}</button>
+        </div>
+    </div>
+</section>

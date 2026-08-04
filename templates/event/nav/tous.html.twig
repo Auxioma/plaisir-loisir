@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Tous les événements{% endblock %}
+{% block meta_description %}Tous les événements communautaires : sports, repas, bien-être, randonnées et plus encore, partout en France.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'evenements' } %}
+{% endblock %}
+
+{% block body %}
+{# ?filtres=1 : sidebar ouverte dès le chargement (audit visuel de la
+   capture 9) ; sinon ouverture par la chip Filtre (events.js). #}
+{% set filters_open = app.request.query.has('filtres') %}
+<div class="act-page of-page of-listing evn-page evn-listing {{ filters_open ? 'has-filters' }}" id="evn-page">
+
+    {# Sidebar de filtres (capture 9) : rail pleine hauteur, révélée via
+       la chip Filtre / le bouton sliders (pattern du flow Offres). #}
+    {% include 'event/nav/_filters.html.twig' with { open: filters_open } %}
+
+    <div class="of-main">
+
+    {% include 'event/nav/_listing_head.html.twig' with {
+        crumb: 'Événements',
+        banner_text: "Créez votre propre groupe et commencez à organiser des événements aujourd'hui !",
+        banner_cta: 'Créer un groupe',
+        tabs_active: 'evenements',
+        title: 'Tous les événements',
+        with_filters: true,
+        chips: [
+            { icon: 'grid', label: 'Tous les événements', active: true, id: 'evn-chip-all' },
+            { icon: 'person_plus', label: 'Nouveau groupe' },
+            { icon: 'person', label: 'De vos groupes', id: 'evn-chip-mygroups' },
+            { icon: 'palette', label: 'Ateliers & Créations' },
+            { icon: 'wellness', label: 'Bien-être' },
+            { icon: 'culture', label: 'Culture & …' },
+        ],
+    } %}
+
+    <section class="act-section">
+        <div class="home-container">
+            {# Grille remplie (capture 3) — passe à 3 colonnes quand la
+               sidebar est ouverte, remplacée par l'état vide « Devenez un
+               organisateur » quand la chip « De vos groupes » est active
+               (capture 8, events.js). #}
+            <div class="card-grid evn-grid" id="evn-events-grid">
+                {% for e in events %}
+                    {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
+                {% endfor %}
+            </div>
+            {# Grille filtrée (sidebar ouverte) : 9 cartes, ordre maquette. #}
+            <div class="card-grid evn-grid evn-grid-filtered" aria-hidden="true">
+                {% for e in events_filtered %}
+                    {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
+                {% endfor %}
+            </div>
+
+            <div class="act-more" id="evn-events-more">
+                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus d'événements {{ icon.chevron_down(16) }}</button>
+            </div>
+
+            {# État « De vos groupes » vide (capture 8). #}
+            <div class="evn-empty evn-empty--organizer" id="evn-empty-mygroups" hidden>
+                <span class="evn-orga-avatars">
+                    {% for a in avatars %}<img src="{{ asset(a) }}" alt="">{% endfor %}
+                    <span class="evn-orga-plus">+48</span>
+                </span>
+                <p class="evn-empty__title">Devenez un organisateur</p>
+                <p class="evn-empty__text">Créer un groupe vous connecte avec des personnes<br>passionnées qui cherchent à partager des expériences<br>dans la vie réelle.</p>
+                <a href="#" class="evn-btn-dark">Lancer votre premier groupe {{ icon.arrow_up_right(15) }}</a>
+                <button type="button" class="evn-empty__link" id="evn-reset-mygroups">Ou réinitialisez les filtres</button>
+            </div>
+        </div>
+    </section>
+
+    {# « Votre sélection D'événements » : carrousel de villes + cartes
+       catégorie (réutilise le socle sélection des Destinations). #}
+    {% include 'event/nav/_selection.html.twig' with { selections: selections, cities: cities } %}
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{#
+    Onglet « Discussions » (capture 25, état rempli) : intro + post.
+    Typos corrigées : « consersations » → conversations, « Réponde » →
+    Répondre.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<section class="evn-gsection">
+    <h2 class="evn-gh2 evn-gh2--tab">Discussions</h2>
+    <p class="evn-gsection__lead">Espace pour les conversations du groupe et les mises à jour partagées.</p>
+
+    <article class="evn-post">
+        <div class="evn-post__author">
+            <img src="{{ asset('images/events/avatar-marie.jpg') }}" alt="">
+            <span>
+                <strong>John Mans</strong>
+                <span class="evn-post__meta">France, Nantes <i>|</i> 10 Juillet 2026</span>
+            </span>
+        </div>
+        <div class="evn-post__body">
+            <p>Tu as envie de bouger, t'amuser et retrouver la forme dans une ambiance survoltée ?<br>
+            Rejoins le tout nouveau groupe de fitness de Lyon pour des sessions de sport ludiques, conviviales et accessibles à tous ! Que tu sois débutant(e), sportif(ve) confirmé(e), en famille ou entre amis, viens dépenser ton énergie, te dépasser et faire de super rencontres.</p>
+            <p>🗓️ Fréquence : Tous les 15 jours<br>
+            📍 Lieu : [Nom du lieu ou parc], Lyon<br>
+            🎯 Objectif : Créer une communauté lyonnaise motivée et dynamique — et bientôt, lancer des défis &amp; mini-tournois sportifs !</p>
+        </div>
+        <div class="evn-post__actions">
+            <button type="button" aria-label="Aimer la discussion">{{ icon.heart(16) }}</button>
+            <button type="button">{{ icon.comment(16) }} Répondre</button>
+        </div>
+    </article>
+</section>

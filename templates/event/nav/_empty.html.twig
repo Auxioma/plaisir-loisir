@@ -1,0 +1,19 @@
+{#
+    <EmptyState> (spec §E5) : illustration + titre bold + sous-texte +
+    bouton d'action optionnel (noir par défaut).
+    Variables : image, title, text, cta (label), cta_href (défaut #),
+    cta_link (lien violet optionnel sous le bouton).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<div class="evn-empty">
+    {% if image is defined %}<img class="evn-empty__img" src="{{ asset(image) }}" alt="">{% endif %}
+    <p class="evn-empty__title">{{ title }}</p>
+    {% if text is defined %}<p class="evn-empty__text">{{ text|raw }}</p>{% endif %}
+    {% if cta is defined %}
+        <a href="{{ cta_href|default('#') }}" class="evn-btn-dark">{{ cta }} {{ icon.arrow_up_right(15) }}</a>
+    {% endif %}
+    {% if cta_link is defined %}
+        <a href="#" class="evn-empty__link">{{ cta_link }}</a>
+    {% endif %}
+</div>
