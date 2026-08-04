@@ -1,0 +1,218 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Activités Ateliers & Créations — Bon cadeaux{% endblock %}
+{% block meta_description %}Offrez un atelier créatif : céramique, broderie, cosmétique… Meilleur prix garanti, annulation gratuite.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar.html.twig' with { connected: false, nav_active: 'cadeaux' } %}
+{% endblock %}
+
+{% block body %}
+{# Même mécanique que le listing Offres : la sidebar est un rail pleine
+   hauteur à gauche de TOUT le contenu (of-page/of-main), révélé via
+   .has-filters (chip Filtre / ancre #filtres). #}
+<div class="act-page of-page of-listing gift-listing" id="gift-page">
+
+    <aside class="act-filters of-filters" id="gift-filters" aria-label="Filtres" hidden>
+        <div class="act-filters__head">
+            <span class="act-filters__title">Filtres</span>
+            <button type="button" class="act-filters__reset">Réinitialiser</button>
+        </div>
+
+        <div class="act-filters__applied">
+            <span class="act-filters__label">Filtres appliqués</span>
+            <button type="button" class="act-chip is-active">Lille {{ icon.x(14) }}</button>
+        </div>
+
+        <label class="act-filters__field">
+            <span>Date</span>
+            <span class="act-filters__input">
+                {{ icon.calendar(16) }}
+                <input type="text" placeholder="Sélectionnez une date" readonly>
+            </span>
+        </label>
+
+        <label class="act-filters__field">
+            <span>Participants</span>
+            <span class="act-filters__input">
+                {{ icon.users(16) }}
+                <input type="text" value="01 participant" readonly>
+            </span>
+        </label>
+
+        <fieldset class="act-filters__group">
+            <legend>Type de destination</legend>
+            <button type="button" class="act-filters__dest is-active">{{ icon.globe(18) }} Toutes les destinations</button>
+            <button type="button" class="act-filters__dest">{{ icon.building(18) }} Villes</button>
+            <button type="button" class="act-filters__dest">{{ icon.cat_hiking(18) }} Montagnes</button>
+            <button type="button" class="act-filters__dest">{{ icon.beach(18) }} Mers &amp; Plages</button>
+            <button type="button" class="act-filters__dest">{{ icon.tree(18) }} Campagnes</button>
+            <button type="button" class="act-filters__dest">{{ icon.cat_canoe(18) }} Lacs &amp; Rivières</button>
+        </fieldset>
+
+        <fieldset class="act-filters__group">
+            <legend>Activités populaires</legend>
+            {% for c in ['Sports & Aventures', 'Nature & Plein air', 'Culture & Découverte', 'Bien-être', 'En famille', 'Romantique', 'Ateliers & Créations', 'Soirées & Évènements'] %}
+                <label class="act-filters__check">
+                    <input type="checkbox" data-filter-check {{ c == 'En famille' ? 'checked' }}> <span>{{ c }}</span>
+                </label>
+            {% endfor %}
+        </fieldset>
+
+        <fieldset class="act-filters__group" id="gift-budget">
+            <legend>Budget (par personne)</legend>
+            <div class="act-budget__bounds"><span>0€</span><span>1050€ et +</span></div>
+            <div class="act-budget__slider">
+                <div class="act-budget__track" aria-hidden="true"></div>
+                <div class="act-budget__range" data-budget-range aria-hidden="true"></div>
+                <input type="range" min="0" max="1050" step="1" value="154" data-budget-min aria-label="Budget minimum">
+                <input type="range" min="0" max="1050" step="1" value="1050" data-budget-max aria-label="Budget maximum">
+            </div>
+            <div class="act-budget__inputs">
+                <input type="text" inputmode="numeric" value="154€" data-budget-input-min aria-label="Budget minimum en euros">
+                <input type="text" inputmode="numeric" value="1050+€" data-budget-input-max aria-label="Budget maximum en euros">
+            </div>
+        </fieldset>
+
+        <fieldset class="act-filters__group">
+            <legend>Note des utilisateurs</legend>
+            {% for n in [5, 4, 3, 2, 1] %}
+                <label class="act-filters__check act-filters__check--stars">
+                    <input type="checkbox" data-filter-check>
+                    <span class="act-filters__stars" aria-label="{{ n }} étoile{{ n > 1 ? 's' }} et plus">
+                        {% for i in 1..5 %}<span class="{{ i <= n ? 'is-on' : 'is-off' }}">{{ icon.star(16) }}</span>{% endfor %}
+                    </span>
+                </label>
+            {% endfor %}
+        </fieldset>
+
+        <button type="button" class="pl-btn pl-btn--primary pl-btn--block">Affichez les résultats</button>
+        <p class="act-filters__count"><strong>126</strong> activités trouvées</p>
+
+        {# Groupe propre au flow Cadeaux (spec §4.A, libellés nettoyés). #}
+        <fieldset class="act-filters__group">
+            <legend>Destinataires</legend>
+            {% for d in ['Hommes', 'Femmes', 'Enfants', 'Entreprise', 'En famille', 'Anniversaires', 'Soirées & Évènements'] %}
+                <label class="act-filters__check">
+                    <input type="checkbox" data-filter-check {{ d == 'En famille' ? 'checked' }}> <span>{{ d }}</span>
+                </label>
+            {% endfor %}
+        </fieldset>
+    </aside>
+
+    <div class="of-main">
+
+    <section class="act-head">
+        <div class="home-container">
+            <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
+                <a href="{{ path('app_home') }}">Accueil</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ path('app_gifts') }}">Destinations</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">Cadeaux par activités</span>
+            </nav>
+
+            <h1 class="act-head__title dest-title">Activités Ateliers &amp; Créations</h1>
+            <p class="act-head__subtitle">Découvrez les meilleures ateliers à faire à Lille. Choisissez parmi un choix varié d'expériences pour créer des souvenirs inoubliables, en famille ou entre amis. Meilleur prix garanti. Annulation gratuites</p>
+
+            <form class="act-search" role="search" action="{{ path('app_gifts_category') }}" method="get">
+                <div class="act-search__bar">
+                    <label class="act-search__field">
+                        {{ icon.map_pin(18) }}
+                        <input type="text" name="lieu" value="N'importe où" aria-label="Lieu">
+                    </label>
+                    <span class="act-search__sep" aria-hidden="true"></span>
+                    <label class="act-search__field">
+                        {{ icon.search(18) }}
+                        <input type="text" name="q" placeholder="Recherches par mots-clés" aria-label="Mots-clés">
+                    </label>
+                </div>
+                <button type="submit" class="act-search__submit" aria-label="Rechercher">{{ icon.search(20) }}</button>
+            </form>
+
+            <div class="act-toolbar dest-toolbar">
+                <div class="act-toolbar__right">
+                    <button type="button" class="act-tool">{{ icon.map(18) }} Afficher la carte</button>
+                    <div class="act-viewswitch" role="group" aria-label="Mode d'affichage">
+                        <button type="button" class="act-viewbtn" id="gift-filter-toggle" aria-label="Ouvrir les filtres">{{ icon.sliders(18) }}</button>
+                        <button type="button" class="act-viewbtn is-active" aria-label="Affichage en grille">{{ icon.list_view(18) }}</button>
+                    </div>
+                </div>
+            </div>
+
+            {# Chips = villes (spécificité du flow Cadeaux, spec §2). #}
+            <div class="act-chipbar">
+                <button type="button" class="act-chip act-chip--filter" id="gift-chip-filter" aria-expanded="false" aria-controls="gift-filters">
+                    <span class="gift-chip-filter__back" hidden>{{ icon.chevron_left(14) }}</span>
+                    {{ icon.sliders(16) }} Filtre
+                    <span class="act-chip__counter" id="gift-filter-counter" hidden>3</span>
+                </button>
+                <span class="act-chipbar__sep" aria-hidden="true"></span>
+                <div class="act-chipbar__scroll">
+                    {% for city in cities %}
+                        <button type="button" class="act-chip" data-gift-city>{{ city }}</button>
+                    {% endfor %}
+                </div>
+                <button type="button" class="act-chipbar__more" aria-label="Faire défiler les villes">{{ icon.chevron_right(16) }}</button>
+            </div>
+
+            <div class="act-results">
+                <p class="act-results__count"><strong>400+</strong> de résultats trouvés</p>
+                <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} Trier par: <strong>Les plus populaires</strong> {{ icon.chevron_down(14) }}</button>
+            </div>
+        </div>
+    </section>
+
+    {# Grille par défaut (écrans 2-3) : 8 ateliers, 4×2. #}
+    <section class="act-section" id="gift-grid-default">
+        <div class="home-container">
+            <div class="card-grid">
+                {% for g in workshops %}
+                    {% include 'gift/_card.html.twig' with { g: g } %}
+                {% endfor %}
+            </div>
+            <div class="act-more">
+                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus d'activités {{ icon.chevron_down(16) }}</button>
+            </div>
+        </div>
+    </section>
+
+    {# Grille filtrée (écran 4) : 12 activités, 3×4, avec placeholders. #}
+    <section class="act-section" id="gift-grid-filtered" hidden>
+        <div class="home-container">
+            <div class="card-grid gift-fgrid">
+                {% for a in filtered %}
+                    {% include 'gift/_filtered_card.html.twig' with { a: a } %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {# Top catégories (écrans 2-3) : même mosaïque que la landing. #}
+    <section class="act-section" id="gift-topcats">
+        <div class="home-container">
+            <h2 class="home-section__title gift-solo-title">Top catégories</h2>
+            {% include 'gift/_mosaic.html.twig' with { categories: categories } %}
+            <nav class="act-pagination" aria-label="Pagination des catégories">
+                <button type="button" class="act-page-btn" aria-label="Page précédente">{{ icon.chevron_left(16) }}</button>
+                <button type="button" class="act-page-btn is-active" aria-current="page">1</button>
+                <button type="button" class="act-page-btn">2</button>
+                <button type="button" class="act-page-btn">3</button>
+                <button type="button" class="act-page-btn">4</button>
+                <button type="button" class="act-page-btn" aria-label="Page suivante">{{ icon.chevron_right(16) }}</button>
+            </nav>
+        </div>
+    </section>
+
+    {# Votre sélection d'activités (écran 4 uniquement). #}
+    <div id="gift-selection" hidden>
+        {% include 'destination/_selection.html.twig' with { selections: selections, cities: selectionCities } %}
+    </div>
+
+    {% include 'destination/_reviews_band.html.twig' with { reviews: reviews } %}
+
+    </div>{# /.of-main #}
+
+</div>
+{% endblock %}

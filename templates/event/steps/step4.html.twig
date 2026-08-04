@@ -1,0 +1,35 @@
+{# Étape 4 — Catégorie (liste verticale, sélection unique). #}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ev-main__title">4. Catégorie</h2>
+<p class="ev-main__lead">Choisissez la catégorie qui correspond le mieux à votre événement</p>
+
+<h3 class="ev-main__subheading">Catégorie populaire</h3>
+
+<div class="ev-cats" role="radiogroup" aria-label="Catégorie populaire">
+    {% for c in categories %}
+        <label class="ev-cat">
+            <span class="ev-cat__icon ev-ico--{{ c.color }}">
+                {%- if c.icon == 'bell' %}{{ icon.bell(20) }}
+                {%- elseif c.icon == 'camera' %}{{ icon.camera(20) }}
+                {%- elseif c.icon == 'utensils' %}{{ icon.utensils(20) }}
+                {%- elseif c.icon == 'leaf' %}{{ icon.leaf(20) }}
+                {%- elseif c.icon == 'grad_cap' %}{{ icon.grad_cap(20) }}
+                {%- elseif c.icon == 'cheers' %}{{ icon.cheers(20) }}
+                {%- elseif c.icon == 'users' %}{{ icon.users(20) }}
+                {%- elseif c.icon == 'palette' %}{{ icon.palette(20) }}
+                {%- elseif c.icon == 'plane' %}{{ icon.plane(20) }}
+                {%- elseif c.icon == 'hand_heart' %}{{ icon.hand_heart(20) }}
+                {%- else %}{{ icon.dots(20) }}
+                {%- endif %}
+            </span>
+            <span class="ev-cat__text"><strong>{{ c.title }}</strong>{{ c.desc }}</span>
+            <input type="radio" name="category" value="{{ c.title }}" {{ loop.first ? 'checked' }}>
+        </label>
+    {% endfor %}
+</div>
+
+<div class="ev-note">
+    <strong>Vous ne trouvez pas la bonne catégorie ?</strong>
+    <p>Choisissez <strong>"Autre"</strong> et précisez le type d'événement dans la description.</p>
+</div>

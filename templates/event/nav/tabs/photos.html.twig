@@ -1,0 +1,30 @@
+{#
+    Onglet « Photos » (captures 21-22, état rempli) : titre « Album » +
+    tri « Activité récente », grille 4×3 d'<AlbumCard> (carousel ‹ › au
+    survol sur la 1ʳᵉ carte comme la maquette).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<section class="evn-gsection">
+    <div class="evn-albums-head">
+        <h2 class="evn-gh2 evn-gh2--tab">Album</h2>
+        <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} <strong>Activité récente</strong> {{ icon.chevron_down(14) }}</button>
+    </div>
+
+    <div class="card-grid evn-grid evn-albums-grid">
+        {% for a in albums %}
+            <a href="{{ path('app_group_album') }}" class="evn-album">
+                <span class="evn-album__media">
+                    <img src="{{ asset(a.image) }}" alt="{{ a.title }}">
+                    {% if loop.first %}
+                        <span class="evn-album__nav evn-album__nav--prev" aria-hidden="true">{{ icon.chevron_left(14) }}</span>
+                        <span class="evn-album__nav evn-album__nav--next" aria-hidden="true">{{ icon.chevron_right(14) }}</span>
+                    {% endif %}
+                </span>
+                <span class="evn-album__location">{{ icon.map_pin(14) }} {{ a.location }}</span>
+                <span class="evn-album__title">{{ a.title }}</span>
+                <span class="evn-album__meta">{{ a.photos }} <i>|</i> {{ a.updated }}</span>
+            </a>
+        {% endfor %}
+    </div>
+</section>

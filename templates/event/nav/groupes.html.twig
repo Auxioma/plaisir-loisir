@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Tous les groupes{% endblock %}
+{% block meta_description %}Tous les groupes et clubs de la communauté : fitness, nature, culture, jeux… rejoignez ceux qui partagent vos passions.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'groupes' } %}
+{% endblock %}
+
+{% block body %}
+<div class="evn-page evn-listing">
+
+    {# Écran E : listing groupes — pas de bannière, onglet Groupes actif.
+       Typo corrigée : « Touts les groupes » → Tous les groupes. #}
+    {% include 'event/nav/_listing_head.html.twig' with {
+        crumb: 'Groupes',
+        tabs_active: 'groupes',
+        title: 'Tous les groupes',
+        chips: [
+            { icon: 'grid', label: 'Tous les groupes', active: true },
+            { icon: 'person_plus', label: 'Nouveau groupe' },
+            { icon: 'wellness', label: 'Bien-être' },
+            { icon: 'culture', label: 'Culture & Découvertes' },
+            { icon: 'palette', label: 'Ateliers & Créations' },
+        ],
+    } %}
+
+    <section class="act-section">
+        <div class="home-container">
+            <div class="card-grid evn-grid evn-groups-grid">
+                {% for g in groups %}
+                    {% include 'event/nav/_group_card.html.twig' with { g: g, avatars: avatars } %}
+                {% endfor %}
+            </div>
+            <div class="act-more">
+                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus de groupes {{ icon.chevron_down(16) }}</button>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

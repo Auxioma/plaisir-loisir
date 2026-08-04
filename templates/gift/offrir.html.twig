@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Offrir un cadeau — Vos informations{% endblock %}
+{% block meta_description %}Offrez une carte cadeau TrouveMoi : saisissez vos informations et personnalisez votre message.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar.html.twig' with { connected: true, nav_active: 'cadeaux' } %}
+{% endblock %}
+
+{% block body %}
+<div class="gift-page gift-tunnel-page">
+    <div class="home-container">
+
+        <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
+            <a href="{{ path('app_home') }}">Accueil</a>
+            <span aria-hidden="true">/</span>
+            <a href="{{ path('app_gifts') }}">Cadeaux</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">Offrir un cadeau</span>
+        </nav>
+
+        <div class="gift-tunnel">
+            <form class="gift-steps" id="gift-form" method="get" action="{{ path('app_gifts_offer_payment') }}" novalidate>
+
+                {# ==========================================================
+                   CARTE 1 : VOS INFORMATIONS (états vide / erreur / rempli
+                   gérés au blur et à la soumission — spec écrans 5-7).
+                   ======================================================== #}
+                <section class="gift-formcard">
+                    <h1 class="gift-formcard__title">Vos informations</h1>
+                    <p class="gift-formcard__lead">Saisissez vos informations ici</p>
+                    <p class="gift-formcard__required">Champ obligatoire<span>*</span></p>
+
+                    <div class="gift-field">
+                        <label class="gift-field__label" for="giftFullName">Nom &amp; prénom</label>
+                        <div class="gift-input">
+                            <span class="gift-input__icon">{{ icon.person(18) }}</span>
+                            <input id="giftFullName" type="text" name="fullName" placeholder="martinthomas"
+                                   autocomplete="name" required data-gift-required data-sync="name">
+                        </div>
+                        <p class="gift-field__error" hidden>*Champ obligatoire</p>
+                    </div>
+
+                    <div class="gift-row">
+                        <div class="gift-field">
+                            <label class="gift-field__label" for="giftEmail">Adresse e-mail</label>
+                            <div class="gift-input">
+                                <span class="gift-input__icon">{{ icon.mail(18) }}</span>
+                                <input id="giftEmail" type="email" name="email" placeholder="Votre@email.com"
+                                       autocomplete="email" required data-gift-required data-sync="email">
+                            </div>
+                            <p class="gift-field__hint">Votre bon cadeau sera envoyé à cette adresse</p>
+                            <p class="gift-field__error" hidden>*Champ obligatoire</p>
+                        </div>
+                        <div class="gift-field">
+                            <label class="gift-field__label" for="giftPhone">Numéro de téléphone</label>
+                            <div class="gift-input">
+                                <span class="gift-input__icon">{{ icon.phone(18) }}</span>
+                                <input id="giftPhone" type="tel" name="phone" placeholder="+33 6 12 34 56 78"
+                                       autocomplete="tel" required data-gift-required>
+                            </div>
+                            <p class="gift-field__error" hidden>*Champ obligatoire</p>
+                        </div>
+                    </div>
+
+                    <label class="gift-consent">
+                        <input type="checkbox" name="agreeTerms" required data-gift-required>
+                        <span>J'accepte les <a class="auth-inline-link" href="#">conditions générales</a> et la <a class="auth-inline-link" href="#">politique de confidentialité</a></span>
+                    </label>
+                </section>
+
+                {# ==========================================================
+                   CARTE 2 : A QUI VOUS L'OFFREZ.
+                   ======================================================== #}
+                <section class="gift-formcard">
+                    <h2 class="gift-formcard__title">A qui vous l'offrez</h2>
+                    <p class="gift-formcard__required">Champ obligatoire<span>*</span></p>
+
+                    <div class="gift-field">
+                        <label class="gift-field__label" for="giftSender">Nom &amp; Prénom de l'expéditeur</label>
+                        <div class="gift-input">
+                            <span class="gift-input__icon">{{ icon.person(18) }}</span>
+                            <input id="giftSender" type="text" name="senderName" placeholder="martinthomas" data-sync="sender">
+                        </div>
+                    </div>
+
+                    <div class="gift-field">
+                        <label class="gift-field__label" for="giftRecipient">Nom &amp; Prénom du destinataire</label>
+                        <div class="gift-input">
+                            <span class="gift-input__icon">{{ icon.person(18) }}</span>
+                            <input id="giftRecipient" type="text" name="recipientName" placeholder="martinthomas" data-sync="recipient">
+                        </div>
+                    </div>
+
+                    <div class="gift-field">
+                        <div class="gift-textarea">
+                            <textarea id="giftMessage" name="message" maxlength="150" rows="4"
+                                      placeholder="Un petit message avec le cadeau ?" data-sync="message"
+                                      aria-label="Un petit message avec le cadeau ?"></textarea>
+                        </div>
+                        <p class="gift-field__counter"><span data-gift-counter>0</span>/150</p>
+                    </div>
+                </section>
+
+                <div class="gift-tunnel__foot">
+                    <p class="gift-tunnel__total">Total : <strong>160€</strong></p>
+                    <button type="submit" class="pl-btn pl-btn--outline-action gift-next">Suivant {{ icon.chevron_right(16) }}</button>
+                </div>
+            </form>
+
+            {% include 'gift/_order_summary.html.twig' %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

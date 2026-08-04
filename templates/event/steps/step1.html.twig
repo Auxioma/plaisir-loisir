@@ -1,0 +1,104 @@
+{#
+    Étape 1 — Détails de l'événement.
+    NB spec « à trancher » n°1 : la maquette affiche « Événement privé »
+    en double ; on aligne sur le set correct de l'étape 6 (privé / public /
+    Groupe-Club). Compteur de la description complète : 0/3000 (n°2).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ev-main__title">1. Détails de l'événement</h2>
+
+<div class="ev-row">
+    <div class="ev-field">
+        <label class="ev-field__label" for="evTitle">Titre de l'événement *</label>
+        <input id="evTitle" class="ev-input" type="text" placeholder="Ex : Pique-nique au bord du lac">
+    </div>
+    <div class="ev-field">
+        <label class="ev-field__label" for="evCatType">Catégorie d'événement *</label>
+        <div class="ev-select">
+            <select id="evCatType">
+                <option value="" selected disabled>Sélectionnez le type</option>
+                <option>Activités de plein air</option>
+                <option>Soirées &amp; Fêtes</option>
+                <option>Rencontres &amp; Échanges</option>
+                <option>Autre</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="ev-field">
+    <label class="ev-field__label" for="evShortDesc">Courte description *</label>
+    <div class="ev-textarea">
+        <textarea id="evShortDesc" rows="4" maxlength="120" placeholder="Décrivez votre événement en quelques mots..." data-ev-counter="evShortCount"></textarea>
+        <span class="ev-textarea__count"><span id="evShortCount">0</span>/120</span>
+    </div>
+</div>
+
+<div class="ev-field">
+    <label class="ev-field__label" for="evFullDesc">Description complète</label>
+    <div class="ev-editor">
+        <div class="ev-editor__toolbar" role="toolbar" aria-label="Mise en forme">
+            <button type="button" aria-label="Gras"><strong>B</strong></button>
+            <button type="button" aria-label="Italique"><em>I</em></button>
+            <button type="button" aria-label="Souligné"><u>U</u></button>
+            <span class="ev-editor__sep" aria-hidden="true"></span>
+            <button type="button" aria-label="Alignement">{{ icon.align_left(17) }}</button>
+            <button type="button" aria-label="Liste à puces">{{ icon.list_ul(17) }}</button>
+            <span class="ev-editor__sep" aria-hidden="true"></span>
+            <button type="button" aria-label="Liste ordonnée">{{ icon.list_ol(17) }}</button>
+            <span class="ev-editor__sep" aria-hidden="true"></span>
+            <button type="button" aria-label="Insérer un lien">{{ icon.link(17) }}</button>
+            <button type="button" aria-label="Insérer une image">{{ icon.image(17) }}</button>
+        </div>
+        <div class="ev-textarea ev-textarea--borderless">
+            <textarea id="evFullDesc" rows="7" maxlength="3000" placeholder="Décrivez votre événement en quelques mots..." data-ev-counter="evFullCount"></textarea>
+            <span class="ev-textarea__count"><span id="evFullCount">0</span>/3000</span>
+        </div>
+    </div>
+</div>
+
+{# Type de visibilité : 3 cartes empilées sur fond violet clair. #}
+<div class="ev-visibility" role="radiogroup" aria-label="Visibilité de l'événement">
+    <label class="ev-visibility__item">
+        <span class="ev-visibility__icon">{{ icon.lock(20) }}</span>
+        <span class="ev-visibility__text"><strong>Événement privé</strong>Seulement sur invitation ou personnes invitées</span>
+        <input type="radio" name="visibility1" value="private" hidden>
+    </label>
+    <label class="ev-visibility__item">
+        <span class="ev-visibility__icon">{{ icon.globe(20) }}</span>
+        <span class="ev-visibility__text"><strong>Événement public</strong>Ouvert à tous les membres de la communauté</span>
+        <input type="radio" name="visibility1" value="public" hidden>
+    </label>
+    <label class="ev-visibility__item">
+        <span class="ev-visibility__icon">{{ icon.person(20) }}</span>
+        <span class="ev-visibility__text"><strong>Groupe / Club</strong>Événement réservé aux membres du groupe ou du club</span>
+        <input type="radio" name="visibility1" value="group" hidden>
+    </label>
+</div>
+
+<h3 class="ev-main__subheading">Type d'événement</h3>
+<p class="ev-main__subtext">Choisissez la catégorie qui correspond le mieux à votre événement</p>
+
+<div class="ev-types">
+    <label class="ev-type">
+        <input type="radio" name="eventType" value="plein-air" hidden>
+        <span class="ev-type__icon ev-ico--green">{{ icon.bell(20) }}</span>
+        <span class="ev-type__text"><strong>Activités de plein air</strong>Randonnée, balade, vélo, sport, nature, aventure…</span>
+    </label>
+    <label class="ev-type">
+        <input type="radio" name="eventType" value="soiree" hidden>
+        <span class="ev-type__icon ev-ico--orange">{{ icon.cheers(20) }}</span>
+        <span class="ev-type__text"><strong>Soirées &amp; Fêtes</strong>Soirée entre amis, fête, anniversaire, karaoké…</span>
+    </label>
+    <label class="ev-type">
+        <input type="radio" name="eventType" value="rencontre" hidden>
+        <span class="ev-type__icon ev-ico--blue">{{ icon.users(20) }}</span>
+        <span class="ev-type__text"><strong>Rencontres &amp; Échanges</strong>Networking, discussion, échange, conférence…</span>
+    </label>
+    <label class="ev-type">
+        <input type="radio" name="eventType" value="autre" hidden>
+        <span class="ev-type__icon ev-ico--grey">{{ icon.dots(20) }}</span>
+        <span class="ev-type__text"><strong>Autre</strong>Une catégorie non listée ci-dessus</span>
+    </label>
+</div>

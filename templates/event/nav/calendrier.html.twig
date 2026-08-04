@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Calendrier des événements{% endblock %}
+{% block meta_description %}Le calendrier de tous les événements communautaires : retrouvez les prochains rendez-vous mois par mois.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'calendrier' } %}
+{% endblock %}
+
+{% block body %}
+<div class="evn-page evn-listing">
+
+    {% include 'event/nav/_listing_head.html.twig' with {
+        crumb: 'Calendrier',
+        banner_text: "Créez votre propre groupe et commencez à organiser des événements aujourd'hui !",
+        banner_cta: 'Créer un groupe',
+        banner_href: path('app_group_create'),
+        tabs_active: 'evenements',
+        title: 'Tous les événements',
+        sort: 'Avenir',
+        chips: [
+            { icon: 'grid', label: 'Tous les événements', active: true },
+            { icon: 'culture', label: 'Culture & Découverte' },
+            { icon: 'family', label: 'En famille' },
+            { icon: 'palette', label: 'Ateliers & Créations' },
+            { icon: 'wellness', label: 'Bien-être' },
+            { icon: 'culture', label: 'Culture & …' },
+        ],
+    } %}
+
+    {# La grille de cartes est remplacée par le calendrier mensuel (E3). #}
+    <section class="act-section">
+        <div class="home-container">
+            {% include 'event/nav/_month_calendar.html.twig' with { calendar: calendar } %}
+        </div>
+    </section>
+
+    {% include 'event/nav/_selection.html.twig' with { selections: selections, cities: cities } %}
+
+</div>
+{% endblock %}

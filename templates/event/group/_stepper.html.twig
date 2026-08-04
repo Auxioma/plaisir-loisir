@@ -1,0 +1,20 @@
+{#
+    <StepperHorizontal> : 4 pastilles rondes 01-04 reliées par une barre de
+    progression. Pastilles atteintes = violet plein (les précédentes sont
+    cliquables), à venir = gris ; segment rempli jusqu'à l'étape active.
+    Variables : step (n° actif, 1-4).
+#}
+<nav class="gw-stepper" aria-label="Étapes de création du groupe">
+    {% for n in 1..4 %}
+        {% if not loop.first %}
+            <span class="gw-stepper__bar{{ n <= step ? ' is-filled' }}"></span>
+        {% endif %}
+        {% if n < step %}
+            <a href="{{ path('app_group_create', { etape: n }) }}" class="gw-stepper__dot is-done">0{{ n }}</a>
+        {% elseif n == step %}
+            <span class="gw-stepper__dot is-active" aria-current="step">0{{ n }}</span>
+        {% else %}
+            <span class="gw-stepper__dot">0{{ n }}</span>
+        {% endif %}
+    {% endfor %}
+</nav>

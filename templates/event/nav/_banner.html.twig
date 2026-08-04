@@ -1,0 +1,13 @@
+{#
+    Bannière CTA violet clair, dismissible (croix gérée par events.js).
+    Variables : text, cta, cta_href (défaut wizard de création).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<div class="evn-banner" data-evn-banner>
+    <p class="evn-banner__text">{{ text }}</p>
+    <div class="evn-banner__actions">
+        <a href="{{ cta_href|default(path('app_event_create')) }}" class="pl-btn pl-btn--primary">{{ cta }}</a>
+        <button type="button" class="evn-banner__close" data-evn-banner-close aria-label="Fermer la bannière">{{ icon.x(18) }}</button>
+    </div>
+</div>

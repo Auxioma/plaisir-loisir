@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Offrir un cadeau — Paiement{% endblock %}
+{% block meta_description %}Choisissez votre mode de paiement pour finaliser votre carte cadeau TrouveMoi.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar.html.twig' with { connected: true, nav_active: 'cadeaux' } %}
+{% endblock %}
+
+{% block body %}
+<div class="gift-page gift-tunnel-page">
+    <div class="home-container">
+
+        <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
+            <a href="{{ path('app_home') }}">Accueil</a>
+            <span aria-hidden="true">/</span>
+            <a href="{{ path('app_gifts') }}">Cadeaux</a>
+            <span aria-hidden="true">/</span>
+            <a href="{{ path('app_gifts_offer') }}">Offrir un cadeaux</a>
+            <span aria-hidden="true">/</span>
+            <a href="{{ path('app_gifts_offer') }}">Informations</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">Paiement</span>
+        </nav>
+
+        <div class="gift-tunnel">
+            <div class="gift-steps">
+                <section class="gift-formcard gift-formcard--pay">
+                    <h1 class="gift-formcard__title">Choisissez votre mode de paiement</h1>
+
+                    {# Comportement exclusif type radio (spec C7). #}
+                    <div class="gift-pays" role="radiogroup" aria-label="Mode de paiement">
+                        <label class="gift-pay">
+                            <input type="checkbox" name="payment" value="gift-card" data-gift-pay>
+                            <span>Cartes cadeaux</span>
+                        </label>
+                        <label class="gift-pay">
+                            <input type="checkbox" name="payment" value="card" data-gift-pay>
+                            <span>Carte bancaire</span>
+                        </label>
+                    </div>
+                </section>
+            </div>
+
+            {% include 'gift/_order_summary.html.twig' %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

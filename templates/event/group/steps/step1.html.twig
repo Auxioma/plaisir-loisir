@@ -1,0 +1,36 @@
+{#
+    Étape 1 — Emplacement : combobox d'autocomplete de localisation (4 états
+    maquette : vide, suggestions ouvertes, aucun résultat, valeur choisie).
+    Suggestions statiques de démo (events.js) ; coquilles corrigées :
+    « Linciln » → Lincoln, double espace de « Aucun  résultat trouvé ».
+    Choix visuel maquette conservé : la valeur choisie s'affiche en gris
+    (même teinte que le placeholder).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h1 class="gw-title">Définissez l'emplacement pour votre groupe</h1>
+
+<div class="gw-loc" id="gw-loc">
+    <div class="gw-field">
+        <span class="gw-field__icon">{{ icon.map_pin(20) }}</span>
+        <input id="gw-loc-input" class="gw-field__control" type="text" placeholder="Lille"
+               role="combobox" aria-expanded="false" aria-controls="gw-loc-menu"
+               aria-label="Emplacement du groupe" autocomplete="off">
+        <button type="button" class="gw-loc__clear" id="gw-loc-clear" hidden
+                aria-label="Effacer l'emplacement">{{ icon.x(20) }}</button>
+    </div>
+
+    <div class="gw-loc__menu" id="gw-loc-menu" hidden>
+        <ul class="gw-loc__options" role="listbox" aria-label="Suggestions d'emplacement">
+            {% for c in cities %}
+                <li role="option">
+                    <button type="button" class="gw-loc__option" data-gw-city="{{ c.short }}">
+                        {{ icon.map_pin(16) }} {{ c.label }}
+                    </button>
+                </li>
+            {% endfor %}
+        </ul>
+        <p class="gw-loc__none" id="gw-loc-none" hidden>Aucun résultat trouvé</p>
+        <a href="#" class="gw-loc__more" id="gw-loc-more">Afficher plus</a>
+    </div>
+</div>

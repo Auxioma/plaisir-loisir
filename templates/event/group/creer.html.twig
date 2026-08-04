@@ -1,0 +1,64 @@
+{#
+    Wizard « Créer un groupe » — layout commun aux 4 étapes : bouton Retour,
+    stepper horizontal, contenu de l'étape, bouton Suivant, encart Conseil.
+
+    Points à trancher (spec) — décisions retenues :
+    - Stepper à 4 étapes tel que montré par les captures : pas d'étape
+      « Concevez votre groupe » (image/couverture) — la couverture sera
+      définie après création, via l'édition du groupe.
+    - Seuil « au moins 3 sujets » (étape 2) : indicatif (repris dans le
+      Conseil), Suivant actif dès 1 sélection.
+    - Stepper : les pastilles des étapes déjà atteintes sont cliquables
+      (cohérence avec le wizard événement), visuel inchangé.
+    - Modération : l'écran de succès reste tel maquette (pas d'état
+      « en attente de validation » côté front statique).
+    - Coquille maquette corrigée : « ← Back » → « ← Retour ».
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% set titles = {
+    1: "Définissez l'emplacement pour votre groupe",
+    2: "Quels types d'événements organisez-vous ?",
+    3: 'Nommez votre groupe',
+    4: 'Décrivez votre groupe',
+} %}
+
+{% block title %}Créer un groupe — {{ titles[step] }}{% endblock %}
+{% block meta_description %}Créez votre groupe en 4 étapes : emplacement, types d'événements, nom et description.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'evenements' } %}
+{% endblock %}
+
+{% block body %}
+<div class="gw-page">
+    <div class="home-container">
+
+        <a href="{{ step > 1 ? path('app_group_create', { etape: step - 1 }) : path('app_groups') }}" class="gw-back">{{ icon.arrow_left(16) }} Retour</a>
+
+        <div class="gw-wrap">
+            {% include 'event/group/_stepper.html.twig' with { step: step } %}
+
+            {% include 'event/group/steps/step' ~ step ~ '.html.twig' %}
+
+            {# Suivant : désactivé tant que l'étape n'est pas valide (états
+               gérés par events.js) ; l'étape 3 arrive préremplie → actif. #}
+            {% set next_disabled = step != 3 %}
+            <div class="gw-next">
+                <a href="{{ step < 4 ? path('app_group_create', { etape: step + 1 }) : path('app_group_create_success') }}"
+                   id="gw-next" class="pl-btn pl-btn--primary gw-next__btn{{ next_disabled ? ' is-disabled' }}"
+                   {% if next_disabled %}aria-disabled="true"{% endif %}>Suivant {{ icon.chevron_right(16) }}</a>
+            </div>
+
+            {% if advice %}
+                <aside class="gw-advice">
+                    <h2 class="gw-advice__title">{{ icon.bulb(18) }} Conseil</h2>
+                    <p class="gw-advice__text">{{ advice }}</p>
+                </aside>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{#
+    Étape 7 — Inviter des personnes (2 onglets client, assets/events.js) :
+    A « Inviter des personnes » (défaut) / B « Inviter via un lien ».
+    Typo maquette corrigée : « memebre » → membre.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ev-main__title">7. Inviter des personnes (facultatif)</h2>
+<p class="ev-main__lead">Invitez vos amis, membres ou contacts à participer à votre événement.</p>
+
+<div class="ev-tabs" role="tablist" aria-label="Mode d'invitation">
+    <button type="button" class="ev-tab is-active" id="ev-tab-people" role="tab" aria-selected="true" aria-controls="ev-panel-people">Inviter des personnes</button>
+    <button type="button" class="ev-tab" id="ev-tab-link" role="tab" aria-selected="false" aria-controls="ev-panel-link">Inviter via un lien</button>
+</div>
+
+{# Onglet A — Inviter des personnes. #}
+<div id="ev-panel-people" role="tabpanel" aria-labelledby="ev-tab-people">
+    <div class="ev-suggest__head">
+        <h3 class="ev-main__subheading">Suggestions</h3>
+        <button type="button" class="ev-linkbtn">Tout sélectionner</button>
+    </div>
+    <p class="ev-main__subtext">Invitez des personnes que vous connaissez.</p>
+
+    <div class="ev-contacts">
+        {% for c in contacts %}
+            <div class="ev-contact">
+                <input type="checkbox" aria-label="Sélectionner {{ c.name }}" {{ c.invited ? 'checked' }}>
+                <img src="{{ asset(c.avatar) }}" alt="">
+                <span class="ev-contact__text"><strong>{{ c.name }}</strong><small>{{ c.friends }} amis en commun</small></span>
+                {% if c.invited %}
+                    <button type="button" class="pl-btn pl-btn--primary ev-contact__btn">Annuler l'invitation</button>
+                {% else %}
+                    <button type="button" class="ev-contact__btn ev-contact__btn--soft">Inviter</button>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <h3 class="ev-main__subheading">Invité(e)s (0)</h3>
+    <p class="ev-main__subtext">Aucune personne invitée pour le moment.</p>
+
+    <div class="ev-empty">
+        {{ icon.users(30) }}
+        <strong>Aucune personne invitée</strong>
+        <p>Recherchez et invitez des personnes ci-dessus.</p>
+    </div>
+
+    <div class="ev-tip">
+        <p class="ev-tip__title">{{ icon.info(16) }} Astuce</p>
+        <p>Vous pourrez toujours inviter d'autres personnes après la création de l'événement.</p>
+    </div>
+</div>
+
+{# Onglet B — Inviter via un lien. #}
+<div id="ev-panel-link" role="tabpanel" aria-labelledby="ev-tab-link" hidden>
+    <div class="ev-field">
+        <div class="ev-input-icon">
+            <input class="ev-input" type="text" placeholder="Rechercher un ami, un membre ou un contact..." aria-label="Rechercher un contact">
+            <span>{{ icon.search(18) }}</span>
+        </div>
+    </div>
+
+    <div class="ev-suggest__head">
+        <h3 class="ev-main__subheading">Suggestions</h3>
+        <button type="button" class="ev-linkbtn">Tout sélectionner</button>
+    </div>
+    <p class="ev-main__subtext">Invitez des personnes que vous connaissez.</p>
+
+    <div class="ev-contacts">
+        {% for c in contacts %}
+            <div class="ev-contact">
+                <input type="checkbox" aria-label="Sélectionner {{ c.name }}">
+                <img src="{{ asset(c.avatar) }}" alt="">
+                <span class="ev-contact__text"><strong>{{ c.name }}</strong><small>{{ c.friends }} amis en commun</small></span>
+                <button type="button" class="ev-contact__btn ev-contact__btn--soft">Envoyer un lien</button>
+            </div>
+        {% endfor %}
+    </div>
+
+    <h3 class="ev-main__subheading">Invité(e)s (0)</h3>
+    <p class="ev-main__subtext">Aucune personne invitée pour le moment.</p>
+
+    <div class="ev-empty">
+        {{ icon.users(30) }}
+        <strong>Aucune personne invitée</strong>
+        <p>Recherchez et invitez des personnes ci-dessus.</p>
+    </div>
+
+    <div class="ev-tip">
+        <p class="ev-tip__title">{{ icon.info(16) }} Astuce</p>
+        <p>Vous pourrez toujours inviter d'autres personnes après la création de l'événement.</p>
+    </div>
+</div>

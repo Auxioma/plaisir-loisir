@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Événements privés{% endblock %}
+{% block meta_description %}Les événements privés de la communauté : rejoignez des moments uniques entre amis, en famille ou entre passionnés.{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'prives' } %}
+{% endblock %}
+
+{% block body %}
+<div class="evn-page evn-listing">
+
+    {# Écran I : variante du listing B sans onglets ni paragraphe d'intro.
+       Typo maquette corrigée : « Evénements privée » → Événements privés. #}
+    {% include 'event/nav/_listing_head.html.twig' with {
+        crumb: 'Événements',
+        banner_text: "Créez votre propre groupe et commencez à organiser des événements aujourd'hui !",
+        banner_cta: 'Créer un groupe',
+        banner_href: path('app_group_create'),
+        title: 'Événements privés',
+        intro: false,
+        chips: [
+            { icon: 'grid', label: 'Tous les événements', active: true },
+            { icon: 'culture', label: 'Culture & Découverte' },
+            { icon: 'family', label: 'En famille' },
+            { icon: 'palette', label: 'Ateliers & Créations' },
+            { icon: 'wellness', label: 'Bien-être' },
+            { icon: 'culture', label: 'Culture & …' },
+        ],
+    } %}
+
+    <section class="act-section">
+        <div class="home-container">
+            <div class="card-grid evn-grid">
+                {% for e in events %}
+                    {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
+                {% endfor %}
+            </div>
+            <div class="act-more">
+                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus d'événements {{ icon.chevron_down(16) }}</button>
+            </div>
+        </div>
+    </section>
+
+    {% include 'event/nav/_selection.html.twig' with { selections: selections, cities: cities } %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{#
+    Sidebar de filtres du listing événements (capture 9) : réutilise le
+    socle act-filters de Destinations. Sections : filtres appliqués, Date,
+    Participants, Type de destination, Événements populaires (En famille
+    coché), Budget, Note. Typos maquette corrigées : « Evénéments » →
+    Événements, « Atéliers » conservé tel quel ailleurs mais normalisé ici,
+    « activitées trouvées » → activités trouvées.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<aside class="act-filters of-filters evn-filters" id="evn-filters" aria-label="Filtres" {{ not open|default(false) ? 'hidden' }}>
+    <div class="act-filters__head">
+        <span class="act-filters__title">Filtres</span>
+        <button type="button" class="act-filters__reset" id="evn-filters-reset">Réinitialiser</button>
+    </div>
+
+    <div class="act-filters__applied">
+        <span class="act-filters__label">Filtres appliqués</span>
+        <button type="button" class="act-chip is-active">{{ icon.tree(14) }} Nature &amp; Plein air {{ icon.x(14) }}</button>
+    </div>
+
+    <label class="act-filters__field">
+        <span>Date</span>
+        <span class="act-filters__input">
+            {{ icon.calendar(16) }}
+            <input type="text" placeholder="Sélectionnez une date" readonly>
+        </span>
+    </label>
+
+    <label class="act-filters__field">
+        <span>Participants</span>
+        <span class="act-filters__input">
+            {{ icon.users(16) }}
+            <input type="text" value="01 participant" readonly>
+        </span>
+    </label>
+
+    <fieldset class="act-filters__group">
+        <legend>Type de destination</legend>
+        <button type="button" class="act-filters__dest is-active">{{ icon.globe(18) }} Toutes  les destinations</button>
+        <button type="button" class="act-filters__dest">{{ icon.building(18) }} Villes</button>
+        <button type="button" class="act-filters__dest">{{ icon.cat_hiking(18) }} Montagnes</button>
+        <button type="button" class="act-filters__dest">{{ icon.beach(18) }} Mers &amp; Plages</button>
+        <button type="button" class="act-filters__dest">{{ icon.tree(18) }} Campagnes</button>
+        <button type="button" class="act-filters__dest">{{ icon.cat_canoe(18) }} Lacs &amp; Rivières</button>
+    </fieldset>
+
+    <fieldset class="act-filters__group">
+        <legend>Événements populaires</legend>
+        {% for c in ['Sports & Aventures', 'Nature  & Plein air', 'Culture & Découverte', 'Bien-être', 'En famille', 'Romantique', 'Atéliers & Créations', 'Soirées & Événements'] %}
+            <label class="act-filters__check {{ c == 'En famille' ? 'is-checked' }}">
+                <input type="checkbox" {{ c == 'En famille' ? 'checked' }}> <span>{{ c }}</span>
+            </label>
+        {% endfor %}
+    </fieldset>
+
+    <fieldset class="act-filters__group" id="evn-budget">
+        <legend>Budget (par personne)</legend>
+        <div class="act-budget__bounds"><span>0€</span><span>1050€ et +</span></div>
+        <div class="act-budget__slider">
+            <div class="act-budget__track" aria-hidden="true"></div>
+            <div class="act-budget__range" data-budget-range aria-hidden="true"></div>
+            <input type="range" min="0" max="1050" step="1" value="154" data-budget-min aria-label="Budget minimum">
+            <input type="range" min="0" max="1050" step="1" value="1050" data-budget-max aria-label="Budget maximum">
+        </div>
+        <div class="act-budget__inputs">
+            <input type="text" inputmode="numeric" value="154€" data-budget-input-min aria-label="Budget minimum en euros">
+            <input type="text" inputmode="numeric" value="1050+€" data-budget-input-max aria-label="Budget maximum en euros">
+        </div>
+    </fieldset>
+
+    <fieldset class="act-filters__group">
+        <legend>Note des utilisateurs</legend>
+        {% for n in [5, 4, 3, 2, 1] %}
+            <label class="act-filters__check act-filters__check--stars">
+                <input type="checkbox">
+                <span class="act-filters__stars" aria-label="{{ n }} étoile{{ n > 1 ? 's' }} et plus">
+                    {% for i in 1..5 %}<span class="{{ i <= n ? 'is-on' : 'is-off' }}">{{ icon.star(16) }}</span>{% endfor %}
+                </span>
+            </label>
+        {% endfor %}
+    </fieldset>
+
+    <button type="button" class="pl-btn pl-btn--primary pl-btn--block">Affichez les résultats</button>
+    <p class="act-filters__count"><strong>126</strong> activités trouvées</p>
+</aside>

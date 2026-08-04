@@ -17,6 +17,8 @@ import './styles/home.css';
 import './styles/activities.css';
 import './styles/destinations.css';
 import './styles/offers.css';
+import './styles/gifts.css';
+import './styles/events.css';
 import './styles/app.css';
 
 // Comportement des menus déroulants de l'en-tête d'accueil.
@@ -31,3 +33,9 @@ import './home_search.js';
 
 // Comportements du parcours Destinations (dropdown localisation, filtres…).
 import './destinations.js';
+
+// Comportements du parcours Bon cadeaux (montant, filtres, tunnel).
+import './gifts.js';
+
+// Wizard « Créer un événement » (compteurs, onglets, invitations).
+import './events.js';

@@ -1,0 +1,52 @@
+{#
+    <JoinGroupModal> (spec §E7) : modale « Rejoindre ce groupe » en 3
+    états pilotés par events.js — 1. dropzone, 2. photo chargée,
+    3. confirmation compacte — puis redirection vers la page « Demande
+    envoyée » (écran G).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{# ?modal=rejoindre / rejoindre2 / rejoindre3 : ouverture directe pour l'audit visuel. #}
+{% set join_qs = app.request.query.get('modal') %}
+<div class="evn-modal" id="evn-join" role="dialog" aria-modal="true" aria-label="Rejoindre ce groupe" {{ join_qs not in ['rejoindre', 'rejoindre2', 'rejoindre3'] ? 'hidden' }}>
+    <div class="evn-modal__box">
+        <button type="button" class="evn-modal__close" data-evn-join-close aria-label="Fermer">{{ icon.x(18) }}</button>
+
+        {# État 1 — dropzone. #}
+        <div class="evn-modal__step" data-evn-join-step="1" {{ join_qs in ['rejoindre2', 'rejoindre3'] ? 'hidden' }}>
+            <p class="evn-modal__title">Rejoindre ce groupe</p>
+            <p class="evn-join__label">Photo de profil</p>
+            <div class="evn-join__drop">
+                <p>Faites glisser et déposez une photo ou<br>cliquez sur le bouton ci-dessous pour<br>selectionner une photo que vous souhaiter<br>télécharger.</p>
+                <button type="button" class="pl-btn pl-btn--primary" data-evn-join-choose>{{ icon.share(16) }} Choisir une photo</button>
+            </div>
+            <p class="evn-join__terms">Ces photos doivent être au format JPEG, GIF ou PNG, faire moins de 15 Mo, avoir une résolution maximale de 24 mégapixels et respecter les <a href="#">conditions d'utilisation</a> de TrouveMoi Plaisirs &amp; Loisirs</p>
+            <div class="evn-modal__foot evn-modal__foot--center">
+                <button type="button" class="evn-join__submit" disabled>Rejoindre ce groupe</button>
+            </div>
+        </div>
+
+        {# État 2 — photo chargée. #}
+        <div class="evn-modal__step" data-evn-join-step="2" {{ join_qs != 'rejoindre2' ? 'hidden' }}>
+            <p class="evn-modal__title">Rejoindre ce groupe</p>
+            <p class="evn-join__label">Photo de profil</p>
+            <img class="evn-join__preview" src="{{ asset('images/events/join-photo.jpg') }}" alt="Photo de profil chargée">
+            <p class="evn-join__terms">Ces photos doivent être au format JPEG, GIF ou PNG, faire moins de 15 Mo, avoir une résolution maximale de 24 mégapixels et respecter les <a href="#">conditions d'utilisation</a> de TrouveMoi Plaisirs &amp; Loisirs</p>
+            <div class="evn-modal__foot evn-modal__foot--center">
+                <button type="button" class="evn-modal__back" data-evn-join-cancel>Annuler</button>
+                <button type="button" class="pl-btn pl-btn--primary" data-evn-join-confirm>Rejoindre ce groupe</button>
+            </div>
+        </div>
+
+        {# État 3 — confirmation compacte. #}
+        <div class="evn-modal__step evn-join__final" data-evn-join-step="3" {{ join_qs != 'rejoindre3' ? 'hidden' }}>
+            <p class="evn-modal__title evn-modal__title--center">Rejoindre ce groupe</p>
+            <span class="evn-join__avatar">
+                <img src="{{ asset('images/events/join-avatar.jpg') }}" alt="">
+            </span>
+            <div class="evn-modal__foot evn-modal__foot--center">
+                <a href="{{ path('app_group_join_sent') }}" class="pl-btn pl-btn--primary">Rejoindre ce groupe</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,34 @@
+{#
+    Carte « bon cadeau » (spec Cadeaux §1.F) : badge statut, favori,
+    tagline grise OU libellé rouge (listing ateliers), titre, note en
+    pastille + reviews, pied « À partir de » + prix. Pas de durée.
+    Variables : g (tagline?, category?, title, rating, reviews, price,
+    badge, image), href (défaut : tunnel Offrir).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<a href="{{ href|default(path('app_gifts_offer')) }}" class="pl-card act-card gift-card">
+    <div class="pl-card__media">
+        <img src="{{ asset(g.image) }}" alt="{{ g.title }}">
+        {% if g.badge %}
+            <span class="pl-card__tag {{ { 'Bestseller': 'pl-card__tag--bestseller', 'Nouveau': 'pl-card__tag--new', 'Tendance': 'pl-card__tag--hot' }[g.badge]|default('pl-card__tag--bestseller') }}">{{ g.badge }}</span>
+        {% endif %}
+        <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</button>
+    </div>
+    <div class="pl-card__body">
+        {% if g.category is defined %}
+            <span class="gift-card__label">{{ g.category }}</span>
+        {% else %}
+            <span class="gift-card__tagline">{{ g.tagline }}</span>
+        {% endif %}
+        <span class="pl-card__title">{{ g.title }}</span>
+        <div class="act-card__meta">
+            <span class="act-rating">{{ icon.star(12) }} {{ g.rating }}</span>
+            <span class="act-card__reviews">{{ g.reviews }}</span>
+        </div>
+        <div class="pl-card__foot">
+            <span class="pl-card__from">À partir de</span>
+            <span class="pl-card__price">{{ g.price }}€</span>
+        </div>
+    </div>
+</a>

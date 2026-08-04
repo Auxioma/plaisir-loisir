@@ -1,0 +1,13 @@
+{#
+    Mosaïque de catégories (écrans 1 et 2-3) : tuiles-images de la maquette
+    (badge « X Activités » et nom incrustés dans le visuel), spans variables
+    — small (2 col), tall (2 col × 2 rangées), wide (3 col).
+    Variables : categories.
+#}
+<div class="gift-mosaic">
+    {% for c in categories %}
+        <a href="{{ path('app_gifts_category') }}" class="gift-tile gift-tile--{{ c.span }}" aria-label="{{ c.name }}">
+            <img src="{{ asset(c.image) }}" alt="{{ c.name }}">
+        </a>
+    {% endfor %}
+</div>
