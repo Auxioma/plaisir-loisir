@@ -24,6 +24,7 @@
         crumb: 'Événements',
         banner_text: "Créez votre propre groupe et commencez à organiser des événements aujourd'hui !",
         banner_cta: 'Créer un groupe',
+        banner_href: path('app_group_create'),
         tabs_active: 'evenements',
         title: 'Tous les événements',
         with_filters: true,
@@ -67,7 +68,7 @@
                 </span>
                 <p class="evn-empty__title">Devenez un organisateur</p>
                 <p class="evn-empty__text">Créer un groupe vous connecte avec des personnes<br>passionnées qui cherchent à partager des expériences<br>dans la vie réelle.</p>
-                <a href="#" class="evn-btn-dark">Lancer votre premier groupe {{ icon.arrow_up_right(15) }}</a>
+                <a href="{{ path('app_group_create') }}" class="evn-btn-dark">Lancer votre premier groupe {{ icon.arrow_up_right(15) }}</a>
                 <button type="button" class="evn-empty__link" id="evn-reset-mygroups">Ou réinitialisez les filtres</button>
             </div>
         </div>

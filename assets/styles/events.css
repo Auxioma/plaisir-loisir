@@ -1137,3 +1137,113 @@
     .evn-section__head { flex-direction: column; }
     .evn-gtabs { flex-direction: column; align-items: stretch; }
 }
+
+/* ==========================================================================
+ *  WIZARD « CRÉER UN GROUPE » (gw-) — layout centré une colonne :
+ *  Retour, stepper horizontal 4 pastilles, H1, champ, Suivant, Conseil.
+ * ======================================================================== */
+
+.gw-page { padding: 28px 0 110px; }
+.gw-back {
+    display: inline-flex; align-items: center; gap: 9px;
+    background: #eef0f4; color: var(--pl-text-strong); text-decoration: none;
+    font-size: 15px; font-weight: 600; padding: 11px 19px; border-radius: 8px;
+}
+.gw-back:hover { background: #e3e6ec; color: var(--pl-text-strong); }
+
+/* Colonne centrée mesurée sur la maquette : 672px (1440 : x 384 → 1056). */
+.gw-wrap { max-width: 672px; margin: 62px auto 0; }
+
+/* <StepperHorizontal> : pastilles 01-04 + barre de progression. */
+.gw-stepper { display: flex; align-items: center; margin-bottom: 38px; }
+.gw-stepper__dot {
+    flex: none; width: 39px; height: 39px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #f1f3f7; color: #9aa1b1; font-size: 14px; font-weight: 600;
+    text-decoration: none;
+}
+.gw-stepper__dot.is-active, .gw-stepper__dot.is-done { background: var(--pl-action); color: var(--pl-white); }
+.gw-stepper__bar { flex: 1; height: 4px; border-radius: 2px; background: #e8eaf0; margin: 0 7px; }
+.gw-stepper__bar.is-filled { background: var(--pl-action); }
+
+.gw-title { margin: 0 0 30px; font-size: 46px; line-height: 69px; font-weight: 700; color: var(--pl-text-strong); }
+.gw-subtext { margin: -6px 0 28px; font-size: 17px; line-height: 1.6; color: var(--pl-text-strong); }
+.gw-link { color: inherit; text-decoration: underline; }
+.gw-link:hover { color: var(--pl-action); }
+
+/* Champ commun (52-56px, icône optionnelle à gauche). */
+.gw-field {
+    display: flex; align-items: center; gap: 12px;
+    border: 1px solid var(--ev-line); border-radius: 12px; background: var(--pl-white);
+    padding: 0 16px; height: 54px;
+}
+.gw-field__icon { display: inline-flex; color: var(--pl-text-muted); }
+.gw-field__control {
+    flex: 1; border: 0; outline: none; background: none; min-width: 0;
+    font: inherit; font-size: 15.5px; color: var(--pl-text-strong); height: 100%;
+}
+.gw-field__control::placeholder { color: var(--pl-text-muted); }
+
+/* Étape 1 — combobox de localisation. Choix visuel maquette : la valeur
+   sélectionnée reste grise comme le placeholder. */
+.gw-loc { position: relative; }
+.gw-loc.is-selected .gw-field__control { color: var(--pl-text-muted); }
+.gw-loc__clear { border: 0; background: none; padding: 2px; cursor: pointer; color: var(--pl-text-strong); display: inline-flex; }
+.gw-loc__menu {
+    position: absolute; left: 0; top: calc(100% + 4px); z-index: 30;
+    width: 270px; background: var(--pl-white); border-radius: 10px;
+    box-shadow: 0 12px 34px rgba(15, 23, 42, .14); padding: 8px 10px 12px;
+}
+.gw-loc__options { list-style: none; margin: 0; padding: 0; }
+.gw-loc__option {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    border: 0; background: none; border-radius: 8px; cursor: pointer;
+    padding: 12px; font-size: 15px; color: var(--pl-text); text-align: left;
+}
+.gw-loc__option:hover, .gw-loc__option:focus-visible, .gw-loc__option.is-focus { background: #f1f3f7; color: var(--pl-text-strong); }
+.gw-loc__none { margin: 0; padding: 10px 12px; font-size: 15px; color: var(--pl-text-muted); }
+.gw-loc__more { display: inline-block; margin: 6px 0 0 4px; font-size: 14px; color: var(--pl-text); }
+
+/* Étape 2 — nuage de tags multi-sélection. */
+.gw-tags { display: flex; flex-wrap: wrap; gap: 30px 14px; margin-bottom: 6px; }
+.gw-tag {
+    border: 0; cursor: pointer; border-radius: 8px; padding: 9px 16px;
+    background: #f6f7f9; color: var(--pl-text-strong);
+    font-size: 15px; font-weight: 600; font-family: inherit;
+}
+.gw-tag:hover { background: #eceef2; }
+.gw-tag.is-selected, .gw-tag--more.is-active { background: var(--pl-action); color: var(--pl-white); }
+.gw-tag.is-selected:hover, .gw-tag--more.is-active:hover { background: var(--pl-action); }
+
+/* Étape 4 — grande textarea de description. */
+.gw-textarea {
+    width: 100%; min-height: 148px; resize: vertical;
+    border: 1px solid var(--ev-line); border-radius: 12px; outline: none;
+    padding: 15px 17px; font: inherit; font-size: 15.5px; line-height: 1.55;
+    color: var(--pl-text-strong);
+}
+.gw-textarea::placeholder { color: var(--pl-text-muted); }
+
+/* Bouton Suivant : gris désactivé → violet plein une fois l'étape valide. */
+.gw-next { display: flex; justify-content: flex-end; margin: 22px 0 34px; }
+.gw-next__btn { display: inline-flex; align-items: center; gap: 9px; }
+.gw-next__btn.is-disabled {
+    pointer-events: none; background: #f1f3f7; border-color: #f1f3f7;
+    color: var(--pl-text-strong);
+}
+
+/* Encart Conseil. */
+.gw-advice { border: 1px solid var(--ev-line); border-radius: 12px; background: var(--pl-white); padding: 20px 22px; }
+.gw-advice__title { display: flex; align-items: center; gap: 9px; margin: 0 0 10px; font-size: 16px; font-weight: 600; color: var(--pl-text-strong); }
+.gw-advice__text { margin: 0; font-size: 15px; line-height: 1.65; color: var(--pl-text); }
+
+/* Succès : réutilise .ev-success, fond blanc et proportions de la maquette
+   groupe (titre 47px, badge croppé affiché à sa taille réelle). */
+.gw-success { background: none; padding-top: 138px; }
+.gw-success .ev-success__title { font-size: 47px; margin-bottom: 26px; }
+.gw-success .ev-success__badge { width: 230px; margin-bottom: 16px; }
+
+@media (max-width: 900px) {
+    .gw-wrap { margin-top: 36px; }
+    .gw-title { font-size: 36px; }
+}

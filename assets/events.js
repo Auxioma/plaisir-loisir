@@ -258,3 +258,137 @@ initEvnJoin();
 initEvnSubtabs();
 initEvnMembers();
 initEvnAbout();
+
+/* --------------------------------------------------------------------------
+ *  Wizard « Créer un groupe » (gw-) : activation du bouton Suivant,
+ *  autocomplete de localisation (étape 1) et tags multi-sélection (étape 2).
+ * ------------------------------------------------------------------------ */
+
+/* Active/désactive le bouton Suivant de l'étape courante. */
+function setGwNext(enabled) {
+    const next = document.getElementById('gw-next');
+    if (!next) return;
+    next.classList.toggle('is-disabled', !enabled);
+    next.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+}
+
+/* Étape 1 : combobox de localisation — 4 états maquette (vide, suggestions,
+   aucun résultat, valeur choisie avec × pour effacer). Suggestions statiques
+   de démo : toutes affichées dès qu'une correspond à la saisie. */
+function initGwLocation() {
+    const box = document.getElementById('gw-loc');
+    if (!box) return;
+
+    const input = document.getElementById('gw-loc-input');
+    const clear = document.getElementById('gw-loc-clear');
+    const menu = document.getElementById('gw-loc-menu');
+    const none = document.getElementById('gw-loc-none');
+    const more = document.getElementById('gw-loc-more');
+    const options = [...menu.querySelectorAll('.gw-loc__option')];
+
+    const openMenu = (open) => {
+        menu.hidden = !open;
+        input.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+
+    const refresh = () => {
+        const value = input.value.trim().toLowerCase();
+        box.classList.remove('is-selected');
+        clear.hidden = true;
+        setGwNext(false);
+        if (!value) { openMenu(false); return; }
+
+        const match = options.some((o) => o.textContent.toLowerCase().includes(value));
+        options.forEach((o, i) => {
+            o.parentElement.hidden = !match;
+            // Première suggestion surlignée (état focus de la maquette).
+            o.classList.toggle('is-focus', match && i === 0);
+        });
+        none.hidden = match;
+        more.hidden = !match;
+        openMenu(true);
+    };
+    input.addEventListener('input', refresh);
+
+    options.forEach((option) => option.addEventListener('click', () => {
+        input.value = option.dataset.gwCity;
+        openMenu(false);
+        box.classList.add('is-selected');
+        clear.hidden = false;
+        setGwNext(true);
+    }));
+
+    clear.addEventListener('click', () => {
+        input.value = '';
+        refresh();
+        input.focus();
+    });
+    document.addEventListener('click', (e) => {
+        if (!menu.hidden && !box.contains(e.target)) openMenu(false);
+    });
+}
+
+/* Étape 2 : tags multi-sélection + expansion « Plus » / « Affichez moins ».
+   Suivant actif dès 1 tag choisi (le seuil de 3 du Conseil est indicatif). */
+function initGwTags() {
+    const cloud = document.getElementById('gw-tags');
+    if (!cloud) return;
+
+    const tags = [...cloud.querySelectorAll('[data-gw-tag]')];
+    const extras = [...cloud.querySelectorAll('[data-gw-tag-extra]')];
+    const morBtn = document.getElementById('gw-tags-more');
+    const lessBtn = document.getElementById('gw-tags-less');
+
+    tags.forEach((tag) => tag.addEventListener('click', () => {
+        const selected = tag.classList.toggle('is-selected');
+        tag.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        setGwNext(tags.some((t) => t.classList.contains('is-selected')));
+    }));
+
+    const expand = (open) => {
+        extras.forEach((t) => { t.hidden = !open; });
+        lessBtn.hidden = !open;
+        morBtn.classList.toggle('is-active', open);
+        morBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    morBtn.addEventListener('click', () => expand(morBtn.getAttribute('aria-expanded') !== 'true'));
+    lessBtn.addEventListener('click', () => expand(false));
+}
+
+/* Étapes 3 et 4 : Suivant actif dès que le champ est rempli. */
+function initGwRequiredField() {
+    const field = document.getElementById('gw-name') || document.getElementById('gw-desc');
+    if (!field) return;
+    const refresh = () => setGwNext(field.value.trim() !== '');
+    field.addEventListener('input', refresh);
+    refresh();
+}
+
+/* États de démo des captures maquette, pilotables par l'URL (aussi utilisés
+   pour l'audit de conformité) : ?demo=suggestions | aucun | selection
+   (étape 1) et ?demo=plus (étape 2, liste étendue + tags de la capture). */
+function initGwDemoStates() {
+    const demo = new URLSearchParams(window.location.search).get('demo');
+    if (!demo) return;
+
+    const input = document.getElementById('gw-loc-input');
+    if (input) {
+        if (demo === 'suggestions') input.value = 'Lill';
+        if (demo === 'aucun') input.value = 'sdsfsdhfb';
+        if (demo === 'suggestions' || demo === 'aucun') input.dispatchEvent(new Event('input'));
+        if (demo === 'selection') document.querySelector('[data-gw-city="Lille"]').click();
+    }
+
+    if (demo === 'plus' && document.getElementById('gw-tags')) {
+        document.getElementById('gw-tags-more').click();
+        ['Voyages et activités plein air', 'Musique', 'Soirées'].forEach((label) => {
+            [...document.querySelectorAll('[data-gw-tag]')]
+                .find((t) => t.textContent.trim() === label)?.click();
+        });
+    }
+}
+
+initGwLocation();
+initGwTags();
+initGwRequiredField();
+initGwDemoStates();

@@ -1,0 +1,19 @@
+{#
+    Étape 2 — Types d'événements : nuage de tags multi-sélection ; « Plus »
+    déploie la liste complète (et passe en violet actif), « Affichez moins »
+    la replie. Tags dédupliqués et « Réligions » corrigé (spec, coquilles).
+    Suivant actif dès 1 sélection (décision : le seuil de 3 du Conseil est
+    indicatif).
+#}
+<h1 class="gw-title">Quels types d'événements organisez-vous ?</h1>
+
+<div class="gw-tags" id="gw-tags">
+    {% for t in tags.base %}
+        <button type="button" class="gw-tag" data-gw-tag aria-pressed="false">{{ t }}</button>
+    {% endfor %}
+    <button type="button" class="gw-tag gw-tag--more" id="gw-tags-more" aria-expanded="false">Plus</button>
+    {% for t in tags.extra %}
+        <button type="button" class="gw-tag" data-gw-tag data-gw-tag-extra aria-pressed="false" hidden>{{ t }}</button>
+    {% endfor %}
+    <button type="button" class="gw-tag" id="gw-tags-less" hidden>Affichez moins</button>
+</div>
