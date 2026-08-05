@@ -1,0 +1,18 @@
+{#
+    Écran 4 — Parrainage : la maquette ne fournit que l'en-tête (le
+    sous-titre est repris de Notifications — placeholder assumé, spec).
+    Contenu (code de parrainage, récompenses, filleuls) à concevoir avec le
+    designer — décision documentée (spec, point 3).
+#}
+{% extends 'account/_layout.html.twig' %}
+
+{% block title %}Parrainage{% endblock %}
+{% block meta_description %}Invitez vos amis sur TrouveMoi et profitez du programme de parrainage.{% endblock %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Parrainage' }],
+        title: 'Parrainage',
+        subtitle: 'Restez informé de toutes les nouveautés et activités qui vous intéressent.',
+    } %}
+{% endblock %}

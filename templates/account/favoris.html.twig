@@ -1,0 +1,61 @@
+{#
+    Écran 1 — Mes favoris : 3 onglets (Activités/Destinations/Prestataires)
+    × états vide/rempli. Onglets navigués par ?onglet=… ; ?vide=1 force
+    l'état vide (démo des captures).
+    Choix maquette reproduits tels quels : compteur « 0 favoris trouvés »
+    même grille remplie, titres de cartes « Titre ».
+    Coquille « dasn » → dans corrigée (spec). Tri : « Les plus populaires »
+    à l'état vide, « Date d'ajout (Récent) » à l'état rempli (captures).
+#}
+{% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Mes favoris{% endblock %}
+{% block meta_description %}Retrouvez toutes les activités, destinations et prestataires que vous avez ajoutés à vos favoris.{% endblock %}
+
+{% set tab_labels = { activites: 'Activités', destinations: 'Destinations', prestataires: 'Prestataires' } %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [
+            { label: 'Mes favoris', href: path('app_account_favorites') },
+            { label: 'Mes favoris - ' ~ tab_labels[tab] },
+        ],
+        title: 'Mes favoris',
+        subtitle: 'Retrouvez ici toutes les activités, lieux et expériences que vous avez ajoutés à vos favoris.',
+    } %}
+
+    <div class="acc-tabs-row">
+        <nav class="acc-tabs" aria-label="Types de favoris">
+            <a href="{{ path('app_account_favorites') }}" class="acc-tab{{ tab == 'activites' ? ' is-active' }}">{{ icon.compass(17) }} Activités</a>
+            <a href="{{ path('app_account_favorites', { onglet: 'destinations' }) }}" class="acc-tab{{ tab == 'destinations' ? ' is-active' }}">{{ icon.plane(17) }} Destinations</a>
+            <a href="{{ path('app_account_favorites', { onglet: 'prestataires' }) }}" class="acc-tab{{ tab == 'prestataires' ? ' is-active' }}">{{ icon.person(17) }} Prestataires</a>
+        </nav>
+        <div class="acc-view">
+            <button type="button" class="acc-view__map">{{ icon.map(17) }} Afficher la carte</button>
+            <button type="button" class="acc-view__btn" aria-label="Filtres d'affichage">{{ icon.sliders(17) }}</button>
+            <button type="button" class="acc-view__btn" aria-label="Vue liste">{{ icon.list_view(17) }}</button>
+        </div>
+    </div>
+
+    <div class="acc-count-row">
+        <span class="acc-count">0 favoris trouvés</span>
+        <button type="button" class="acc-sort">{{ icon.sort(16) }} Trier par: <strong>{{ empty ? 'Les plus populaires' : "Date d'ajout (Récent)" }}</strong> {{ icon.chevron_down(15) }}</button>
+    </div>
+
+    {% if empty %}
+        {% if tab == 'destinations' %}
+            {% include 'account/_empty.html.twig' with { message: "Il semblerait que vous n'ayez pas d'activités dans vos<br>favoris pour le moment. Ajoutez des activités à vos favoris<br>en cliquant sur le cœur." } %}
+        {% else %}
+            {% include 'account/_empty.html.twig' with { message: "Il semblerait que vous n'ayez pas d'activités dans vos<br>favoris pour le moment." } %}
+        {% endif %}
+    {% else %}
+        <div class="acc-grid">
+            {% for f in favorites %}
+                {% include 'account/_favorite_card.html.twig' with { f: f, hearts: tab == 'prestataires' ? 'outline' : 'red' } %}
+            {% endfor %}
+        </div>
+
+        {% include 'account/_footer_banner.html.twig' %}
+    {% endif %}
+{% endblock %}

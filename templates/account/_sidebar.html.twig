@@ -1,0 +1,49 @@
+{#
+    <AccountSidebar> : en-tête profil (avatar, nom, email, badge membre) +
+    menu de 9 entrées. Item actif violet (rouge pour Déconnexion) ; badge
+    compteur rouge sur Notifications (même source que la cloche du header,
+    spec point 8). Les entrées sans route (pages non maquettées : tableau de
+    bord, albums, activités créées, réservations, paramètres) restent
+    inertes — à concevoir.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<div class="acc-card">
+    <div class="acc-profile">
+        <img class="acc-profile__avatar" src="{{ asset(user.avatar) }}" alt="">
+        <div class="acc-profile__id">
+            <strong>{{ user.name }}</strong>
+            <span>{{ user.email }}</span>
+            <span class="acc-profile__badge">Membre depuis {{ user.memberSince }}</span>
+        </div>
+    </div>
+
+    <nav class="acc-menu" aria-label="Menu du compte">
+        {% for item in menu %}
+            {% set is_active = item.title == active %}
+            <a href="{{ item.route ? path(item.route) : '#' }}"
+               class="acc-menu__item{{ is_active ? (item.title == 'Déconnexion' ? ' is-active is-danger' : ' is-active') }}"
+               {% if is_active %}aria-current="page"{% endif %}>
+                <span class="acc-menu__icon">
+                    {%- if item.icon == 'grid' %}{{ icon.grid(20) }}
+                    {%- elseif item.icon == 'camera' %}{{ icon.camera(20) }}
+                    {%- elseif item.icon == 'badge_check' %}{{ icon.badge_check(20) }}
+                    {%- elseif item.icon == 'receipt' %}{{ icon.receipt(20) }}
+                    {%- elseif item.icon == 'heart' %}{{ icon.heart(20) }}
+                    {%- elseif item.icon == 'bell' %}{{ icon.bell(20) }}
+                    {%- elseif item.icon == 'hand_heart' %}{{ icon.hand_heart(20) }}
+                    {%- elseif item.icon == 'gear' %}{{ icon.gear(20) }}
+                    {%- else %}{{ icon.logout(20) }}
+                    {%- endif -%}
+                </span>
+                <span class="acc-menu__text">
+                    <strong>{{ item.title }}</strong>
+                    <small>{{ item.subtitle }}</small>
+                </span>
+                {% if item.badge and user.unread > 0 %}
+                    <span class="acc-menu__count">{{ user.unread }}</span>
+                {% endif %}
+            </a>
+        {% endfor %}
+    </nav>
+</div>

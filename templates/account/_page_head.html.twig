@@ -1,0 +1,23 @@
+{#
+    <AccountPageHeader> : fil d'Ariane + H1 + sous-titre gris.
+    Variables : crumbs (liste {label, href?}), title, subtitle (optionnel).
+    Coquille maquette corrigée : « Acceuil » → Accueil.
+#}
+<nav class="act-breadcrumb acc-crumb" aria-label="Fil d'Ariane">
+    <a href="{{ path('app_home') }}">Accueil</a>
+    {% for c in crumbs %}
+        <span aria-hidden="true">|</span>
+        {% if not loop.last and c.href is defined %}
+            <a href="{{ c.href }}">{{ c.label }}</a>
+        {% elseif loop.last %}
+            <span aria-current="page" class="acc-crumb-current">{{ c.label }}</span>
+        {% else %}
+            <span>{{ c.label }}</span>
+        {% endif %}
+    {% endfor %}
+</nav>
+
+<h1 class="acc-title">{{ title }}</h1>
+{% if subtitle|default(false) %}
+    <p class="acc-subtitle">{{ subtitle }}</p>
+{% endif %}

@@ -19,6 +19,7 @@ import './styles/destinations.css';
 import './styles/offers.css';
 import './styles/gifts.css';
 import './styles/events.css';
+import './styles/account.css';
 import './styles/app.css';
 
 // Comportement des menus déroulants de l'en-tête d'accueil.
@@ -39,3 +40,6 @@ import './gifts.js';
 
 // Wizard « Créer un événement » (compteurs, onglets, invitations).
 import './events.js';
+
+// Espace compte (bouton Annuler de la déconnexion).
+import './account.js';
