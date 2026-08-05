@@ -1,0 +1,30 @@
+{#
+    Écran 2 — Détail d'une liste de favoris (« Alsace - 2026 ») : H1 = nom
+    de la liste, grille 3×2 + bandeau bas. Décision (spec, point 1) : la
+    création/gestion des listes (nouvelle liste, renommer, supprimer) et la
+    vue « Mes listes » ne sont pas maquettées — à concevoir ; seule cette
+    page de détail est réalisée.
+#}
+{% extends 'account/_layout.html.twig' %}
+
+{% block title %}{{ list_name }} — Mes listes de favoris{% endblock %}
+{% block meta_description %}Votre liste de favoris {{ list_name }} : retrouvez les activités que vous avez mises de côté.{% endblock %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [
+            { label: 'Mes favoris', href: path('app_account_favorites') },
+            { label: 'Mes favoris - Destinations', href: path('app_account_favorites', { onglet: 'destinations' }) },
+            { label: 'Mes listes de favoris' },
+        ],
+        title: list_name,
+    } %}
+
+    <div class="acc-grid acc-grid--list">
+        {% for f in favorites %}
+            {% include 'account/_favorite_card.html.twig' with { f: f } %}
+        {% endfor %}
+    </div>
+
+    {% include 'account/_footer_banner.html.twig' %}
+{% endblock %}

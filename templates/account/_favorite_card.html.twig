@@ -1,0 +1,42 @@
+{#
+    <FavoriteCard> : carte activité du socle (pl-card/act-card) avec cœur
+    actif rouge plein (onglet Activités, listes) ou contour (Prestataires,
+    maquette). Gère l'état <ImagePlaceholder> (chip « Badge » + icône image
+    manquante). Le titre « Titre » est un placeholder maquette, reproduit.
+    Variables : f (carte), hearts ('red'|'outline', défaut red).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<a href="#" class="pl-card act-card acc-fav">
+    <div class="pl-card__media">
+        {% if f.placeholder|default(false) %}
+            <span class="acc-fav__placeholder">
+                <span class="acc-fav__ph-badge">Badge</span>
+                {{ icon.img_off(46) }}
+            </span>
+        {% else %}
+            <img src="{{ asset(f.image) }}" alt="">
+            {% if f.badge %}
+                <span class="pl-card__tag pl-card__tag--bestseller">{{ f.badge }}</span>
+            {% endif %}
+        {% endif %}
+        {% if hearts|default('red') == 'red' %}
+            <button type="button" class="pl-card__fav acc-fav__heart is-on" aria-label="Retirer des favoris">{{ icon.heart_solid(16) }}</button>
+        {% else %}
+            <button type="button" class="pl-card__fav acc-fav__heart" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</button>
+        {% endif %}
+    </div>
+    <div class="pl-card__body">
+        <span class="pl-card__place">{{ icon.map_pin(14) }} {{ f.place }}</span>
+        <span class="pl-card__title">{{ f.title }}</span>
+        <div class="act-card__meta">
+            <span class="act-rating">{{ icon.star(12) }} {{ f.rating }}</span>
+            <span class="act-card__reviews">{{ f.reviews }} reviews</span>
+            <span class="act-card__duration">{{ icon.clock(14) }} {{ f.duration }}</span>
+        </div>
+        <div class="pl-card__foot">
+            <span class="pl-card__from">À partir de</span>
+            <span class="pl-card__price">{{ f.price }}€</span>
+        </div>
+    </div>
+</a>

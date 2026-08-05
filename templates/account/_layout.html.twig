@@ -1,0 +1,21 @@
+{#
+    Layout commun de l'espace compte (spec profil) : header connecté +
+    2 colonnes (sidebar de compte sticky / contenu) + footer.
+    Variables attendues partout : user, menu, active (titre de l'item actif).
+#}
+{% extends 'base.html.twig' %}
+
+{% block header %}
+    {% include '_partials/navbar_connected.html.twig' %}
+{% endblock %}
+
+{% block body %}
+<div class="acc-page">
+    <aside class="acc-aside">
+        {% include 'account/_sidebar.html.twig' %}
+    </aside>
+    <div class="acc-main">
+        {% block account %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

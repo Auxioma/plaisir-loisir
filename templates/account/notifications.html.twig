@@ -1,0 +1,67 @@
+{#
+    Écran 3 — Notifications : onglets à compteurs + actions violettes,
+    regroupement Aujourd'hui/Hier, items typés (icône ronde colorée +
+    vignette), bouton « Charger plus ». ?vide=1 = état vide.
+    Décision (spec, point 2) : compteurs de la maquette incohérents
+    (Toutes 3 / Non lues 3 / Lues 7) → corrigés en Toutes 6 / Non lues 3 /
+    Lues 3 (6 items affichés, badge sidebar 3). Le fond gris des items 3 et
+    6 est reproduit tel quel (choix visuel maquette).
+    Coquille corrigée : « notificatications » → notifications.
+#}
+{% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}Notifications{% endblock %}
+{% block meta_description %}Restez informé de toutes les nouveautés et activités qui vous intéressent.{% endblock %}
+
+{% set total = empty ? 0 : 6 %}
+{% set unread = empty ? 0 : user.unread %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Notifications' }],
+        title: 'Notifications',
+        subtitle: 'Restez informé de toutes les nouveautés et activités qui vous intéressent.',
+    } %}
+
+    <div class="acc-ntabs-row">
+        <nav class="acc-ntabs" aria-label="Filtres de notifications">
+            <a href="#" class="acc-ntab is-active">Toutes <span class="acc-ntab__count">{{ total }}</span></a>
+            <a href="#" class="acc-ntab">Non lues <span class="acc-ntab__count">{{ unread }}</span></a>
+            <a href="#" class="acc-ntab">Lues <span class="acc-ntab__count">{{ total - unread }}</span></a>
+        </nav>
+        <div class="acc-nactions">
+            <a href="#" class="acc-nlink">{{ icon.check_badge(17) }} Tout marquer comme lu</a>
+            <a href="#" class="acc-nlink">{{ icon.gear(17) }} Paramètres</a>
+        </div>
+    </div>
+
+    {% if empty %}
+        {% include 'account/_empty.html.twig' with { message: "Il semblerait que vous n'avez aucune notifications pour<br>le moments." } %}
+    {% else %}
+        {% for group in groups %}
+            <h2 class="acc-nsection">{{ group.section }}</h2>
+            <div class="acc-nlist">
+                {% for n in group.items %}
+                    <article class="acc-notif{{ n.muted ? ' acc-notif--muted' }}">
+                        <span class="acc-notif__icon acc-notif__icon--{{ n.tone }}">
+                            {%- if n.icon == 'calendar_check' %}{{ icon.calendar_check(20) }}{% else %}{{ icon.heart(20) }}{% endif -%}
+                        </span>
+                        <div class="acc-notif__body">
+                            <strong>{{ n.title }}</strong>
+                            <span class="acc-notif__detail">{{ n.detail }}{% if n.meta|default(false) %} <span class="acc-notif__sep">|</span> {{ n.meta }}{% endif %}</span>
+                            <span class="acc-notif__time">{{ n.time }}</span>
+                        </div>
+                        {% if n.thumb %}
+                            <img class="acc-notif__thumb" src="{{ asset(n.thumb) }}" alt="">
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <div class="acc-nmore">
+            <button type="button" class="pl-btn pl-btn--outline-action">Charger plus de notifications {{ icon.chevron_down(16) }}</button>
+        </div>
+    {% endif %}
+{% endblock %}
