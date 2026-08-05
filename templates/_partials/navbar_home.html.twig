@@ -19,8 +19,9 @@
                 <details class="pl-dropdown">
                     <summary class="pl-dropdown__toggle">Découvrez {{ icon.chevron_down(16) }}</summary>
                     <div class="pl-dropdown__menu">
-                        <a href="#" class="pl-dropdown__item is-active">Plaisirs &amp; Loisirs</a>
-                        <a href="#" class="pl-dropdown__item">Plaisirs &amp; Loisirs Events</a>
+                        <a href="{{ path('app_home') }}" class="pl-dropdown__item is-active">Plaisirs &amp; Loisirs</a>
+                        {# Accès au volet Événements de la plateforme (landing du flow). #}
+                        <a href="{{ path('app_events') }}" class="pl-dropdown__item">Plaisirs &amp; Loisirs Events</a>
                     </div>
                 </details>
 

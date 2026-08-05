@@ -215,11 +215,11 @@
                     <h2 class="home-section__title">Évènements gratuits populaires à partager</h2>
                     <p class="home-section__subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.</p>
                 </div>
-                <a href="#" class="btn-see-all">Voir tous les événements {{ icon.arrow_up_right(16) }}</a>
+                <a href="{{ path('app_events_all') }}" class="btn-see-all">Voir tous les événements {{ icon.arrow_up_right(16) }}</a>
             </div>
             <div class="card-grid">
                 {% for e in events %}
-                    <a href="#" class="pl-card pl-card--event">
+                    <a href="{{ path('app_events_detail') }}" class="pl-card pl-card--event">
                         <div class="pl-card__media">
                             <img src="{{ asset('images/home/' ~ e.img) }}" alt="{{ e.title }}">
                             <span class="pl-card__tag pl-card__tag--cat">{{ e.cat }}</span>
