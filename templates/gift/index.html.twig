@@ -39,10 +39,10 @@
     <section class="home-section gift-args-section">
         <div class="home-container">
             <div class="gift-args">
-                <div class="gift-arg gift-arg--violet">{{ icon.book_open(34) }} <span>20.000<br>{{ 'activités'|trans }}</span></div>
-                <div class="gift-arg gift-arg--blue">{{ icon.mail(34) }} <span>{{ 'Par email'|trans }}<br>{{ 'instantanément'|trans }}</span></div>
-                <div class="gift-arg gift-arg--green">{{ icon.calendar(34) }} <span>{{ '12 mois pour'|trans }}<br>{{ 'réserver'|trans }}</span></div>
-                <div class="gift-arg gift-arg--orange">{{ icon.puzzle(34) }} <span>{{ 'Utilisable en'|trans }}<br>{{ 'plusieurs fois'|trans }}</span></div>
+                <div class="gift-arg gift-arg--violet">{{ icon.book_open(46) }} <span>20.000<br>{{ 'activités'|trans }}</span></div>
+                <div class="gift-arg gift-arg--blue">{{ icon.mail(46) }} <span>{{ 'Par email'|trans }}<br>{{ 'instantanément'|trans }}</span></div>
+                <div class="gift-arg gift-arg--green">{{ icon.calendar(46) }} <span>{{ '12 mois pour'|trans }}<br>{{ 'réserver'|trans }}</span></div>
+                <div class="gift-arg gift-arg--orange">{{ icon.puzzle(46) }} <span>{{ 'Utilisable en'|trans }}<br>{{ 'plusieurs fois'|trans }}</span></div>
             </div>
         </div>
     </section>
@@ -140,9 +140,10 @@
     {# ==================================================================
        BANNIÈRE « POUR OFFRIR UN CADEAU ? » : fond crème + coffrets dorés.
        ================================================================ #}
-    <section class="home-section">
-        <div class="home-container">
-            <div class="gift-why">
+    {# Bande pleine largeur (maquette : fond crème bord à bord, sans arrondi). #}
+    <section class="home-section gift-why-section">
+        <div class="gift-why">
+            <div class="home-container">
                 <div class="gift-why__text">
                     <h2 class="gift-why__title">{{ 'Pour offrir un cadeau ?'|trans }}</h2>
                     <ul class="gift-why__list">
@@ -168,8 +169,8 @@
                         <a href="#" class="gift-why__link">{{ "Ou j'utilise ma carte cadeau"|trans }}</a>
                     </div>
                 </div>
-                <img class="gift-why__img" src="{{ asset('images/gifts/banner-creme.jpg') }}" alt="">
             </div>
+            <img class="gift-why__img" src="{{ asset('images/gifts/banner-creme.jpg') }}" alt="">
         </div>
     </section>
 
