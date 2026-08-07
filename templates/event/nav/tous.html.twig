@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Tous les événements{% endblock %}
-{% block meta_description %}Tous les événements communautaires : sports, repas, bien-être, randonnées et plus encore, partout en France.{% endblock %}
+{% block title %}{{ 'Tous les événements'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Tous les événements communautaires : sports, repas, bien-être, randonnées et plus encore, partout en France.'|trans }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'evenements' } %}
@@ -21,20 +21,20 @@
     <div class="of-main">
 
     {% include 'event/nav/_listing_head.html.twig' with {
-        crumb: 'Événements',
-        banner_text: "Créez votre propre groupe et commencez à organiser des événements aujourd'hui !",
-        banner_cta: 'Créer un groupe',
+        crumb: 'Événements'|trans,
+        banner_text: "Créez votre propre groupe et commencez à organiser des événements aujourd'hui !"|trans,
+        banner_cta: 'Créer un groupe'|trans,
         banner_href: path('app_group_create'),
         tabs_active: 'evenements',
-        title: 'Tous les événements',
+        title: 'Tous les événements'|trans,
         with_filters: true,
         chips: [
-            { icon: 'grid', label: 'Tous les événements', active: true, id: 'evn-chip-all' },
-            { icon: 'person_plus', label: 'Nouveau groupe' },
-            { icon: 'person', label: 'De vos groupes', id: 'evn-chip-mygroups' },
-            { icon: 'palette', label: 'Ateliers & Créations' },
-            { icon: 'wellness', label: 'Bien-être' },
-            { icon: 'culture', label: 'Culture & …' },
+            { icon: 'grid', label: 'Tous les événements'|trans, active: true, id: 'evn-chip-all' },
+            { icon: 'person_plus', label: 'Nouveau groupe'|trans },
+            { icon: 'person', label: 'De vos groupes'|trans, id: 'evn-chip-mygroups' },
+            { icon: 'palette', label: 'Ateliers & Créations'|trans },
+            { icon: 'wellness', label: 'Bien-être'|trans },
+            { icon: 'culture', label: 'Culture & …'|trans },
         ],
     } %}
 
@@ -57,7 +57,7 @@
             </div>
 
             <div class="act-more" id="evn-events-more">
-                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus d'événements {{ icon.chevron_down(16) }}</button>
+                <button type="button" class="pl-btn pl-btn--outline-action">{{ "Voir plus d'événements"|trans }} {{ icon.chevron_down(16) }}</button>
             </div>
 
             {# État « De vos groupes » vide (capture 8). #}
@@ -66,10 +66,10 @@
                     {% for a in avatars %}<img src="{{ asset(a) }}" alt="">{% endfor %}
                     <span class="evn-orga-plus">+48</span>
                 </span>
-                <p class="evn-empty__title">Devenez un organisateur</p>
-                <p class="evn-empty__text">Créer un groupe vous connecte avec des personnes<br>passionnées qui cherchent à partager des expériences<br>dans la vie réelle.</p>
-                <a href="{{ path('app_group_create') }}" class="evn-btn-dark">Lancer votre premier groupe {{ icon.arrow_up_right(15) }}</a>
-                <button type="button" class="evn-empty__link" id="evn-reset-mygroups">Ou réinitialisez les filtres</button>
+                <p class="evn-empty__title">{{ 'Devenez un organisateur'|trans }}</p>
+                <p class="evn-empty__text">{{ 'Créer un groupe vous connecte avec des personnes'|trans }}<br>{{ 'passionnées qui cherchent à partager des expériences'|trans }}<br>{{ 'dans la vie réelle.'|trans }}</p>
+                <a href="{{ path('app_group_create') }}" class="evn-btn-dark">{{ 'Lancer votre premier groupe'|trans }} {{ icon.arrow_up_right(15) }}</a>
+                <button type="button" class="evn-empty__link" id="evn-reset-mygroups">{{ 'Ou réinitialisez les filtres'|trans }}</button>
             </div>
         </div>
     </section>

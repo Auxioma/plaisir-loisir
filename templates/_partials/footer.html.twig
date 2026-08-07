@@ -7,7 +7,7 @@
             {# Marque + description + réseaux sociaux #}
             <div class="pl-footer__brand">
                 <img class="pl-footer__brand-logo" src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir & Loisirs">
-                <p class="pl-footer__brand-text">La plateforme qui vous aide à trouver les meilleures activités et loisirs partout en France.</p>
+                <p class="pl-footer__brand-text">{{ 'La plateforme qui vous aide à trouver les meilleures activités et loisirs partout en France.'|trans }}</p>
                 <div class="pl-footer__socials">
                     <a href="#" aria-label="Facebook">{{ icon.facebook() }}</a>
                     <a href="#" aria-label="YouTube">{{ icon.youtube() }}</a>
@@ -18,43 +18,43 @@
 
             {# Colonne Explorer #}
             <div class="pl-footer__col">
-                <div class="pl-footer__col-title">Explorer</div>
+                <div class="pl-footer__col-title">{{ 'Explorer'|trans }}</div>
                 <div class="pl-footer__links">
-                    <a href="{{ path('app_activities') }}">Activités</a>
-                    <a href="{{ path('app_destinations') }}">Destinations</a>
-                    <a href="#">Activités privées</a>
-                    <a href="{{ path('app_gifts') }}">Bons cadeaux</a>
-                    <a href="#">Offres du moment</a>
+                    <a href="{{ path('app_activities') }}">{{ 'Activités'|trans }}</a>
+                    <a href="{{ path('app_destinations') }}">{{ 'Destinations'|trans }}</a>
+                    <a href="#">{{ 'Activités privées'|trans }}</a>
+                    <a href="{{ path('app_gifts') }}">{{ 'Bons cadeaux'|trans }}</a>
+                    <a href="{{ path('app_offers') }}">{{ 'Offres du moment'|trans }}</a>
                 </div>
             </div>
 
             {# Colonne À propos #}
             <div class="pl-footer__col">
-                <div class="pl-footer__col-title">À propos</div>
+                <div class="pl-footer__col-title">{{ 'À propos'|trans }}</div>
                 <div class="pl-footer__links">
-                    <a href="#">Qui sommes-nous ?</a>
-                    <a href="#">Devenir prestataire</a>
-                    <a href="#">Carrières</a>
-                    <a href="#">Presse</a>
-                    <a href="#">Contact</a>
+                    <a href="#">{{ 'Qui sommes-nous ?'|trans }}</a>
+                    <a href="#">{{ 'Devenir prestataire'|trans }}</a>
+                    <a href="#">{{ 'Carrières'|trans }}</a>
+                    <a href="#">{{ 'Presse'|trans }}</a>
+                    <a href="#">{{ 'Contact'|trans }}</a>
                 </div>
             </div>
 
             {# Colonne Aide & support #}
             <div class="pl-footer__col">
-                <div class="pl-footer__col-title">Aide &amp; support</div>
+                <div class="pl-footer__col-title">{{ 'Aide & support'|trans }}</div>
                 <div class="pl-footer__links">
-                    <a href="#">Centre d'aide</a>
+                    <a href="#">{{ "Centre d'aide"|trans }}</a>
                     <a href="#">FAQ</a>
-                    <a href="#">Conditions générales</a>
-                    <a href="#">Politique de confidentialité</a>
-                    <a href="#">Mentions légales</a>
+                    <a href="#">{{ 'Conditions générales'|trans }}</a>
+                    <a href="#">{{ 'Politique de confidentialité'|trans }}</a>
+                    <a href="#">{{ 'Mentions légales'|trans }}</a>
                 </div>
             </div>
 
             {# Colonne Paiement sécurisé #}
             <div class="pl-footer__col">
-                <div class="pl-footer__col-title">Paiement sécurisé</div>
+                <div class="pl-footer__col-title">{{ 'Paiement sécurisé'|trans }}</div>
                 <div class="pl-footer__payments">
                     {{ icon.pay_visa() }}
                     {{ icon.pay_mastercard() }}
@@ -67,10 +67,17 @@
         <hr class="pl-footer__divider">
 
         <div class="pl-footer__bottom">
-            <span>©2024 TrouveMoi Plaisirs &amp; Loisirs | Tous droits réservés</span>
+            <span>©2024 TrouveMoi Plaisirs &amp; Loisirs | {{ 'Tous droits réservés'|trans }}</span>
             <div class="pl-footer__selectors">
                 <button type="button" class="pl-footer__chip">{{ icon.globe() }} France {{ icon.chevron_down(16) }}</button>
-                <button type="button" class="pl-footer__chip">{{ icon.translate() }} Français {{ icon.chevron_down(16) }}</button>
+                {# Sélecteur de langue fonctionnel (menu ouvert vers le haut). #}
+                <details class="pl-dropdown pl-dropdown--footer">
+                    <summary class="pl-footer__chip">{{ icon.translate() }} {{ app.request.locale == 'en' ? 'English' : 'Français' }} {{ icon.chevron_down(16) }}</summary>
+                    <div class="pl-dropdown__menu pl-dropdown__menu--up">
+                        <a href="{{ path('app_locale_switch', { locale: 'fr' }) }}" class="pl-dropdown__item{{ app.request.locale != 'en' ? ' is-active' }}">{{ icon.flag_fr(20) }} {{ 'Français'|trans }}</a>
+                        <a href="{{ path('app_locale_switch', { locale: 'en' }) }}" class="pl-dropdown__item{{ app.request.locale == 'en' ? ' is-active' }}">{{ icon.flag_gb(20) }} {{ 'Anglais'|trans }}</a>
+                    </div>
+                </details>
             </div>
         </div>
     </div>

@@ -9,34 +9,34 @@
 <div class="evn-ghead">
     <img class="evn-ghead__cover" src="{{ asset('images/events/grp-fitness-cover.jpg') }}" alt="Cours collectifs de fitness à Lyon">
     <div class="evn-ghead__id">
-        <h1 class="evn-ghead__title">Cours collectifs de fitness à Lyon</h1>
+        <h1 class="evn-ghead__title">{{ 'Cours collectifs de fitness à Lyon'|trans }}</h1>
         <p class="evn-groupcard__rating evn-ghead__rating">
-            <span class="evn-stars" aria-label="4,5 étoiles sur 5">
+            <span class="evn-stars" aria-label="{{ '4,5 étoiles sur 5'|trans }}">
                 {% for i in 1..5 %}<span class="{{ i <= 3 ? 'is-on' : 'is-off' }}">{{ icon.star(18) }}</span>{% endfor %}
             </span>
             <strong>4.5</strong>
             <span class="evn-dot" aria-hidden="true"></span>
-            <a href="#">14 évaluations</a>
+            <a href="#">{{ '14 évaluations'|trans }}</a>
         </p>
         <p class="evn-ghead__meta">{{ icon.map_pin(17) }} Lyon, France</p>
-        <p class="evn-ghead__meta">{{ icon.users(17) }} 5246 membres</p>
-        <p class="evn-ghead__share-label">Partager</p>
+        <p class="evn-ghead__meta">{{ icon.users(17) }} {{ '5246 membres'|trans }}</p>
+        <p class="evn-ghead__share-label">{{ 'Partager'|trans }}</p>
         <div class="evn-ghead__share">
-            <a href="#" aria-label="Partager sur LinkedIn"><span class="evn-share-ic">in</span></a>
-            <a href="#" aria-label="Partager sur Facebook">{{ icon.facebook(17) }}</a>
-            <a href="#" aria-label="Partager sur X"><span class="evn-share-ic">𝕏</span></a>
+            <a href="#" aria-label="{{ 'Partager sur LinkedIn'|trans }}"><span class="evn-share-ic">in</span></a>
+            <a href="#" aria-label="{{ 'Partager sur Facebook'|trans }}">{{ icon.facebook(17) }}</a>
+            <a href="#" aria-label="{{ 'Partager sur X'|trans }}"><span class="evn-share-ic">𝕏</span></a>
         </div>
     </div>
 </div>
 
 <div class="evn-gtabs">
-    <nav class="evn-gtabs__nav" aria-label="Sections du groupe">
+    <nav class="evn-gtabs__nav" aria-label="{{ 'Sections du groupe'|trans }}">
         {% for t in [
-            { key: 'apropos', label: 'À propos' },
-            { key: 'evenements', label: 'Événements' },
-            { key: 'membres', label: 'Membres' },
-            { key: 'photos', label: 'Photos' },
-            { key: 'discussions', label: 'Discussions' },
+            { key: 'apropos', label: 'À propos'|trans },
+            { key: 'evenements', label: 'Événements'|trans },
+            { key: 'membres', label: 'Membres'|trans },
+            { key: 'photos', label: 'Photos'|trans },
+            { key: 'discussions', label: 'Discussions'|trans },
         ] %}
             <a href="{{ path('app_group_detail', { onglet: t.key }) }}" class="evn-gtab {{ tab == t.key ? 'is-active' }}" {{ tab == t.key ? 'aria-current="page"' }}>
                 {%- if t.key == 'apropos' %}{{ icon.check_badge(22) }}
@@ -50,7 +50,7 @@
         {% endfor %}
     </nav>
     <div class="evn-gtabs__actions">
-        <button type="button" class="evn-dots" aria-label="Plus d'actions">{{ icon.dots(18) }}</button>
-        <button type="button" class="pl-btn pl-btn--primary" data-evn-join-open>Demander à rejoindre le groupe</button>
+        <button type="button" class="evn-dots" aria-label="{{ "Plus d'actions"|trans }}">{{ icon.dots(18) }}</button>
+        <button type="button" class="pl-btn pl-btn--primary" data-evn-join-open>{{ 'Demander à rejoindre le groupe'|trans }}</button>
     </div>
 </div>

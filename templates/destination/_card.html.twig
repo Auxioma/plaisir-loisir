@@ -13,7 +13,7 @@
         {% if d.badge %}
             <span class="pl-card__tag {{ { 'Populaire': 'pl-card__tag--popular', 'Bestseller': 'pl-card__tag--bestseller', 'Tendance': 'pl-card__tag--trend' }[d.badge] }}">{{ d.badge }}</span>
         {% endif %}
-        <button type="button" class="pl-card__fav {{ d.favorite ? 'is-active' }}" aria-label="Ajouter aux favoris" aria-pressed="{{ d.favorite ? 'true' : 'false' }}">
+        <button type="button" class="pl-card__fav {{ d.favorite ? 'is-active' }}" aria-label="{{ 'Ajouter aux favoris'|trans }}" aria-pressed="{{ d.favorite ? 'true' : 'false' }}">
             {{ d.favorite ? icon.heart_solid(16) : icon.heart(16) }}
         </button>
     </div>
@@ -22,11 +22,11 @@
         <span class="pl-card__title">{{ d.name }}</span>
         <div class="act-card__meta">
             <span class="act-rating">{{ icon.star(12) }} {{ d.rating }}</span>
-            <span class="act-card__reviews">{{ d.reviews }} reviews</span>
-            <span class="act-card__duration">{{ d.count }} activités</span>
+            <span class="act-card__reviews">{{ d.reviews }} {{ 'reviews'|trans }}</span>
+            <span class="act-card__duration">{{ d.count }} {{ 'activités'|trans }}</span>
         </div>
         <div class="pl-card__foot">
-            <span class="pl-card__from">À partir de</span>
+            <span class="pl-card__from">{{ 'À partir de'|trans }}</span>
             <span class="pl-card__price">{{ d.price }}€</span>
         </div>
     </div>

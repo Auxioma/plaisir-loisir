@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Événements privés{% endblock %}
-{% block meta_description %}Les événements privés de la communauté : rejoignez des moments uniques entre amis, en famille ou entre passionnés.{% endblock %}
+{% block title %}{{ 'Événements privés'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Les événements privés de la communauté : rejoignez des moments uniques entre amis, en famille ou entre passionnés.'|trans }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'prives' } %}
@@ -14,19 +14,19 @@
     {# Écran I : variante du listing B sans onglets ni paragraphe d'intro.
        Typo maquette corrigée : « Evénements privée » → Événements privés. #}
     {% include 'event/nav/_listing_head.html.twig' with {
-        crumb: 'Événements',
-        banner_text: "Créez votre propre groupe et commencez à organiser des événements aujourd'hui !",
-        banner_cta: 'Créer un groupe',
+        crumb: 'Événements'|trans,
+        banner_text: "Créez votre propre groupe et commencez à organiser des événements aujourd'hui !"|trans,
+        banner_cta: 'Créer un groupe'|trans,
         banner_href: path('app_group_create'),
-        title: 'Événements privés',
+        title: 'Événements privés'|trans,
         intro: false,
         chips: [
-            { icon: 'grid', label: 'Tous les événements', active: true },
-            { icon: 'culture', label: 'Culture & Découverte' },
-            { icon: 'family', label: 'En famille' },
-            { icon: 'palette', label: 'Ateliers & Créations' },
-            { icon: 'wellness', label: 'Bien-être' },
-            { icon: 'culture', label: 'Culture & …' },
+            { icon: 'grid', label: 'Tous les événements'|trans, active: true },
+            { icon: 'culture', label: 'Culture & Découverte'|trans },
+            { icon: 'family', label: 'En famille'|trans },
+            { icon: 'palette', label: 'Ateliers & Créations'|trans },
+            { icon: 'wellness', label: 'Bien-être'|trans },
+            { icon: 'culture', label: 'Culture & …'|trans },
         ],
     } %}
 
@@ -38,7 +38,7 @@
                 {% endfor %}
             </div>
             <div class="act-more">
-                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus d'événements {{ icon.chevron_down(16) }}</button>
+                <button type="button" class="pl-btn pl-btn--outline-action">{{ "Voir plus d'événements"|trans }} {{ icon.chevron_down(16) }}</button>
             </div>
         </div>
     </section>

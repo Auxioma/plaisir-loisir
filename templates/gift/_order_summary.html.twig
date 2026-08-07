@@ -6,22 +6,22 @@
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<aside class="gift-summary" aria-label="Récapitulatif de votre commande">
+<aside class="gift-summary" aria-label="{{ 'Récapitulatif de votre commande'|trans }}">
     <img class="gift-summary__cards" src="{{ asset('images/gifts/giftcards-stack.jpg') }}"
          alt="Aperçu de la carte cadeau de 100€">
 
     <div class="gift-valid">
         {{ icon.gift(22) }}
-        <p>Carte cadeau valable jusqu'au <strong>17 Juillet 2027,</strong> utilisable en plusieurs fois.</p>
+        <p>{{ "Carte cadeau valable jusqu'au"|trans }} <strong>17 Juillet 2027,</strong> {{ 'utilisable en plusieurs fois.'|trans }}</p>
     </div>
 
     <div class="gift-summary__total">
-        <span>Total</span>
+        <span>{{ 'Total'|trans }}</span>
         <strong>160€</strong>
     </div>
 
     <details class="gift-acc" id="gift-acc-buyer">
-        <summary>Vos informations <span class="gift-acc__toggle" aria-hidden="true"></span></summary>
+        <summary>{{ 'Vos informations'|trans }} <span class="gift-acc__toggle" aria-hidden="true"></span></summary>
         <div class="gift-acc__body">
             <p data-sum-name>&nbsp;</p>
             <p data-sum-email>&nbsp;</p>
@@ -29,11 +29,11 @@
     </details>
 
     <details class="gift-acc" id="gift-acc-gift">
-        <summary>A qui vous l'offrez ? <span class="gift-acc__toggle" aria-hidden="true"></span></summary>
+        <summary>{{ "A qui vous l'offrez ?"|trans }} <span class="gift-acc__toggle" aria-hidden="true"></span></summary>
         <div class="gift-acc__body">
             <p data-sum-recipient>&nbsp;</p>
-            <p>De la part de: <strong data-sum-sender></strong></p>
-            <p class="gift-acc__label">Votre message:</p>
+            <p>{{ 'De la part de:'|trans }} <strong data-sum-sender></strong></p>
+            <p class="gift-acc__label">{{ 'Votre message:'|trans }}</p>
             <p data-sum-message></p>
         </div>
     </details>

@@ -7,7 +7,7 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Accueil{% endblock %}
+{% block title %}{{ 'Accueil'|trans }}{% endblock %}
 
 {# En-tête propre à l'accueil plateforme : « Découvrez » + langue + S'inscrire,
    sans les entrées Activités/Destinations (précision client du 27/07). #}
@@ -23,15 +23,14 @@
         <div class="home-hero__overlay"></div>
         <div class="home-container home-hero__inner">
             <h1 class="home-hero__title">
-                Explore tes envies et Crée des <span class="is-accent">souvenirs&nbsp;!</span>
+                {{ 'Explore tes envies et Crée des'|trans }} <span class="is-accent">{{ 'souvenirs'|trans }}&nbsp;!</span>
             </h1>
             <p class="home-hero__subtitle">
-                Découvrez des lieux, des événements exceptionnels, à des prix exclusifs
-                et vivez des expériences inoubliables
+                {{ 'Découvrez des lieux, des événements exceptionnels, à des prix exclusifs et vivez des expériences inoubliables'|trans }}
             </p>
             <div class="home-hero__actions">
-                <a href="#" class="pl-btn pl-btn--cta">Explorez nos activités {{ icon.chevron_right(18) }}</a>
-                <a href="#" class="pl-btn pl-btn--hero-ghost">Découvrez nos événements {{ icon.chevron_right(18) }}</a>
+                <a href="#" class="pl-btn pl-btn--cta">{{ 'Explorez nos activités'|trans }} {{ icon.chevron_right(18) }}</a>
+                <a href="#" class="pl-btn pl-btn--hero-ghost">{{ 'Découvrez nos événements'|trans }} {{ icon.chevron_right(18) }}</a>
             </div>
             {# Preuve sociale : 4 avatars empilés + compteur d'utilisateurs. #}
             <div class="home-hero__proof">
@@ -41,7 +40,7 @@
                     <img class="home-avatar" src="{{ asset('images/home/avatar-3.png') }}" alt="">
                     <img class="home-avatar" src="{{ asset('images/home/avatar-4.png') }}" alt="">
                 </div>
-                <span class="home-hero__proof-text"><strong>+250.000</strong> utilisateurs satisfaits.</span>
+                <span class="home-hero__proof-text"><strong>+250.000</strong> {{ 'utilisateurs satisfaits.'|trans }}</span>
             </div>
         </div>
     </section>
@@ -52,39 +51,39 @@
             <div class="home-search">
                 <div class="home-search__tabs">
                     {# Libellés validés par Loïc (commentaire maquette, 2026-07-27). #}
-                    <button type="button" class="home-search__tab is-active">{{ icon.compass(18) }} Consulter Vos Plaisirs et Loisirs</button>
-                    <button type="button" class="home-search__tab">{{ icon.calendar_check(18) }} Crée, Consulter et Partager Vos Plaisirs et Loisirs Gratuit</button>
+                    <button type="button" class="home-search__tab is-active">{{ icon.compass(18) }} {{ 'Consulter Vos Plaisirs et Loisirs'|trans }}</button>
+                    <button type="button" class="home-search__tab">{{ icon.calendar_check(18) }} {{ 'Crée, Consulter et Partager Vos Plaisirs et Loisirs Gratuit'|trans }}</button>
                 </div>
                 <div class="home-search__fields">
                     <div class="home-search__field">
                         {{ icon.map_pin(20) }}
                         <div>
-                            <div class="home-search__field-label">Où voulez-vous aller ?</div>
-                            <div class="home-search__field-value">Destination, ville, lieu…</div>
+                            <div class="home-search__field-label">{{ 'Où voulez-vous aller ?'|trans }}</div>
+                            <div class="home-search__field-value">{{ 'Destination, ville, lieu…'|trans }}</div>
                         </div>
                     </div>
                     <div class="home-search__field">
                         {{ icon.compass(20) }}
                         <div>
-                            <div class="home-search__field-label">Activité ou loisir ?</div>
-                            <div class="home-search__field-value">Canoë, musée, VTT…</div>
+                            <div class="home-search__field-label">{{ 'Activité ou loisir ?'|trans }}</div>
+                            <div class="home-search__field-value">{{ 'Canoë, musée, VTT…'|trans }}</div>
                         </div>
                     </div>
                     <div class="home-search__field">
                         {{ icon.calendar_check(20) }}
                         <div>
-                            <div class="home-search__field-label">Date</div>
-                            <div class="home-search__field-value">Choisissez une date</div>
+                            <div class="home-search__field-label">{{ 'Date'|trans }}</div>
+                            <div class="home-search__field-value">{{ 'Choisissez une date'|trans }}</div>
                         </div>
                     </div>
                     <div class="home-search__field">
                         {{ icon.users(20) }}
                         <div>
-                            <div class="home-search__field-label">Participant(s)</div>
-                            <div class="home-search__field-value">01 participant</div>
+                            <div class="home-search__field-label">{{ 'Participant(s)'|trans }}</div>
+                            <div class="home-search__field-value">{{ '01 participant'|trans }}</div>
                         </div>
                     </div>
-                    <button type="button" class="pl-btn pl-btn--cta home-search__submit">{{ icon.search(20) }} Recherche</button>
+                    <button type="button" class="pl-btn pl-btn--cta home-search__submit">{{ icon.search(20) }} {{ 'Recherche'|trans }}</button>
                 </div>
             </div>
         </div>
@@ -101,10 +100,10 @@
         <section class="home-section">
             <div class="home-section__head">
                 <div>
-                    <h2 class="home-section__title">Activités coup de coeur</h2>
+                    <h2 class="home-section__title">{{ 'Activités coup de coeur'|trans }}</h2>
                     <p class="home-section__subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.</p>
                 </div>
-                <a href="#" class="btn-see-all">Voir toutes les activités {{ icon.arrow_up_right(16) }}</a>
+                <a href="#" class="btn-see-all">{{ 'Voir toutes les activités'|trans }} {{ icon.arrow_up_right(16) }}</a>
             </div>
             <div class="card-grid">
                 {% for a in activities %}
@@ -112,17 +111,17 @@
                         <div class="pl-card__media">
                             <img src="{{ asset('images/home/' ~ a.img) }}" alt="{{ a.title }}">
                             {% if a.tag %}<span class="pl-card__tag pl-card__tag--bestseller">{{ a.tag }}</span>{% endif %}
-                            <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(18) }}</button>
+                            <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(18) }}</button>
                         </div>
                         <div class="pl-card__body">
                             <div class="pl-card__title">{{ a.title }}</div>
                             <div class="pl-card__place">{{ icon.map_pin(14) }} {{ a.place }}</div>
                             <div class="pl-card__meta">
-                                <span class="pl-card__rating">{{ icon.star(14) }} {{ a.reviews }} <span>reviews</span></span>
+                                <span class="pl-card__rating">{{ icon.star(14) }} {{ a.reviews }} <span>{{ 'reviews'|trans }}</span></span>
                                 <span class="pl-card__extra">{{ icon.clock(14) }} {{ a.extra }}</span>
                             </div>
                             <div class="pl-card__foot">
-                                <span class="pl-card__from">À partir de</span>
+                                <span class="pl-card__from">{{ 'À partir de'|trans }}</span>
                                 <span class="pl-card__price">{{ a.price }}€</span>
                             </div>
                         </div>
@@ -143,10 +142,10 @@
         <section class="home-section">
             <div class="home-section__head">
                 <div>
-                    <h2 class="home-section__title">Destinations populaires</h2>
+                    <h2 class="home-section__title">{{ 'Destinations populaires'|trans }}</h2>
                     <p class="home-section__subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.</p>
                 </div>
-                <a href="{{ path('app_destinations') }}" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
+                <a href="{{ path('app_destinations') }}" class="btn-see-all">{{ 'Voir toutes les destinations'|trans }} {{ icon.arrow_up_right(16) }}</a>
             </div>
             <div class="card-grid">
                 {% for d in destinations %}
@@ -154,17 +153,17 @@
                         <div class="pl-card__media">
                             <img src="{{ asset('images/home/' ~ d.img) }}" alt="{{ d.title }}">
                             {% if d.tag %}<span class="pl-card__tag {{ d.tag == 'Bestseller' ? 'pl-card__tag--bestseller' : 'pl-card__tag--popular' }}">{{ d.tag }}</span>{% endif %}
-                            <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(18) }}</button>
+                            <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(18) }}</button>
                         </div>
                         <div class="pl-card__body">
                             <div class="pl-card__title">{{ d.title }}</div>
                             <div class="pl-card__place">{{ d.desc }}</div>
                             <div class="pl-card__meta">
-                                <span class="pl-card__rating">{{ icon.star(14) }} {{ d.reviews }} <span>reviews</span></span>
+                                <span class="pl-card__rating">{{ icon.star(14) }} {{ d.reviews }} <span>{{ 'reviews'|trans }}</span></span>
                                 <span class="pl-card__extra">{{ d.count }}</span>
                             </div>
                             <div class="pl-card__foot">
-                                <span class="pl-card__from">À partir de</span>
+                                <span class="pl-card__from">{{ 'À partir de'|trans }}</span>
                                 <span class="pl-card__price">{{ d.price }}€</span>
                             </div>
                         </div>
@@ -179,19 +178,19 @@
         <div class="home-container home-section">
             <div class="home-provider__inner">
                 <div>
-                    <h2 class="home-provider__title">Pourquoi nous choisir !</h2>
+                    <h2 class="home-provider__title">{{ 'Pourquoi nous choisir !'|trans }}</h2>
                     <p class="home-provider__text">
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget
                         magna gravida consequat. Nunc dictum facilisis dolor ac luctus.
                     </p>
                     <div class="home-provider__list">
-                        <div class="home-provider__arg">{{ icon.check_badge(22) }} Réservez en quelques clics</div>
-                        <div class="home-provider__arg">{{ icon.check_badge(22) }} Meilleurs prix garantis</div>
-                        <div class="home-provider__arg">{{ icon.check_badge(22) }} Transactions 100% sécurisées</div>
-                        <div class="home-provider__arg">{{ icon.check_badge(22) }} Des milliers d'avis authentiques</div>
-                        <div class="home-provider__arg">{{ icon.check_badge(22) }} Notre équipe est à votre écoute 7j/7</div>
+                        <div class="home-provider__arg">{{ icon.check_badge(22) }} {{ 'Réservez en quelques clics'|trans }}</div>
+                        <div class="home-provider__arg">{{ icon.check_badge(22) }} {{ 'Meilleurs prix garantis'|trans }}</div>
+                        <div class="home-provider__arg">{{ icon.check_badge(22) }} {{ 'Transactions 100% sécurisées'|trans }}</div>
+                        <div class="home-provider__arg">{{ icon.check_badge(22) }} {{ "Des milliers d'avis authentiques"|trans }}</div>
+                        <div class="home-provider__arg">{{ icon.check_badge(22) }} {{ 'Notre équipe est à votre écoute 7j/7'|trans }}</div>
                     </div>
-                    <a href="#" class="pl-btn pl-btn--cta">En savoir plus ! {{ icon.arrow_up_right(16) }}</a>
+                    <a href="#" class="pl-btn pl-btn--cta">{{ 'En savoir plus !'|trans }} {{ icon.arrow_up_right(16) }}</a>
                 </div>
                 <div class="home-provider__media">
                     <div class="home-provider__circles"></div>
@@ -212,10 +211,10 @@
         <section class="home-section">
             <div class="home-section__head">
                 <div>
-                    <h2 class="home-section__title">Évènements gratuits populaires à partager</h2>
+                    <h2 class="home-section__title">{{ 'Évènements gratuits populaires à partager'|trans }}</h2>
                     <p class="home-section__subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.</p>
                 </div>
-                <a href="{{ path('app_events_all') }}" class="btn-see-all">Voir tous les événements {{ icon.arrow_up_right(16) }}</a>
+                <a href="{{ path('app_events_all') }}" class="btn-see-all">{{ 'Voir tous les événements'|trans }} {{ icon.arrow_up_right(16) }}</a>
             </div>
             <div class="card-grid">
                 {% for e in events %}
@@ -223,7 +222,7 @@
                         <div class="pl-card__media">
                             <img src="{{ asset('images/home/' ~ e.img) }}" alt="{{ e.title }}">
                             <span class="pl-card__tag pl-card__tag--cat">{{ e.cat }}</span>
-                            <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(18) }}</button>
+                            <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(18) }}</button>
                             <span class="pl-card__date">{{ e.date }}</span>
                         </div>
                         <div class="pl-card__body">
@@ -233,7 +232,7 @@
                                 <span class="pl-card__extra">{{ icon.clock(14) }} {{ e.time }}</span>
                             </div>
                             <div class="pl-card__event-foot">
-                                <span class="pl-card__participants">{{ icon.users(16) }} {{ e.participants }} Participants</span>
+                                <span class="pl-card__participants">{{ icon.users(16) }} {{ e.participants }} {{ 'Participants'|trans }}</span>
                                 <span class="home-mini-avatars" aria-hidden="true"><img src="{{ asset('images/home/avatar-1.png') }}" alt=""><img src="{{ asset('images/home/avatar-2.png') }}" alt=""><img src="{{ asset('images/home/avatar-3.png') }}" alt=""></span>
                             </div>
                         </div>
@@ -251,15 +250,15 @@
     <section class="home-reviews">
         <div class="home-container home-section">
             <div class="home-reviews__head">
-                <h2 class="home-section__title">Ce que disent nos clients</h2>
+                <h2 class="home-section__title">{{ 'Ce que disent nos clients'|trans }}</h2>
                 <div class="home-reviews__score">
                     <div class="home-reviews__score-box">
-                        <div class="home-reviews__score-label">Note globale</div>
+                        <div class="home-reviews__score-label">{{ 'Note globale'|trans }}</div>
                         <div class="home-reviews__score-value">4.5<span>/5</span></div>
                         <div class="home-reviews__stars">{{ icon.star(18) }}{{ icon.star(18) }}{{ icon.star(18) }}{{ icon.star(18) }}{{ icon.star(18) }}</div>
-                        <div class="home-reviews__score-count">Basé sur 8955 avis</div>
+                        <div class="home-reviews__score-count">{{ 'Basé sur %count% avis'|trans({'%count%': '8955'}) }}</div>
                     </div>
-                    <a href="#" class="btn-see-all">Voir plus d'avis {{ icon.arrow_up_right(16) }}</a>
+                    <a href="#" class="btn-see-all">{{ "Voir plus d'avis"|trans }} {{ icon.arrow_up_right(16) }}</a>
                 </div>
             </div>
             <div class="home-reviews__grid">
@@ -269,7 +268,7 @@
                             <div class="review-card__stars">
                                 {% for i in 1..5 %}<span class="{{ i <= r.rating ? 'is-on' : 'is-off' }}">{{ icon.star(16) }}</span>{% endfor %}
                             </div>
-                            <button type="button" class="review-card__more" aria-label="Options">{{ icon.dots(20) }}</button>
+                            <button type="button" class="review-card__more" aria-label="{{ 'Options'|trans }}">{{ icon.dots(20) }}</button>
                         </div>
                         <h3 class="review-card__title">{{ r.title }}</h3>
                         <p class="review-card__text">{{ r.text }}</p>
@@ -281,8 +280,8 @@
                             </div>
                         </div>
                         <div class="review-card__foot">
-                            <span>Est-ce que ça vous a aidé ? {{ icon.thumbs_up(16) }}</span>
-                            <a href="#">Traduire</a>
+                            <span>{{ 'Est-ce que ça vous a aidé ?'|trans }} {{ icon.thumbs_up(16) }}</span>
+                            <a href="#">{{ 'Traduire'|trans }}</a>
                         </div>
                     </article>
                 {% endfor %}

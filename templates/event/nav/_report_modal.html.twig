@@ -9,15 +9,15 @@
 
 {# ?modal=signaler / signaler2 : ouverture directe pour l'audit visuel. #}
 {% set modal_qs = app.request.query.get('modal') %}
-<div class="evn-modal" id="evn-report" role="dialog" aria-modal="true" aria-label="Signaler l'événement" {{ modal_qs not in ['signaler', 'signaler2'] ? 'hidden' }}>
+<div class="evn-modal" id="evn-report" role="dialog" aria-modal="true" aria-label="{{ "Signaler l'événement"|trans }}" {{ modal_qs not in ['signaler', 'signaler2'] ? 'hidden' }}>
     <div class="evn-modal__box">
-        <button type="button" class="evn-modal__close" data-evn-report-close aria-label="Fermer">{{ icon.x(18) }}</button>
+        <button type="button" class="evn-modal__close" data-evn-report-close aria-label="{{ 'Fermer'|trans }}">{{ icon.x(18) }}</button>
 
         {# Étape 1 — « Pourquoi signalez vous cela ? ». #}
         <div class="evn-modal__step" data-evn-report-step="1" {{ modal_qs == 'signaler2' ? 'hidden' }}>
-            <p class="evn-modal__title">Pourquoi signalez vous cela ?</p>
-            <p class="evn-modal__subtitle">Nous ne partagerons pas ces informations avec l'organisateur</p>
-            <div class="evn-report-list" role="radiogroup" aria-label="Motif du signalement">
+            <p class="evn-modal__title">{{ 'Pourquoi signalez vous cela ?'|trans }}</p>
+            <p class="evn-modal__subtitle">{{ "Nous ne partagerons pas ces informations avec l'organisateur"|trans }}</p>
+            <div class="evn-report-list" role="radiogroup" aria-label="{{ 'Motif du signalement'|trans }}">
                 {% for motif in [
                     'Non-respect des normes de sécurité',
                     'Événement clandestin ou non autorisé',
@@ -27,31 +27,31 @@
                 ] %}
                     <label class="evn-report-item {{ loop.index == 2 ? 'is-checked' }}">
                         <input type="radio" name="evn-report-reason" {{ loop.index == 2 ? 'checked' }}>
-                        <span>{{ motif }}</span>
+                        <span>{{ motif|trans }}</span>
                     </label>
                 {% endfor %}
             </div>
             <div class="evn-modal__foot">
-                <button type="button" class="pl-btn pl-btn--primary" data-evn-report-next>Continuer {{ icon.chevron_down(15) }}</button>
+                <button type="button" class="pl-btn pl-btn--primary" data-evn-report-next>{{ 'Continuer'|trans }} {{ icon.chevron_down(15) }}</button>
             </div>
         </div>
 
         {# Étape 2 — « Raison du signalement: ». #}
         <div class="evn-modal__step" data-evn-report-step="2" {{ modal_qs != 'signaler2' ? 'hidden' }}>
-            <p class="evn-modal__title">Raison du signalement:</p>
-            <p class="evn-modal__reason">Événement clandestin ou non autorisé</p>
+            <p class="evn-modal__title">{{ 'Raison du signalement:'|trans }}</p>
+            <p class="evn-modal__reason">{{ 'Événement clandestin ou non autorisé'|trans }}</p>
             <p class="evn-modal__subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed.</p>
-            <textarea class="evn-report-textarea" rows="7" placeholder="Souhaitez-vous nous en dire plus ?"></textarea>
+            <textarea class="evn-report-textarea" rows="7" placeholder="{{ 'Souhaitez-vous nous en dire plus ?'|trans }}"></textarea>
             <label class="evn-report-confirm">
                 <input type="checkbox" checked>
                 <span>
-                    <strong>Je confirme de bonne foi que les informations et allégations contenues dans mon rapport sont exactes et complètes.*</strong>
-                    <em class="evn-report-error">Veuillez confirmer que votre rapport est exact.</em>
+                    <strong>{{ 'Je confirme de bonne foi que les informations et allégations contenues dans mon rapport sont exactes et complètes.*'|trans }}</strong>
+                    <em class="evn-report-error">{{ 'Veuillez confirmer que votre rapport est exact.'|trans }}</em>
                 </span>
             </label>
             <div class="evn-modal__foot">
-                <button type="button" class="evn-modal__back" data-evn-report-back>Retour</button>
-                <button type="button" class="pl-btn pl-btn--primary" data-evn-report-close>Continuer</button>
+                <button type="button" class="evn-modal__back" data-evn-report-back>{{ 'Retour'|trans }}</button>
+                <button type="button" class="pl-btn pl-btn--primary" data-evn-report-close>{{ 'Continuer'|trans }}</button>
             </div>
         </div>
     </div>

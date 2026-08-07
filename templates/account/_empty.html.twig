@@ -5,7 +5,7 @@
 #}
 <div class="acc-empty">
     <img class="acc-empty__img" src="{{ asset('images/account/empty-oops.jpg') }}" alt="">
-    <p class="acc-empty__title">OOPS</p>
+    <p class="acc-empty__title">{{ 'OOPS'|trans }}</p>
     <p class="acc-empty__text">{{ message|raw }}</p>
-    <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--outline-action">Parcourir les activités</a>
+    <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--outline-action">{{ 'Parcourir les activités'|trans }}</a>
 </div>

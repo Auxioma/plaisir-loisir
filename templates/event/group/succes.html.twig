@@ -8,8 +8,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Groupe créé avec succès{% endblock %}
-{% block meta_description %}Votre groupe a été créé : devenez organisateur et créez votre premier événement.{% endblock %}
+{% block title %}{{ 'Groupe créé avec succès'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Votre groupe a été créé : devenez organisateur et créez votre premier événement.'|trans }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'evenements' } %}
@@ -18,17 +18,17 @@
 {% block body %}
 <div class="gw-page">
     <div class="home-container">
-        <a href="{{ path('app_groups') }}" class="gw-back">{{ icon.arrow_left(16) }} Retour</a>
+        <a href="{{ path('app_groups') }}" class="gw-back">{{ icon.arrow_left(16) }} {{ 'Retour'|trans }}</a>
     </div>
 
     <div class="ev-success gw-success">
-        <h1 class="ev-success__title">Votre groupe a été créé</h1>
+        <h1 class="ev-success__title">{{ 'Votre groupe a été créé'|trans }}</h1>
         {# Badge croppé de la maquette groupe (fond blanc, halo + ombre) —
            même visuel que le badge partagé des flows Événement/Cadeaux. #}
         <img class="ev-success__badge" src="{{ asset('images/groups/success-badge.png') }}" alt="">
-        <p class="ev-success__text">Vous pouvez désormais devenir organisateur :<br>créez un événement aujourd'hui !</p>
+        <p class="ev-success__text">{{ 'Vous pouvez désormais devenir organisateur :'|trans }}<br>{{ "créez un événement aujourd'hui !"|trans }}</p>
         <div class="ev-success__actions">
-            <a href="{{ path('app_event_create') }}" class="pl-btn pl-btn--primary">Créer un événement</a>
+            <a href="{{ path('app_event_create') }}" class="pl-btn pl-btn--primary">{{ 'Créer un événement'|trans }}</a>
         </div>
     </div>
 </div>

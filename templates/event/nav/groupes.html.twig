@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Tous les groupes{% endblock %}
-{% block meta_description %}Tous les groupes et clubs de la communauté : fitness, nature, culture, jeux… rejoignez ceux qui partagent vos passions.{% endblock %}
+{% block title %}{{ 'Tous les groupes'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Tous les groupes et clubs de la communauté : fitness, nature, culture, jeux… rejoignez ceux qui partagent vos passions.'|trans }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'groupes' } %}
@@ -14,15 +14,15 @@
     {# Écran E : listing groupes — pas de bannière, onglet Groupes actif.
        Typo corrigée : « Touts les groupes » → Tous les groupes. #}
     {% include 'event/nav/_listing_head.html.twig' with {
-        crumb: 'Groupes',
+        crumb: 'Groupes'|trans,
         tabs_active: 'groupes',
-        title: 'Tous les groupes',
+        title: 'Tous les groupes'|trans,
         chips: [
-            { icon: 'grid', label: 'Tous les groupes', active: true },
-            { icon: 'person_plus', label: 'Nouveau groupe' },
-            { icon: 'wellness', label: 'Bien-être' },
-            { icon: 'culture', label: 'Culture & Découvertes' },
-            { icon: 'palette', label: 'Ateliers & Créations' },
+            { icon: 'grid', label: 'Tous les groupes'|trans, active: true },
+            { icon: 'person_plus', label: 'Nouveau groupe'|trans },
+            { icon: 'wellness', label: 'Bien-être'|trans },
+            { icon: 'culture', label: 'Culture & Découvertes'|trans },
+            { icon: 'palette', label: 'Ateliers & Créations'|trans },
         ],
     } %}
 
@@ -34,7 +34,7 @@
                 {% endfor %}
             </div>
             <div class="act-more">
-                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus de groupes {{ icon.chevron_down(16) }}</button>
+                <button type="button" class="pl-btn pl-btn--outline-action">{{ 'Voir plus de groupes'|trans }} {{ icon.chevron_down(16) }}</button>
             </div>
         </div>
     </section>

@@ -21,12 +21,12 @@
                Bientôt complet) restent rouges — spec Destinations §1.10. #}
             <span class="pl-card__tag {{ a.badge == 'Nouvelle activité' ? 'pl-card__tag--popular' : 'pl-card__tag--bestseller' }}">{{ a.badge }}</span>
         {% endif %}
-        <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</button>
+        <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</button>
         {# Logo type demandé par Loïc : activité pro payante vs privée gratuite. #}
         {% if a.free is defined and a.free %}
-            <span class="act-card__kind act-card__kind--free">👥 Gratuite</span>
+            <span class="act-card__kind act-card__kind--free">👥 {{ 'Gratuite'|trans }}</span>
         {% else %}
-            <span class="act-card__kind act-card__kind--pro">🎟️ Pro</span>
+            <span class="act-card__kind act-card__kind--pro">🎟️ {{ 'Pro'|trans }}</span>
         {% endif %}
     </div>
     <div class="pl-card__body">
@@ -46,15 +46,15 @@
         <span class="pl-card__title">{{ a.title }}</span>
         <div class="act-card__meta">
             <span class="act-rating">{{ icon.star(12) }} {{ a.rating }}</span>
-            <span class="act-card__reviews">{{ a.reviews }} reviews</span>
+            <span class="act-card__reviews">{{ a.reviews }} {{ 'reviews'|trans }}</span>
             <span class="act-card__duration">{{ icon.clock(14) }} {{ a.duration }}</span>
         </div>
         <div class="pl-card__foot">
             {% if a.free is defined and a.free %}
-                <span class="pl-card__from">Entre particuliers</span>
-                <span class="pl-card__price pl-card__price--free">Gratuit</span>
+                <span class="pl-card__from">{{ 'Entre particuliers'|trans }}</span>
+                <span class="pl-card__price pl-card__price--free">{{ 'Gratuit'|trans }}</span>
             {% else %}
-                <span class="pl-card__from">À partir de</span>
+                <span class="pl-card__from">{{ 'À partir de'|trans }}</span>
                 <span class="pl-card__price">{{ a.price }}€</span>
             {% endif %}
         </div>

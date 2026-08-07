@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Activités à {{ city }}{% endblock %}
-{% block meta_description %}Découvrez les meilleures activités à faire à {{ city }} : expériences variées, meilleur prix garanti, annulation gratuite.{% endblock %}
+{% block title %}{{ 'Activités à %ville%'|trans({'%ville%': city}) }}{% endblock %}
+{% block meta_description %}{{ 'Découvrez les meilleures activités à faire à %ville% : expériences variées, meilleur prix garanti, annulation gratuite.'|trans({'%ville%': city}) }}{% endblock %}
 
 {% block header %}
     {% if connected %}
@@ -22,43 +22,43 @@
     <section class="act-head">
         <div class="home-container">
 
-            <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
-                <a href="{{ path('app_home') }}">Accueil</a>
+            <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+                <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
                 <span aria-hidden="true">/</span>
-                <a href="{{ path('app_destinations') }}">Destinations</a>
+                <a href="{{ path('app_destinations') }}">{{ 'Destinations'|trans }}</a>
                 <span aria-hidden="true">/</span>
                 <span aria-current="page">{{ city }}</span>
             </nav>
 
-            <h1 class="act-head__title dest-title">Activités à {{ city }}</h1>
-            <p class="act-head__subtitle">Découvrez les meilleures activités à faire à {{ city }}. Choisissez parmi un choix varié d'expériences pour créer des souvenirs inoubliables, en famille ou entre amis. Meilleur prix garanti - Annulation gratuite</p>
+            <h1 class="act-head__title dest-title">{{ 'Activités à %ville%'|trans({'%ville%': city}) }}</h1>
+            <p class="act-head__subtitle">{{ "Découvrez les meilleures activités à faire à %ville%. Choisissez parmi un choix varié d'expériences pour créer des souvenirs inoubliables, en famille ou entre amis. Meilleur prix garanti - Annulation gratuite"|trans({'%ville%': city}) }}</p>
 
             <form class="act-search" role="search" action="{{ path('app_destination_city', { ville: city|lower }) }}" method="get">
                 <div class="act-search__bar">
                     <label class="act-search__field dest-locfield">
                         {{ icon.map_pin(18) }}
-                        <input type="text" name="lieu" value="{{ city }}" aria-label="Lieu"
+                        <input type="text" name="lieu" value="{{ city }}" aria-label="{{ 'Lieu'|trans }}"
                                id="dest-loc-input" autocomplete="off"
                                role="combobox" aria-expanded="false" aria-controls="dest-locpanel">
                     </label>
                     <span class="act-search__sep" aria-hidden="true"></span>
                     <label class="act-search__field">
                         {{ icon.search(18) }}
-                        <input type="text" name="q" placeholder="Recherches par mots-clés" aria-label="Mots-clés">
+                        <input type="text" name="q" placeholder="{{ 'Recherches par mots-clés'|trans }}" aria-label="{{ 'Mots-clés'|trans }}">
                     </label>
                 </div>
-                <button type="submit" class="act-search__submit" aria-label="Rechercher">{{ icon.search(20) }}</button>
+                <button type="submit" class="act-search__submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(20) }}</button>
 
                 {# Dropdown de localisation (écran 4). #}
-                <div class="dest-locpanel" id="dest-locpanel" role="listbox" aria-label="Choisir une localisation" hidden>
+                <div class="dest-locpanel" id="dest-locpanel" role="listbox" aria-label="{{ 'Choisir une localisation'|trans }}" hidden>
                     <button type="button" class="dest-locpanel__item" role="option" aria-selected="false" data-loc-anywhere>
-                        {{ icon.send(18) }} N'importe où
+                        {{ icon.send(18) }} {{ "N'importe où"|trans }}
                     </button>
                     <button type="button" class="dest-locpanel__item" role="option" aria-selected="false" data-loc-nearby>
-                        {{ icon.crosshair(18) }} Autour de moi
+                        {{ icon.crosshair(18) }} {{ 'Autour de moi'|trans }}
                     </button>
                     <div class="dest-locpanel__sep" aria-hidden="true"></div>
-                    <p class="dest-locpanel__label">Suggestions</p>
+                    <p class="dest-locpanel__label">{{ 'Suggestions'|trans }}</p>
                     <div class="dest-locpanel__scroll">
                         {% for v in ['Lille', 'Paris', 'Bordeaux', 'Toulouse', 'Annecy', 'Nice', 'Marseille', 'Grenoble'] %}
                             <button type="button" class="dest-locpanel__item" role="option" aria-selected="{{ loop.first ? 'true' : 'false' }}" data-loc-city>
@@ -71,29 +71,29 @@
 
             <div class="act-toolbar dest-toolbar">
                 <div class="act-toolbar__right">
-                    <button type="button" class="act-tool">{{ icon.map(18) }} Afficher la carte</button>
-                    <div class="act-viewswitch" role="group" aria-label="Mode d'affichage">
-                        <button type="button" class="act-viewbtn" aria-label="Ouvrir les filtres">{{ icon.sliders(18) }}</button>
-                        <button type="button" class="act-viewbtn is-active" aria-label="Affichage en grille">{{ icon.list_view(18) }}</button>
+                    <button type="button" class="act-tool">{{ icon.map(18) }} {{ 'Afficher la carte'|trans }}</button>
+                    <div class="act-viewswitch" role="group" aria-label="{{ "Mode d'affichage"|trans }}">
+                        <button type="button" class="act-viewbtn" aria-label="{{ 'Ouvrir les filtres'|trans }}">{{ icon.sliders(18) }}</button>
+                        <button type="button" class="act-viewbtn is-active" aria-label="{{ 'Affichage en grille'|trans }}">{{ icon.list_view(18) }}</button>
                     </div>
                 </div>
             </div>
 
             {# Chips : aucune n'est active sur cet écran (spec écran 3). #}
             <div class="act-chipbar">
-                <button type="button" class="act-chip act-chip--filter">{{ icon.sliders(16) }} Filtre</button>
+                <button type="button" class="act-chip act-chip--filter">{{ icon.sliders(16) }} {{ 'Filtre'|trans }}</button>
                 <span class="act-chipbar__sep" aria-hidden="true"></span>
                 <div class="act-chipbar__scroll">
-                    {% for chip in ['Toutes', 'Natures & Plein-air', 'Cultures & Découverte', 'Ateliers & Créations', 'Soirées & Évènements', 'Bien-être'] %}
+                    {% for chip in ['Toutes'|trans, 'Natures & Plein-air'|trans, 'Cultures & Découverte'|trans, 'Ateliers & Créations'|trans, 'Soirées & Évènements'|trans, 'Bien-être'|trans] %}
                         <button type="button" class="act-chip">{{ chip }}</button>
                     {% endfor %}
                 </div>
-                <button type="button" class="act-chipbar__more" aria-label="Faire défiler les filtres">{{ icon.chevron_right(16) }}</button>
+                <button type="button" class="act-chipbar__more" aria-label="{{ 'Faire défiler les filtres'|trans }}">{{ icon.chevron_right(16) }}</button>
             </div>
 
             <div class="act-results">
-                <p class="act-results__count"><strong>400+</strong> de résultats trouvés</p>
-                <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} Trier par: <strong>Les plus populaires</strong></button>
+                <p class="act-results__count"><strong>400+</strong> {{ 'de résultats trouvés'|trans }}</p>
+                <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ 'Les plus populaires'|trans }}</strong></button>
             </div>
         </div>
     </section>
@@ -109,7 +109,7 @@
                 {% endfor %}
             </div>
             <div class="act-more">
-                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus d'activités {{ icon.chevron_down(16) }}</button>
+                <button type="button" class="pl-btn pl-btn--outline-action">{{ "Voir plus d'activités"|trans }} {{ icon.chevron_down(16) }}</button>
             </div>
         </div>
     </section>

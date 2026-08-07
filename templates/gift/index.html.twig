@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Bon cadeaux{% endblock %}
-{% block meta_description %}Offrez un bon cadeau TrouveMoi : plus de 20.000 activités partout en France, envoyé par email instantanément, valable 12 mois.{% endblock %}
+{% block title %}{{ 'Bon cadeaux'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Offrez un bon cadeau TrouveMoi : plus de 20.000 activités partout en France, envoyé par email instantanément, valable 12 mois.'|trans }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar.html.twig' with { connected: true, nav_active: 'cadeaux' } %}
@@ -17,21 +17,21 @@
     <section class="gift-hero">
         <img class="gift-hero__img" src="{{ asset('images/gifts/hero-coffret.jpg') }}" alt="Coffret cadeau « Plaisir d'offrir, bonheur de vivre »">
         <div class="home-container gift-hero__inner">
-            <h1 class="gift-hero__title">Bon cadeaux</h1>
-            <p class="gift-hero__subtitle">Faites plaisir à vos proche avec un bon pour<br>une activités inoubliables.</p>
-            <div class="gift-amounts" role="group" aria-label="Choisissez un montant">
+            <h1 class="gift-hero__title">{{ 'Bon cadeaux'|trans }}</h1>
+            <p class="gift-hero__subtitle">{{ 'Faites plaisir à vos proche avec un bon pour'|trans }}<br>{{ 'une activités inoubliables.'|trans }}</p>
+            <div class="gift-amounts" role="group" aria-label="{{ 'Choisissez un montant'|trans }}">
                 <button type="button" class="gift-amount" data-gift-amount>50€</button>
                 <button type="button" class="gift-amount" data-gift-amount>100€</button>
                 <button type="button" class="gift-amount" data-gift-amount>200€</button>
                 <span class="gift-amount gift-amount--custom">
                     <output data-gift-custom>20€</output>
                     <span class="gift-amount__steps">
-                        <button type="button" data-gift-step="10" aria-label="Augmenter le montant">{{ icon.chevron_down(12) }}</button>
-                        <button type="button" data-gift-step="-10" aria-label="Diminuer le montant">{{ icon.chevron_down(12) }}</button>
+                        <button type="button" data-gift-step="10" aria-label="{{ 'Augmenter le montant'|trans }}">{{ icon.chevron_down(12) }}</button>
+                        <button type="button" data-gift-step="-10" aria-label="{{ 'Diminuer le montant'|trans }}">{{ icon.chevron_down(12) }}</button>
                     </span>
                 </span>
             </div>
-            <a href="{{ path('app_gifts_offer') }}" class="pl-btn pl-btn--primary gift-hero__cta">Offrir !</a>
+            <a href="{{ path('app_gifts_offer') }}" class="pl-btn pl-btn--primary gift-hero__cta">{{ 'Offrir !'|trans }}</a>
         </div>
     </section>
 
@@ -39,10 +39,10 @@
     <section class="home-section gift-args-section">
         <div class="home-container">
             <div class="gift-args">
-                <div class="gift-arg gift-arg--violet">{{ icon.book_open(34) }} <span>20.000<br>activités</span></div>
-                <div class="gift-arg gift-arg--blue">{{ icon.mail(34) }} <span>Par email<br>instantanément</span></div>
-                <div class="gift-arg gift-arg--green">{{ icon.calendar(34) }} <span>12 mois pour<br>réserver</span></div>
-                <div class="gift-arg gift-arg--orange">{{ icon.puzzle(34) }} <span>Utilisable en<br>plusieurs fois</span></div>
+                <div class="gift-arg gift-arg--violet">{{ icon.book_open(34) }} <span>20.000<br>{{ 'activités'|trans }}</span></div>
+                <div class="gift-arg gift-arg--blue">{{ icon.mail(34) }} <span>{{ 'Par email'|trans }}<br>{{ 'instantanément'|trans }}</span></div>
+                <div class="gift-arg gift-arg--green">{{ icon.calendar(34) }} <span>{{ '12 mois pour'|trans }}<br>{{ 'réserver'|trans }}</span></div>
+                <div class="gift-arg gift-arg--orange">{{ icon.puzzle(34) }} <span>{{ 'Utilisable en'|trans }}<br>{{ 'plusieurs fois'|trans }}</span></div>
             </div>
         </div>
     </section>
@@ -53,8 +53,8 @@
     <section class="home-section">
         <div class="home-container">
             <div class="home-section__head">
-                <h2 class="home-section__title">Catégories populaires</h2>
-                <a href="{{ path('app_gifts_category') }}" class="btn-see-all">Voir toutes les catégories {{ icon.arrow_up_right(16) }}</a>
+                <h2 class="home-section__title">{{ 'Catégories populaires'|trans }}</h2>
+                <a href="{{ path('app_gifts_category') }}" class="btn-see-all">{{ 'Voir toutes les catégories'|trans }} {{ icon.arrow_up_right(16) }}</a>
             </div>
             {% include 'gift/_mosaic.html.twig' with { categories: categories } %}
         </div>
@@ -68,17 +68,17 @@
             <div class="gift-duo">
                 <div class="gift-banner gift-banner--blue">
                     <div class="gift-banner__text">
-                        <h2 class="gift-banner__title">Vous êtes entreprise?</h2>
-                        <p class="gift-banner__desc">Offrez des expériences à vos clients ou collaborateurs.</p>
-                        <a href="#" class="gift-banner__btn">Demander un devis</a>
+                        <h2 class="gift-banner__title">{{ 'Vous êtes entreprise?'|trans }}</h2>
+                        <p class="gift-banner__desc">{{ 'Offrez des expériences à vos clients ou collaborateurs.'|trans }}</p>
+                        <a href="#" class="gift-banner__btn">{{ 'Demander un devis'|trans }}</a>
                     </div>
                     <img class="gift-banner__img" src="{{ asset('images/gifts/banner-entreprise.jpg') }}" alt="">
                 </div>
                 <div class="gift-banner gift-banner--yellow">
                     <div class="gift-banner__text">
-                        <h2 class="gift-banner__title">Un montant libre ?</h2>
-                        <p class="gift-banner__desc">Choisissez le montant et laissez le choix à vos proches .</p>
-                        <a href="{{ path('app_gifts_offer') }}" class="gift-banner__btn gift-banner__btn--violet">Offrir un montant libre</a>
+                        <h2 class="gift-banner__title">{{ 'Un montant libre ?'|trans }}</h2>
+                        <p class="gift-banner__desc">{{ 'Choisissez le montant et laissez le choix à vos proches .'|trans }}</p>
+                        <a href="{{ path('app_gifts_offer') }}" class="gift-banner__btn gift-banner__btn--violet">{{ 'Offrir un montant libre'|trans }}</a>
                     </div>
                     <img class="gift-banner__img" src="{{ asset('images/gifts/banner-montant.jpg') }}" alt="">
                 </div>
@@ -92,30 +92,30 @@
     <section class="act-section">
         <div class="home-container">
             <div class="home-section__head">
-                <h2 class="home-section__title">+ 20.000 activités partout en France</h2>
-                <a href="{{ path('app_gifts_category') }}" class="btn-see-all">Voir toutes les catégories {{ icon.arrow_up_right(16) }}</a>
+                <h2 class="home-section__title">{{ '+ 20.000 activités partout en France'|trans }}</h2>
+                <a href="{{ path('app_gifts_category') }}" class="btn-see-all">{{ 'Voir toutes les catégories'|trans }} {{ icon.arrow_up_right(16) }}</a>
             </div>
             <div class="act-citybar">
-                <button type="button" class="act-citybar__nav" aria-label="Villes précédentes">{{ icon.chevron_left(16) }}</button>
+                <button type="button" class="act-citybar__nav" aria-label="{{ 'Villes précédentes'|trans }}">{{ icon.chevron_left(16) }}</button>
                 <div class="act-citybar__scroll">
                     {% for city in cities %}
                         <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">{{ city }}</button>
                     {% endfor %}
                 </div>
-                <button type="button" class="act-citybar__nav" aria-label="Villes suivantes">{{ icon.chevron_right(16) }}</button>
+                <button type="button" class="act-citybar__nav" aria-label="{{ 'Villes suivantes'|trans }}">{{ icon.chevron_right(16) }}</button>
             </div>
             <div class="card-grid">
                 {% for g in cards %}
                     {% include 'gift/_card.html.twig' with { g: g } %}
                 {% endfor %}
             </div>
-            <nav class="act-pagination" aria-label="Pagination des activités">
-                <button type="button" class="act-page-btn" aria-label="Page précédente">{{ icon.chevron_left(16) }}</button>
+            <nav class="act-pagination" aria-label="{{ 'Pagination des activités'|trans }}">
+                <button type="button" class="act-page-btn" aria-label="{{ 'Page précédente'|trans }}">{{ icon.chevron_left(16) }}</button>
                 <button type="button" class="act-page-btn is-active" aria-current="page">1</button>
                 <button type="button" class="act-page-btn">2</button>
                 <button type="button" class="act-page-btn">3</button>
                 <button type="button" class="act-page-btn">4</button>
-                <button type="button" class="act-page-btn" aria-label="Page suivante">{{ icon.chevron_right(16) }}</button>
+                <button type="button" class="act-page-btn" aria-label="{{ 'Page suivante'|trans }}">{{ icon.chevron_right(16) }}</button>
             </nav>
         </div>
     </section>
@@ -125,14 +125,14 @@
        ================================================================ #}
     <section class="act-section">
         <div class="home-container">
-            <h2 class="home-section__title gift-solo-title">Meilleurs ventes</h2>
+            <h2 class="home-section__title gift-solo-title">{{ 'Meilleurs ventes'|trans }}</h2>
             <div class="card-grid">
                 {% for g in bestSellers %}
                     {% include 'gift/_card.html.twig' with { g: g } %}
                 {% endfor %}
             </div>
             <div class="act-more">
-                <a href="{{ path('app_gifts_category') }}" class="pl-btn pl-btn--outline-action">Voir tous les bons cadeaux {{ icon.chevron_right(16) }}</a>
+                <a href="{{ path('app_gifts_category') }}" class="pl-btn pl-btn--outline-action">{{ 'Voir tous les bons cadeaux'|trans }} {{ icon.chevron_right(16) }}</a>
             </div>
         </div>
     </section>
@@ -144,28 +144,28 @@
         <div class="home-container">
             <div class="gift-why">
                 <div class="gift-why__text">
-                    <h2 class="gift-why__title">Pour offrir un cadeau ?</h2>
+                    <h2 class="gift-why__title">{{ 'Pour offrir un cadeau ?'|trans }}</h2>
                     <ul class="gift-why__list">
                         <li>
                             <span class="gift-why__icon">{{ icon.gift(22) }}</span>
-                            <span><strong>Le cadeau qui fait toujours plaisir</strong><small>Offrez une expérience unique et mémorable .</small></span>
+                            <span><strong>{{ 'Le cadeau qui fait toujours plaisir'|trans }}</strong><small>{{ 'Offrez une expérience unique et mémorable .'|trans }}</small></span>
                         </li>
                         <li>
                             <span class="gift-why__icon">{{ icon.calendar(22) }}</span>
-                            <span><strong>Simple et flexible</strong><small>Le bénéficiaire choisis la date qui lui convient</small></span>
+                            <span><strong>{{ 'Simple et flexible'|trans }}</strong><small>{{ 'Le bénéficiaire choisis la date qui lui convient'|trans }}</small></span>
                         </li>
                         <li>
                             <span class="gift-why__icon">{{ icon.calendar(22) }}</span>
-                            <span><strong>Valable 12 mois</strong><small>Pour profitez de l'expérience en toutes sérenité.</small></span>
+                            <span><strong>{{ 'Valable 12 mois'|trans }}</strong><small>{{ "Pour profitez de l'expérience en toutes sérenité."|trans }}</small></span>
                         </li>
                         <li>
                             <span class="gift-why__icon">{{ icon.calendar(22) }}</span>
-                            <span><strong>Le cadeau qui fait toujours plaisir</strong><small>Des milliers d'activités au choix</small></span>
+                            <span><strong>{{ 'Le cadeau qui fait toujours plaisir'|trans }}</strong><small>{{ "Des milliers d'activités au choix"|trans }}</small></span>
                         </li>
                     </ul>
                     <div class="gift-why__actions">
-                        <a href="{{ path('app_gifts_offer') }}" class="pl-btn pl-btn--cta">Offrir un cadeau maintenant</a>
-                        <a href="#" class="gift-why__link">Ou j'utilise ma carte cadeau</a>
+                        <a href="{{ path('app_gifts_offer') }}" class="pl-btn pl-btn--cta">{{ 'Offrir un cadeau maintenant'|trans }}</a>
+                        <a href="#" class="gift-why__link">{{ "Ou j'utilise ma carte cadeau"|trans }}</a>
                     </div>
                 </div>
                 <img class="gift-why__img" src="{{ asset('images/gifts/banner-creme.jpg') }}" alt="">
@@ -178,7 +178,7 @@
        ================================================================ #}
     <section class="act-section">
         <div class="home-container">
-            <h2 class="home-section__title gift-solo-title">Trouver le cadeau par destinataires</h2>
+            <h2 class="home-section__title gift-solo-title">{{ 'Trouver le cadeau par destinataires'|trans }}</h2>
             <div class="gift-recipients">
                 {% for r in recipients %}
                     <a href="{{ path('app_gifts_category') }}" class="gift-tile" aria-label="{{ r.name }}">
@@ -186,13 +186,13 @@
                     </a>
                 {% endfor %}
             </div>
-            <nav class="act-pagination" aria-label="Pagination des destinataires">
-                <button type="button" class="act-page-btn" aria-label="Page précédente">{{ icon.chevron_left(16) }}</button>
+            <nav class="act-pagination" aria-label="{{ 'Pagination des destinataires'|trans }}">
+                <button type="button" class="act-page-btn" aria-label="{{ 'Page précédente'|trans }}">{{ icon.chevron_left(16) }}</button>
                 <button type="button" class="act-page-btn is-active" aria-current="page">1</button>
                 <button type="button" class="act-page-btn">2</button>
                 <button type="button" class="act-page-btn">3</button>
                 <button type="button" class="act-page-btn">4</button>
-                <button type="button" class="act-page-btn" aria-label="Page suivante">{{ icon.chevron_right(16) }}</button>
+                <button type="button" class="act-page-btn" aria-label="{{ 'Page suivante'|trans }}">{{ icon.chevron_right(16) }}</button>
             </nav>
         </div>
     </section>

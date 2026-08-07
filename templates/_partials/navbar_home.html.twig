@@ -15,9 +15,9 @@
                 <img src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir & Loisirs">
             </a>
 
-            <nav class="pl-nav" aria-label="Navigation principale">
+            <nav class="pl-nav" aria-label="{{ 'Navigation principale'|trans }}">
                 <details class="pl-dropdown">
-                    <summary class="pl-dropdown__toggle">Découvrez {{ icon.chevron_down(16) }}</summary>
+                    <summary class="pl-dropdown__toggle">{{ 'Découvrez'|trans }} {{ icon.chevron_down(16) }}</summary>
                     <div class="pl-dropdown__menu">
                         <a href="{{ path('app_home') }}" class="pl-dropdown__item is-active">Plaisirs &amp; Loisirs</a>
                         {# Accès au volet Événements de la plateforme (landing du flow). #}
@@ -25,20 +25,22 @@
                     </div>
                 </details>
 
+                {# Sélecteur de langue : bascule réelle via /langue/{fr|en} (session). #}
                 <details class="pl-dropdown pl-dropdown--lang">
-                    <summary class="pl-dropdown__toggle">{{ icon.flag_fr(20) }} Fran. {{ icon.chevron_down(16) }}</summary>
+                    <summary class="pl-dropdown__toggle">
+                        {%- if app.request.locale == 'en' %}{{ icon.flag_gb(20) }} Engl.{% else %}{{ icon.flag_fr(20) }} Fran.{% endif %} {{ icon.chevron_down(16) }}</summary>
                     <div class="pl-dropdown__menu">
-                        <a href="#" class="pl-dropdown__item is-active">{{ icon.flag_fr(20) }} Français</a>
-                        <a href="#" class="pl-dropdown__item">{{ icon.flag_gb(20) }} Anglais</a>
+                        <a href="{{ path('app_locale_switch', { locale: 'fr' }) }}" class="pl-dropdown__item{{ app.request.locale != 'en' ? ' is-active' }}">{{ icon.flag_fr(20) }} {{ 'Français'|trans }}</a>
+                        <a href="{{ path('app_locale_switch', { locale: 'en' }) }}" class="pl-dropdown__item{{ app.request.locale == 'en' ? ' is-active' }}">{{ icon.flag_gb(20) }} {{ 'Anglais'|trans }}</a>
                     </div>
                 </details>
             </nav>
         </div>
 
         <div class="pl-navbar__actions">
-            <a href="#" class="pl-btn pl-btn--cta">Déposer une annonce</a>
+            <a href="#" class="pl-btn pl-btn--cta">{{ 'Déposer une annonce'|trans }}</a>
             <a href="{{ path('app_auth_choice') }}" class="pl-btn pl-btn--outline-dark">
-                {{ icon.person(20) }} S'inscrire
+                {{ icon.person(20) }} {{ "S'inscrire"|trans }}
             </a>
         </div>
     </div>

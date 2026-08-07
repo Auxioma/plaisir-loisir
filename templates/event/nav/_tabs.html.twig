@@ -2,7 +2,7 @@
     Onglets pills « Événements / Groupes » des listings (actif = violet
     plein). Variable : active ('evenements' ou 'groupes').
 #}
-<div class="evn-tabs" role="tablist" aria-label="Événements ou groupes">
-    <a href="{{ path('app_events_all') }}" class="evn-pill {{ active == 'evenements' ? 'is-active' }}" {{ active == 'evenements' ? 'aria-current="page"' }}>Événements</a>
-    <a href="{{ path('app_groups') }}" class="evn-pill {{ active == 'groupes' ? 'is-active' }}" {{ active == 'groupes' ? 'aria-current="page"' }}>Groupes</a>
+<div class="evn-tabs" role="tablist" aria-label="{{ 'Événements ou groupes'|trans }}">
+    <a href="{{ path('app_events_all') }}" class="evn-pill {{ active == 'evenements' ? 'is-active' }}" {{ active == 'evenements' ? 'aria-current="page"' }}>{{ 'Événements'|trans }}</a>
+    <a href="{{ path('app_groups') }}" class="evn-pill {{ active == 'groupes' ? 'is-active' }}" {{ active == 'groupes' ? 'aria-current="page"' }}>{{ 'Groupes'|trans }}</a>
 </div>

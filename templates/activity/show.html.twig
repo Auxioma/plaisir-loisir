@@ -2,7 +2,7 @@
 {% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ detail.title }}{% endblock %}
-{% block meta_description %}{{ detail.presentation.subtitle }} — réservation en ligne, annulation gratuite.{% endblock %}
+{% block meta_description %}{{ detail.presentation.subtitle }} — {{ 'réservation en ligne, annulation gratuite.'|trans }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar_connected.html.twig' with { nav_active: 'activites' } %}
@@ -16,7 +16,7 @@
        ================================================================ #}
     <section class="act-head">
         <div class="home-container">
-            <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
+            <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
                 {% for crumb in detail.breadcrumb %}
                     {% if loop.first %}
                         <a href="{{ path('app_home') }}">{{ crumb }}</a>
@@ -32,8 +32,8 @@
             <h1 class="act-head__title">{{ detail.title }}</h1>
             <div class="act-detail__subline">
                 <span class="act-rating">{{ icon.star(12) }} {{ detail.rating }}</span>
-                <a class="act-detail__reviews-link" href="#avis">{{ detail.reviewsCount }} avis</a>
-                <span class="act-detail__organizer">Organisateur de l'activité : <strong>{{ detail.organizer }}</strong></span>
+                <a class="act-detail__reviews-link" href="#avis">{{ detail.reviewsCount }} {{ 'avis'|trans }}</a>
+                <span class="act-detail__organizer">{{ "Organisateur de l'activité :"|trans }} <strong>{{ detail.organizer }}</strong></span>
             </div>
         </div>
     </section>
@@ -50,7 +50,7 @@
                     <figure class="act-gallery__item {{ loop.first ? 'act-gallery__item--big' }}">
                         <img src="{{ asset(img) }}" alt="{{ detail.title }} — photo {{ loop.index }}">
                         {% if loop.last %}
-                            <button type="button" class="act-gallery__all">{{ icon.grid(16) }} Voir toutes les photos</button>
+                            <button type="button" class="act-gallery__all">{{ icon.grid(16) }} {{ 'Voir toutes les photos'|trans }}</button>
                         {% endif %}
                     </figure>
                 {% endfor %}
@@ -59,10 +59,10 @@
             {# --- Localisation + partage / favori. --- #}
             <div class="act-detail__placebar">
                 <span class="act-detail__place">{{ icon.map_pin(18) }} {{ detail.place }}</span>
-                <a href="#logistique" class="act-detail__maplink">voir sur la carte {{ icon.arrow_up_right(14) }}</a>
+                <a href="#logistique" class="act-detail__maplink">{{ 'voir sur la carte'|trans }} {{ icon.arrow_up_right(14) }}</a>
                 <span class="act-detail__placebar-actions">
-                    <button type="button" class="pl-iconbtn pl-iconbtn--bordered" aria-label="Partager">{{ icon.share(18) }}</button>
-                    <button type="button" class="pl-iconbtn pl-iconbtn--bordered" aria-label="Ajouter aux favoris">{{ icon.heart(18) }}</button>
+                    <button type="button" class="pl-iconbtn pl-iconbtn--bordered" aria-label="{{ 'Partager'|trans }}">{{ icon.share(18) }}</button>
+                    <button type="button" class="pl-iconbtn pl-iconbtn--bordered" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(18) }}</button>
                 </span>
             </div>
 
@@ -81,7 +81,7 @@
 
             {# --- Présentation générale. --- #}
             <section class="act-block">
-                <h2 class="act-block__title">Présentation générale</h2>
+                <h2 class="act-block__title">{{ 'Présentation générale'|trans }}</h2>
                 <hr class="act-block__sep">
                 <h3 class="act-block__subtitle">{{ detail.presentation.subtitle }}</h3>
                 <p class="act-block__text">{{ detail.presentation.text }}</p>
@@ -95,7 +95,7 @@
 
             {# --- Inclus / Exclus (encadré 2 colonnes). --- #}
             <section class="act-block act-block--boxed">
-                <h2 class="act-block__title">Inclus dans l'offre / Exclus de l'offre</h2>
+                <h2 class="act-block__title">{{ "Inclus dans l'offre / Exclus de l'offre"|trans }}</h2>
                 <hr class="act-block__sep">
                 <div class="act-includes">
                     <ul class="act-checklist act-checklist--in">
@@ -113,15 +113,15 @@
 
             {# --- Informations pratiques. --- #}
             <section class="act-block">
-                <h2 class="act-block__title">Informations pratiques</h2>
+                <h2 class="act-block__title">{{ 'Informations pratiques'|trans }}</h2>
                 <hr class="act-block__sep">
-                <h3 class="act-block__minititle">Ne peuvent pas participer</h3>
+                <h3 class="act-block__minititle">{{ 'Ne peuvent pas participer'|trans }}</h3>
                 <ul class="act-checklist act-checklist--out">
                     {% for item in detail.cannotParticipate %}
                         <li><span class="act-checklist__mark" aria-hidden="true">✕</span> {{ item }}</li>
                     {% endfor %}
                 </ul>
-                <h3 class="act-block__minititle">Prévoir</h3>
+                <h3 class="act-block__minititle">{{ 'Prévoir'|trans }}</h3>
                 <ul class="act-bullets">
                     {% for item in detail.toBring %}
                         <li>{{ item }}</li>
@@ -135,12 +135,12 @@
                     <div class="act-logistics__map">
                         <img src="{{ asset(detail.logistics.map) }}" alt="Carte du lieu de rendez-vous">
                         <div class="act-logistics__map-actions">
-                            <a href="#" class="pl-btn pl-btn--primary">Itinéraires</a>
-                            <a href="#" class="pl-btn pl-btn--outline-action">Nous contacter</a>
+                            <a href="#" class="pl-btn pl-btn--primary">{{ 'Itinéraires'|trans }}</a>
+                            <a href="#" class="pl-btn pl-btn--outline-action">{{ 'Nous contacter'|trans }}</a>
                         </div>
                     </div>
                     <div class="act-logistics__info">
-                        <h3 class="act-block__minititle">Lieu de rendez-vous</h3>
+                        <h3 class="act-block__minititle">{{ 'Lieu de rendez-vous'|trans }}</h3>
                         <ul class="act-meeting">
                             {% for m in detail.logistics.meeting %}
                                 <li><strong>{{ m.label }}</strong><span>{{ m.value }}</span></li>
@@ -160,49 +160,49 @@
         </div>
 
         {# --- Panneau de réservation sticky (spec §F). --- #}
-        <aside class="act-booking" aria-label="Réserver cette activité">
+        <aside class="act-booking" aria-label="{{ 'Réserver cette activité'|trans }}">
             <div class="act-booking__panel" data-booking data-price="{{ detail.price }}">
-                <p class="act-booking__price">À partir de <strong>{{ detail.price }}€</strong> / personne</p>
+                <p class="act-booking__price">{{ 'À partir de'|trans }} <strong>{{ detail.price }}€</strong> / {{ 'personne'|trans }}</p>
 
                 <label class="act-booking__field">
-                    <span>Date</span>
-                    <span class="act-booking__input">{{ icon.calendar(18) }} choisissez une date {{ icon.chevron_down(14) }}</span>
+                    <span>{{ 'Date'|trans }}</span>
+                    <span class="act-booking__input">{{ icon.calendar(18) }} {{ 'choisissez une date'|trans }} {{ icon.chevron_down(14) }}</span>
                 </label>
                 <label class="act-booking__field">
-                    <span>Heure</span>
-                    <span class="act-booking__input">{{ icon.clock(18) }} Sélectionner une heure {{ icon.chevron_down(14) }}</span>
+                    <span>{{ 'Heure'|trans }}</span>
+                    <span class="act-booking__input">{{ icon.clock(18) }} {{ 'Sélectionner une heure'|trans }} {{ icon.chevron_down(14) }}</span>
                 </label>
 
                 <div class="act-booking__travellers">
-                    <span class="act-booking__field-label">Voyageurs</span>
+                    <span class="act-booking__field-label">{{ 'Voyageurs'|trans }}</span>
                     <div class="act-stepper" data-stepper data-min="1" data-count="2">
-                        <span>Adulte <small>(18 et +)</small></span>
+                        <span>{{ 'Adulte'|trans }} <small>{{ '(18 et +)'|trans }}</small></span>
                         <span class="act-stepper__controls">
-                            <button type="button" data-step="-1" aria-label="Moins d'adultes">{{ icon.minus(14) }}</button>
+                            <button type="button" data-step="-1" aria-label="{{ "Moins d'adultes"|trans }}">{{ icon.minus(14) }}</button>
                             <output data-stepper-value>2</output>
-                            <button type="button" data-step="1" aria-label="Plus d'adultes">{{ icon.plus(14) }}</button>
+                            <button type="button" data-step="1" aria-label="{{ "Plus d'adultes"|trans }}">{{ icon.plus(14) }}</button>
                         </span>
                     </div>
                     <div class="act-stepper" data-stepper data-min="0" data-count="0">
-                        <span>Enfants <small>(0 à 17 ans)</small></span>
+                        <span>{{ 'Enfants'|trans }} <small>{{ '(0 à 17 ans)'|trans }}</small></span>
                         <span class="act-stepper__controls">
-                            <button type="button" data-step="-1" aria-label="Moins d'enfants">{{ icon.minus(14) }}</button>
+                            <button type="button" data-step="-1" aria-label="{{ "Moins d'enfants"|trans }}">{{ icon.minus(14) }}</button>
                             <output data-stepper-value>0</output>
-                            <button type="button" data-step="1" aria-label="Plus d'enfants">{{ icon.plus(14) }}</button>
+                            <button type="button" data-step="1" aria-label="{{ "Plus d'enfants"|trans }}">{{ icon.plus(14) }}</button>
                         </span>
                     </div>
                 </div>
 
-                <p class="act-booking__total">Total <strong data-booking-total>{{ detail.price * 2 }}€</strong></p>
+                <p class="act-booking__total">{{ 'Total'|trans }} <strong data-booking-total>{{ detail.price * 2 }}€</strong></p>
 
-                <button type="button" class="pl-btn pl-btn--primary pl-btn--block">Réservez maintenant</button>
-                <p class="act-booking__note"><span aria-hidden="true">✓</span> <strong>Annulation gratuite</strong> Jusqu'à 7 jours avant</p>
+                <button type="button" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Réservez maintenant'|trans }}</button>
+                <p class="act-booking__note"><span aria-hidden="true">✓</span> <strong>{{ 'Annulation gratuite'|trans }}</strong> {{ "Jusqu'à 7 jours avant"|trans }}</p>
             </div>
 
             <div class="act-booking__gift">
-                <h3>C'est pour offrir ?</h3>
-                <p>Choisissez le bon cadeau Plaisirs & Loisirs et offrez cette expérience en quelques minutes !</p>
-                <a href="#" class="pl-btn pl-btn--outline-action">{{ icon.gift(16) }} Offrir maintenant</a>
+                <h3>{{ "C'est pour offrir ?"|trans }}</h3>
+                <p>{{ 'Choisissez le bon cadeau Plaisirs & Loisirs et offrez cette expérience en quelques minutes !'|trans }}</p>
+                <a href="#" class="pl-btn pl-btn--outline-action">{{ icon.gift(16) }} {{ 'Offrir maintenant'|trans }}</a>
             </div>
         </aside>
     </div>
@@ -213,15 +213,15 @@
     <section class="act-section act-section--alt" id="avis">
         <div class="home-container">
             <div class="home-reviews__head">
-                <h2 class="home-section__title">Ce que disent nos clients</h2>
+                <h2 class="home-section__title">{{ 'Ce que disent nos clients'|trans }}</h2>
                 <div class="home-reviews__score">
                     <div>
-                        <div class="home-reviews__score-label">Note globale</div>
+                        <div class="home-reviews__score-label">{{ 'Note globale'|trans }}</div>
                         <div class="home-reviews__score-value">{{ detail.reviewsSummary.score }}<span>/{{ detail.reviewsSummary.outOf }}</span></div>
                         <div class="home-reviews__stars" aria-hidden="true">{% for i in 1..5 %}{{ icon.star(18) }}{% endfor %}</div>
-                        <div class="home-reviews__score-count">Basé sur {{ detail.reviewsSummary.total }} avis</div>
+                        <div class="home-reviews__score-count">{{ 'Basé sur'|trans }} {{ detail.reviewsSummary.total }} {{ 'avis'|trans }}</div>
                     </div>
-                    <button type="button" class="btn-see-all" data-modal-open>Voir plus d'avis</button>
+                    <button type="button" class="btn-see-all" data-modal-open>{{ "Voir plus d'avis"|trans }}</button>
                 </div>
             </div>
             <div class="home-reviews__grid">
@@ -238,18 +238,18 @@
     <section class="act-section">
         <div class="home-container">
             <form class="act-review-form" action="#" method="post">
-                <div class="act-review-form__stars" role="radiogroup" aria-label="Votre note">
+                <div class="act-review-form__stars" role="radiogroup" aria-label="{{ 'Votre note'|trans }}">
                     {% for i in 1..5 %}
-                        <button type="button" class="act-review-form__star" data-rate="{{ i }}" aria-label="{{ i }} étoile{{ i > 1 ? 's' }}">{{ icon.star(28) }}</button>
+                        <button type="button" class="act-review-form__star" data-rate="{{ i }}" aria-label="{{ i }} {{ (i > 1 ? 'étoiles' : 'étoile')|trans }}">{{ icon.star(28) }}</button>
                     {% endfor %}
                 </div>
-                <h2 class="home-section__title">Ajouter un avis</h2>
+                <h2 class="home-section__title">{{ 'Ajouter un avis'|trans }}</h2>
                 <div class="act-review-form__row">
-                    <input type="text" name="name" placeholder="Saisissez votre nom" aria-label="Votre nom">
-                    <input type="email" name="email" placeholder="Email" aria-label="Votre email">
+                    <input type="text" name="name" placeholder="{{ 'Saisissez votre nom'|trans }}" aria-label="{{ 'Votre nom'|trans }}">
+                    <input type="email" name="email" placeholder="{{ 'Email'|trans }}" aria-label="{{ 'Votre email'|trans }}">
                 </div>
-                <textarea name="comment" rows="7" placeholder="Écrivez votre commentaire" aria-label="Votre commentaire"></textarea>
-                <button type="submit" class="pl-btn pl-btn--primary">Envoyer un avis</button>
+                <textarea name="comment" rows="7" placeholder="{{ 'Écrivez votre commentaire'|trans }}" aria-label="{{ 'Votre commentaire'|trans }}"></textarea>
+                <button type="submit" class="pl-btn pl-btn--primary">{{ 'Envoyer un avis'|trans }}</button>
             </form>
         </div>
     </section>
@@ -260,8 +260,8 @@
     <section class="act-section">
         <div class="home-container">
             <div class="home-section__head">
-                <h2 class="home-section__title">Vous pourriez aussi aimer…</h2>
-                <a href="{{ path('app_activities') }}" class="btn-see-all">Voir toutes les activités</a>
+                <h2 class="home-section__title">{{ 'Vous pourriez aussi aimer…'|trans }}</h2>
+                <a href="{{ path('app_activities') }}" class="btn-see-all">{{ 'Voir toutes les activités'|trans }}</a>
             </div>
             <div class="card-grid">
                 {% for a in suggestions %}

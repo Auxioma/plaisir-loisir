@@ -8,31 +8,31 @@
 {% import '_partials/_icons.html.twig' as icon %}
 
 <section class="evn-gsection">
-    <h2 class="evn-gh2 evn-gh2--tab">Membres</h2>
+    <h2 class="evn-gh2 evn-gh2--tab">{{ 'Membres'|trans }}</h2>
 
     <form class="act-search evn-members-search" role="search" action="" method="get">
         <div class="act-search__bar">
             <label class="act-search__field">
                 {{ icon.search(18) }}
-                <input type="text" placeholder="Rechercher des membres" aria-label="Rechercher des membres">
+                <input type="text" placeholder="{{ 'Rechercher des membres'|trans }}" aria-label="{{ 'Rechercher des membres'|trans }}">
             </label>
         </div>
-        <button type="submit" class="act-search__submit" aria-label="Rechercher">{{ icon.search(20) }}</button>
+        <button type="submit" class="act-search__submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(20) }}</button>
     </form>
 
     <div class="evn-members-tools">
         <div class="evn-members-tools__left">
-            <span class="evn-chip-count">1991 membres</span>
-            <button type="button" class="act-chip" id="evn-admin-filter" aria-pressed="false">Administrateur du groupe</button>
+            <span class="evn-chip-count">{{ '1991 membres'|trans }}</span>
+            <button type="button" class="act-chip" id="evn-admin-filter" aria-pressed="false">{{ 'Administrateur du groupe'|trans }}</button>
         </div>
         <div class="evn-sort">
             <button type="button" class="act-tool act-tool--plain" id="evn-sort-toggle" aria-expanded="false" aria-controls="evn-sort-menu">
-                {{ icon.sort(16) }} Trier par: <strong>Nom</strong> {{ icon.chevron_down(14) }}
+                {{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ 'Nom'|trans }}</strong> {{ icon.chevron_down(14) }}
             </button>
-            <div class="dest-sort__menu evn-sort__menu" id="evn-sort-menu" role="radiogroup" aria-label="Trier les membres" hidden>
+            <div class="dest-sort__menu evn-sort__menu" id="evn-sort-menu" role="radiogroup" aria-label="{{ 'Trier les membres'|trans }}" hidden>
                 {% for s in ['Nom', "Date d'adhésion", 'Dernière visite', 'Ordre décroissant', 'Ordre croissant', 'Décroissant'] %}
                     <button type="button" class="dest-sort__option {{ loop.first ? 'is-checked' }}" role="radio" aria-checked="{{ loop.first ? 'true' : 'false' }}">
-                        <span class="dest-sort__box" aria-hidden="true"></span> {{ s }}
+                        <span class="dest-sort__box" aria-hidden="true"></span> {{ s|trans }}
                     </button>
                 {% endfor %}
             </div>
@@ -47,10 +47,10 @@
                 <img class="evn-mrow__avatar" src="{{ asset(m.avatar) }}" alt="">
                 <span class="evn-mrow__id">
                     <span class="evn-prow__name">{{ m.name }}</span>
-                    <span class="evn-mrow__meta"><strong>Membre</strong> <i>|</i> rejoint le 24 Mai 2026</span>
-                    <span class="evn-mrow__last">Dernière visite il y a 3 heures</span>
+                    <span class="evn-mrow__meta"><strong>{{ 'Membre'|trans }}</strong> <i>|</i> {{ 'rejoint le 24 Mai 2026'|trans }}</span>
+                    <span class="evn-mrow__last">{{ 'Dernière visite il y a 3 heures'|trans }}</span>
                 </span>
-                <button type="button" class="evn-mrow__msg" aria-label="Envoyer un message">{{ icon.comment(20) }}</button>
+                <button type="button" class="evn-mrow__msg" aria-label="{{ 'Envoyer un message'|trans }}">{{ icon.comment(20) }}</button>
             </div>
         {% endfor %}
     </div>
@@ -61,14 +61,14 @@
             <img class="evn-mrow__avatar" src="{{ asset('images/events/avatar-thomas.jpg') }}" alt="">
             <span class="evn-mrow__id">
                 <span class="evn-prow__name">Martin Thomas</span>
-                <span class="evn-mrow__meta"><strong>Créateur</strong> <i>|</i> rejoint le 24 Mai 2026</span>
-                <span class="evn-mrow__last">Dernière visite il y a 3 heures</span>
+                <span class="evn-mrow__meta"><strong>{{ 'Créateur'|trans }}</strong> <i>|</i> {{ 'rejoint le 24 Mai 2026'|trans }}</span>
+                <span class="evn-mrow__last">{{ 'Dernière visite il y a 3 heures'|trans }}</span>
             </span>
-            <button type="button" class="evn-mrow__msg" aria-label="Envoyer un message">{{ icon.comment(20) }}</button>
+            <button type="button" class="evn-mrow__msg" aria-label="{{ 'Envoyer un message'|trans }}">{{ icon.comment(20) }}</button>
         </div>
     </div>
 
     <div class="act-more" id="evn-members-more">
-        <button type="button" class="pl-btn pl-btn--outline-action">Voir plus de membres {{ icon.chevron_down(16) }}</button>
+        <button type="button" class="pl-btn pl-btn--outline-action">{{ 'Voir plus de membres'|trans }} {{ icon.chevron_down(16) }}</button>
     </div>
 </section>

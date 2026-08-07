@@ -11,9 +11,9 @@
     <div class="pl-card__media">
         <img src="{{ asset(o.image) }}" alt="{{ o.title }}">
         <span class="pl-card__tag pl-card__tag--bestseller">{{ o.discount }}%</span>
-        <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</button>
+        <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</button>
         <span class="offer-card__timer" data-countdown="{{ o.remaining }}">
-            {{ icon.clock(14) }} Se termine dans <strong class="offer-card__timer-value">…</strong>
+            {{ icon.clock(14) }} {{ 'Se termine dans'|trans }} <strong class="offer-card__timer-value">…</strong>
         </span>
     </div>
     <div class="pl-card__body">
@@ -21,12 +21,12 @@
         <span class="pl-card__title">{{ o.title }}</span>
         <div class="act-card__meta">
             <span class="act-rating">{{ icon.star(12) }} {{ o.rating }}</span>
-            <span class="act-card__reviews">{{ o.reviews }} reviews</span>
+            <span class="act-card__reviews">{{ o.reviews }} {{ 'reviews'|trans }}</span>
         </div>
         <div class="pl-card__foot">
             <span class="offer-card__old">{{ o.oldPrice }}€</span>
             <span class="pl-card__price">{{ o.price }}€</span>
         </div>
-        <a href="{{ href|default(o.slug is defined and o.slug ? path('app_activity_show', { slug: o.slug }) : path('app_activities')) }}" class="pl-btn pl-btn--outline-action offer-card__cta">Voir l'offre</a>
+        <a href="{{ href|default(o.slug is defined and o.slug ? path('app_activity_show', { slug: o.slug }) : path('app_activities')) }}" class="pl-btn pl-btn--outline-action offer-card__cta">{{ "Voir l'offre"|trans }}</a>
     </div>
 </div>

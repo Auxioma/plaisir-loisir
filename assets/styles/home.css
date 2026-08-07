@@ -57,6 +57,11 @@
     z-index: 1100;
 }
 .pl-dropdown--lang .pl-dropdown__menu { min-width: 170px; }
+/* Variante footer : chip sombre + menu ouvert vers le haut (bas de page). */
+.pl-dropdown--footer { position: relative; }
+.pl-dropdown--footer > summary { list-style: none; }
+.pl-dropdown--footer > summary::-webkit-details-marker { display: none; }
+.pl-dropdown__menu--up { top: auto; bottom: calc(100% + 10px); left: auto; right: 0; min-width: 170px; }
 .pl-dropdown__item {
     display: flex; align-items: center; gap: var(--pl-sp-8);
     padding: 10px 12px;

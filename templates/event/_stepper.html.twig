@@ -6,7 +6,7 @@
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<nav class="ev-card ev-stepper" aria-label="Étapes de création">
+<nav class="ev-card ev-stepper" aria-label="{{ 'Étapes de création'|trans }}">
     {% for s in steps %}
         {% set n = loop.index %}
         {% if n < step %}

@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Calendrier des événements{% endblock %}
-{% block meta_description %}Le calendrier de tous les événements communautaires : retrouvez les prochains rendez-vous mois par mois.{% endblock %}
+{% block title %}{{ 'Calendrier des événements'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Le calendrier de tous les événements communautaires : retrouvez les prochains rendez-vous mois par mois.'|trans }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'calendrier' } %}
@@ -12,20 +12,20 @@
 <div class="evn-page evn-listing">
 
     {% include 'event/nav/_listing_head.html.twig' with {
-        crumb: 'Calendrier',
-        banner_text: "Créez votre propre groupe et commencez à organiser des événements aujourd'hui !",
-        banner_cta: 'Créer un groupe',
+        crumb: 'Calendrier'|trans,
+        banner_text: "Créez votre propre groupe et commencez à organiser des événements aujourd'hui !"|trans,
+        banner_cta: 'Créer un groupe'|trans,
         banner_href: path('app_group_create'),
         tabs_active: 'evenements',
-        title: 'Tous les événements',
-        sort: 'Avenir',
+        title: 'Tous les événements'|trans,
+        sort: 'Avenir'|trans,
         chips: [
-            { icon: 'grid', label: 'Tous les événements', active: true },
-            { icon: 'culture', label: 'Culture & Découverte' },
-            { icon: 'family', label: 'En famille' },
-            { icon: 'palette', label: 'Ateliers & Créations' },
-            { icon: 'wellness', label: 'Bien-être' },
-            { icon: 'culture', label: 'Culture & …' },
+            { icon: 'grid', label: 'Tous les événements'|trans, active: true },
+            { icon: 'culture', label: 'Culture & Découverte'|trans },
+            { icon: 'family', label: 'En famille'|trans },
+            { icon: 'palette', label: 'Ateliers & Créations'|trans },
+            { icon: 'wellness', label: 'Bien-être'|trans },
+            { icon: 'culture', label: 'Culture & …'|trans },
         ],
     } %}
 

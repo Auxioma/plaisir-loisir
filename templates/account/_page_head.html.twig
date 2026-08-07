@@ -3,8 +3,8 @@
     Variables : crumbs (liste {label, href?}), title, subtitle (optionnel).
     Coquille maquette corrigée : « Acceuil » → Accueil.
 #}
-<nav class="act-breadcrumb acc-crumb" aria-label="Fil d'Ariane">
-    <a href="{{ path('app_home') }}">Accueil</a>
+<nav class="act-breadcrumb acc-crumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+    <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
     {% for c in crumbs %}
         <span aria-hidden="true">|</span>
         {% if not loop.last and c.href is defined %}

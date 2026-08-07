@@ -6,99 +6,99 @@
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<h2 class="ev-main__title">1. Détails de l'événement</h2>
+<h2 class="ev-main__title">{{ "1. Détails de l'événement"|trans }}</h2>
 
 <div class="ev-row">
     <div class="ev-field">
-        <label class="ev-field__label" for="evTitle">Titre de l'événement *</label>
-        <input id="evTitle" class="ev-input" type="text" placeholder="Ex : Pique-nique au bord du lac">
+        <label class="ev-field__label" for="evTitle">{{ "Titre de l'événement *"|trans }}</label>
+        <input id="evTitle" class="ev-input" type="text" placeholder="{{ 'Ex : Pique-nique au bord du lac'|trans }}">
     </div>
     <div class="ev-field">
-        <label class="ev-field__label" for="evCatType">Catégorie d'événement *</label>
+        <label class="ev-field__label" for="evCatType">{{ "Catégorie d'événement *"|trans }}</label>
         <div class="ev-select">
             <select id="evCatType">
-                <option value="" selected disabled>Sélectionnez le type</option>
-                <option>Activités de plein air</option>
-                <option>Soirées &amp; Fêtes</option>
-                <option>Rencontres &amp; Échanges</option>
-                <option>Autre</option>
+                <option value="" selected disabled>{{ 'Sélectionnez le type'|trans }}</option>
+                <option>{{ 'Activités de plein air'|trans }}</option>
+                <option>{{ 'Soirées & Fêtes'|trans }}</option>
+                <option>{{ 'Rencontres & Échanges'|trans }}</option>
+                <option>{{ 'Autre'|trans }}</option>
             </select>
         </div>
     </div>
 </div>
 
 <div class="ev-field">
-    <label class="ev-field__label" for="evShortDesc">Courte description *</label>
+    <label class="ev-field__label" for="evShortDesc">{{ 'Courte description *'|trans }}</label>
     <div class="ev-textarea">
-        <textarea id="evShortDesc" rows="4" maxlength="120" placeholder="Décrivez votre événement en quelques mots..." data-ev-counter="evShortCount"></textarea>
+        <textarea id="evShortDesc" rows="4" maxlength="120" placeholder="{{ 'Décrivez votre événement en quelques mots...'|trans }}" data-ev-counter="evShortCount"></textarea>
         <span class="ev-textarea__count"><span id="evShortCount">0</span>/120</span>
     </div>
 </div>
 
 <div class="ev-field">
-    <label class="ev-field__label" for="evFullDesc">Description complète</label>
+    <label class="ev-field__label" for="evFullDesc">{{ 'Description complète'|trans }}</label>
     <div class="ev-editor">
-        <div class="ev-editor__toolbar" role="toolbar" aria-label="Mise en forme">
-            <button type="button" aria-label="Gras"><strong>B</strong></button>
-            <button type="button" aria-label="Italique"><em>I</em></button>
-            <button type="button" aria-label="Souligné"><u>U</u></button>
+        <div class="ev-editor__toolbar" role="toolbar" aria-label="{{ 'Mise en forme'|trans }}">
+            <button type="button" aria-label="{{ 'Gras'|trans }}"><strong>B</strong></button>
+            <button type="button" aria-label="{{ 'Italique'|trans }}"><em>I</em></button>
+            <button type="button" aria-label="{{ 'Souligné'|trans }}"><u>U</u></button>
             <span class="ev-editor__sep" aria-hidden="true"></span>
-            <button type="button" aria-label="Alignement">{{ icon.align_left(17) }}</button>
-            <button type="button" aria-label="Liste à puces">{{ icon.list_ul(17) }}</button>
+            <button type="button" aria-label="{{ 'Alignement'|trans }}">{{ icon.align_left(17) }}</button>
+            <button type="button" aria-label="{{ 'Liste à puces'|trans }}">{{ icon.list_ul(17) }}</button>
             <span class="ev-editor__sep" aria-hidden="true"></span>
-            <button type="button" aria-label="Liste ordonnée">{{ icon.list_ol(17) }}</button>
+            <button type="button" aria-label="{{ 'Liste ordonnée'|trans }}">{{ icon.list_ol(17) }}</button>
             <span class="ev-editor__sep" aria-hidden="true"></span>
-            <button type="button" aria-label="Insérer un lien">{{ icon.link(17) }}</button>
-            <button type="button" aria-label="Insérer une image">{{ icon.image(17) }}</button>
+            <button type="button" aria-label="{{ 'Insérer un lien'|trans }}">{{ icon.link(17) }}</button>
+            <button type="button" aria-label="{{ 'Insérer une image'|trans }}">{{ icon.image(17) }}</button>
         </div>
         <div class="ev-textarea ev-textarea--borderless">
-            <textarea id="evFullDesc" rows="7" maxlength="3000" placeholder="Décrivez votre événement en quelques mots..." data-ev-counter="evFullCount"></textarea>
+            <textarea id="evFullDesc" rows="7" maxlength="3000" placeholder="{{ 'Décrivez votre événement en quelques mots...'|trans }}" data-ev-counter="evFullCount"></textarea>
             <span class="ev-textarea__count"><span id="evFullCount">0</span>/3000</span>
         </div>
     </div>
 </div>
 
 {# Type de visibilité : 3 cartes empilées sur fond violet clair. #}
-<div class="ev-visibility" role="radiogroup" aria-label="Visibilité de l'événement">
+<div class="ev-visibility" role="radiogroup" aria-label="{{ "Visibilité de l'événement"|trans }}">
     <label class="ev-visibility__item">
         <span class="ev-visibility__icon">{{ icon.lock(20) }}</span>
-        <span class="ev-visibility__text"><strong>Événement privé</strong>Seulement sur invitation ou personnes invitées</span>
+        <span class="ev-visibility__text"><strong>{{ 'Événement privé'|trans }}</strong>{{ 'Seulement sur invitation ou personnes invitées'|trans }}</span>
         <input type="radio" name="visibility1" value="private" hidden>
     </label>
     <label class="ev-visibility__item">
         <span class="ev-visibility__icon">{{ icon.globe(20) }}</span>
-        <span class="ev-visibility__text"><strong>Événement public</strong>Ouvert à tous les membres de la communauté</span>
+        <span class="ev-visibility__text"><strong>{{ 'Événement public'|trans }}</strong>{{ 'Ouvert à tous les membres de la communauté'|trans }}</span>
         <input type="radio" name="visibility1" value="public" hidden>
     </label>
     <label class="ev-visibility__item">
         <span class="ev-visibility__icon">{{ icon.person(20) }}</span>
-        <span class="ev-visibility__text"><strong>Groupe / Club</strong>Événement réservé aux membres du groupe ou du club</span>
+        <span class="ev-visibility__text"><strong>{{ 'Groupe / Club'|trans }}</strong>{{ 'Événement réservé aux membres du groupe ou du club'|trans }}</span>
         <input type="radio" name="visibility1" value="group" hidden>
     </label>
 </div>
 
-<h3 class="ev-main__subheading">Type d'événement</h3>
-<p class="ev-main__subtext">Choisissez la catégorie qui correspond le mieux à votre événement</p>
+<h3 class="ev-main__subheading">{{ "Type d'événement"|trans }}</h3>
+<p class="ev-main__subtext">{{ 'Choisissez la catégorie qui correspond le mieux à votre événement'|trans }}</p>
 
 <div class="ev-types">
     <label class="ev-type">
         <input type="radio" name="eventType" value="plein-air" hidden>
         <span class="ev-type__icon ev-ico--green">{{ icon.bell(20) }}</span>
-        <span class="ev-type__text"><strong>Activités de plein air</strong>Randonnée, balade, vélo, sport, nature, aventure…</span>
+        <span class="ev-type__text"><strong>{{ 'Activités de plein air'|trans }}</strong>{{ 'Randonnée, balade, vélo, sport, nature, aventure…'|trans }}</span>
     </label>
     <label class="ev-type">
         <input type="radio" name="eventType" value="soiree" hidden>
         <span class="ev-type__icon ev-ico--orange">{{ icon.cheers(20) }}</span>
-        <span class="ev-type__text"><strong>Soirées &amp; Fêtes</strong>Soirée entre amis, fête, anniversaire, karaoké…</span>
+        <span class="ev-type__text"><strong>{{ 'Soirées & Fêtes'|trans }}</strong>{{ 'Soirée entre amis, fête, anniversaire, karaoké…'|trans }}</span>
     </label>
     <label class="ev-type">
         <input type="radio" name="eventType" value="rencontre" hidden>
         <span class="ev-type__icon ev-ico--blue">{{ icon.users(20) }}</span>
-        <span class="ev-type__text"><strong>Rencontres &amp; Échanges</strong>Networking, discussion, échange, conférence…</span>
+        <span class="ev-type__text"><strong>{{ 'Rencontres & Échanges'|trans }}</strong>{{ 'Networking, discussion, échange, conférence…'|trans }}</span>
     </label>
     <label class="ev-type">
         <input type="radio" name="eventType" value="autre" hidden>
         <span class="ev-type__icon ev-ico--grey">{{ icon.dots(20) }}</span>
-        <span class="ev-type__text"><strong>Autre</strong>Une catégorie non listée ci-dessus</span>
+        <span class="ev-type__text"><strong>{{ 'Autre'|trans }}</strong>{{ 'Une catégorie non listée ci-dessus'|trans }}</span>
     </label>
 </div>
