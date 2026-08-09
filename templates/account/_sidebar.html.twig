@@ -14,11 +14,11 @@
         <div class="acc-profile__id">
             <strong>{{ user.name }}</strong>
             <span>{{ user.email }}</span>
-            <span class="acc-profile__badge">Membre depuis {{ user.memberSince }}</span>
+            <span class="acc-profile__badge">{{ 'Membre depuis'|trans }} {{ user.memberSince }}</span>
         </div>
     </div>
 
-    <nav class="acc-menu" aria-label="Menu du compte">
+    <nav class="acc-menu" aria-label="{{ 'Menu du compte'|trans }}">
         {% for item in menu %}
             {% set is_active = item.title == active %}
             <a href="{{ item.route ? path(item.route) : '#' }}"

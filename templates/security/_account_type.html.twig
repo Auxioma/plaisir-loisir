@@ -7,13 +7,13 @@
 {# Présélection via l'écran de choix (« /authentification?type=pro »). #}
 {% set accountType = app.request.query.get('type') == 'pro' ? 'pro' : 'client' %}
 
-<div class="auth-acctype" role="radiogroup" aria-label="Type de compte">
+<div class="auth-acctype" role="radiogroup" aria-label="{{ 'Type de compte'|trans }}">
     <label class="auth-acctype__opt">
         <input type="radio" name="accountType" value="client" {{ accountType == 'client' ? 'checked' }}>
-        <span class="auth-acctype__pill">{{ icon.person(18) }} Client</span>
+        <span class="auth-acctype__pill">{{ icon.person(18) }} {{ 'Client'|trans }}</span>
     </label>
     <label class="auth-acctype__opt">
         <input type="radio" name="accountType" value="pro" {{ accountType == 'pro' ? 'checked' }}>
-        <span class="auth-acctype__pill">{{ icon.building(18) }} Professionnel</span>
+        <span class="auth-acctype__pill">{{ icon.building(18) }} {{ 'Professionnel'|trans }}</span>
     </label>
 </div>

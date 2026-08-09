@@ -4,7 +4,7 @@
     cliquables), à venir = gris ; segment rempli jusqu'à l'étape active.
     Variables : step (n° actif, 1-4).
 #}
-<nav class="gw-stepper" aria-label="Étapes de création du groupe">
+<nav class="gw-stepper" aria-label="{{ 'Étapes de création du groupe'|trans }}">
     {% for n in 1..4 %}
         {% if not loop.first %}
             <span class="gw-stepper__bar{{ n <= step ? ' is-filled' }}"></span>

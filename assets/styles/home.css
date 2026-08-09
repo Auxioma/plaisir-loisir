@@ -6,11 +6,13 @@
  * ============================================================================
  */
 
-/* Conteneur centré, aligné sur la navbar. */
+/* Conteneur centré, aligné sur la navbar.
+   Mesuré sur les maquettes (grille de cartes bord à bord : x104 → x1335) :
+   contenu de 1232px, donc 104px de marge de chaque côté. */
 .home-container {
     max-width: var(--pl-container-desktop);   /* 1440px */
     margin: 0 auto;
-    padding-inline: 100px;
+    padding-inline: 110px;
 }
 
 /* ===========================================================================
@@ -57,6 +59,11 @@
     z-index: 1100;
 }
 .pl-dropdown--lang .pl-dropdown__menu { min-width: 170px; }
+/* Variante footer : chip sombre + menu ouvert vers le haut (bas de page). */
+.pl-dropdown--footer { position: relative; }
+.pl-dropdown--footer > summary { list-style: none; }
+.pl-dropdown--footer > summary::-webkit-details-marker { display: none; }
+.pl-dropdown__menu--up { top: auto; bottom: calc(100% + 10px); left: auto; right: 0; min-width: 170px; }
 .pl-dropdown__item {
     display: flex; align-items: center; gap: var(--pl-sp-8);
     padding: 10px 12px;
@@ -76,11 +83,14 @@
 /* ===========================================================================
  *  HERO
  * ======================================================================== */
+/* Maquette : le héros occupe 577px sous la navbar (y100 → y677). Calage
+   déterministe : contenu accroché en haut + padding, plutôt qu'un centrage
+   vertical dont le résultat dépend de la hauteur du contenu. */
 .home-hero {
     position: relative;
-    min-height: 560px;
+    min-height: 577px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     overflow: hidden;
 }
 .home-hero__bg {
@@ -105,16 +115,17 @@
     position: relative;
     z-index: 2;
     width: 100%;
-    padding-block: 64px 96px;
+    padding-block: 96px 0;
     color: var(--pl-text);
 }
 .home-hero__title {
-    max-width: 620px;
-    font-size: 52px;
+    max-width: 660px;
+    /* Maquette : capitale de 40px et interligne cap-à-cap de 63px. */
+    font-size: 56px;
     font-weight: var(--pl-fw-bold);
-    line-height: 62px;
+    line-height: 63px;
     color: var(--pl-primary);
-    margin: 0 0 var(--pl-sp-16);
+    margin: 0 0 34px;
 }
 /* « souvenirs ! » en orange, souligné d'un trait dessiné à la main. */
 .home-hero__title .is-accent {
@@ -132,14 +143,17 @@
     background: no-repeat center / 100% 100%
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 14' fill='none'%3E%3Cpath d='M3 10C60 4 180 2 297 8' stroke='%23ff7a00' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E");
 }
+/* Maquette : 18px, interligne 29px, coupure après « à des » (2 lignes). */
 .home-hero__subtitle {
-    max-width: 470px;
-    font-size: var(--pl-fs-body);
-    line-height: var(--pl-lh-base);
+    max-width: 520px;
+    font-size: 18px;
+    line-height: 29px;
     color: var(--pl-text-secondary);
     margin: 0 0 var(--pl-sp-24);
 }
 .home-hero__actions { display: flex; gap: var(--pl-sp-12); flex-wrap: wrap; margin-bottom: var(--pl-sp-28); }
+/* Maquette : boutons du héros 216×40 (un cran plus compacts que le socle). */
+.home-hero__actions .pl-btn { padding: 9px 12px; min-height: 40px; }
 
 /* Second bouton du hero : blanc, bord discret, texte foncé (sur voile clair). */
 .pl-btn--hero-ghost {
@@ -197,12 +211,14 @@
 .home-search__tab.is-active { background: var(--pl-white); color: var(--pl-cta); }
 .home-search__tab.is-active .pl-icon { color: var(--pl-cta); }
 
+/* Maquette : rangée de champs de 116px de haut, bouton inséré à 31px du
+   bord droit de la carte. */
 .home-search__fields {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr auto;
     align-items: center;
     gap: var(--pl-sp-8);
-    padding: var(--pl-sp-12) var(--pl-sp-16);
+    padding: 26px 31px;
     border-top: 1px solid var(--pl-border);
 }
 .home-search__field {
@@ -216,7 +232,8 @@
 .home-search__field .pl-icon { color: var(--pl-primary); flex-shrink: 0; }
 .home-search__field-label { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
 .home-search__field-value { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
-.home-search__submit { height: 100%; min-height: 52px; padding-inline: var(--pl-sp-24); }
+/* Maquette : 130×48. */
+.home-search__submit { min-height: 48px; height: 48px; padding-inline: 18px; }
 
 /* ===========================================================================
  *  SECTIONS génériques
@@ -229,8 +246,11 @@
     gap: var(--pl-sp-24);
     margin-bottom: var(--pl-sp-32);
 }
-/* Maquette 21/07 : grands titres de section (~40px, demi-gras). */
-.home-section__title { font-size: 38px; font-weight: var(--pl-fw-semibold); color: var(--pl-text); margin: 0 0 var(--pl-sp-8); letter-spacing: -.01em; }
+/* Les grilles d'images sortent de 6px ; le texte reste sur la marge 110px. */
+.home-section__head + .card-grid { margin-top: 0; }
+/* Maquette (mesuré au pixel : capitale 36px, largeur 540px pour « Activités
+   coup de coeur ») → Inter 48px graisse 500, sans interlettrage négatif. */
+.home-section__title { font-size: 48px; font-weight: var(--pl-fw-medium); color: var(--pl-text); margin: 0 0 var(--pl-sp-8); letter-spacing: normal; }
 .home-section__subtitle { max-width: 620px; font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0; }
 
 /* Bouton foncé « Voir tout ». */
@@ -253,7 +273,12 @@
 /* ===========================================================================
  *  CARTES (activités & destinations)
  * ======================================================================== */
-.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--pl-sp-24); }
+/* Maquette : les grilles d'images débordent de 6px de chaque côté des blocs
+   de texte (contenu 1232px, x104 → x1335) ; 4 cartes de 296px, gouttière 16. */
+.card-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin-inline: -6px;
+}
 
 .pl-card {
     display: flex;
@@ -428,13 +453,14 @@
 /* --- Hero kayak : voile foncé à gauche, textes clairs. --- */
 /* Proportions maquette : hero ~665px, carte de recherche en chevauchement
    profond (-160px), voile navy plus soutenu jusqu'à droite. */
-.home-hero--connected { min-height: 660px; align-items: flex-start; }
+/* Maquette : héros connecté de 573px (y100 → y673), titre à y217. */
+.home-hero--connected { min-height: 573px; align-items: flex-start; }
 .home-hero__overlay--dark {
     background:
         linear-gradient(90deg, rgba(4, 18, 60, .96) 0%, rgba(4, 18, 60, .88) 26%, rgba(4, 18, 60, .5) 52%, rgba(4, 18, 60, .2) 72%, rgba(4, 18, 60, .12) 100%),
         linear-gradient(180deg, rgba(4, 18, 60, .3) 0%, transparent 28%);
 }
-.home-hero--connected .home-hero__inner { padding-block: 44px 200px; }
+.home-hero--connected .home-hero__inner { padding-block: 97px 0; }
 .home-connected .home-search-wrap { margin-top: -160px; }
 /* Maquette : 25px (~0,5 cm) entre les boutons du hero et les pilules. */
 .home-hero--connected .home-hero__actions { margin-bottom: 25px; }

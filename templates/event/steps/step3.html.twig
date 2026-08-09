@@ -1,35 +1,35 @@
 {# Étape 3 — Lieu de l'événement. #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<h2 class="ev-main__title">3. Lieu de l'événement</h2>
-<p class="ev-main__lead">Indiquez où se déroulera votre événement.</p>
+<h2 class="ev-main__title">{{ "3. Lieu de l'événement"|trans }}</h2>
+<p class="ev-main__lead">{{ 'Indiquez où se déroulera votre événement.'|trans }}</p>
 
-<h3 class="ev-main__subheading">Type de lieu</h3>
-<div class="ev-placetypes" role="radiogroup" aria-label="Type de lieu">
+<h3 class="ev-main__subheading">{{ 'Type de lieu'|trans }}</h3>
+<div class="ev-placetypes" role="radiogroup" aria-label="{{ 'Type de lieu'|trans }}">
     <label class="ev-placetype">
         <input type="radio" name="placeType" value="precis" checked>
-        <span>Lieu précis</span>
+        <span>{{ 'Lieu précis'|trans }}</span>
     </label>
     <label class="ev-placetype">
         <input type="radio" name="placeType" value="approximatif">
-        <span>Lieu approximatif</span>
+        <span>{{ 'Lieu approximatif'|trans }}</span>
     </label>
     <label class="ev-placetype">
         <input type="radio" name="placeType" value="en-ligne">
-        <span>En ligne</span>
+        <span>{{ 'En ligne'|trans }}</span>
     </label>
     <label class="ev-placetype">
         <input type="radio" name="placeType" value="a-definir">
-        <span>Lieu à définir</span>
+        <span>{{ 'Lieu à définir'|trans }}</span>
     </label>
 </div>
 
-<p class="ev-main__subtext">Adresse exacte ou lieu spécifique</p>
+<p class="ev-main__subtext">{{ 'Adresse exacte ou lieu spécifique'|trans }}</p>
 
 <div class="ev-field">
-    <label class="ev-field__label" for="evPlace">Lieu exact*</label>
+    <label class="ev-field__label" for="evPlace">{{ 'Lieu exact*'|trans }}</label>
     <div class="ev-input-icon">
-        <input id="evPlace" class="ev-input" type="text" placeholder="Rechercher une adresse ou un lieu...">
+        <input id="evPlace" class="ev-input" type="text" placeholder="{{ 'Rechercher une adresse ou un lieu...'|trans }}">
         <span>{{ icon.search(18) }}</span>
     </div>
 </div>
@@ -38,7 +38,7 @@
 <div class="ev-place-result">
     <span class="ev-place-result__pin">{{ icon.map_pin(20) }}</span>
     <span class="ev-place-result__text"><strong>Parc de la Tête d'Or</strong><small>(69006 Lyon, France)</small></span>
-    <button type="button" aria-label="Retirer le lieu">{{ icon.x(18) }}</button>
+    <button type="button" aria-label="{{ 'Retirer le lieu'|trans }}">{{ icon.x(18) }}</button>
 </div>
 
 {# Carte (visuel maquette avec infobulle Google Maps). #}
@@ -46,18 +46,18 @@
      alt="Carte : Parc de la Tête d'Or, 69006 Lyon, France">
 
 <div class="ev-field">
-    <label class="ev-field__label" for="evAccess">Informations complémentaires *</label>
-    <p class="ev-field__hint">Instructions ou précisions pour s'y rendre</p>
+    <label class="ev-field__label" for="evAccess">{{ 'Informations complémentaires *'|trans }}</label>
+    <p class="ev-field__hint">{{ "Instructions ou précisions pour s'y rendre"|trans }}</p>
     <div class="ev-textarea">
-        <textarea id="evAccess" rows="4" maxlength="200" placeholder="Ex : Entrée principale côté boulevard des Belges..." data-ev-counter="evAccessCount"></textarea>
+        <textarea id="evAccess" rows="4" maxlength="200" placeholder="{{ 'Ex : Entrée principale côté boulevard des Belges...'|trans }}" data-ev-counter="evAccessCount"></textarea>
         <span class="ev-textarea__count"><span id="evAccessCount">0</span>/200</span>
     </div>
 </div>
 
 <div class="ev-field">
-    <label class="ev-field__label" for="evMeeting">Point de rendez-vous (optionnel)</label>
+    <label class="ev-field__label" for="evMeeting">{{ 'Point de rendez-vous (optionnel)'|trans }}</label>
     <div class="ev-textarea">
-        <textarea id="evMeeting" rows="4" maxlength="200" placeholder="Ex : Devant la fontaine principale à 14h45..." data-ev-counter="evMeetingCount"></textarea>
+        <textarea id="evMeeting" rows="4" maxlength="200" placeholder="{{ 'Ex : Devant la fontaine principale à 14h45...'|trans }}" data-ev-counter="evMeetingCount"></textarea>
         <span class="ev-textarea__count"><span id="evMeetingCount">0</span>/200</span>
     </div>
 </div>

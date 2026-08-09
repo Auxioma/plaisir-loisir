@@ -1,70 +1,70 @@
 {# Étape 2 — Date et heure. #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<h2 class="ev-main__title">2. Date et heure</h2>
-<p class="ev-main__lead">Définissez quand aura lieu votre événement.</p>
+<h2 class="ev-main__title">{{ '2. Date et heure'|trans }}</h2>
+<p class="ev-main__lead">{{ 'Définissez quand aura lieu votre événement.'|trans }}</p>
 
 <div class="ev-row">
     <div class="ev-field">
-        <label class="ev-field__label" for="evTitle2">Titre de l'événement *</label>
-        <input id="evTitle2" class="ev-input" type="text" placeholder="Ex : Pique-nique au bord du lac">
+        <label class="ev-field__label" for="evTitle2">{{ "Titre de l'événement *"|trans }}</label>
+        <input id="evTitle2" class="ev-input" type="text" placeholder="{{ 'Ex : Pique-nique au bord du lac'|trans }}">
     </div>
     <div class="ev-field">
-        <label class="ev-field__label" for="evCatType2">Catégorie d'événement *</label>
+        <label class="ev-field__label" for="evCatType2">{{ "Catégorie d'événement *"|trans }}</label>
         <div class="ev-select">
             <select id="evCatType2">
-                <option value="" selected disabled>Sélectionnez le type</option>
-                <option>Activités de plein air</option>
-                <option>Soirées &amp; Fêtes</option>
-                <option>Rencontres &amp; Échanges</option>
-                <option>Autre</option>
+                <option value="" selected disabled>{{ 'Sélectionnez le type'|trans }}</option>
+                <option>{{ 'Activités de plein air'|trans }}</option>
+                <option>{{ 'Soirées & Fêtes'|trans }}</option>
+                <option>{{ 'Rencontres & Échanges'|trans }}</option>
+                <option>{{ 'Autre'|trans }}</option>
             </select>
         </div>
     </div>
 </div>
 
-<h3 class="ev-main__subheading">Date de l'événement</h3>
+<h3 class="ev-main__subheading">{{ "Date de l'événement"|trans }}</h3>
 
 {# 3 modes exclusifs — « Date précise » sélectionnée (fond violet clair). #}
-<div class="ev-datemodes" role="radiogroup" aria-label="Mode de date">
+<div class="ev-datemodes" role="radiogroup" aria-label="{{ 'Mode de date'|trans }}">
     <label class="ev-checkrow">
         <input type="radio" name="dateMode" value="precise" checked>
-        <span class="ev-checkrow__text"><strong>Date précise</strong><small>Choisissez un jour spécifique</small></span>
+        <span class="ev-checkrow__text"><strong>{{ 'Date précise'|trans }}</strong><small>{{ 'Choisissez un jour spécifique'|trans }}</small></span>
     </label>
     <label class="ev-checkrow">
         <input type="radio" name="dateMode" value="periode">
-        <span class="ev-checkrow__text"><strong>Période</strong><small>Sur plusieurs jours</small></span>
+        <span class="ev-checkrow__text"><strong>{{ 'Période'|trans }}</strong><small>{{ 'Sur plusieurs jours'|trans }}</small></span>
     </label>
     <label class="ev-checkrow">
         <input type="radio" name="dateMode" value="recurrent">
-        <span class="ev-checkrow__text"><strong>Récurrent</strong><small>A répétition (Tous les…)</small></span>
+        <span class="ev-checkrow__text"><strong>{{ 'Récurrent'|trans }}</strong><small>{{ 'A répétition (Tous les…)'|trans }}</small></span>
     </label>
 </div>
 
 <div class="ev-row">
     <div class="ev-field">
-        <label class="ev-field__label" for="evDateStart">Date de début *</label>
+        <label class="ev-field__label" for="evDateStart">{{ 'Date de début *'|trans }}</label>
         <div class="ev-input-icon">
             <input id="evDateStart" class="ev-input" type="text" value="24 / 05 / 2026">
             <span>{{ icon.calendar(18) }}</span>
         </div>
     </div>
     <div class="ev-field">
-        <label class="ev-field__label" for="evTimeStart">heure de début *</label>
+        <label class="ev-field__label" for="evTimeStart">{{ 'heure de début *'|trans }}</label>
         <div class="ev-input-icon">
             <input id="evTimeStart" class="ev-input" type="text" value="18:00">
             <span>{{ icon.clock(18) }}</span>
         </div>
     </div>
     <div class="ev-field">
-        <label class="ev-field__label" for="evDateEnd">Date de fin (Optionnel)</label>
+        <label class="ev-field__label" for="evDateEnd">{{ 'Date de fin (Optionnel)'|trans }}</label>
         <div class="ev-input-icon">
             <input id="evDateEnd" class="ev-input" type="text" value="24 / 05 / 2026">
             <span>{{ icon.calendar(18) }}</span>
         </div>
     </div>
     <div class="ev-field">
-        <label class="ev-field__label" for="evTimeEnd">heure de fin *</label>
+        <label class="ev-field__label" for="evTimeEnd">{{ 'heure de fin *'|trans }}</label>
         <div class="ev-input-icon">
             <input id="evTimeEnd" class="ev-input" type="text" value="18:00">
             <span>{{ icon.clock(18) }}</span>
@@ -73,26 +73,26 @@
 </div>
 
 <label class="ev-check">
-    <input type="checkbox"> <span>Pas d'heure de fin</span>
+    <input type="checkbox"> <span>{{ "Pas d'heure de fin"|trans }}</span>
 </label>
 
 <div class="ev-field">
-    <label class="ev-field__label" for="evTz">Fuseau horaire</label>
+    <label class="ev-field__label" for="evTz">{{ 'Fuseau horaire'|trans }}</label>
     <div class="ev-select">
         <select id="evTz">
-            <option selected>(GMT+02:00) Paris, Bruxelles</option>
+            <option selected>{{ '(GMT+02:00) Paris, Bruxelles'|trans }}</option>
         </select>
     </div>
 </div>
 
-<h3 class="ev-main__subheading">Options supplémentaires</h3>
+<h3 class="ev-main__subheading">{{ 'Options supplémentaires'|trans }}</h3>
 
-{% include 'event/_setting_row.html.twig' with { ico: 'bell', color: 'violet', title: 'Ajouter un rappel', desc: "Les participants recevront un rappel avant l'événement.", control: 'select', value: '24 heures avant' } %}
-{% include 'event/_setting_row.html.twig' with { ico: 'footprints', color: 'orange', title: "Afficher l'événement dans le calendrier", desc: 'Votre événement sera visible dans le calendrier de la communauté.', control: 'toggle', on: true } %}
-{% include 'event/_setting_row.html.twig' with { ico: 'sun', color: 'green', title: 'Événement toute la journée', desc: "Cochez cette option si l'événement dure toute la journée.", control: 'toggle', on: false } %}
-{% include 'event/_setting_row.html.twig' with { ico: 'clock', color: 'blue', title: "Heure d'arrivée suggérée", desc: "Indiquez l'heure à laquelle les participants peuvent arriver.", control: 'select', value: '17:45' } %}
+{% include 'event/_setting_row.html.twig' with { ico: 'bell', color: 'violet', title: 'Ajouter un rappel'|trans, desc: "Les participants recevront un rappel avant l'événement."|trans, control: 'select', value: '24 heures avant'|trans } %}
+{% include 'event/_setting_row.html.twig' with { ico: 'footprints', color: 'orange', title: "Afficher l'événement dans le calendrier"|trans, desc: 'Votre événement sera visible dans le calendrier de la communauté.'|trans, control: 'toggle', on: true } %}
+{% include 'event/_setting_row.html.twig' with { ico: 'sun', color: 'green', title: 'Événement toute la journée'|trans, desc: "Cochez cette option si l'événement dure toute la journée."|trans, control: 'toggle', on: false } %}
+{% include 'event/_setting_row.html.twig' with { ico: 'clock', color: 'blue', title: "Heure d'arrivée suggérée"|trans, desc: "Indiquez l'heure à laquelle les participants peuvent arriver."|trans, control: 'select', value: '17:45' } %}
 
 <div class="ev-tip">
-    <p class="ev-tip__title">{{ icon.info(16) }} Astuce</p>
-    <p>Vous pourrez toujours modifier la date et l'heure après la création de l'événement.</p>
+    <p class="ev-tip__title">{{ icon.info(16) }} {{ 'Astuce'|trans }}</p>
+    <p>{{ "Vous pourrez toujours modifier la date et l'heure après la création de l'événement."|trans }}</p>
 </div>

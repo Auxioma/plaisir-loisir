@@ -11,33 +11,33 @@
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Notifications{% endblock %}
-{% block meta_description %}Restez informé de toutes les nouveautés et activités qui vous intéressent.{% endblock %}
+{% block title %}{{ 'Notifications'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Restez informé de toutes les nouveautés et activités qui vous intéressent.'|trans }}{% endblock %}
 
 {% set total = empty ? 0 : 6 %}
 {% set unread = empty ? 0 : user.unread %}
 
 {% block account %}
     {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Notifications' }],
-        title: 'Notifications',
-        subtitle: 'Restez informé de toutes les nouveautés et activités qui vous intéressent.',
+        crumbs: [{ label: 'Notifications'|trans }],
+        title: 'Notifications'|trans,
+        subtitle: 'Restez informé de toutes les nouveautés et activités qui vous intéressent.'|trans,
     } %}
 
     <div class="acc-ntabs-row">
-        <nav class="acc-ntabs" aria-label="Filtres de notifications">
-            <a href="#" class="acc-ntab is-active">Toutes <span class="acc-ntab__count">{{ total }}</span></a>
-            <a href="#" class="acc-ntab">Non lues <span class="acc-ntab__count">{{ unread }}</span></a>
-            <a href="#" class="acc-ntab">Lues <span class="acc-ntab__count">{{ total - unread }}</span></a>
+        <nav class="acc-ntabs" aria-label="{{ 'Filtres de notifications'|trans }}">
+            <a href="#" class="acc-ntab is-active">{{ 'Toutes'|trans }} <span class="acc-ntab__count">{{ total }}</span></a>
+            <a href="#" class="acc-ntab">{{ 'Non lues'|trans }} <span class="acc-ntab__count">{{ unread }}</span></a>
+            <a href="#" class="acc-ntab">{{ 'Lues'|trans }} <span class="acc-ntab__count">{{ total - unread }}</span></a>
         </nav>
         <div class="acc-nactions">
-            <a href="#" class="acc-nlink">{{ icon.check_badge(17) }} Tout marquer comme lu</a>
-            <a href="#" class="acc-nlink">{{ icon.gear(17) }} Paramètres</a>
+            <a href="#" class="acc-nlink">{{ icon.check_badge(17) }} {{ 'Tout marquer comme lu'|trans }}</a>
+            <a href="#" class="acc-nlink">{{ icon.gear(17) }} {{ 'Paramètres'|trans }}</a>
         </div>
     </div>
 
     {% if empty %}
-        {% include 'account/_empty.html.twig' with { message: "Il semblerait que vous n'avez aucune notifications pour<br>le moments." } %}
+        {% include 'account/_empty.html.twig' with { message: "Il semblerait que vous n'avez aucune notifications pour<br>le moments."|trans } %}
     {% else %}
         {% for group in groups %}
             <h2 class="acc-nsection">{{ group.section }}</h2>
@@ -61,7 +61,7 @@
         {% endfor %}
 
         <div class="acc-nmore">
-            <button type="button" class="pl-btn pl-btn--outline-action">Charger plus de notifications {{ icon.chevron_down(16) }}</button>
+            <button type="button" class="pl-btn pl-btn--outline-action">{{ 'Charger plus de notifications'|trans }} {{ icon.chevron_down(16) }}</button>
         </div>
     {% endif %}
 {% endblock %}

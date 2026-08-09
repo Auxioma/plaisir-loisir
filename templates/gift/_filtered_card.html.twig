@@ -11,21 +11,21 @@
         {% if a.image %}
             <img src="{{ asset(a.image) }}" alt="{{ a.title }}">
         {% else %}
-            <span class="gift-ph__badge">Badge</span>
+            <span class="gift-ph__badge">{{ 'Badge'|trans }}</span>
             <span class="gift-ph__icon">{{ icon.img_off(44) }}</span>
         {% endif %}
-        <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</button>
+        <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</button>
     </div>
     <div class="pl-card__body">
         <span class="pl-card__place">{{ icon.map_pin(14) }} {{ a.place }}</span>
         <span class="pl-card__title">{{ a.title }}</span>
         <div class="act-card__meta">
             <span class="act-rating">{{ icon.star(12) }} {{ a.rating }}</span>
-            <span class="act-card__reviews">{{ a.reviews }} reviews</span>
+            <span class="act-card__reviews">{{ a.reviews }} {{ 'reviews'|trans }}</span>
             <span class="act-card__duration">{{ icon.clock(14) }} {{ a.duration }}</span>
         </div>
         <div class="pl-card__foot">
-            <span class="pl-card__from">À partir de</span>
+            <span class="pl-card__from">{{ 'À partir de'|trans }}</span>
             <span class="pl-card__price">{{ a.price }}€</span>
         </div>
     </div>

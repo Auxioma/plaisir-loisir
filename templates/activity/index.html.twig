@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Toutes nos activités{% endblock %}
-{% block meta_description %}Découvrez et réservez directement en ligne des milliers d'activités inoubliables partout en France. Meilleur prix garanti - Annulation gratuite.{% endblock %}
+{% block title %}{{ 'Toutes nos activités'|trans }}{% endblock %}
+{% block meta_description %}{{ "Découvrez et réservez directement en ligne des milliers d'activités inoubliables partout en France. Meilleur prix garanti - Annulation gratuite."|trans }}{% endblock %}
 
 {# En-tête « connecté » propre au flow Activités (spec §2.1). #}
 {% block header %}
@@ -19,49 +19,49 @@
     <section class="act-head">
         <div class="home-container">
 
-            <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
-                <a href="{{ path('app_home') }}">Accueil</a>
+            <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+                <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
                 <span aria-hidden="true">/</span>
-                <span aria-current="page">Toutes les Activités</span>
+                <span aria-current="page">{{ 'Toutes les Activités'|trans }}</span>
             </nav>
 
-            <h1 class="act-head__title">Toutes nos activités</h1>
-            <p class="act-head__subtitle">Découvrez et réservez directement en ligne des milliers d'activités inoubliables partout en France. Meilleur prix garanti - Annulation gratuite</p>
+            <h1 class="act-head__title">{{ 'Toutes nos activités'|trans }}</h1>
+            <p class="act-head__subtitle">{{ "Découvrez et réservez directement en ligne des milliers d'activités inoubliables partout en France. Meilleur prix garanti - Annulation gratuite"|trans }}</p>
 
             {# Barre de recherche compacte : lieu · mots-clés · bouton loupe. #}
             <form class="act-search" role="search" action="{{ path('app_activities') }}" method="get">
                 <div class="act-search__bar">
                     <label class="act-search__field">
                         {{ icon.map_pin(18) }}
-                        <input type="text" name="lieu" value="Paris" aria-label="Lieu">
+                        <input type="text" name="lieu" value="Paris" aria-label="{{ 'Lieu'|trans }}">
                     </label>
                     <span class="act-search__sep" aria-hidden="true"></span>
                     <label class="act-search__field">
                         {{ icon.search(18) }}
-                        <input type="text" name="q" placeholder="Recherches par mots-clés" aria-label="Mots-clés">
+                        <input type="text" name="q" placeholder="{{ 'Recherches par mots-clés'|trans }}" aria-label="{{ 'Mots-clés'|trans }}">
                     </label>
                 </div>
-                <button type="submit" class="act-search__submit" aria-label="Rechercher">{{ icon.search(20) }}</button>
+                <button type="submit" class="act-search__submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(20) }}</button>
             </form>
 
             {# Ligne 1 : dropdowns date/budget à gauche, bascules d'affichage à droite. #}
             <div class="act-toolbar">
                 <div class="act-toolbar__left">
-                    <button type="button" class="act-tool">{{ icon.calendar(18) }} Choisir une date {{ icon.chevron_down(16) }}</button>
-                    <button type="button" class="act-tool">Budget par personne {{ icon.chevron_down(16) }}</button>
+                    <button type="button" class="act-tool">{{ icon.calendar(18) }} {{ 'Choisir une date'|trans }} {{ icon.chevron_down(16) }}</button>
+                    <button type="button" class="act-tool">{{ 'Budget par personne'|trans }} {{ icon.chevron_down(16) }}</button>
                 </div>
                 <div class="act-toolbar__right">
-                    <button type="button" class="act-tool" id="act-map-toggle">{{ icon.map(18) }} Afficher la carte</button>
-                    <div class="act-viewswitch" role="group" aria-label="Mode d'affichage">
-                        <button type="button" class="act-viewbtn is-active" aria-label="Affichage en grille">{{ icon.sliders(18) }}</button>
-                        <button type="button" class="act-viewbtn" aria-label="Affichage en liste">{{ icon.list_view(18) }}</button>
+                    <button type="button" class="act-tool" id="act-map-toggle">{{ icon.map(18) }} {{ 'Afficher la carte'|trans }}</button>
+                    <div class="act-viewswitch" role="group" aria-label="{{ "Mode d'affichage"|trans }}">
+                        <button type="button" class="act-viewbtn is-active" aria-label="{{ 'Affichage en grille'|trans }}">{{ icon.sliders(18) }}</button>
+                        <button type="button" class="act-viewbtn" aria-label="{{ 'Affichage en liste'|trans }}">{{ icon.list_view(18) }}</button>
                     </div>
                 </div>
             </div>
 
             {# Ligne 2 : bouton Filtre + chips de catégories défilables. #}
             <div class="act-chipbar">
-                <button type="button" class="act-chip act-chip--filter" id="act-filter-toggle">{{ icon.sliders(16) }} Filtre</button>
+                <button type="button" class="act-chip act-chip--filter" id="act-filter-toggle">{{ icon.sliders(16) }} {{ 'Filtre'|trans }}</button>
                 <span class="act-chipbar__sep" aria-hidden="true"></span>
                 <div class="act-chipbar__scroll">
                     {% for chip in filterChips %}
@@ -77,12 +77,12 @@
                         </button>
                     {% endfor %}
                 </div>
-                <button type="button" class="act-chipbar__more" aria-label="Faire défiler les filtres">{{ icon.chevron_right(16) }}</button>
+                <button type="button" class="act-chipbar__more" aria-label="{{ 'Faire défiler les filtres'|trans }}">{{ icon.chevron_right(16) }}</button>
             </div>
 
             <div class="act-results">
-                <p class="act-results__count"><strong>400+</strong> de résultats trouvés</p>
-                <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} Trier par: <strong>Les plus populaires</strong></button>
+                <p class="act-results__count"><strong>400+</strong> {{ 'de résultats trouvés'|trans }}</p>
+                <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ 'Les plus populaires'|trans }}</strong></button>
             </div>
         </div>
     </section>
@@ -94,53 +94,53 @@
     <div class="act-body" id="act-body">
 
     {# --- Sidebar de filtres (écran D), repliée par défaut. --- #}
-    <aside class="act-filters" id="act-filters" aria-label="Filtres" hidden>
+    <aside class="act-filters" id="act-filters" aria-label="{{ 'Filtres'|trans }}" hidden>
         <div class="act-filters__head">
-            <span class="act-filters__title">Filtres</span>
-            <button type="button" class="act-filters__reset" id="act-filters-reset">Réinitialiser</button>
+            <span class="act-filters__title">{{ 'Filtres'|trans }}</span>
+            <button type="button" class="act-filters__reset" id="act-filters-reset">{{ 'Réinitialiser'|trans }}</button>
         </div>
 
         <div class="act-filters__applied" id="act-filters-applied">
-            <button type="button" class="act-chip is-active" data-applied-chip>Sports &amp; Aventures {{ icon.x(14) }}</button>
+            <button type="button" class="act-chip is-active" data-applied-chip>{{ 'Sports & Aventures'|trans }} {{ icon.x(14) }}</button>
         </div>
 
         <label class="act-filters__field">
-            <span>Où voulez-vous partir ?</span>
-            <span class="act-filters__input">{{ icon.map_pin(16) }}<input type="text" placeholder="Destination, ville, lieu…"></span>
+            <span>{{ 'Où voulez-vous partir ?'|trans }}</span>
+            <span class="act-filters__input">{{ icon.map_pin(16) }}<input type="text" placeholder="{{ 'Destination, ville, lieu…'|trans }}"></span>
         </label>
         <label class="act-filters__field">
-            <span>Date</span>
-            <span class="act-filters__input">{{ icon.calendar(16) }}<input type="text" placeholder="Sélectionnez une date"></span>
+            <span>{{ 'Date'|trans }}</span>
+            <span class="act-filters__input">{{ icon.calendar(16) }}<input type="text" placeholder="{{ 'Sélectionnez une date'|trans }}"></span>
         </label>
         <label class="act-filters__field">
-            <span>Participants</span>
-            <span class="act-filters__input">{{ icon.users(16) }}<input type="text" placeholder="01 participant"></span>
+            <span>{{ 'Participants'|trans }}</span>
+            <span class="act-filters__input">{{ icon.users(16) }}<input type="text" placeholder="{{ '01 participant'|trans }}"></span>
         </label>
 
         {# Distinction validée par le client (« Option 1 », 2026-07-27). #}
         <fieldset class="act-filters__group">
-            <legend>Type d'activité</legend>
+            <legend>{{ "Type d'activité"|trans }}</legend>
             <label class="act-filters__check">
-                <input type="checkbox" data-filter-check checked> <span>🎟️ Activités professionnelles</span>
+                <input type="checkbox" data-filter-check checked> <span>🎟️ {{ 'Activités professionnelles'|trans }}</span>
             </label>
             <label class="act-filters__check">
-                <input type="checkbox" data-filter-check> <span>👥 Activités entre particuliers « Gratuite »</span>
+                <input type="checkbox" data-filter-check> <span>👥 {{ 'Activités entre particuliers « Gratuite »'|trans }}</span>
             </label>
         </fieldset>
 
         <fieldset class="act-filters__group">
-            <legend>Type de destination</legend>
-            <button type="button" class="act-filters__dest is-active" data-dest-type>{{ icon.globe(18) }} Toutes les destinations</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.building(18) }} Villes</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_hiking(18) }} Montagnes</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.beach(18) }} Mers &amp; Plages</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.tree(18) }} Campagnes</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_canoe(18) }} Lacs &amp; Rivières</button>
+            <legend>{{ 'Type de destination'|trans }}</legend>
+            <button type="button" class="act-filters__dest is-active" data-dest-type>{{ icon.globe(18) }} {{ 'Toutes les destinations'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.building(18) }} {{ 'Villes'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_hiking(18) }} {{ 'Montagnes'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.beach(18) }} {{ 'Mers & Plages'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.tree(18) }} {{ 'Campagnes'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_canoe(18) }} {{ 'Lacs & Rivières'|trans }}</button>
         </fieldset>
 
         <fieldset class="act-filters__group">
-            <legend>Activités populaires</legend>
-            {% for c in ['Sport & Aventure', 'Nature & Plein air', 'Bien-être', 'En famille', 'Ateliers & Créations', 'Soirées & Evénements'] %}
+            <legend>{{ 'Activités populaires'|trans }}</legend>
+            {% for c in ['Sport & Aventure'|trans, 'Nature & Plein air'|trans, 'Bien-être'|trans, 'En famille'|trans, 'Ateliers & Créations'|trans, 'Soirées & Evénements'|trans] %}
                 <label class="act-filters__check">
                     <input type="checkbox" data-filter-check {{ loop.first ? 'checked' }}> {{ c }}
                 </label>
@@ -148,34 +148,34 @@
         </fieldset>
 
         <fieldset class="act-filters__group" id="act-budget">
-            <legend>Budget (par personne)</legend>
+            <legend>{{ 'Budget (par personne)'|trans }}</legend>
             <div class="act-budget__slider">
                 <div class="act-budget__track" aria-hidden="true"></div>
                 <div class="act-budget__range" data-budget-range aria-hidden="true"></div>
-                <input type="range" min="0" max="1050" step="1" value="154" data-budget-min aria-label="Budget minimum">
-                <input type="range" min="0" max="1050" step="1" value="1050" data-budget-max aria-label="Budget maximum">
+                <input type="range" min="0" max="1050" step="1" value="154" data-budget-min aria-label="{{ 'Budget minimum'|trans }}">
+                <input type="range" min="0" max="1050" step="1" value="1050" data-budget-max aria-label="{{ 'Budget maximum'|trans }}">
             </div>
             <div class="act-budget__bounds"><span>0€</span><span>1050€ et +</span></div>
             <div class="act-budget__inputs">
-                <input type="text" inputmode="numeric" value="154€" data-budget-input-min aria-label="Budget minimum en euros">
-                <input type="text" inputmode="numeric" value="1050+€" data-budget-input-max aria-label="Budget maximum en euros">
+                <input type="text" inputmode="numeric" value="154€" data-budget-input-min aria-label="{{ 'Budget minimum en euros'|trans }}">
+                <input type="text" inputmode="numeric" value="1050+€" data-budget-input-max aria-label="{{ 'Budget maximum en euros'|trans }}">
             </div>
         </fieldset>
 
         <fieldset class="act-filters__group">
-            <legend>Note des utilisateurs</legend>
+            <legend>{{ 'Note des utilisateurs'|trans }}</legend>
             {% for n in [5, 4, 3, 2, 1] %}
                 <label class="act-filters__check act-filters__check--stars">
                     <input type="checkbox" data-filter-check>
-                    <span class="act-filters__stars" aria-label="{{ n }} étoile{{ n > 1 ? 's' }} et plus">
+                    <span class="act-filters__stars" aria-label="{{ n }} {{ (n > 1 ? 'étoiles et plus' : 'étoile et plus')|trans }}">
                         {% for i in 1..5 %}<span class="{{ i <= n ? 'is-on' : 'is-off' }}">{{ icon.star(16) }}</span>{% endfor %}
                     </span>
                 </label>
             {% endfor %}
         </fieldset>
 
-        <button type="button" class="pl-btn pl-btn--primary pl-btn--block">Affichez les résultats</button>
-        <p class="act-filters__count"><strong id="act-found-count">412</strong> activités trouvées</p>
+        <button type="button" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Affichez les résultats'|trans }}</button>
+        <p class="act-filters__count"><strong id="act-found-count">412</strong> {{ 'activités trouvées'|trans }}</p>
     </aside>
 
     <div class="act-content">
@@ -190,7 +190,7 @@
                 {% endfor %}
             </div>
             <div class="act-more">
-                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus d'activités {{ icon.chevron_down(16) }}</button>
+                <button type="button" class="pl-btn pl-btn--outline-action">{{ "Voir plus d'activités"|trans }} {{ icon.chevron_down(16) }}</button>
             </div>
         </div>
     </section>
@@ -202,17 +202,17 @@
         <div class="home-container">
             <div class="home-section__head">
                 <div>
-                    <h2 class="home-section__title">Votre sélection d'activités</h2>
+                    <h2 class="home-section__title">{{ "Votre sélection d'activités"|trans }}</h2>
                 </div>
             </div>
             <div class="act-citybar">
-                <button type="button" class="act-citybar__nav" aria-label="Villes précédentes">{{ icon.chevron_left(16) }}</button>
+                <button type="button" class="act-citybar__nav" aria-label="{{ 'Villes précédentes'|trans }}">{{ icon.chevron_left(16) }}</button>
                 <div class="act-citybar__scroll">
                     {% for city in cities %}
                         <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">{{ city }}</button>
                     {% endfor %}
                 </div>
-                <button type="button" class="act-citybar__nav" aria-label="Villes suivantes">{{ icon.chevron_right(16) }}</button>
+                <button type="button" class="act-citybar__nav" aria-label="{{ 'Villes suivantes'|trans }}">{{ icon.chevron_right(16) }}</button>
             </div>
             <div class="card-grid">
                 {% for s in selections %}
@@ -229,7 +229,7 @@
         <div class="home-container">
             <div class="home-section__head">
                 <div>
-                    <h2 class="home-section__title">Activités coup de coeur</h2>
+                    <h2 class="home-section__title">{{ 'Activités coup de coeur'|trans }}</h2>
                 </div>
             </div>
             <div class="card-grid">
@@ -237,13 +237,13 @@
                     {% include 'activity/_card.html.twig' with { a: a } %}
                 {% endfor %}
             </div>
-            <nav class="act-pagination" aria-label="Pagination des activités coup de coeur">
-                <button type="button" class="act-page-btn" aria-label="Page précédente">{{ icon.chevron_left(16) }}</button>
+            <nav class="act-pagination" aria-label="{{ 'Pagination des activités coup de coeur'|trans }}">
+                <button type="button" class="act-page-btn" aria-label="{{ 'Page précédente'|trans }}">{{ icon.chevron_left(16) }}</button>
                 <button type="button" class="act-page-btn is-active" aria-current="page">1</button>
                 <button type="button" class="act-page-btn">2</button>
                 <button type="button" class="act-page-btn">3</button>
                 <button type="button" class="act-page-btn">4</button>
-                <button type="button" class="act-page-btn" aria-label="Page suivante">{{ icon.chevron_right(16) }}</button>
+                <button type="button" class="act-page-btn" aria-label="{{ 'Page suivante'|trans }}">{{ icon.chevron_right(16) }}</button>
             </nav>
         </div>
     </section>
@@ -255,7 +255,7 @@
         <div class="home-container">
             <div class="home-section__head">
                 <div>
-                    <h2 class="home-section__title">Offres exclusives pour vous</h2>
+                    <h2 class="home-section__title">{{ 'Offres exclusives pour vous'|trans }}</h2>
                 </div>
             </div>
             <div class="card-grid">
@@ -263,13 +263,13 @@
                     {% include 'activity/_offer_card.html.twig' with { o: o } %}
                 {% endfor %}
             </div>
-            <nav class="act-pagination" aria-label="Pagination des offres exclusives">
-                <button type="button" class="act-page-btn" aria-label="Page précédente">{{ icon.chevron_left(16) }}</button>
+            <nav class="act-pagination" aria-label="{{ 'Pagination des offres exclusives'|trans }}">
+                <button type="button" class="act-page-btn" aria-label="{{ 'Page précédente'|trans }}">{{ icon.chevron_left(16) }}</button>
                 <button type="button" class="act-page-btn is-active" aria-current="page">1</button>
                 <button type="button" class="act-page-btn">2</button>
                 <button type="button" class="act-page-btn">3</button>
                 <button type="button" class="act-page-btn">4</button>
-                <button type="button" class="act-page-btn" aria-label="Page suivante">{{ icon.chevron_right(16) }}</button>
+                <button type="button" class="act-page-btn" aria-label="{{ 'Page suivante'|trans }}">{{ icon.chevron_right(16) }}</button>
             </nav>
         </div>
     </section>
@@ -281,17 +281,17 @@
        Affichée par le toggle « Afficher la carte », initialisée
        paresseusement par assets/activities.js.
        ================================================================ #}
-    <section class="act-mapview" id="act-mapview" hidden aria-label="Résultats sur la carte">
+    <section class="act-mapview" id="act-mapview" hidden aria-label="{{ 'Résultats sur la carte'|trans }}">
         <div class="act-mapview__list">
             {% for a in activities %}
                 {% include 'activity/_card.html.twig' with { a: a, horizontal: true } %}
             {% endfor %}
             <div class="act-more">
-                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus d'activités {{ icon.chevron_down(16) }}</button>
+                <button type="button" class="pl-btn pl-btn--outline-action">{{ "Voir plus d'activités"|trans }} {{ icon.chevron_down(16) }}</button>
             </div>
         </div>
         <div class="act-mapview__map">
-            <button type="button" class="act-mapview__close" id="act-map-close">Fermer la carte {{ icon.x(16) }}</button>
+            <button type="button" class="act-mapview__close" id="act-map-close">{{ 'Fermer la carte'|trans }} {{ icon.x(16) }}</button>
             <div id="act-map"
                  data-markers="{{ activities|map(a => {
                      title: a.title, place: a.place, rating: a.rating, reviews: a.reviews,

@@ -11,7 +11,7 @@
     <div class="pl-card__media">
         {% if f.placeholder|default(false) %}
             <span class="acc-fav__placeholder">
-                <span class="acc-fav__ph-badge">Badge</span>
+                <span class="acc-fav__ph-badge">{{ 'Badge'|trans }}</span>
                 {{ icon.img_off(46) }}
             </span>
         {% else %}
@@ -21,9 +21,9 @@
             {% endif %}
         {% endif %}
         {% if hearts|default('red') == 'red' %}
-            <button type="button" class="pl-card__fav acc-fav__heart is-on" aria-label="Retirer des favoris">{{ icon.heart_solid(16) }}</button>
+            <button type="button" class="pl-card__fav acc-fav__heart is-on" aria-label="{{ 'Retirer des favoris'|trans }}">{{ icon.heart_solid(16) }}</button>
         {% else %}
-            <button type="button" class="pl-card__fav acc-fav__heart" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</button>
+            <button type="button" class="pl-card__fav acc-fav__heart" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</button>
         {% endif %}
     </div>
     <div class="pl-card__body">
@@ -31,11 +31,11 @@
         <span class="pl-card__title">{{ f.title }}</span>
         <div class="act-card__meta">
             <span class="act-rating">{{ icon.star(12) }} {{ f.rating }}</span>
-            <span class="act-card__reviews">{{ f.reviews }} reviews</span>
+            <span class="act-card__reviews">{{ f.reviews }} {{ 'reviews'|trans }}</span>
             <span class="act-card__duration">{{ icon.clock(14) }} {{ f.duration }}</span>
         </div>
         <div class="pl-card__foot">
-            <span class="pl-card__from">À partir de</span>
+            <span class="pl-card__from">{{ 'À partir de'|trans }}</span>
             <span class="pl-card__price">{{ f.price }}€</span>
         </div>
     </div>

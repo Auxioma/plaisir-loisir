@@ -16,35 +16,35 @@
     <div class="reviews-modal__panel">
 
         <header class="reviews-modal__head">
-            <button type="button" class="reviews-modal__close" data-modal-close aria-label="Fermer les avis">{{ icon.x(20) }}</button>
+            <button type="button" class="reviews-modal__close" data-modal-close aria-label="{{ 'Fermer les avis'|trans }}">{{ icon.x(20) }}</button>
 
             {# En-tête par défaut (G.1). #}
             <div class="reviews-modal__intro" data-modal-intro>
-                <h2 class="reviews-modal__title" id="reviews-modal-title">Avis clients</h2>
+                <h2 class="reviews-modal__title" id="reviews-modal-title">{{ 'Avis clients'|trans }}</h2>
                 <div class="reviews-modal__score">
-                    <span class="reviews-modal__score-label">Note globale</span>
+                    <span class="reviews-modal__score-label">{{ 'Note globale'|trans }}</span>
                     <span class="reviews-modal__score-value">{{ detail.reviewsSummary.score }} <span>/{{ detail.reviewsSummary.outOf }}</span></span>
                     <span class="reviews-modal__stars" aria-hidden="true">
                         {% for i in 1..5 %}{{ icon.star(20) }}{% endfor %}
                     </span>
-                    <span class="reviews-modal__count">D'après {{ detail.reviewsSummary.total }} avis</span>
+                    <span class="reviews-modal__count">{{ "D'après"|trans }} {{ detail.reviewsSummary.total }} {{ 'avis'|trans }}</span>
                 </div>
             </div>
 
             {# En-tête contextualisé, affiché au défilement (G.2). #}
             <div class="reviews-modal__context" data-modal-context hidden>
                 <h2 class="reviews-modal__context-title">{{ detail.modalTitle }}</h2>
-                <span class="reviews-modal__context-note">{{ icon.star(14) }} {{ detail.reviewsSummary.score }} ({{ detail.reviewsSummary.total }} avis)</span>
+                <span class="reviews-modal__context-note">{{ icon.star(14) }} {{ detail.reviewsSummary.score }} ({{ detail.reviewsSummary.total }} {{ 'avis'|trans }})</span>
             </div>
 
             <div class="reviews-modal__tools">
-                <button type="button" class="act-tool">{{ icon.sliders(16) }} Filtre</button>
+                <button type="button" class="act-tool">{{ icon.sliders(16) }} {{ 'Filtre'|trans }}</button>
                 <div class="reviews-sort">
                     <button type="button" class="act-tool" data-sort-toggle aria-haspopup="listbox" aria-expanded="false">
-                        {{ icon.sort(16) }} Trier par: <strong data-sort-label>Les plus récents</strong> {{ icon.chevron_down(14) }}
+                        {{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong data-sort-label>{{ 'Les plus récents'|trans }}</strong> {{ icon.chevron_down(14) }}
                     </button>
-                    <div class="reviews-sort__menu" data-sort-menu role="listbox" aria-label="Ordre de tri" hidden>
-                        {% for option in ['Les plus récents', 'Les plus anciens', 'Les mieux notés', 'Les moins notés'] %}
+                    <div class="reviews-sort__menu" data-sort-menu role="listbox" aria-label="{{ 'Ordre de tri'|trans }}" hidden>
+                        {% for option in ['Les plus récents'|trans, 'Les plus anciens'|trans, 'Les mieux notés'|trans, 'Les moins notés'|trans] %}
                             <button type="button" class="reviews-sort__option {{ loop.first ? 'is-selected' }}" role="option" aria-selected="{{ loop.first ? 'true' : 'false' }}" data-sort-option="{{ loop.index0 }}">
                                 <span class="reviews-sort__check" aria-hidden="true">✓</span> {{ option }}
                             </button>

@@ -1,12 +1,12 @@
 {# Étape 4 — Catégorie (liste verticale, sélection unique). #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<h2 class="ev-main__title">4. Catégorie</h2>
-<p class="ev-main__lead">Choisissez la catégorie qui correspond le mieux à votre événement</p>
+<h2 class="ev-main__title">{{ '4. Catégorie'|trans }}</h2>
+<p class="ev-main__lead">{{ 'Choisissez la catégorie qui correspond le mieux à votre événement'|trans }}</p>
 
-<h3 class="ev-main__subheading">Catégorie populaire</h3>
+<h3 class="ev-main__subheading">{{ 'Catégorie populaire'|trans }}</h3>
 
-<div class="ev-cats" role="radiogroup" aria-label="Catégorie populaire">
+<div class="ev-cats" role="radiogroup" aria-label="{{ 'Catégorie populaire'|trans }}">
     {% for c in categories %}
         <label class="ev-cat">
             <span class="ev-cat__icon ev-ico--{{ c.color }}">
@@ -30,6 +30,6 @@
 </div>
 
 <div class="ev-note">
-    <strong>Vous ne trouvez pas la bonne catégorie ?</strong>
-    <p>Choisissez <strong>"Autre"</strong> et précisez le type d'événement dans la description.</p>
+    <strong>{{ 'Vous ne trouvez pas la bonne catégorie ?'|trans }}</strong>
+    <p>{{ 'Choisissez'|trans }} <strong>"{{ 'Autre'|trans }}"</strong> {{ "et précisez le type d'événement dans la description."|trans }}</p>
 </div>

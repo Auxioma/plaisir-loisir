@@ -603,14 +603,14 @@
  *  LANDING — hero, recherche, catégories, dropdown Aujourd'hui.
  * ------------------------------------------------------------------------ */
 
-.evn-hero { position: relative; height: 562px; background: var(--evn-navy); overflow: hidden; }
+.evn-hero { position: relative; height: 502px; background: var(--evn-navy); overflow: hidden; }
 .evn-hero__img {
     position: absolute; top: 0; right: 0; height: 100%; width: 610px;
     object-fit: cover;
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 180px);
     mask-image: linear-gradient(90deg, transparent, #000 180px);
 }
-.evn-hero__inner { position: relative; padding-top: 112px; }
+.evn-hero__inner { position: relative; padding-top: 91px; }
 .evn-hero__title { margin: 0 0 36px; font-size: 48px; font-weight: 700; color: #fff; line-height: 1.45; }
 .evn-hero__title span { color: var(--pl-cta); }
 .evn-hero__subtitle { margin: 0 0 42px; font-size: 17px; color: #fff; line-height: 1.65; }

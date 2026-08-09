@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Offres du moments{% endblock %}
-{% block meta_description %}Profitez des meilleures offres et promotions sur vos activités préférées : réductions jusqu'à -50%, ventes flash et dernières minutes.{% endblock %}
+{% block title %}{{ 'Offres du moments'|trans }}{% endblock %}
+{% block meta_description %}{{ "Profitez des meilleures offres et promotions sur vos activités préférées : réductions jusqu'à -50%, ventes flash et dernières minutes."|trans }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar.html.twig' with { connected: true, nav_active: 'offres' } %}
@@ -18,13 +18,13 @@
         <img class="of-hero__bg" src="{{ asset('images/offers/hero-offres.jpg') }}" alt="">
         <div class="of-hero__overlay" aria-hidden="true"></div>
         <div class="home-container of-hero__inner">
-            <h1 class="of-hero__title">Offres du moments</h1>
-            <p class="of-hero__subtitle">Profitez des meilleures offres et promotions sur vos activités préférées.</p>
+            <h1 class="of-hero__title">{{ 'Offres du moments'|trans }}</h1>
+            <p class="of-hero__subtitle">{{ 'Profitez des meilleures offres et promotions sur vos activités préférées.'|trans }}</p>
             <div class="of-hero__pills">
-                <span class="home-pill">{{ icon.tag(16) }} Meilleur prix garanti</span>
-                <span class="home-pill">{{ icon.gift(16) }} Offres limitées</span>
-                <span class="home-pill">{{ icon.calendar(16) }} Réservation immédiate</span>
-                <span class="home-pill">{{ icon.ban(16) }} Annulation facile</span>
+                <span class="home-pill">{{ icon.tag(16) }} {{ 'Meilleur prix garanti'|trans }}</span>
+                <span class="home-pill">{{ icon.gift(16) }} {{ 'Offres limitées'|trans }}</span>
+                <span class="home-pill">{{ icon.calendar(16) }} {{ 'Réservation immédiate'|trans }}</span>
+                <span class="home-pill">{{ icon.ban(16) }} {{ 'Annulation facile'|trans }}</span>
             </div>
         </div>
         {# Blob orange organique « Jusqu'à -50% » (décor signature). #}
@@ -35,18 +35,18 @@
             <span class="of-hero__blob-spark of-hero__blob-spark--1"></span>
             <span class="of-hero__blob-spark of-hero__blob-spark--2"></span>
             <div class="of-hero__blob-text">
-                <span class="of-hero__blob-upto">Jusqu'à</span>
+                <span class="of-hero__blob-upto">{{ "Jusqu'à"|trans }}</span>
                 <span class="of-hero__blob-pct">-50%</span>
-                <span class="of-hero__blob-note">Sur une sélection d'activités</span>
+                <span class="of-hero__blob-note">{{ "Sur une sélection d'activités"|trans }}</span>
             </div>
         </div>
     </section>
 
     <div class="home-container">
-        <nav class="act-breadcrumb of-breadcrumb" aria-label="Fil d'Ariane">
-            <a href="{{ path('app_home') }}">Accueil</a>
+        <nav class="act-breadcrumb of-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
             <span aria-hidden="true">/</span>
-            <span aria-current="page">Offres du moments</span>
+            <span aria-current="page">{{ 'Offres du moments'|trans }}</span>
         </nav>
     </div>
 
@@ -57,10 +57,10 @@
         <div class="home-container">
             <div class="home-section__head">
                 <div>
-                    <h2 class="home-section__title">Categories populaires</h2>
-                    <p class="home-section__subtitle">Des réductions dans toutes vos catégories préférées : trouvez l'offre qui vous ressemble.</p>
+                    <h2 class="home-section__title">{{ 'Categories populaires'|trans }}</h2>
+                    <p class="home-section__subtitle">{{ "Des réductions dans toutes vos catégories préférées : trouvez l'offre qui vous ressemble."|trans }}</p>
                 </div>
-                <a href="{{ path('app_offers_all') }}" class="btn-see-all">Voir toutes les offres {{ icon.arrow_up_right(16) }}</a>
+                <a href="{{ path('app_offers_all') }}" class="btn-see-all">{{ 'Voir toutes les offres'|trans }} {{ icon.arrow_up_right(16) }}</a>
             </div>
             <div class="of-cats">
                 {% for c in categories %}
@@ -87,7 +87,7 @@
        ================================================================ #}
     <section class="act-section">
         <div class="home-container">
-            <h2 class="home-section__title of-section-title">Offres exclusives pour vous</h2>
+            <h2 class="home-section__title of-section-title">{{ 'Offres exclusives pour vous'|trans }}</h2>
             <div class="card-grid">
                 {% for o in exclusives %}
                     {% include 'offer/_card.html.twig' with { o: o } %}
@@ -105,23 +105,23 @@
                 <div class="of-flash__promo" aria-hidden="true">
                     <svg class="of-flash__bolt of-flash__bolt--left" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
                     <div class="of-flash__panel">
-                        <span class="of-flash__upto">Jusqu'à</span>
+                        <span class="of-flash__upto">{{ "Jusqu'à"|trans }}</span>
                         <span class="of-flash__pct">-50%</span>
-                        <span class="of-flash__note">Sur une sélection d'activités</span>
+                        <span class="of-flash__note">{{ "Sur une sélection d'activités"|trans }}</span>
                     </div>
                     <svg class="of-flash__bolt of-flash__bolt--right" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
                 </div>
                 <div class="of-flash__text">
-                    <h2 class="of-flash__title">Vente Flash</h2>
-                    <p class="of-flash__tagline">Offres limitées à ne pas manquer&nbsp;!</p>
-                    <p class="of-flash__desc">Ne manquez pas nos meilleures offres de la saison. Profitez dès maintenant de réductions sur vos activités préférées.</p>
-                    <div class="of-flash__count" role="timer" aria-label="Fin de la vente flash">
-                        <span class="of-flash__cell"><strong>10</strong>Jours</span>
-                        <span class="of-flash__cell"><strong>08</strong>Heures</span>
-                        <span class="of-flash__cell"><strong>23</strong>Min.</span>
-                        <span class="of-flash__cell"><strong>47</strong>Secondes</span>
+                    <h2 class="of-flash__title">{{ 'Vente Flash'|trans }}</h2>
+                    <p class="of-flash__tagline">{{ 'Offres limitées à ne pas manquer'|trans }}&nbsp;!</p>
+                    <p class="of-flash__desc">{{ 'Ne manquez pas nos meilleures offres de la saison. Profitez dès maintenant de réductions sur vos activités préférées.'|trans }}</p>
+                    <div class="of-flash__count" role="timer" aria-label="{{ 'Fin de la vente flash'|trans }}">
+                        <span class="of-flash__cell"><strong>10</strong>{{ 'Jours'|trans }}</span>
+                        <span class="of-flash__cell"><strong>08</strong>{{ 'Heures'|trans }}</span>
+                        <span class="of-flash__cell"><strong>23</strong>{{ 'Min.'|trans }}</span>
+                        <span class="of-flash__cell"><strong>47</strong>{{ 'Secondes'|trans }}</span>
                     </div>
-                    <a href="{{ path('app_offers_all') }}" class="pl-btn pl-btn--cta">Découvrir toutes les offres</a>
+                    <a href="{{ path('app_offers_all') }}" class="pl-btn pl-btn--cta">{{ 'Découvrir toutes les offres'|trans }}</a>
                 </div>
             </div>
         </div>

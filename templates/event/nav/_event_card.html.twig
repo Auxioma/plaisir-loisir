@@ -10,7 +10,7 @@
     <div class="evn-card__media">
         <img src="{{ asset(e.image) }}" alt="{{ e.title }}">
         <span class="evn-badge evn-badge--{{ e.color }}">{{ e.category }}</span>
-        <span class="evn-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</span>
+        <span class="evn-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</span>
         <span class="evn-card__date">{{ e.date }}</span>
     </div>
     <div class="evn-card__body">
@@ -18,7 +18,7 @@
         <span class="evn-card__meta">{{ icon.map_pin(15) }} {{ e.location }}</span>
         <span class="evn-card__meta">{{ icon.clock(15) }} {{ e.hours }}</span>
         <span class="evn-card__foot">
-            <span class="evn-card__meta">{{ icon.person(15) }} {{ e.participants }} Participants</span>
+            <span class="evn-card__meta">{{ icon.person(15) }} {{ e.participants }} {{ 'Participants'|trans }}</span>
             <span class="evn-avatars">
                 {% for a in avatars %}<img src="{{ asset(a) }}" alt="">{% endfor %}
             </span>

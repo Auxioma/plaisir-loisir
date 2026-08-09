@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Destinations{% endblock %}
-{% block meta_description %}Tourisme dans toute la France : toutes les destinations. Des lieux exceptionnels, à des prix exclusifs, pour des expériences inoubliables.{% endblock %}
+{% block title %}{{ 'Destinations'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Tourisme dans toute la France : toutes les destinations. Des lieux exceptionnels, à des prix exclusifs, pour des expériences inoubliables.'|trans }}{% endblock %}
 
 {% block header %}
     {% if connected %}
@@ -23,8 +23,8 @@
         <img class="dest-hero__bg" src="{{ asset('images/destinations/hero-plage.jpg') }}" alt="">
         <div class="dest-hero__overlay" aria-hidden="true"></div>
         <div class="home-container dest-hero__inner">
-            <h1 class="dest-hero__title">Tourisme dans toute la France&nbsp;: <span class="is-accent-line">toutes les destinations</span></h1>
-            <p class="dest-hero__subtitle">Découvrez toutes nos incroyables destinations, des lieux exceptionnels, à des prix exclusifs et vivez des expériences inoubliables.</p>
+            <h1 class="dest-hero__title">{{ 'Tourisme dans toute la France'|trans }}&nbsp;: <span class="is-accent-line">{{ 'toutes les destinations'|trans }}</span></h1>
+            <p class="dest-hero__subtitle">{{ 'Découvrez toutes nos incroyables destinations, des lieux exceptionnels, à des prix exclusifs et vivez des expériences inoubliables.'|trans }}</p>
         </div>
     </section>
 
@@ -33,22 +33,22 @@
        ================================================================ #}
     <section class="act-section">
         <div class="home-container">
-            <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
-                <a href="{{ path('app_home') }}">Accueil</a>
+            <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+                <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
                 <span aria-hidden="true">/</span>
-                <span aria-current="page">Destinations</span>
+                <span aria-current="page">{{ 'Destinations'|trans }}</span>
             </nav>
 
             <div class="home-section__head">
                 <div>
-                    <h2 class="home-section__title">Catégories populaires</h2>
-                    <p class="home-section__subtitle">Envie d'aventure, de détente ou de découvertes ? Explorez nos catégories et trouvez l'activité qui vous ressemble.</p>
+                    <h2 class="home-section__title">{{ 'Catégories populaires'|trans }}</h2>
+                    <p class="home-section__subtitle">{{ "Envie d'aventure, de détente ou de découvertes ? Explorez nos catégories et trouvez l'activité qui vous ressemble."|trans }}</p>
                 </div>
-                <a href="{{ path('app_destinations_popular') }}" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
+                <a href="{{ path('app_destinations_popular') }}" class="btn-see-all">{{ 'Voir toutes les destinations'|trans }} {{ icon.arrow_up_right(16) }}</a>
             </div>
 
             <div class="dest-cats">
-                <button type="button" class="home-cats__nav" data-dest-cats-prev aria-label="Voir les catégories précédentes">{{ icon.chevron_left(16) }}</button>
+                <button type="button" class="home-cats__nav" data-dest-cats-prev aria-label="{{ 'Voir les catégories précédentes'|trans }}">{{ icon.chevron_left(16) }}</button>
                 <div class="dest-cats__scroll" data-dest-cats-scroll>
                     {% for c in categories %}
                         <a href="{{ path('app_activities') }}" class="dest-cat">
@@ -67,7 +67,7 @@
                         </a>
                     {% endfor %}
                 </div>
-                <button type="button" class="home-cats__nav" data-dest-cats-next aria-label="Voir les catégories suivantes">{{ icon.chevron_right(16) }}</button>
+                <button type="button" class="home-cats__nav" data-dest-cats-next aria-label="{{ 'Voir les catégories suivantes'|trans }}">{{ icon.chevron_right(16) }}</button>
             </div>
         </div>
     </section>
@@ -79,7 +79,7 @@
         <div class="home-container">
             <div class="home-section__head">
                 <div>
-                    <h2 class="home-section__title">Toutes nos destinations</h2>
+                    <h2 class="home-section__title">{{ 'Toutes nos destinations'|trans }}</h2>
                 </div>
             </div>
             <div class="dest-mosaic">
@@ -88,13 +88,13 @@
                        class="dest-tile dest-tile--{{ t.span }} {{ t.align == 'center' ? 'dest-tile--center' }}"
                        style="grid-column: {{ t.col }} / span {{ t.span == 'xwide' ? 4 : (t.span == 'wide' ? 3 : 2) }}; grid-row: {{ t.row }} / span {{ t.span == 'tall' ? 2 : 1 }};">
                         <img src="{{ asset(t.image) }}" alt="{{ t.name }}">
-                        <span class="dest-tile__badge">{{ t.count }} Activités</span>
+                        <span class="dest-tile__badge">{{ t.count }} {{ 'Activités'|trans }}</span>
                         <span class="dest-tile__name">{{ t.name }}</span>
                     </a>
                 {% endfor %}
             </div>
             <div class="act-more">
-                <a href="{{ path('app_destinations_popular') }}" class="pl-btn pl-btn--outline-action">Voir plus de destinations {{ icon.chevron_down(16) }}</a>
+                <a href="{{ path('app_destinations_popular') }}" class="pl-btn pl-btn--outline-action">{{ 'Voir plus de destinations'|trans }} {{ icon.chevron_down(16) }}</a>
             </div>
         </div>
     </section>
@@ -108,12 +108,12 @@
                 <img class="dest-banner__bg" src="{{ asset('images/destinations/banniere-monde.jpg') }}" alt="">
                 <div class="dest-banner__overlay" aria-hidden="true"></div>
                 <div class="dest-banner__text">
-                    <h2>Partez à la <span>découverte du monde</span></h2>
-                    <p>Explorez des destinations d'exception, près de chez vous ou à l'autre bout de la France.</p>
-                    <a href="{{ path('app_activities') }}#carte" class="pl-btn pl-btn--cta">Explorer la carte {{ icon.map(18) }}</a>
+                    <h2>{{ 'Partez à la'|trans }} <span>{{ 'découverte du monde'|trans }}</span></h2>
+                    <p>{{ "Explorez des destinations d'exception, près de chez vous ou à l'autre bout de la France."|trans }}</p>
+                    <a href="{{ path('app_activities') }}#carte" class="pl-btn pl-btn--cta">{{ 'Explorer la carte'|trans }} {{ icon.map(18) }}</a>
                 </div>
                 <aside class="dest-banner__ideas">
-                    <h3>Idées du moment</h3>
+                    <h3>{{ 'Idées du moment'|trans }}</h3>
                     {% for i in ideas %}
                         <a href="{{ path('app_activities') }}" class="dest-idea">
                             <img src="{{ asset(i.image) }}" alt="">
@@ -135,10 +135,10 @@
         <div class="home-container">
             <div class="home-section__head">
                 <div>
-                    <h2 class="home-section__title">Destinations populaires</h2>
-                    <p class="home-section__subtitle">Des villes d'art aux paysages grandioses : choisissez votre prochaine destination.</p>
+                    <h2 class="home-section__title">{{ 'Destinations populaires'|trans }}</h2>
+                    <p class="home-section__subtitle">{{ "Des villes d'art aux paysages grandioses : choisissez votre prochaine destination."|trans }}</p>
                 </div>
-                <a href="{{ path('app_destinations_popular') }}" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
+                <a href="{{ path('app_destinations_popular') }}" class="btn-see-all">{{ 'Voir toutes les destinations'|trans }} {{ icon.arrow_up_right(16) }}</a>
             </div>
             <div class="card-grid">
                 {% for d in destinations %}

@@ -7,8 +7,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Bienvenue — choix du compte{% endblock %}
-{% block meta_description %}Choisissez le type de compte qui vous correspond : professionnel prestataire ou client.{% endblock %}
+{% block title %}{{ 'Bienvenue — choix du compte'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Choisissez le type de compte qui vous correspond : professionnel prestataire ou client.'|trans }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar_home.html.twig' %}
@@ -19,12 +19,11 @@
     <div class="home-container">
 
         <h1 class="auth-choice-page__title">
-            Bienvenue sur TrouveMoi<br>
+            {{ 'Bienvenue sur TrouveMoi'|trans }}<br>
             <span class="is-plaisirs">Plaisirs</span> &amp; <span class="is-loisirs">Loisirs</span>
         </h1>
         <p class="auth-choice-page__subtitle">
-            Choisissez le type de compte qui vous correspond pour accéder aux
-            fonctionnalités adaptées à vos besoins.
+            {{ 'Choisissez le type de compte qui vous correspond pour accéder aux fonctionnalités adaptées à vos besoins.'|trans }}
         </p>
 
         <div class="auth-choice-card">
@@ -32,61 +31,57 @@
             {# ---- Panneau Pro Prestataire (violet, à gauche) ---- #}
             <section class="auth-choice-panel auth-choice-panel--pro">
                 <span class="auth-choice-panel__badge">{{ icon.compass(24) }}</span>
-                <h2 class="auth-choice-panel__name">Pro Prestataire</h2>
+                <h2 class="auth-choice-panel__name">{{ 'Pro Prestataire'|trans }}</h2>
                 <p class="auth-choice-panel__desc">
-                    Vous proposez des activités, des services ou des loisirs.
-                    Créez votre compte professionnel pour développer votre
-                    visibilité et gérer vos prestations.
+                    {{ 'Vous proposez des activités, des services ou des loisirs. Créez votre compte professionnel pour développer votre visibilité et gérer vos prestations.'|trans }}
                 </p>
                 <ul class="auth-choice-feats">
                     <li>
                         <span class="auth-choice-feats__icon">{{ icon.compass(20) }}</span>
-                        <span><strong>Déposez et gérez vos activités</strong> Publiez vos offres et gérez vos disponibilités.</span>
+                        <span><strong>{{ 'Déposez et gérez vos activités'|trans }}</strong> {{ 'Publiez vos offres et gérez vos disponibilités.'|trans }}</span>
                     </li>
                     <li>
                         <span class="auth-choice-feats__icon">{{ icon.calendar_check(20) }}</span>
-                        <span><strong>Gérez vos réservations</strong> Suivez vos réservations, vos clients et vos paiements.</span>
+                        <span><strong>{{ 'Gérez vos réservations'|trans }}</strong> {{ 'Suivez vos réservations, vos clients et vos paiements.'|trans }}</span>
                     </li>
                     <li>
                         <span class="auth-choice-feats__icon">{{ icon.eye(20) }}</span>
-                        <span><strong>Développez votre visibilité</strong> Recevez plus de demandes et fidélisez vos clients.</span>
+                        <span><strong>{{ 'Développez votre visibilité'|trans }}</strong> {{ 'Recevez plus de demandes et fidélisez vos clients.'|trans }}</span>
                     </li>
                 </ul>
                 <a class="pl-btn pl-btn--primary pl-btn--block" href="{{ path('app_register', { type: 'pro' }) }}">
-                    Je suis un pro prestataire {{ icon.chevron_right(16) }}
+                    {{ 'Je suis un pro prestataire'|trans }} {{ icon.chevron_right(16) }}
                 </a>
-                <a class="auth-choice-panel__more" href="#">En savoir plus sur l'espace pro</a>
+                <a class="auth-choice-panel__more" href="#">{{ "En savoir plus sur l'espace pro"|trans }}</a>
             </section>
 
-            <div class="auth-choice-card__sep" aria-hidden="true"><span>ou</span></div>
+            <div class="auth-choice-card__sep" aria-hidden="true"><span>{{ 'ou'|trans }}</span></div>
 
             {# ---- Panneau Client (vert, à droite) ---- #}
             <section class="auth-choice-panel auth-choice-panel--client">
                 <span class="auth-choice-panel__badge">{{ icon.compass(24) }}</span>
-                <h2 class="auth-choice-panel__name">Client</h2>
+                <h2 class="auth-choice-panel__name">{{ 'Client'|trans }}</h2>
                 <p class="auth-choice-panel__desc">
-                    Vous recherchez des activités, des loisirs ou des expériences
-                    à vivre. Créez votre compte pour réserver et profiter de nos
-                    meilleures offres.
+                    {{ 'Vous recherchez des activités, des loisirs ou des expériences à vivre. Créez votre compte pour réserver et profiter de nos meilleures offres.'|trans }}
                 </p>
                 <ul class="auth-choice-feats">
                     <li>
                         <span class="auth-choice-feats__icon">{{ icon.search(20) }}</span>
-                        <span><strong>Trouvez des activités</strong> Découvrez des activités et expériences uniques.</span>
+                        <span><strong>{{ 'Trouvez des activités'|trans }}</strong> {{ 'Découvrez des activités et expériences uniques.'|trans }}</span>
                     </li>
                     <li>
                         <span class="auth-choice-feats__icon">{{ icon.calendar_check(20) }}</span>
-                        <span><strong>Réservez en toute simplicité</strong> Réservez facilement en quelques clics.</span>
+                        <span><strong>{{ 'Réservez en toute simplicité'|trans }}</strong> {{ 'Réservez facilement en quelques clics.'|trans }}</span>
                     </li>
                     <li>
                         <span class="auth-choice-feats__icon">{{ icon.check_badge(20) }}</span>
-                        <span><strong>Profitez en toute sérénité</strong> Vivez vos expériences et partagez vos avis.</span>
+                        <span><strong>{{ 'Profitez en toute sérénité'|trans }}</strong> {{ 'Vivez vos expériences et partagez vos avis.'|trans }}</span>
                     </li>
                 </ul>
                 <a class="pl-btn pl-btn--client pl-btn--block" href="{{ path('app_register', { type: 'client' }) }}">
-                    Je suis un client {{ icon.chevron_right(16) }}
+                    {{ 'Je suis un client'|trans }} {{ icon.chevron_right(16) }}
                 </a>
-                <a class="auth-choice-panel__more" href="#">En savoir plus sur l'espace client</a>
+                <a class="auth-choice-panel__more" href="#">{{ "En savoir plus sur l'espace client"|trans }}</a>
             </section>
         </div>
 
@@ -95,14 +90,14 @@
             <div class="auth-choice-band__intro">
                 {{ icon.calendar_check(30) }}
                 <div>
-                    <strong>Une expérience sécurisée pour tous</strong>
-                    <span>Vos données sont protégées et votre expérience est notre priorité.</span>
+                    <strong>{{ 'Une expérience sécurisée pour tous'|trans }}</strong>
+                    <span>{{ 'Vos données sont protégées et votre expérience est notre priorité.'|trans }}</span>
                 </div>
             </div>
             <ul class="auth-choice-band__points">
-                <li>{{ icon.card(20) }} Paiement sécurisé</li>
-                <li>{{ icon.lock(20) }} Données protégées</li>
-                <li>{{ icon.headset(20) }} Support dédié</li>
+                <li>{{ icon.card(20) }} {{ 'Paiement sécurisé'|trans }}</li>
+                <li>{{ icon.lock(20) }} {{ 'Données protégées'|trans }}</li>
+                <li>{{ icon.headset(20) }} {{ 'Support dédié'|trans }}</li>
             </ul>
         </aside>
 

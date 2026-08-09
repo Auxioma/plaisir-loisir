@@ -3,16 +3,16 @@
     Les boutons sont VOLONTAIREMENT inactifs (disabled) pour l'instant :
     l'authentification OAuth (Google / Facebook / Apple) sera branchée plus tard.
 #}
-<div class="auth-separator">Ou</div>
+<div class="auth-separator">{{ 'Ou'|trans }}</div>
 
 <div class="auth-socials">
-    <button type="button" class="auth-social is-disabled" disabled title="Bientôt disponible">
-        <img src="{{ asset('images/social-google.svg') }}" alt="Continuer avec Google">
+    <button type="button" class="auth-social is-disabled" disabled title="{{ 'Bientôt disponible'|trans }}">
+        <img src="{{ asset('images/social-google.svg') }}" alt="{{ 'Continuer avec Google'|trans }}">
     </button>
-    <button type="button" class="auth-social is-disabled" disabled title="Bientôt disponible">
-        <img src="{{ asset('images/social-facebook.svg') }}" alt="Continuer avec Facebook">
+    <button type="button" class="auth-social is-disabled" disabled title="{{ 'Bientôt disponible'|trans }}">
+        <img src="{{ asset('images/social-facebook.svg') }}" alt="{{ 'Continuer avec Facebook'|trans }}">
     </button>
-    <button type="button" class="auth-social is-disabled" disabled title="Bientôt disponible">
-        <img src="{{ asset('images/social-apple.svg') }}" alt="Continuer avec Apple">
+    <button type="button" class="auth-social is-disabled" disabled title="{{ 'Bientôt disponible'|trans }}">
+        <img src="{{ asset('images/social-apple.svg') }}" alt="{{ 'Continuer avec Apple'|trans }}">
     </button>
 </div>

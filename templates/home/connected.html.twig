@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Accueil{% endblock %}
-{% block meta_description %}Trouvez votre prochain plaisir et vivez l'exceptionnel : des milliers d'activités et loisirs partout en France, aux meilleurs prix.{% endblock %}
+{% block title %}{{ 'Accueil'|trans }}{% endblock %}
+{% block meta_description %}{{ "Trouvez votre prochain plaisir et vivez l'exceptionnel : des milliers d'activités et loisirs partout en France, aux meilleurs prix."|trans }}{% endblock %}
 
 {# Accueil commun visiteurs / connectés (maquette du 21/07) ; la barre de
    recherche déployée est portée par les panneaux ci-dessous + JS. #}
@@ -21,18 +21,18 @@
         <div class="home-hero__overlay home-hero__overlay--dark" aria-hidden="true"></div>
         <div class="home-container home-hero__inner">
             <h1 class="home-hero__title home-hero__title--light">
-                Trouvez votre prochain <span class="is-accent-line">plaisirs et vivez l'exceptionnel.</span>
+                {{ 'Trouvez votre prochain'|trans }} <span class="is-accent-line">{{ "plaisirs et vivez l'exceptionnel."|trans }}</span>
             </h1>
-            <p class="home-hero__subtitle home-hero__subtitle--light">Découvrez des lieux, des événements exceptionnels, à des prix exclusifs et vivez des expériences inoubliables</p>
+            <p class="home-hero__subtitle home-hero__subtitle--light">{{ 'Découvrez des lieux, des événements exceptionnels, à des prix exclusifs et vivez des expériences inoubliables'|trans }}</p>
             <div class="home-hero__actions">
-                <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--cta">Réservez une activité {{ icon.chevron_right(16) }}</a>
-                <a href="#" class="pl-btn pl-btn--hero-ghost">Découvrez nos événements {{ icon.chevron_right(16) }}</a>
+                <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--cta">{{ 'Réservez une activité'|trans }} {{ icon.chevron_right(16) }}</a>
+                <a href="{{ path('app_events') }}" class="pl-btn pl-btn--hero-ghost">{{ 'Découvrez nos événements'|trans }} {{ icon.chevron_right(16) }}</a>
             </div>
             <div class="home-hero__assurances">
-                <span class="home-pill">{{ icon.gift(18) }} + 5.000 activités</span>
-                <span class="home-pill">{{ icon.zap(18) }} Réservation instantanée</span>
-                <span class="home-pill">{{ icon.ban(18) }} Annulation facile</span>
-                <span class="home-pill">{{ icon.tag(18) }} Meilleur prix garanti</span>
+                <span class="home-pill">{{ icon.gift(18) }} + 5.000 {{ 'activités'|trans }}</span>
+                <span class="home-pill">{{ icon.zap(18) }} {{ 'Réservation instantanée'|trans }}</span>
+                <span class="home-pill">{{ icon.ban(18) }} {{ 'Annulation facile'|trans }}</span>
+                <span class="home-pill">{{ icon.tag(18) }} {{ 'Meilleur prix garanti'|trans }}</span>
             </div>
         </div>
     </section>
@@ -43,8 +43,8 @@
     <div class="home-container home-search-wrap" id="home-search">
         {# Onglets « façon classeur » posés au-dessus de la carte (maquette). #}
         <div class="home-search__tabs">
-            <button type="button" class="home-search__tab is-active">{{ icon.globe(18) }} Activités public</button>
-            <button type="button" class="home-search__tab">{{ icon.users(18) }} Activités privées</button>
+            <button type="button" class="home-search__tab is-active">{{ icon.globe(18) }} {{ 'Activités public'|trans }}</button>
+            <button type="button" class="home-search__tab">{{ icon.users(18) }} {{ 'Activités privées'|trans }}</button>
         </div>
         <div class="home-search">
             <div class="home-search__fields">
@@ -53,36 +53,36 @@
                 <button type="button" class="home-search__field" data-search-field="destination">
                     {{ icon.map_pin(20) }}
                     <span>
-                        <span class="home-search__field-label">Où voulez-vous aller ?</span>
-                        <span class="home-search__field-value" data-field-value>Destination, ville, lieu…</span>
+                        <span class="home-search__field-label">{{ 'Où voulez-vous aller ?'|trans }}</span>
+                        <span class="home-search__field-value" data-field-value>{{ 'Destination, ville, lieu…'|trans }}</span>
                     </span>
                     {{ icon.chevron_down(16) }}
                 </button>
                 <button type="button" class="home-search__field" data-search-field="activite">
                     {{ icon.map_pin(20) }}
                     <span>
-                        <span class="home-search__field-label">Activité ou loisir ?</span>
-                        <span class="home-search__field-value" data-field-value>Canoë, musée, VTT…</span>
+                        <span class="home-search__field-label">{{ 'Activité ou loisir ?'|trans }}</span>
+                        <span class="home-search__field-value" data-field-value>{{ 'Canoë, musée, VTT…'|trans }}</span>
                     </span>
                     {{ icon.chevron_down(16) }}
                 </button>
                 <button type="button" class="home-search__field" data-search-field="date">
                     {{ icon.map_pin(20) }}
                     <span>
-                        <span class="home-search__field-label">Date</span>
-                        <span class="home-search__field-value" data-field-value>Choisissez une date</span>
+                        <span class="home-search__field-label">{{ 'Date'|trans }}</span>
+                        <span class="home-search__field-value" data-field-value>{{ 'Choisissez une date'|trans }}</span>
                     </span>
                     {{ icon.chevron_down(16) }}
                 </button>
                 <button type="button" class="home-search__field" data-search-field="participants">
                     {{ icon.map_pin(20) }}
                     <span>
-                        <span class="home-search__field-label">Participant(s)</span>
-                        <span class="home-search__field-value" data-field-value>1 participant</span>
+                        <span class="home-search__field-label">{{ 'Participant(s)'|trans }}</span>
+                        <span class="home-search__field-value" data-field-value>{{ '1 participant'|trans }}</span>
                     </span>
                     {{ icon.chevron_down(16) }}
                 </button>
-                <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--cta home-search__submit">Recherche {{ icon.search(18) }}</a>
+                <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--cta home-search__submit">{{ 'Recherche'|trans }} {{ icon.search(18) }}</a>
             </div>
 
             {# --- Panneau 1 : destinations. --- #}
@@ -103,12 +103,12 @@
             <div class="home-search__panel home-search__panel--calendar" data-search-panel="date" hidden>
                 <div class="home-cal" data-calendar data-year="2026" data-month="7" data-selected="16">
                     <div class="home-cal__head">
-                        <button type="button" data-cal-prev aria-label="Mois précédent">{{ icon.chevron_left(18) }}</button>
-                        <strong data-cal-title>Juillet 2026</strong>
-                        <button type="button" data-cal-next aria-label="Mois suivant">{{ icon.chevron_right(18) }}</button>
+                        <button type="button" data-cal-prev aria-label="{{ 'Mois précédent'|trans }}">{{ icon.chevron_left(18) }}</button>
+                        <strong data-cal-title>{{ 'Juillet'|trans }} 2026</strong>
+                        <button type="button" data-cal-next aria-label="{{ 'Mois suivant'|trans }}">{{ icon.chevron_right(18) }}</button>
                     </div>
                     <div class="home-cal__days" aria-hidden="true">
-                        <span>lun</span><span>mar</span><span>mer</span><span>jeu</span><span>ven</span><span>sam</span><span>dim</span>
+                        <span>{{ 'lun'|trans }}</span><span>{{ 'mar'|trans }}</span><span>{{ 'mer'|trans }}</span><span>{{ 'jeu'|trans }}</span><span>{{ 'ven'|trans }}</span><span>{{ 'sam'|trans }}</span><span>{{ 'dim'|trans }}</span>
                     </div>
                     <div class="home-cal__grid" data-cal-grid></div>
                 </div>
@@ -117,22 +117,22 @@
             {# --- Panneau 4 : participants (steppers + Valider). --- #}
             <div class="home-search__panel home-search__panel--travellers" data-search-panel="participants" hidden>
                 <div class="act-stepper" data-stepper data-min="1" data-count="1">
-                    <span>Adulte <small>(18 et +)</small></span>
+                    <span>{{ 'Adulte'|trans }} <small>{{ '(18 et +)'|trans }}</small></span>
                     <span class="act-stepper__controls">
-                        <button type="button" data-step="-1" aria-label="Moins d'adultes">{{ icon.minus(14) }}</button>
+                        <button type="button" data-step="-1" aria-label="{{ "Moins d'adultes"|trans }}">{{ icon.minus(14) }}</button>
                         <output data-stepper-value>1</output>
-                        <button type="button" data-step="1" aria-label="Plus d'adultes">{{ icon.plus(14) }}</button>
+                        <button type="button" data-step="1" aria-label="{{ "Plus d'adultes"|trans }}">{{ icon.plus(14) }}</button>
                     </span>
                 </div>
                 <div class="act-stepper" data-stepper data-min="0" data-count="0">
-                    <span>Enfants <small>(0 à 17 ans)</small></span>
+                    <span>{{ 'Enfants'|trans }} <small>{{ '(0 à 17 ans)'|trans }}</small></span>
                     <span class="act-stepper__controls">
-                        <button type="button" data-step="-1" aria-label="Moins d'enfants">{{ icon.minus(14) }}</button>
+                        <button type="button" data-step="-1" aria-label="{{ "Moins d'enfants"|trans }}">{{ icon.minus(14) }}</button>
                         <output data-stepper-value>0</output>
-                        <button type="button" data-step="1" aria-label="Plus d'enfants">{{ icon.plus(14) }}</button>
+                        <button type="button" data-step="1" aria-label="{{ "Plus d'enfants"|trans }}">{{ icon.plus(14) }}</button>
                     </span>
                 </div>
-                <button type="button" class="pl-btn pl-btn--outline-action pl-btn--block" data-travellers-validate>Valider</button>
+                <button type="button" class="pl-btn pl-btn--outline-action pl-btn--block" data-travellers-validate>{{ 'Valider'|trans }}</button>
             </div>
         </div>
     </div>
@@ -144,14 +144,14 @@
         <div class="home-container home-private__inner">
             <div class="home-private__panel">
                 <div class="home-private__text">
-                    <h2 class="home-private__title">Créer votre activité privée<br><span class="is-blue">Gratuitement</span></h2>
-                    <p class="home-section__subtitle">Organisez des moments inoubliables entre amis, en famille ou en groupe.</p>
+                    <h2 class="home-private__title">{{ 'Créer votre activité privée'|trans }}<br><span class="is-blue">{{ 'Gratuitement'|trans }}</span></h2>
+                    <p class="home-section__subtitle">{{ 'Organisez des moments inoubliables entre amis, en famille ou en groupe.'|trans }}</p>
                     <ul class="home-checklist home-checklist--blue">
-                        <li>{{ icon.check_badge(20) }} Activités 100% privée</li>
-                        <li>{{ icon.check_badge(20) }} Partagez vos photos</li>
-                        <li>{{ icon.check_badge(20) }} Aucun prestataire, 100% gratuit</li>
+                        <li>{{ icon.check_badge(20) }} {{ 'Activités 100% privée'|trans }}</li>
+                        <li>{{ icon.check_badge(20) }} {{ 'Partagez vos photos'|trans }}</li>
+                        <li>{{ icon.check_badge(20) }} {{ 'Aucun prestataire, 100% gratuit'|trans }}</li>
                     </ul>
-                    <a href="#" class="pl-btn pl-btn--blue">Créer une activité privée {{ icon.party(18) }}</a>
+                    <a href="#" class="pl-btn pl-btn--blue">{{ 'Créer une activité privée'|trans }} {{ icon.party(18) }}</a>
                 </div>
                 <div class="home-private__collage" aria-hidden="true">
                     <img class="home-private__photo home-private__photo--1" src="{{ asset('images/home/prive-2.jpg') }}" alt="">
@@ -162,22 +162,22 @@
                 </div>
             </div>
             <aside class="home-private__how">
-                <h3>Comment créer une activité privée</h3>
+                <h3>{{ 'Comment créer une activité privée'|trans }}</h3>
                 <ol class="home-private__steps">
                     <li>
                         <span class="home-private__step-icon">{{ icon.calendar_check(20) }}</span>
-                        <span><strong>Créer votre activité privée</strong> Indiquez où, quand et avec qui.</span>
+                        <span><strong>{{ 'Créer votre activité privée'|trans }}</strong> {{ 'Indiquez où, quand et avec qui.'|trans }}</span>
                     </li>
                     <li>
                         <span class="home-private__step-icon">{{ icon.mail(20) }}</span>
-                        <span><strong>Invitez vos proches</strong> Partagez votre activité facilement.</span>
+                        <span><strong>{{ 'Invitez vos proches'|trans }}</strong> {{ 'Partagez votre activité facilement.'|trans }}</span>
                     </li>
                     <li>
                         <span class="home-private__step-icon">{{ icon.heart(20) }}</span>
-                        <span><strong>Profitez et partagez vos souvenirs</strong> Indiquez où, quand et avec qui.</span>
+                        <span><strong>{{ 'Profitez et partagez vos souvenirs'|trans }}</strong> {{ 'Indiquez où, quand et avec qui.'|trans }}</span>
                     </li>
                 </ol>
-                <a href="#" class="pl-btn pl-btn--outline-blue">En savoir plus</a>
+                <a href="#" class="pl-btn pl-btn--outline-blue">{{ 'En savoir plus'|trans }}</a>
             </aside>
         </div>
     </section>
@@ -189,18 +189,18 @@
         <div class="home-container">
             <div class="home-section__head">
                 <div>
-                    <h2 class="home-section__title">Categories populaires</h2>
-                    <p class="home-section__subtitle">Envie d'aventure, de détente ou de découvertes ? Explorez nos catégories et trouvez l'activité qui vous ressemble.</p>
+                    <h2 class="home-section__title">{{ 'Categories populaires'|trans }}</h2>
+                    <p class="home-section__subtitle">{{ "Envie d'aventure, de détente ou de découvertes ? Explorez nos catégories et trouvez l'activité qui vous ressemble."|trans }}</p>
                 </div>
-                <a href="{{ path('app_destinations') }}" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
+                <a href="{{ path('app_destinations') }}" class="btn-see-all">{{ 'Voir toutes les destinations'|trans }} {{ icon.arrow_up_right(16) }}</a>
             </div>
             <div class="home-cats">
-                <button type="button" class="home-cats__nav" data-cats-prev aria-label="Catégories précédentes">{{ icon.chevron_left(16) }}</button>
+                <button type="button" class="home-cats__nav" data-cats-prev aria-label="{{ 'Catégories précédentes'|trans }}">{{ icon.chevron_left(16) }}</button>
                 <div class="home-cats__scroll" data-cats-scroll>
                     {% set cats = [
-                        ['Canoë / Kayak', 'canoe'], ['VTT / Vélo', 'bike'], ['Randonnée', 'hiking'],
-                        ['Sports & Sensations', 'sports'], ['Visites culturelles', 'culture'],
-                        ['Ateliers & Créations', 'crafts'], ['Bien-être', 'wellness'], ['En famille', 'family'],
+                        ['Canoë / Kayak'|trans, 'canoe'], ['VTT / Vélo'|trans, 'bike'], ['Randonnée'|trans, 'hiking'],
+                        ['Sports & Sensations'|trans, 'sports'], ['Visites culturelles'|trans, 'culture'],
+                        ['Ateliers & Créations'|trans, 'crafts'], ['Bien-être'|trans, 'wellness'], ['En famille'|trans, 'family'],
                     ] %}
                     {% for c in cats %}
                         <a href="{{ path('app_activities') }}" class="home-cat">
@@ -219,7 +219,7 @@
                         </a>
                     {% endfor %}
                 </div>
-                <button type="button" class="home-cats__nav" data-cats-next aria-label="Catégories suivantes">{{ icon.chevron_right(16) }}</button>
+                <button type="button" class="home-cats__nav" data-cats-next aria-label="{{ 'Catégories suivantes'|trans }}">{{ icon.chevron_right(16) }}</button>
             </div>
         </div>
     </section>
@@ -231,10 +231,10 @@
         <div class="home-container">
             <div class="home-section__head">
                 <div>
-                    <h2 class="home-section__title">Activités coup de coeur</h2>
-                    <p class="home-section__subtitle">Les expériences préférées de nos voyageurs, sélectionnées pour vous.</p>
+                    <h2 class="home-section__title">{{ 'Activités coup de coeur'|trans }}</h2>
+                    <p class="home-section__subtitle">{{ 'Les expériences préférées de nos voyageurs, sélectionnées pour vous.'|trans }}</p>
                 </div>
-                <a href="{{ path('app_activities') }}" class="btn-see-all">Voir toutes les activités {{ icon.arrow_up_right(16) }}</a>
+                <a href="{{ path('app_activities') }}" class="btn-see-all">{{ 'Voir toutes les activités'|trans }} {{ icon.arrow_up_right(16) }}</a>
             </div>
             <div class="card-grid">
                 {% for a in activities|slice(0, 4) %}
@@ -251,14 +251,14 @@
         <div class="home-container">
             <div class="home-gift__card">
                 <div>
-                    <h2 class="home-gift__title">Pas d'idée de cadeau ?</h2>
-                    <p class="home-gift__subtitle">Offrez la carte cadeau aux multiples activités !</p>
+                    <h2 class="home-gift__title">{{ "Pas d'idée de cadeau ?"|trans }}</h2>
+                    <p class="home-gift__subtitle">{{ 'Offrez la carte cadeau aux multiples activités !'|trans }}</p>
                     <ul class="home-checklist home-checklist--squares home-checklist--violet">
-                        <li>{{ icon.check_square(22) }} Par mail instantanément</li>
-                        <li>{{ icon.check_square(22) }} 12 mois pour la réservation</li>
-                        <li>{{ icon.check_square(22) }} Utilisable en plusieurs fois</li>
+                        <li>{{ icon.check_square(22) }} {{ 'Par mail instantanément'|trans }}</li>
+                        <li>{{ icon.check_square(22) }} {{ '12 mois pour la réservation'|trans }}</li>
+                        <li>{{ icon.check_square(22) }} {{ 'Utilisable en plusieurs fois'|trans }}</li>
                     </ul>
-                    <a href="#" class="pl-btn pl-btn--primary">Offrir {{ icon.gift(18) }}</a>
+                    <a href="#" class="pl-btn pl-btn--primary">{{ 'Offrir'|trans }} {{ icon.gift(18) }}</a>
                 </div>
                 <div class="home-gift__visual">
                     <img src="{{ asset('images/home/gift-cards.png') }}" alt="Cartes cadeaux Plaisirs & Loisirs">
@@ -274,10 +274,10 @@
         <div class="home-container">
             <div class="home-section__head">
                 <div>
-                    <h2 class="home-section__title">Destinations populaires</h2>
-                    <p class="home-section__subtitle">Des villes d'art aux paysages grandioses : choisissez votre prochaine destination.</p>
+                    <h2 class="home-section__title">{{ 'Destinations populaires'|trans }}</h2>
+                    <p class="home-section__subtitle">{{ "Des villes d'art aux paysages grandioses : choisissez votre prochaine destination."|trans }}</p>
                 </div>
-                <a href="{{ path('app_destinations') }}" class="btn-see-all">Voir toutes les destinations {{ icon.arrow_up_right(16) }}</a>
+                <a href="{{ path('app_destinations') }}" class="btn-see-all">{{ 'Voir toutes les destinations'|trans }} {{ icon.arrow_up_right(16) }}</a>
             </div>
             {% set destinations = [
                 {img: 'dest-paris.png',       title: 'Paris, France',   desc: 'Ville lumière et capitale de la culture', reviews: 256, count: '32 activités', price: 25, tag: 'Populaire'},
@@ -293,18 +293,18 @@
                             {% if d.tag %}
                                 <span class="pl-card__tag {{ d.tag == 'Bestseller' ? 'pl-card__tag--bestseller' : 'pl-card__tag--popular' }}">{{ d.tag }}</span>
                             {% endif %}
-                            <button type="button" class="pl-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</button>
+                            <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</button>
                         </div>
                         <div class="pl-card__body">
                             <span class="pl-card__place">{{ icon.map_pin(14) }} {{ d.desc }}</span>
                             <span class="pl-card__title">{{ d.title }}</span>
                             <div class="act-card__meta">
                                 <span class="act-rating">{{ icon.star(12) }} 4.8</span>
-                                <span class="act-card__reviews">{{ d.reviews }} reviews</span>
+                                <span class="act-card__reviews">{{ d.reviews }} {{ 'reviews'|trans }}</span>
                                 <span class="act-card__duration">{{ d.count }}</span>
                             </div>
                             <div class="pl-card__foot">
-                                <span class="pl-card__from">À partir de</span>
+                                <span class="pl-card__from">{{ 'À partir de'|trans }}</span>
                                 <span class="pl-card__price">{{ d.price }}€</span>
                             </div>
                         </div>
@@ -320,14 +320,14 @@
     <section class="home-section home-pro">
         <div class="home-container home-pro__inner">
             <div class="home-pro__text">
-                <h2 class="home-section__title">Vous êtes Professionnels</h2>
-                <p class="home-section__subtitle">Rejoignez la plateforme et développez votre activité auprès de milliers de clients.</p>
+                <h2 class="home-section__title">{{ 'Vous êtes Professionnels'|trans }}</h2>
+                <p class="home-section__subtitle">{{ 'Rejoignez la plateforme et développez votre activité auprès de milliers de clients.'|trans }}</p>
                 <ul class="home-checklist home-checklist--squares home-checklist--orange">
-                    <li>{{ icon.check_square(22) }} Plus de visibilité</li>
-                    <li>{{ icon.check_square(22) }} Réservation en ligne</li>
-                    <li>{{ icon.check_square(22) }} Gestion simplifiée</li>
+                    <li>{{ icon.check_square(22) }} {{ 'Plus de visibilité'|trans }}</li>
+                    <li>{{ icon.check_square(22) }} {{ 'Réservation en ligne'|trans }}</li>
+                    <li>{{ icon.check_square(22) }} {{ 'Gestion simplifiée'|trans }}</li>
                 </ul>
-                <a href="#" class="pl-btn pl-btn--cta">Découvrez nos abonnements {{ icon.crown(18) }}</a>
+                <a href="#" class="pl-btn pl-btn--cta">{{ 'Découvrez nos abonnements'|trans }} {{ icon.crown(18) }}</a>
             </div>
             <div class="home-pro__media">
                 <img src="{{ asset('images/home/provider-figma.png') }}" alt="Prestataire souriant, bras croisés">

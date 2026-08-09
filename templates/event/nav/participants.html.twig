@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Participants — Compétitions Canoë / Kayak{% endblock %}
-{% block meta_description %}La liste des participants de l'événement Compétitions Canoë / Kayak 2026.{% endblock %}
+{% block title %}{{ 'Participants — Compétitions Canoë / Kayak'|trans }}{% endblock %}
+{% block meta_description %}{{ "La liste des participants de l'événement Compétitions Canoë / Kayak 2026."|trans }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'evenements' } %}
@@ -12,31 +12,31 @@
 <div class="evn-page evn-participants">
     <div class="home-container">
 
-        <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
-            <a href="{{ path('app_home') }}">Accueil</a>
+        <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
             <span aria-hidden="true">/</span>
-            <a href="{{ path('app_events') }}">Événements</a>
+            <a href="{{ path('app_events') }}">{{ 'Événements'|trans }}</a>
             <span aria-hidden="true">/</span>
-            <span aria-current="page" class="evn-crumb-current">Compétitions Canoë / Kayak</span>
+            <span aria-current="page" class="evn-crumb-current">{{ 'Compétitions Canoë / Kayak'|trans }}</span>
         </nav>
 
         {# Colonne centrée, légèrement en retrait comme la maquette. #}
         <div class="evn-participants__col">
-            <a href="{{ path('app_events_detail') }}" class="evn-back">← Retour</a>
+            <a href="{{ path('app_events_detail') }}" class="evn-back">← {{ 'Retour'|trans }}</a>
 
-            <h1 class="evn-participants__title">Participants</h1>
-            <p class="evn-participants__subtitle">Compétitions  Canoë / Kayak 2026</p>
+            <h1 class="evn-participants__title">{{ 'Participants'|trans }}</h1>
+            <p class="evn-participants__subtitle">{{ 'Compétitions  Canoë / Kayak 2026'|trans }}</p>
 
             {# Typo maquette corrigée : « Pertinance » → Pertinence. #}
             <div class="evn-participants__tools">
                 <label class="evn-input-search">
                     {{ icon.search(18) }}
-                    <input type="text" placeholder="Recherche des participants" aria-label="Recherche des participants">
+                    <input type="text" placeholder="{{ 'Recherche des participants'|trans }}" aria-label="{{ 'Recherche des participants'|trans }}">
                 </label>
-                <button type="button" class="act-tool act-tool--plain evn-sort-right">{{ icon.sort(16) }} Trier par: <strong>Pertinence</strong> {{ icon.chevron_down(14) }}</button>
+                <button type="button" class="act-tool act-tool--plain evn-sort-right">{{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ 'Pertinence'|trans }}</strong> {{ icon.chevron_down(14) }}</button>
             </div>
 
-            <span class="evn-chip-count">{{ icon.check(14) }} 12 participants</span>
+            <span class="evn-chip-count">{{ icon.check(14) }} {{ '12 participants'|trans }}</span>
 
             <div class="evn-plist">
                 {% for p in participants %}
@@ -50,13 +50,13 @@
                                 </span>
                             {% endif %}
                         </span>
-                        <button type="button" class="evn-prow__btn">Voir le profil</button>
+                        <button type="button" class="evn-prow__btn">{{ 'Voir le profil'|trans }}</button>
                     </div>
                 {% endfor %}
             </div>
 
             <div class="act-more">
-                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus de participant {{ icon.chevron_down(16) }}</button>
+                <button type="button" class="pl-btn pl-btn--outline-action">{{ 'Voir plus de participant'|trans }} {{ icon.chevron_down(16) }}</button>
             </div>
         </div>
 

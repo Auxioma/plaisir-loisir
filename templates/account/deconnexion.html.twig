@@ -8,41 +8,41 @@
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Déconnexion{% endblock %}
-{% block meta_description %}Déconnectez-vous de votre compte TrouveMoi Plaisirs & Loisirs en toute sécurité.{% endblock %}
+{% block title %}{{ 'Déconnexion'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Déconnectez-vous de votre compte TrouveMoi Plaisirs & Loisirs en toute sécurité.'|trans }}{% endblock %}
 
 {% block account %}
     {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Mon compte' }, { label: 'Déconnexion' }],
-        title: 'Déconnexion',
+        crumbs: [{ label: 'Mon compte'|trans }, { label: 'Déconnexion'|trans }],
+        title: 'Déconnexion'|trans,
     } %}
 
     <div class="acc-logout">
         <img class="acc-logout__img" src="{{ asset('images/account/logout-door.jpg') }}" alt="">
 
         <div class="acc-logout__side">
-            <h2 class="acc-logout__hello">À bientôt, {{ user.firstName }} ! 👋</h2>
-            <p class="acc-logout__text">Vous êtes sur le point de vous déconnecter de votre compte TrouveMoi Plaisirs &amp; Loisirs.</p>
+            <h2 class="acc-logout__hello">{{ 'À bientôt, %prenom% ! 👋'|trans({'%prenom%': user.firstName}) }}</h2>
+            <p class="acc-logout__text">{{ 'Vous êtes sur le point de vous déconnecter de votre compte TrouveMoi Plaisirs & Loisirs.'|trans }}</p>
 
             <div class="acc-logout__args">
                 <div class="acc-logout__arg">
                     <span class="acc-logout__argicon">{{ icon.lock(20) }}</span>
-                    <div><strong>Vos informations sont en sécurité</strong><span>Vos données personnelles restent protégées.</span></div>
+                    <div><strong>{{ 'Vos informations sont en sécurité'|trans }}</strong><span>{{ 'Vos données personnelles restent protégées.'|trans }}</span></div>
                 </div>
                 <div class="acc-logout__arg">
                     <span class="acc-logout__argicon">{{ icon.heart(20) }}</span>
-                    <div><strong>Retrouvez vos favoris</strong><span>Connectez-vous à tout moment pour retrouver vos activités favorites.</span></div>
+                    <div><strong>{{ 'Retrouvez vos favoris'|trans }}</strong><span>{{ 'Connectez-vous à tout moment pour retrouver vos activités favorites.'|trans }}</span></div>
                 </div>
                 <div class="acc-logout__arg">
                     <span class="acc-logout__argicon">{{ icon.bell(20) }}</span>
-                    <div><strong>Ne manquez rien</strong><span>Restez informé de vos réservations et des nouvelles activités.</span></div>
+                    <div><strong>{{ 'Ne manquez rien'|trans }}</strong><span>{{ 'Restez informé de vos réservations et des nouvelles activités.'|trans }}</span></div>
                 </div>
             </div>
 
-            <p class="acc-logout__confirm">Êtes-vous sûr de vouloir vous déconnecter ?</p>
+            <p class="acc-logout__confirm">{{ 'Êtes-vous sûr de vouloir vous déconnecter ?'|trans }}</p>
             <div class="acc-logout__actions">
-                <a href="{{ path('app_logout') }}" class="acc-logout__yes">{{ icon.logout(17) }} Oui, me déconnecter</a>
-                <button type="button" class="acc-logout__cancel" data-acc-back>Annuler</button>
+                <a href="{{ path('app_logout') }}" class="acc-logout__yes">{{ icon.logout(17) }} {{ 'Oui, me déconnecter'|trans }}</a>
+                <button type="button" class="acc-logout__cancel" data-acc-back>{{ 'Annuler'|trans }}</button>
             </div>
         </div>
     </div>
@@ -50,9 +50,9 @@
     <div class="acc-help">
         <span class="acc-help__icon">{{ icon.calendar_check(26) }}</span>
         <div class="acc-help__text">
-            <strong>Besoin d'aide ?</strong>
-            <span>Si vous rencontrez un problème ou avez des questions, notre équipe est là pour vous aider.</span>
+            <strong>{{ "Besoin d'aide ?"|trans }}</strong>
+            <span>{{ 'Si vous rencontrez un problème ou avez des questions, notre équipe est là pour vous aider.'|trans }}</span>
         </div>
-        <a href="#" class="acc-help__btn">{{ icon.mail(16) }} Nous contacter</a>
+        <a href="#" class="acc-help__btn">{{ icon.mail(16) }} {{ 'Nous contacter'|trans }}</a>
     </div>
 {% endblock %}

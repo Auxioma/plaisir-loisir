@@ -8,20 +8,20 @@
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<h1 class="gw-title">Définissez l'emplacement pour votre groupe</h1>
+<h1 class="gw-title">{{ "Définissez l'emplacement pour votre groupe"|trans }}</h1>
 
 <div class="gw-loc" id="gw-loc">
     <div class="gw-field">
         <span class="gw-field__icon">{{ icon.map_pin(20) }}</span>
         <input id="gw-loc-input" class="gw-field__control" type="text" placeholder="Lille"
                role="combobox" aria-expanded="false" aria-controls="gw-loc-menu"
-               aria-label="Emplacement du groupe" autocomplete="off">
+               aria-label="{{ 'Emplacement du groupe'|trans }}" autocomplete="off">
         <button type="button" class="gw-loc__clear" id="gw-loc-clear" hidden
-                aria-label="Effacer l'emplacement">{{ icon.x(20) }}</button>
+                aria-label="{{ "Effacer l'emplacement"|trans }}">{{ icon.x(20) }}</button>
     </div>
 
     <div class="gw-loc__menu" id="gw-loc-menu" hidden>
-        <ul class="gw-loc__options" role="listbox" aria-label="Suggestions d'emplacement">
+        <ul class="gw-loc__options" role="listbox" aria-label="{{ "Suggestions d'emplacement"|trans }}">
             {% for c in cities %}
                 <li role="option">
                     <button type="button" class="gw-loc__option" data-gw-city="{{ c.short }}">
@@ -30,7 +30,7 @@
                 </li>
             {% endfor %}
         </ul>
-        <p class="gw-loc__none" id="gw-loc-none" hidden>Aucun résultat trouvé</p>
-        <a href="#" class="gw-loc__more" id="gw-loc-more">Afficher plus</a>
+        <p class="gw-loc__none" id="gw-loc-none" hidden>{{ 'Aucun résultat trouvé'|trans }}</p>
+        <a href="#" class="gw-loc__more" id="gw-loc-more">{{ 'Afficher plus'|trans }}</a>
     </div>
 </div>

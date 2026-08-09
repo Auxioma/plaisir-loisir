@@ -8,16 +8,16 @@
 
 <article class="review-card">
     <div class="review-card__top">
-        <span class="review-card__stars" aria-label="{{ r.stars }} étoiles sur 5">
+        <span class="review-card__stars" aria-label="{{ r.stars }} {{ 'étoiles sur 5'|trans }}">
             {% for i in 1..5 %}
                 <span class="{{ i <= r.stars ? 'is-on' : 'is-off' }}">{{ icon.star(18) }}</span>
             {% endfor %}
         </span>
         <details class="review-card__menu">
-            <summary class="review-card__more" aria-label="Options de l'avis">{{ icon.dots(20) }}</summary>
+            <summary class="review-card__more" aria-label="{{ "Options de l'avis"|trans }}">{{ icon.dots(20) }}</summary>
             {% if r.reportable %}
                 <div class="review-card__menu-panel">
-                    <button type="button" class="review-card__menu-item">Signaler cet avis</button>
+                    <button type="button" class="review-card__menu-item">{{ 'Signaler cet avis'|trans }}</button>
                 </div>
             {% endif %}
         </details>
@@ -32,7 +32,7 @@
         </div>
     </div>
     <div class="review-card__foot">
-        <span>Est-ce que ça vous a aidé ? <button type="button" class="review-card__helpful" aria-label="Cet avis m'a aidé">{{ icon.thumbs_up(16) }}</button></span>
-        <a href="#">Traduire</a>
+        <span>{{ 'Est-ce que ça vous a aidé ?'|trans }} <button type="button" class="review-card__helpful" aria-label="{{ "Cet avis m'a aidé"|trans }}">{{ icon.thumbs_up(16) }}</button></span>
+        <a href="#">{{ 'Traduire'|trans }}</a>
     </div>
 </article>

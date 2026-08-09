@@ -6,13 +6,13 @@
 #}
 {% extends 'account/_layout.html.twig' %}
 
-{% block title %}Parrainage{% endblock %}
-{% block meta_description %}Invitez vos amis sur TrouveMoi et profitez du programme de parrainage.{% endblock %}
+{% block title %}{{ 'Parrainage'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Invitez vos amis sur TrouveMoi et profitez du programme de parrainage.'|trans }}{% endblock %}
 
 {% block account %}
     {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Parrainage' }],
-        title: 'Parrainage',
-        subtitle: 'Restez informé de toutes les nouveautés et activités qui vous intéressent.',
+        crumbs: [{ label: 'Parrainage'|trans }],
+        title: 'Parrainage'|trans,
+        subtitle: 'Restez informé de toutes les nouveautés et activités qui vous intéressent.'|trans,
     } %}
 {% endblock %}

@@ -7,15 +7,15 @@
 
 <section class="act-section evn-selection">
     <div class="home-container">
-        <h2 class="evn-section__title evn-selection__title">Votre sélection D'événements</h2>
+        <h2 class="evn-section__title evn-selection__title">{{ "Votre sélection D'événements"|trans }}</h2>
         <div class="act-citybar">
-            <button type="button" class="act-citybar__nav" aria-label="Villes précédentes">{{ icon.chevron_left(16) }}</button>
+            <button type="button" class="act-citybar__nav" aria-label="{{ 'Villes précédentes'|trans }}">{{ icon.chevron_left(16) }}</button>
             <div class="act-citybar__scroll">
                 {% for city in cities %}
                     <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">{{ city }}</button>
                 {% endfor %}
             </div>
-            <button type="button" class="act-citybar__nav" aria-label="Villes suivantes">{{ icon.chevron_right(16) }}</button>
+            <button type="button" class="act-citybar__nav" aria-label="{{ 'Villes suivantes'|trans }}">{{ icon.chevron_right(16) }}</button>
         </div>
         <div class="card-grid evn-sel-grid">
             {% for s in selections %}

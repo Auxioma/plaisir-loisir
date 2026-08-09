@@ -9,15 +9,15 @@
     <div class="evn-card__media">
         <img src="{{ asset(g.image) }}" alt="{{ g.name }}">
         {% if g.badge %}<span class="evn-badge evn-badge--new">{{ g.badge }}</span>{% endif %}
-        <span class="evn-card__fav" aria-label="Ajouter aux favoris">{{ icon.heart(16) }}</span>
+        <span class="evn-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</span>
     </div>
     <div class="evn-card__body">
-        <span class="evn-gcard__rating"><span class="evn-rating-pill">{{ icon.star(13) }} 4.5</span> 142 avis</span>
+        <span class="evn-gcard__rating"><span class="evn-rating-pill">{{ icon.star(13) }} 4.5</span> {{ '142 avis'|trans }}</span>
         <span class="evn-card__title">{{ g.name }}</span>
         <span class="evn-gcard__desc">{{ g.description|nl2br }}</span>
         <span class="evn-card__meta">{{ icon.map_pin(15) }} {{ g.location }}</span>
         <span class="evn-card__foot">
-            <span class="evn-card__meta">{{ icon.person(15) }} {{ g.members }} membres</span>
+            <span class="evn-card__meta">{{ icon.person(15) }} {{ g.members }} {{ 'membres'|trans }}</span>
             <span class="evn-avatars">
                 {% for a in avatars %}<img src="{{ asset(a) }}" alt="">{% endfor %}
             </span>

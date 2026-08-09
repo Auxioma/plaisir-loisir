@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Demande envoyée{% endblock %}
-{% block meta_description %}Votre demande d'adhésion au groupe est en cours d'examen par l'organisateur.{% endblock %}
+{% block title %}{{ 'Demande envoyée'|trans }}{% endblock %}
+{% block meta_description %}{{ "Votre demande d'adhésion au groupe est en cours d'examen par l'organisateur."|trans }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'groupes' } %}
@@ -12,21 +12,21 @@
 <div class="evn-page evn-sent">
     <div class="home-container">
 
-        <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
-            <a href="{{ path('app_home') }}">Accueil</a>
+        <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
             <span aria-hidden="true">/</span>
-            <a href="{{ path('app_groups') }}">Groupes</a>
+            <a href="{{ path('app_groups') }}">{{ 'Groupes'|trans }}</a>
             <span aria-hidden="true">/</span>
-            <span aria-current="page" class="evn-crumb-current">Groupe détails</span>
+            <span aria-current="page" class="evn-crumb-current">{{ 'Groupe détails'|trans }}</span>
         </nav>
 
         {# Confirmation « Demande envoyée » (capture 29). #}
         <div class="evn-sent__layout">
             <img class="evn-sent__img" src="{{ asset('images/events/grp-fitness-cover.jpg') }}" alt="">
             <div class="evn-sent__body">
-                <p class="evn-sent__label">Demande envoyée</p>
-                <h1 class="evn-sent__title">Votre demande<br>est en cours !</h1>
-                <p class="evn-sent__text">L'organisateur examine votre demande d'adhésion au<br>groupe Erasmus Paris EP et vous répondra.</p>
+                <p class="evn-sent__label">{{ 'Demande envoyée'|trans }}</p>
+                <h1 class="evn-sent__title">{{ 'Votre demande'|trans }}<br>{{ 'est en cours !'|trans }}</h1>
+                <p class="evn-sent__text">{{ "L'organisateur examine votre demande d'adhésion au"|trans }}<br>{{ 'groupe Erasmus Paris EP et vous répondra.'|trans }}</p>
             </div>
         </div>
 
@@ -35,9 +35,9 @@
             <img class="evn-explore__people" src="{{ asset('images/events/banner-explore.jpg') }}" alt="">
             <img class="evn-explore__palms" src="{{ asset('images/events/banner-palms.jpg') }}" alt="" aria-hidden="true">
             <div class="evn-explore__body">
-                <p class="evn-explore__title">Explorez d'autres groupes</p>
-                <p class="evn-explore__text">En attendant de recevoir des nouvelles, découvrez d'autres groupes !</p>
-                <a href="{{ path('app_groups') }}" class="pl-btn pl-btn--primary">Trouver d'autres groupes ou club</a>
+                <p class="evn-explore__title">{{ "Explorez d'autres groupes"|trans }}</p>
+                <p class="evn-explore__text">{{ "En attendant de recevoir des nouvelles, découvrez d'autres groupes !"|trans }}</p>
+                <a href="{{ path('app_groups') }}" class="pl-btn pl-btn--primary">{{ "Trouver d'autres groupes ou club"|trans }}</a>
             </div>
         </div>
 

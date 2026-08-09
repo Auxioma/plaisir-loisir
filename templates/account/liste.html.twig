@@ -7,15 +7,15 @@
 #}
 {% extends 'account/_layout.html.twig' %}
 
-{% block title %}{{ list_name }} — Mes listes de favoris{% endblock %}
-{% block meta_description %}Votre liste de favoris {{ list_name }} : retrouvez les activités que vous avez mises de côté.{% endblock %}
+{% block title %}{{ list_name }} — {{ 'Mes listes de favoris'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Votre liste de favoris %nom% : retrouvez les activités que vous avez mises de côté.'|trans({'%nom%': list_name}) }}{% endblock %}
 
 {% block account %}
     {% include 'account/_page_head.html.twig' with {
         crumbs: [
-            { label: 'Mes favoris', href: path('app_account_favorites') },
-            { label: 'Mes favoris - Destinations', href: path('app_account_favorites', { onglet: 'destinations' }) },
-            { label: 'Mes listes de favoris' },
+            { label: 'Mes favoris'|trans, href: path('app_account_favorites') },
+            { label: 'Mes favoris'|trans ~ ' - ' ~ 'Destinations'|trans, href: path('app_account_favorites', { onglet: 'destinations' }) },
+            { label: 'Mes listes de favoris'|trans },
         ],
         title: list_name,
     } %}

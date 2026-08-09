@@ -9,17 +9,17 @@
 
 <section class="home-section dest-reviews {{ in_column|default(false) ? 'dest-reviews--column' }}">
     <div class="{{ in_column|default(false) ? '' : 'home-container' }}">
-        <h2 class="home-section__title dest-reviews__title">Ce que disent les voyageurs</h2>
+        <h2 class="home-section__title dest-reviews__title">{{ 'Ce que disent les voyageurs'|trans }}</h2>
 
         <div class="dest-reviews__score">
-            <span class="dest-reviews__score-label">Note globale</span>
+            <span class="dest-reviews__score-label">{{ 'Note globale'|trans }}</span>
             <span class="home-reviews__score-value">4.5 <span>/5</span></span>
-            <span class="home-reviews__stars" aria-label="4,5 étoiles sur 5">
+            <span class="home-reviews__stars" aria-label="{{ '4,5 étoiles sur 5'|trans }}">
                 {% for i in 1..5 %}
                     <span class="{{ i <= 4 ? 'is-on' : 'is-off' }}">{{ icon.star(18) }}</span>
                 {% endfor %}
             </span>
-            <span class="home-reviews__score-count">Basé sur 999.589 avis</span>
+            <span class="home-reviews__score-count">{{ 'Basé sur 999.589 avis'|trans }}</span>
         </div>
 
         <div class="home-reviews__grid">

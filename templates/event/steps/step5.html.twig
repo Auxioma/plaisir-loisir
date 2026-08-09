@@ -1,48 +1,48 @@
 {# Étape 5 — Image et description. Galerie : limite fixée à 6 (spec n°5). #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<h2 class="ev-main__title">5. Image et description</h2>
-<p class="ev-main__lead">Ajoutez une image de couverture attrayante et décrivez votre événement.</p>
+<h2 class="ev-main__title">{{ '5. Image et description'|trans }}</h2>
+<p class="ev-main__lead">{{ 'Ajoutez une image de couverture attrayante et décrivez votre événement.'|trans }}</p>
 
-<h3 class="ev-main__subheading">Image de couverture *</h3>
-<p class="ev-main__subtext">Adresse exacte ou lieu spécifique</p>
+<h3 class="ev-main__subheading">{{ 'Image de couverture *'|trans }}</h3>
+<p class="ev-main__subtext">{{ 'Adresse exacte ou lieu spécifique'|trans }}</p>
 
 <div class="ev-dropzone">
-    <p><strong>Glissez-déposer une image ici</strong></p>
-    <p class="ev-dropzone__or">ou</p>
-    <button type="button" class="pl-btn pl-btn--primary">Choisir une image</button>
+    <p><strong>{{ 'Glissez-déposer une image ici'|trans }}</strong></p>
+    <p class="ev-dropzone__or">{{ 'ou'|trans }}</p>
+    <button type="button" class="pl-btn pl-btn--primary">{{ 'Choisir une image'|trans }}</button>
 </div>
-<p class="ev-field__hint">Formats acceptés : JPG, PNG, WebP • Taille max : 5Mo • Recommandé : 1200 × 630 px</p>
+<p class="ev-field__hint">{{ 'Formats acceptés : JPG, PNG, WebP • Taille max : 5Mo • Recommandé : 1200 × 630 px'|trans }}</p>
 
-<h3 class="ev-main__subheading">Galerie d'images <small>(optionnel)</small></h3>
-<p class="ev-main__subtext">Ajoutez jusqu'à 6 images supplémentaires pour présenter votre événement.</p>
+<h3 class="ev-main__subheading">{{ "Galerie d'images"|trans }} <small>{{ '(optionnel)'|trans }}</small></h3>
+<p class="ev-main__subtext">{{ "Ajoutez jusqu'à 6 images supplémentaires pour présenter votre événement."|trans }}</p>
 
 <div class="ev-gallery">
     {% for i in 1..6 %}
-        <button type="button" class="ev-gallery__slot" aria-label="Ajouter une image à la galerie">{{ icon.plus(20) }}</button>
+        <button type="button" class="ev-gallery__slot" aria-label="{{ 'Ajouter une image à la galerie'|trans }}">{{ icon.plus(20) }}</button>
     {% endfor %}
 </div>
 
-<h3 class="ev-main__subheading">Description détaillée *</h3>
-<p class="ev-main__subtext">Présentez votre événement en détail pour donner envie aux gens de participer.</p>
+<h3 class="ev-main__subheading">{{ 'Description détaillée *'|trans }}</h3>
+<p class="ev-main__subtext">{{ 'Présentez votre événement en détail pour donner envie aux gens de participer.'|trans }}</p>
 
 <div class="ev-editor">
-    <div class="ev-editor__toolbar" role="toolbar" aria-label="Mise en forme">
-        <button type="button" aria-label="Gras"><strong>B</strong></button>
-        <button type="button" aria-label="Italique"><em>I</em></button>
-        <button type="button" aria-label="Souligné"><u>U</u></button>
+    <div class="ev-editor__toolbar" role="toolbar" aria-label="{{ 'Mise en forme'|trans }}">
+        <button type="button" aria-label="{{ 'Gras'|trans }}"><strong>B</strong></button>
+        <button type="button" aria-label="{{ 'Italique'|trans }}"><em>I</em></button>
+        <button type="button" aria-label="{{ 'Souligné'|trans }}"><u>U</u></button>
         <span class="ev-editor__sep" aria-hidden="true"></span>
-        <button type="button" aria-label="Alignement">{{ icon.align_left(17) }}</button>
-        <button type="button" aria-label="Liste à puces">{{ icon.list_ul(17) }}</button>
+        <button type="button" aria-label="{{ 'Alignement'|trans }}">{{ icon.align_left(17) }}</button>
+        <button type="button" aria-label="{{ 'Liste à puces'|trans }}">{{ icon.list_ul(17) }}</button>
         <span class="ev-editor__sep" aria-hidden="true"></span>
-        <button type="button" aria-label="Liste ordonnée">{{ icon.list_ol(17) }}</button>
+        <button type="button" aria-label="{{ 'Liste ordonnée'|trans }}">{{ icon.list_ol(17) }}</button>
         <span class="ev-editor__sep" aria-hidden="true"></span>
-        <button type="button" aria-label="Insérer un lien">{{ icon.link(17) }}</button>
-        <button type="button" aria-label="Insérer une image">{{ icon.image(17) }}</button>
-        <button type="button" aria-label="Insérer un emoji">{{ icon.emoji(17) }}</button>
+        <button type="button" aria-label="{{ 'Insérer un lien'|trans }}">{{ icon.link(17) }}</button>
+        <button type="button" aria-label="{{ 'Insérer une image'|trans }}">{{ icon.image(17) }}</button>
+        <button type="button" aria-label="{{ 'Insérer un emoji'|trans }}">{{ icon.emoji(17) }}</button>
     </div>
     <div class="ev-textarea ev-textarea--borderless">
-        <textarea rows="7" maxlength="3000" placeholder="écrivez votre événement, le programme, les activités prévues, ce qu'il faut apporter, etc..." data-ev-counter="evDetailCount" aria-label="Description détaillée"></textarea>
+        <textarea rows="7" maxlength="3000" placeholder="{{ "écrivez votre événement, le programme, les activités prévues, ce qu'il faut apporter, etc..."|trans }}" data-ev-counter="evDetailCount" aria-label="{{ 'Description détaillée'|trans }}"></textarea>
         <span class="ev-textarea__count"><span id="evDetailCount">0</span>/3000</span>
     </div>
 </div>

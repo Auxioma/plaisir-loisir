@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Compétitions Canoë / Kayak{% endblock %}
-{% block meta_description %}Compétitions Canoë / Kayak à Autrans : rejoignez l'événement, découvrez les participants et réservez votre place.{% endblock %}
+{% block title %}{{ 'Compétitions Canoë / Kayak'|trans }}{% endblock %}
+{% block meta_description %}{{ "Compétitions Canoë / Kayak à Autrans : rejoignez l'événement, découvrez les participants et réservez votre place."|trans }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar_events.html.twig' with { connected: true, nav_active: 'evenements' } %}
@@ -12,17 +12,17 @@
 <div class="evn-page evn-detail">
     <div class="home-container">
 
-        <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
-            <a href="{{ path('app_home') }}">Accueil</a>
+        <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
             <span aria-hidden="true">/</span>
-            <a href="{{ path('app_events') }}">Événements</a>
+            <a href="{{ path('app_events') }}">{{ 'Événements'|trans }}</a>
             <span aria-hidden="true">/</span>
-            <span aria-current="page" class="evn-crumb-current">Compétitions Canoë / Kayak</span>
+            <span aria-current="page" class="evn-crumb-current">{{ 'Compétitions Canoë / Kayak'|trans }}</span>
         </nav>
 
         {% include 'event/nav/_banner.html.twig' with {
-            text: "Devenez organisateur : créez un événement aujourd'hui !",
-            cta: 'Créer un événement',
+            text: "Devenez organisateur : créez un événement aujourd'hui !"|trans,
+            cta: 'Créer un événement'|trans,
         } %}
 
         <div class="evn-detail__layout">
@@ -33,11 +33,11 @@
                Typo corrigée : « Organiser par » → Organisé par.
                ======================================================== #}
             <div class="evn-detail__main">
-                <h1 class="evn-detail__title">Compétitions Canoë / Kayak</h1>
+                <h1 class="evn-detail__title">{{ 'Compétitions Canoë / Kayak'|trans }}</h1>
 
                 <p class="evn-organizer">
                     <img src="{{ asset('images/events/avatar-thomas.jpg') }}" alt="">
-                    Organisé par <strong>Martin Thomas</strong>
+                    {{ 'Organisé par'|trans }} <strong>Martin Thomas</strong>
                 </p>
 
                 <a href="{{ path('app_group_detail') }}" class="evn-groupcard">
@@ -45,32 +45,32 @@
                     <span class="evn-groupcard__body">
                         <span class="evn-groupcard__name">Les passionnés de canoe -Kayak {{ icon.chevron_right(16) }}</span>
                         <span class="evn-groupcard__rating">
-                            <span class="evn-stars" aria-label="4,5 étoiles sur 5">
+                            <span class="evn-stars" aria-label="{{ '4,5 étoiles sur 5'|trans }}">
                                 {% for i in 1..5 %}<span class="{{ i <= 3 ? 'is-on' : 'is-off' }}">{{ icon.star(16) }}</span>{% endfor %}
                             </span>
                             <strong>4.5</strong>
                             <span class="evn-dot" aria-hidden="true"></span>
-                            <a href="#">14 évaluations</a>
+                            <a href="#">{{ '14 évaluations'|trans }}</a>
                         </span>
                     </span>
                 </a>
 
-                <h2 class="evn-h2">Détails</h2>
+                <h2 class="evn-h2">{{ 'Détails'|trans }}</h2>
                 <p class="evn-detail__text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
 
                 <div class="evn-parts__head">
-                    <h2 class="evn-h2">Participants <span class="evn-count-chip">12</span></h2>
-                    <a href="{{ path('app_events_participants') }}" class="evn-btn-dark">Tout voir {{ icon.arrow_up_right(15) }}</a>
+                    <h2 class="evn-h2">{{ 'Participants'|trans }} <span class="evn-count-chip">12</span></h2>
+                    <a href="{{ path('app_events_participants') }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
                 </div>
                 <div class="evn-parts">
                     {% for p in participants[1:4] %}
                         <div class="evn-part">
                             <span class="evn-part__avatar">
                                 <img src="{{ asset(p.avatar) }}" alt="">
-                                {% if loop.first %}<span class="evn-part__tag">Hôte</span>{% endif %}
+                                {% if loop.first %}<span class="evn-part__tag">{{ 'Hôte'|trans }}</span>{% endif %}
                             </span>
                             <span class="evn-part__name">{{ p.name }}</span>
-                            <span class="evn-part__role">{{ loop.first ? 'Assistant organisateur' : 'Membre' }}</span>
+                            <span class="evn-part__role">{{ loop.first ? ('Assistant organisateur'|trans) : ('Membre'|trans) }}</span>
                         </div>
                     {% endfor %}
                     <a href="{{ path('app_events_participants') }}" class="evn-part evn-part--more">
@@ -78,16 +78,16 @@
                             {% for a in avatars[:3] %}<img src="{{ asset(a) }}" alt="">{% endfor %}
                             <span class="evn-part__plus">+8</span>
                         </span>
-                        <span class="evn-part__name">+8 de plus</span>
+                        <span class="evn-part__name">{{ '+8 de plus'|trans }}</span>
                     </a>
                 </div>
 
-                <h2 class="evn-h2">Photos <span class="evn-count-chip">01</span></h2>
+                <h2 class="evn-h2">{{ 'Photos'|trans }} <span class="evn-count-chip">01</span></h2>
                 <div class="evn-photos">
                     <img src="{{ asset('images/events/ev-photo1.jpg') }}" alt="Photo de l'événement">
                 </div>
 
-                <button type="button" class="evn-report-btn" id="evn-report-open">{{ icon.send(16) }} Signaler l'événement</button>
+                <button type="button" class="evn-report-btn" id="evn-report-open">{{ icon.send(16) }} {{ "Signaler l'événement"|trans }}</button>
             </div>
 
             {# ========================================================
@@ -97,45 +97,45 @@
             <aside class="evn-detail__side">
                 <div class="evn-cover">
                     <img src="{{ asset('images/events/ev-raft.jpg') }}" alt="">
-                    <button type="button" class="evn-cover__flyer">{{ icon.image(16) }} Partager un flyer</button>
+                    <button type="button" class="evn-cover__flyer">{{ icon.image(16) }} {{ 'Partager un flyer'|trans }}</button>
                 </div>
 
                 <div class="evn-book">
-                    <p class="evn-book__price"><strong>À partir de 29€</strong> / personne</p>
+                    <p class="evn-book__price"><strong>{{ 'À partir de 29€'|trans }}</strong> {{ '/ personne'|trans }}</p>
                     <div class="evn-book__sep" aria-hidden="true"></div>
-                    <p class="evn-book__label">Voyageurs</p>
+                    <p class="evn-book__label">{{ 'Voyageurs'|trans }}</p>
                     <div class="evn-book__row">
-                        <span>Adulte (18 et + )</span>
+                        <span>{{ 'Adulte (18 et + )'|trans }}</span>
                         <span class="evn-stepper" data-evn-stepper data-min="1">
-                            <button type="button" data-step="-1" aria-label="Moins d'adultes">{{ icon.minus(14) }}</button>
+                            <button type="button" data-step="-1" aria-label="{{ "Moins d'adultes"|trans }}">{{ icon.minus(14) }}</button>
                             <output>2</output>
-                            <button type="button" data-step="1" aria-label="Plus d'adultes">{{ icon.plus(14) }}</button>
+                            <button type="button" data-step="1" aria-label="{{ "Plus d'adultes"|trans }}">{{ icon.plus(14) }}</button>
                         </span>
                     </div>
                     <div class="evn-book__row">
-                        <span>Enfants (0 à 17 ans )</span>
+                        <span>{{ 'Enfants (0 à 17 ans )'|trans }}</span>
                         <span class="evn-stepper" data-evn-stepper data-min="0">
-                            <button type="button" data-step="-1" aria-label="Moins d'enfants">{{ icon.minus(14) }}</button>
+                            <button type="button" data-step="-1" aria-label="{{ "Moins d'enfants"|trans }}">{{ icon.minus(14) }}</button>
                             <output>0</output>
-                            <button type="button" data-step="1" aria-label="Plus d'enfants">{{ icon.plus(14) }}</button>
+                            <button type="button" data-step="1" aria-label="{{ "Plus d'enfants"|trans }}">{{ icon.plus(14) }}</button>
                         </span>
                     </div>
                     <div class="evn-book__total">
-                        <span>Total</span>
+                        <span>{{ 'Total'|trans }}</span>
                         <strong>29€</strong>
                     </div>
-                    <button type="button" class="pl-btn pl-btn--primary pl-btn--block">Réservez maintenant</button>
+                    <button type="button" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Réservez maintenant'|trans }}</button>
                 </div>
 
                 <div class="evn-gift">
-                    <p class="evn-gift__title">C'est pour offrir ?</p>
-                    <p class="evn-gift__text">Choisissez le bon cadeau  <strong>Plaisirs &amp; Loisirs</strong> et offrez cette expérience en quelques minutes !</p>
-                    <a href="{{ path('app_gifts') }}" class="pl-btn pl-btn--primary pl-btn--block">Offrir maintenant</a>
+                    <p class="evn-gift__title">{{ "C'est pour offrir ?"|trans }}</p>
+                    <p class="evn-gift__text">{{ 'Choisissez le bon cadeau'|trans }}  <strong>Plaisirs &amp; Loisirs</strong> {{ 'et offrez cette expérience en quelques minutes !'|trans }}</p>
+                    <a href="{{ path('app_gifts') }}" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Offrir maintenant'|trans }}</a>
                 </div>
 
                 <div class="evn-agenda">
-                    <p class="evn-agenda__title">Ajouter à votre agenda {{ icon.calendar(18) }}</p>
-                    <p class="evn-agenda__date">Lundi 25 Mai 2023 11h00 - 13h30</p>
+                    <p class="evn-agenda__title">{{ 'Ajouter à votre agenda'|trans }} {{ icon.calendar(18) }}</p>
+                    <p class="evn-agenda__date">{{ 'Lundi 25 Mai 2023 11h00 - 13h30'|trans }}</p>
                 </div>
             </aside>
         </div>
@@ -143,7 +143,7 @@
         {# « Vous aimerez peut-être aussi » : cartes de type groupe
            (incohérence maquette assumée — point à trancher n°1). #}
         <section class="evn-section evn-section--similar">
-            <h2 class="evn-section__title">Vous aimerez peut-être aussi</h2>
+            <h2 class="evn-section__title">{{ 'Vous aimerez peut-être aussi'|trans }}</h2>
             <div class="card-grid evn-similar-grid">
                 {% for g in similar %}
                     {% include 'event/nav/_group_card.html.twig' with { g: g, avatars: avatars } %}

@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}Toutes les offres{% endblock %}
-{% block meta_description %}Toutes les offres et promotions du moment : réductions, ventes flash et dernières minutes sur vos activités préférées.{% endblock %}
+{% block title %}{{ 'Toutes les offres'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Toutes les offres et promotions du moment : réductions, ventes flash et dernières minutes sur vos activités préférées.'|trans }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar.html.twig' with { connected: true, nav_active: 'offres' } %}
@@ -15,119 +15,119 @@
        SIDEBAR DE FILTRES (écran 3) : rail pleine hauteur à gauche de tout
        le contenu, révélé via .has-filters (ancre #filtres / chip Filtre).
        ================================================================ #}
-    <aside class="act-filters of-filters" id="of-filters" aria-label="Filtres" hidden>
+    <aside class="act-filters of-filters" id="of-filters" aria-label="{{ 'Filtres'|trans }}" hidden>
         <div class="act-filters__head">
-            <span class="act-filters__title">Filtres</span>
-            <button type="button" class="act-filters__reset" id="of-filters-reset">Réinitialiser</button>
+            <span class="act-filters__title">{{ 'Filtres'|trans }}</span>
+            <button type="button" class="act-filters__reset" id="of-filters-reset">{{ 'Réinitialiser'|trans }}</button>
         </div>
 
-        <p class="of-filters__label">Filtres appliqués</p>
+        <p class="of-filters__label">{{ 'Filtres appliqués'|trans }}</p>
         <div class="act-filters__applied">
-            <button type="button" class="act-chip is-active">{{ icon.cat_crafts(14) }} Gastronomie {{ icon.x(12) }}</button>
+            <button type="button" class="act-chip is-active">{{ icon.cat_crafts(14) }} {{ 'Gastronomie'|trans }} {{ icon.x(12) }}</button>
         </div>
 
         <fieldset class="act-filters__group">
-            <legend>Réduction</legend>
-            {% for r in ['-10% et plus', '-20% et plus', '-30% et plus', '-40% et plus', '-50% et plus'] %}
+            <legend>{{ 'Réduction'|trans }}</legend>
+            {% for r in ['-10% et plus'|trans, '-20% et plus'|trans, '-30% et plus'|trans, '-40% et plus'|trans, '-50% et plus'|trans] %}
                 <label class="act-filters__check"><input type="checkbox"> <span>{{ r }}</span></label>
             {% endfor %}
         </fieldset>
 
         <fieldset class="act-filters__group">
-            <legend>Disponibilité</legend>
-            {% for d in ['Réservable maintenant', 'Dernière minutes', 'Cette semaine', 'Ce mois-ci'] %}
+            <legend>{{ 'Disponibilité'|trans }}</legend>
+            {% for d in ['Réservable maintenant'|trans, 'Dernière minutes'|trans, 'Cette semaine'|trans, 'Ce mois-ci'|trans] %}
                 <label class="act-filters__check"><input type="checkbox"> <span>{{ d }}</span></label>
             {% endfor %}
         </fieldset>
 
         <fieldset class="act-filters__group of-budget" id="of-budget">
-            <legend>Budget (par personne)</legend>
-            <div class="act-budget__bounds"><span>0€</span><span>1050€ et +</span></div>
+            <legend>{{ 'Budget (par personne)'|trans }}</legend>
+            <div class="act-budget__bounds"><span>0€</span><span>{{ '1050€ et +'|trans }}</span></div>
             <div class="act-budget__slider">
                 <div class="act-budget__track" aria-hidden="true"></div>
                 <div class="act-budget__range" data-budget-range aria-hidden="true"></div>
-                <input type="range" min="0" max="1050" step="1" value="154" data-budget-min aria-label="Budget minimum">
-                <input type="range" min="0" max="1050" step="1" value="1050" data-budget-max aria-label="Budget maximum">
+                <input type="range" min="0" max="1050" step="1" value="154" data-budget-min aria-label="{{ 'Budget minimum'|trans }}">
+                <input type="range" min="0" max="1050" step="1" value="1050" data-budget-max aria-label="{{ 'Budget maximum'|trans }}">
             </div>
             <div class="act-budget__inputs">
-                <input type="text" inputmode="numeric" value="154€" data-budget-input-min aria-label="Budget minimum en euros">
-                <input type="text" inputmode="numeric" value="1050+€" data-budget-input-max aria-label="Budget maximum en euros">
+                <input type="text" inputmode="numeric" value="154€" data-budget-input-min aria-label="{{ 'Budget minimum en euros'|trans }}">
+                <input type="text" inputmode="numeric" value="1050+€" data-budget-input-max aria-label="{{ 'Budget maximum en euros'|trans }}">
             </div>
         </fieldset>
 
         <fieldset class="act-filters__group">
-            <legend>Type d'offre</legend>
-            {% for t in ['Offres spéciales', 'Ventes flash', 'Pack et combo', 'Nouveautés'] %}
+            <legend>{{ "Type d'offre"|trans }}</legend>
+            {% for t in ['Offres spéciales'|trans, 'Ventes flash'|trans, 'Pack et combo'|trans, 'Nouveautés'|trans] %}
                 <label class="act-filters__check"><input type="checkbox"> <span>{{ t }}</span></label>
             {% endfor %}
         </fieldset>
 
         {# Typo maquette corrigée : « Voirs » → « Voir ». Compteur intégré au bouton. #}
-        <button type="button" class="pl-btn pl-btn--primary pl-btn--block">Voir les 87 offres</button>
+        <button type="button" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Voir les 87 offres'|trans }}</button>
     </aside>
 
     <div class="of-main">
 
     <section class="act-head">
         <div class="home-container">
-            <nav class="act-breadcrumb" aria-label="Fil d'Ariane">
-                <a href="{{ path('app_home') }}">Accueil</a>
+            <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+                <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
                 <span aria-hidden="true">/</span>
-                <a href="{{ path('app_offers') }}">Offres du moments</a>
+                <a href="{{ path('app_offers') }}">{{ 'Offres du moments'|trans }}</a>
                 <span aria-hidden="true">/</span>
-                <span aria-current="page">Toutes les offres</span>
+                <span aria-current="page">{{ 'Toutes les offres'|trans }}</span>
             </nav>
 
-            <h1 class="act-head__title">Toutes les offres</h1>
-            <p class="act-head__subtitle">Découvrez toutes nos offres et promotions du moment : réductions, ventes flash et dernières minutes sur des activités partout en France. Meilleur prix garanti - Annulation gratuite</p>
+            <h1 class="act-head__title">{{ 'Toutes les offres'|trans }}</h1>
+            <p class="act-head__subtitle">{{ 'Découvrez toutes nos offres et promotions du moment : réductions, ventes flash et dernières minutes sur des activités partout en France. Meilleur prix garanti - Annulation gratuite'|trans }}</p>
 
             <form class="act-search" role="search" action="{{ path('app_offers_all') }}" method="get">
                 <div class="act-search__bar">
                     <label class="act-search__field">
                         {{ icon.map_pin(18) }}
-                        <input type="text" name="lieu" value="Lille" aria-label="Lieu">
+                        <input type="text" name="lieu" value="Lille" aria-label="{{ 'Lieu'|trans }}">
                     </label>
                     <span class="act-search__sep" aria-hidden="true"></span>
                     <label class="act-search__field">
                         {{ icon.search(18) }}
-                        <input type="text" name="q" placeholder="Recherches par mots-clés" aria-label="Mots-clés">
+                        <input type="text" name="q" placeholder="{{ 'Recherches par mots-clés'|trans }}" aria-label="{{ 'Mots-clés'|trans }}">
                     </label>
                 </div>
-                <button type="submit" class="act-search__submit" aria-label="Rechercher">{{ icon.search(20) }}</button>
+                <button type="submit" class="act-search__submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(20) }}</button>
             </form>
 
             <div class="act-toolbar of-toolbar">
                 <div class="act-toolbar__right">
-                    <button type="button" class="act-tool" id="of-map-toggle">{{ icon.map(18) }} Afficher la carte</button>
-                    <div class="act-viewswitch" role="group" aria-label="Mode d'affichage">
-                        <button type="button" class="act-viewbtn is-active" aria-label="Affichage en grille">{{ icon.sliders(18) }}</button>
-                        <button type="button" class="act-viewbtn" aria-label="Affichage en liste">{{ icon.list_view(18) }}</button>
+                    <button type="button" class="act-tool" id="of-map-toggle">{{ icon.map(18) }} {{ 'Afficher la carte'|trans }}</button>
+                    <div class="act-viewswitch" role="group" aria-label="{{ "Mode d'affichage"|trans }}">
+                        <button type="button" class="act-viewbtn is-active" aria-label="{{ 'Affichage en grille'|trans }}">{{ icon.sliders(18) }}</button>
+                        <button type="button" class="act-viewbtn" aria-label="{{ 'Affichage en liste'|trans }}">{{ icon.list_view(18) }}</button>
                     </div>
                 </div>
             </div>
 
             <div class="act-chipbar">
                 <button type="button" class="act-chip act-chip--filter" id="of-chip-filter" aria-expanded="false" aria-controls="of-filters">
-                    <span class="of-chip-default">{{ icon.sliders(16) }} Filtre</span>
-                    <span class="of-chip-open" hidden>{{ icon.chevron_left(16) }} Filtre</span>
+                    <span class="of-chip-default">{{ icon.sliders(16) }} {{ 'Filtre'|trans }}</span>
+                    <span class="of-chip-open" hidden>{{ icon.chevron_left(16) }} {{ 'Filtre'|trans }}</span>
                 </button>
                 <span class="act-chipbar__sep" aria-hidden="true"></span>
                 <div class="act-chipbar__scroll">
                     {# État fermé : Toutes active. État ouvert : Gastronomies active (JS). #}
-                    <button type="button" class="act-chip is-active" data-of-chip="toutes">{{ icon.grid(16) }} Toutes</button>
-                    <button type="button" class="act-chip" data-of-chip="gastro" hidden>{{ icon.cat_crafts(16) }} Gastronomies</button>
-                    <button type="button" class="act-chip">{{ icon.tree(16) }} Sports &amp; Aventure</button>
-                    <button type="button" class="act-chip">{{ icon.cat_wellness(16) }} Bien-être</button>
-                    <button type="button" class="act-chip">{{ icon.cat_culture(16) }} Cultures et découverte</button>
-                    <button type="button" class="act-chip">{{ icon.cat_family(16) }} En famille</button>
-                    <button type="button" class="act-chip">{{ icon.cat_crafts(16) }} Gastronomies</button>
+                    <button type="button" class="act-chip is-active" data-of-chip="toutes">{{ icon.grid(16) }} {{ 'Toutes'|trans }}</button>
+                    <button type="button" class="act-chip" data-of-chip="gastro" hidden>{{ icon.cat_crafts(16) }} {{ 'Gastronomies'|trans }}</button>
+                    <button type="button" class="act-chip">{{ icon.tree(16) }} {{ 'Sports & Aventure'|trans }}</button>
+                    <button type="button" class="act-chip">{{ icon.cat_wellness(16) }} {{ 'Bien-être'|trans }}</button>
+                    <button type="button" class="act-chip">{{ icon.cat_culture(16) }} {{ 'Cultures et découverte'|trans }}</button>
+                    <button type="button" class="act-chip">{{ icon.cat_family(16) }} {{ 'En famille'|trans }}</button>
+                    <button type="button" class="act-chip">{{ icon.cat_crafts(16) }} {{ 'Gastronomies'|trans }}</button>
                 </div>
-                <button type="button" class="act-chipbar__more" aria-label="Faire défiler les filtres">{{ icon.chevron_right(16) }}</button>
+                <button type="button" class="act-chipbar__more" aria-label="{{ 'Faire défiler les filtres'|trans }}">{{ icon.chevron_right(16) }}</button>
             </div>
 
             <div class="act-results">
-                <p class="act-results__count"><strong>400+</strong> de résultats trouvés</p>
-                <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} Trier par: <strong>Les plus populaires</strong></button>
+                <p class="act-results__count"><strong>400+</strong> {{ 'de résultats trouvés'|trans }}</p>
+                <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ 'Les plus populaires'|trans }}</strong></button>
             </div>
         </div>
     </section>
@@ -140,7 +140,7 @@
                 {% endfor %}
             </div>
             <div class="act-more">
-                <button type="button" class="pl-btn pl-btn--outline-action">Voir plus d'offres {{ icon.chevron_down(16) }}</button>
+                <button type="button" class="pl-btn pl-btn--outline-action">{{ "Voir plus d'offres"|trans }} {{ icon.chevron_down(16) }}</button>
             </div>
         </div>
     </section>

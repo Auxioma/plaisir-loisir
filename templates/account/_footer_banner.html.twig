@@ -6,8 +6,8 @@
 <div class="acc-banner">
     <span class="acc-banner__icon">{{ icon.heart(26) }}</span>
     <div class="acc-banner__text">
-        <strong>Une activité n'est plus disponible ou ne vous intéresse plus ?</strong>
-        <span>Vous pouvez la supprimer de vos favoris à tout moment.</span>
+        <strong>{{ "Une activité n'est plus disponible ou ne vous intéresse plus ?"|trans }}</strong>
+        <span>{{ 'Vous pouvez la supprimer de vos favoris à tout moment.'|trans }}</span>
     </div>
-    <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--outline-action">Parcourir les activités</a>
+    <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--outline-action">{{ 'Parcourir les activités'|trans }}</a>
 </div>

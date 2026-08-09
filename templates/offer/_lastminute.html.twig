@@ -5,9 +5,9 @@
     <div class="home-container">
         <div class="home-section__head">
             <div>
-                <h2 class="home-section__title">Dernière minutes</h2>
+                <h2 class="home-section__title">{{ 'Dernière minutes'|trans }}</h2>
             </div>
-            <a href="{{ path('app_offers_all') }}" class="btn-see-all">Voir toutes les dernières minutes {{ icon.arrow_up_right(16) }}</a>
+            <a href="{{ path('app_offers_all') }}" class="btn-see-all">{{ 'Voir toutes les dernières minutes'|trans }} {{ icon.arrow_up_right(16) }}</a>
         </div>
         <div class="card-grid">
             {% for o in lastMinute %}

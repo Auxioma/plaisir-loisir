@@ -1,5 +1,11 @@
 framework:
-    default_locale: en
+    # Le français est la langue de référence : les clés de traduction SONT
+    # les textes français des maquettes (pas de catalogue fr nécessaire,
+    # le translator retombe sur la clé). L'anglais vit dans
+    # translations/messages.en.yaml.
+    default_locale: fr
+    enabled_locales: ['fr', 'en']
     translator:
         default_path: '%kernel.project_dir%/translations'
+        fallbacks: ['fr']
         providers:

@@ -7,6 +7,9 @@
       - nav_active : la maquette peint « Activités » en violet sur tous les
         écrans, SAUF sur le flow Offres où « Offres du moments » passe en
         orange et « Activités » redevient foncé (export Offres du moment1).
+
+    Icônes connectées câblées sur l'espace compte : cœur → Mes favoris,
+    cloche → Notifications, avatar → espace compte (messagerie à venir).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 {% set connected = connected|default(false) %}
@@ -15,33 +18,33 @@
 <header class="pl-navbar pl-navbar--connected">
     <div class="pl-navbar__inner">
         <div class="pl-navbar__left">
-            <a href="{{ path('app_home') }}" class="pl-navbar__logo" aria-label="Accueil TrouveMoi">
+            <a href="{{ path('app_home') }}" class="pl-navbar__logo" aria-label="{{ 'Accueil TrouveMoi'|trans }}">
                 <img src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir & Loisirs">
             </a>
 
-            <nav class="pl-nav pl-nav--connected" aria-label="Navigation principale">
-                <a href="{{ path('app_activities') }}" class="pl-nav__link {{ nav_active not in ['offres', 'cadeaux'] ? 'is-active' }}">Activités</a>
-                <a href="{{ path('app_destinations') }}" class="pl-nav__link pl-nav__link--badged">Destinations <span class="pl-nav__badge">Nouveau</span></a>
-                <a href="{{ path('app_offers') }}" class="pl-nav__link pl-nav__link--offres {{ nav_active == 'offres' ? 'is-active-cta' }}">{{ icon.flame(18) }} Offres du moments</a>
-                <a href="{{ path('app_gifts') }}" class="pl-nav__link {{ nav_active == 'cadeaux' ? 'is-active' }}">{{ icon.gift(18) }} Cadeaux</a>
-                <a href="#" class="pl-nav__link pl-nav__link--badged">Activités privées <span class="pl-nav__badge">Nouveau</span></a>
+            <nav class="pl-nav pl-nav--connected" aria-label="{{ 'Navigation principale'|trans }}">
+                <a href="{{ path('app_activities') }}" class="pl-nav__link {{ nav_active not in ['offres', 'cadeaux'] ? 'is-active' }}">{{ 'Activités'|trans }}</a>
+                <a href="{{ path('app_destinations') }}" class="pl-nav__link pl-nav__link--badged">{{ 'Destinations'|trans }} <span class="pl-nav__badge">{{ 'Nouveau'|trans }}</span></a>
+                <a href="{{ path('app_offers') }}" class="pl-nav__link pl-nav__link--offres {{ nav_active == 'offres' ? 'is-active-cta' }}">{{ icon.flame(18) }} {{ 'Offres du moments'|trans }}</a>
+                <a href="{{ path('app_gifts') }}" class="pl-nav__link {{ nav_active == 'cadeaux' ? 'is-active' }}">{{ icon.gift(18) }} {{ 'Cadeaux'|trans }}</a>
+                <a href="#" class="pl-nav__link pl-nav__link--badged">{{ 'Activités privées'|trans }} <span class="pl-nav__badge">{{ 'Nouveau'|trans }}</span></a>
             </nav>
         </div>
 
         <div class="pl-navbar__actions">
-            <a href="#" class="pl-btn pl-btn--cta">Déposer une annonce</a>
+            <a href="#" class="pl-btn pl-btn--cta">{{ 'Déposer une annonce'|trans }}</a>
 
             {% if connected %}
-                <button type="button" class="pl-iconbtn" aria-label="Mes favoris">{{ icon.heart(20) }}</button>
-                <button type="button" class="pl-iconbtn" aria-label="Messagerie">{{ icon.mail(20) }}</button>
-                <button type="button" class="pl-iconbtn" aria-label="Notifications">{{ icon.bell(20) }}</button>
+                <a href="{{ path('app_account_favorites') }}" class="pl-iconbtn" aria-label="{{ 'Mes favoris'|trans }}">{{ icon.heart(20) }}</a>
+                <button type="button" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">{{ icon.mail(20) }}</button>
+                <a href="{{ path('app_account_notifications') }}" class="pl-iconbtn" aria-label="{{ 'Notifications'|trans }}">{{ icon.bell(20) }}</a>
 
-                <button type="button" class="pl-avatarbtn" aria-label="Paramètre du profil">
+                <a href="{{ path('app_account_favorites') }}" class="pl-avatarbtn" aria-label="{{ 'Paramètre du profil'|trans }}">
                     <img src="{{ asset('images/home/avatar-1.png') }}" alt="">
                     <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
-                </button>
+                </a>
             {% else %}
-                <a href="{{ path('app_auth_choice') }}" class="pl-btn pl-btn--outline-dark pl-btn--signup">{{ icon.person(18) }} S'inscrire</a>
+                <a href="{{ path('app_auth_choice') }}" class="pl-btn pl-btn--outline-dark pl-btn--signup">{{ icon.person(18) }} {{ "S'inscrire"|trans }}</a>
             {% endif %}
         </div>
     </div>

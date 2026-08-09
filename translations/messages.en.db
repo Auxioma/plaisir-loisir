@@ -1,0 +1,1 @@
+﻿# Fichier temoin : le catalogue anglais est charge depuis la table translation (loader db, src/I18n). Toucher ce fichier invalide le cache du translator.

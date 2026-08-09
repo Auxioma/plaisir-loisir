@@ -18,6 +18,8 @@ services:
             string $elasticsearchUrl: '%env(ELASTICSEARCH_URL)%'
             # Secret de signature du webhook Stripe (vérifie l'authenticité des appels).
             string $stripeWebhookSecret: '%env(STRIPE_WEBHOOK_SECRET)%'
+            # Racine du projet (graine de traductions, fichiers témoins).
+            string $projectDir: '%kernel.project_dir%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -40,6 +42,12 @@ services:
     # La création de sessions de paiement est codée contre l'interface
     # CheckoutGateway ; résolue vers l'implémentation Stripe (testable via un stub).
     App\Payment\Stripe\CheckoutGateway: '@App\Payment\Stripe\StripeCheckoutGateway'
+
+    # Traductions administrables en base (demande CTO) : le loader « db »
+    # est branché sur les fichiers témoins translations/messages.{locale}.db.
+    App\I18n\Translation\DatabaseTranslationLoader:
+        tags:
+            - { name: translation.loader, alias: db }
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

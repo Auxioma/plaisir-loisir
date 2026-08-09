@@ -15,34 +15,33 @@
             {# ---- Colonne de gauche : accroche + arguments (identique partout) ---- #}
             <section class="auth-welcome">
                 <h1 class="auth-welcome__title">
-                    Bienvenue sur<br>
+                    {{ 'Bienvenue sur'|trans }}<br>
                     TrouveMoi <span class="is-plaisirs">Plaisirs</span> &amp; <span class="is-loisirs">Loisirs</span>
                 </h1>
                 <p class="auth-welcome__subtitle">
-                    Connectez-vous pour découvrir des activités incroyables, réserver
-                    vos loisirs préférés et vivre des expériences inoubliables.
+                    {{ 'Connectez-vous pour découvrir des activités incroyables, réserver vos loisirs préférés et vivre des expériences inoubliables.'|trans }}
                 </p>
 
                 <div class="auth-features">
                     <div class="auth-feature">
                         <div class="auth-feature__icon">{{ icon.compass() }}</div>
                         <div>
-                            <div class="auth-feature__title">Découvrez</div>
-                            <div class="auth-feature__desc">Trouvez des activités et destinations qui vous ressemblent.</div>
+                            <div class="auth-feature__title">{{ 'Découvrez'|trans }}</div>
+                            <div class="auth-feature__desc">{{ 'Trouvez des activités et destinations qui vous ressemblent.'|trans }}</div>
                         </div>
                     </div>
                     <div class="auth-feature">
                         <div class="auth-feature__icon">{{ icon.calendar_check() }}</div>
                         <div>
-                            <div class="auth-feature__title">Réservez</div>
-                            <div class="auth-feature__desc">Réservez facilement vos activités en quelques clics.</div>
+                            <div class="auth-feature__title">{{ 'Réservez'|trans }}</div>
+                            <div class="auth-feature__desc">{{ 'Réservez facilement vos activités en quelques clics.'|trans }}</div>
                         </div>
                     </div>
                     <div class="auth-feature">
                         <div class="auth-feature__icon">{{ icon.heart() }}</div>
                         <div>
-                            <div class="auth-feature__title">Profitez</div>
-                            <div class="auth-feature__desc">Vivez des moments uniques et partagez vos expériences.</div>
+                            <div class="auth-feature__title">{{ 'Profitez'|trans }}</div>
+                            <div class="auth-feature__desc">{{ 'Vivez des moments uniques et partagez vos expériences.'|trans }}</div>
                         </div>
                     </div>
                 </div>
