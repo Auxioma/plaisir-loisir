@@ -83,11 +83,14 @@
 /* ===========================================================================
  *  HERO
  * ======================================================================== */
+/* Maquette : le héros occupe 577px sous la navbar (y100 → y677). Calage
+   déterministe : contenu accroché en haut + padding, plutôt qu'un centrage
+   vertical dont le résultat dépend de la hauteur du contenu. */
 .home-hero {
     position: relative;
-    min-height: 560px;
+    min-height: 577px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     overflow: hidden;
 }
 .home-hero__bg {
@@ -112,7 +115,7 @@
     position: relative;
     z-index: 2;
     width: 100%;
-    padding-block: 83px 37px;
+    padding-block: 96px 0;
     color: var(--pl-text);
 }
 .home-hero__title {
@@ -208,12 +211,14 @@
 .home-search__tab.is-active { background: var(--pl-white); color: var(--pl-cta); }
 .home-search__tab.is-active .pl-icon { color: var(--pl-cta); }
 
+/* Maquette : rangée de champs de 116px de haut, bouton inséré à 31px du
+   bord droit de la carte. */
 .home-search__fields {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr auto;
     align-items: center;
     gap: var(--pl-sp-8);
-    padding: var(--pl-sp-12) var(--pl-sp-16);
+    padding: 26px 31px;
     border-top: 1px solid var(--pl-border);
 }
 .home-search__field {
@@ -227,7 +232,8 @@
 .home-search__field .pl-icon { color: var(--pl-primary); flex-shrink: 0; }
 .home-search__field-label { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
 .home-search__field-value { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
-.home-search__submit { height: 100%; min-height: 52px; padding-inline: var(--pl-sp-24); }
+/* Maquette : 130×48. */
+.home-search__submit { min-height: 48px; height: 48px; padding-inline: 18px; }
 
 /* ===========================================================================
  *  SECTIONS génériques
@@ -447,13 +453,14 @@
 /* --- Hero kayak : voile foncé à gauche, textes clairs. --- */
 /* Proportions maquette : hero ~665px, carte de recherche en chevauchement
    profond (-160px), voile navy plus soutenu jusqu'à droite. */
-.home-hero--connected { min-height: 660px; align-items: flex-start; }
+/* Maquette : héros connecté de 573px (y100 → y673), titre à y217. */
+.home-hero--connected { min-height: 573px; align-items: flex-start; }
 .home-hero__overlay--dark {
     background:
         linear-gradient(90deg, rgba(4, 18, 60, .96) 0%, rgba(4, 18, 60, .88) 26%, rgba(4, 18, 60, .5) 52%, rgba(4, 18, 60, .2) 72%, rgba(4, 18, 60, .12) 100%),
         linear-gradient(180deg, rgba(4, 18, 60, .3) 0%, transparent 28%);
 }
-.home-hero--connected .home-hero__inner { padding-block: 44px 200px; }
+.home-hero--connected .home-hero__inner { padding-block: 97px 0; }
 .home-connected .home-search-wrap { margin-top: -160px; }
 /* Maquette : 25px (~0,5 cm) entre les boutons du hero et les pilules. */
 .home-hero--connected .home-hero__actions { margin-bottom: 25px; }
