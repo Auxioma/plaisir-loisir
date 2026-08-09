@@ -6,11 +6,13 @@
  * ============================================================================
  */
 
-/* Conteneur centré, aligné sur la navbar. */
+/* Conteneur centré, aligné sur la navbar.
+   Mesuré sur les maquettes (grille de cartes bord à bord : x104 → x1335) :
+   contenu de 1232px, donc 104px de marge de chaque côté. */
 .home-container {
     max-width: var(--pl-container-desktop);   /* 1440px */
     margin: 0 auto;
-    padding-inline: 100px;
+    padding-inline: 110px;
 }
 
 /* ===========================================================================
@@ -110,16 +112,17 @@
     position: relative;
     z-index: 2;
     width: 100%;
-    padding-block: 64px 96px;
+    padding-block: 83px 37px;
     color: var(--pl-text);
 }
 .home-hero__title {
-    max-width: 620px;
-    font-size: 52px;
+    max-width: 660px;
+    /* Maquette : capitale de 40px et interligne cap-à-cap de 63px. */
+    font-size: 56px;
     font-weight: var(--pl-fw-bold);
-    line-height: 62px;
+    line-height: 63px;
     color: var(--pl-primary);
-    margin: 0 0 var(--pl-sp-16);
+    margin: 0 0 34px;
 }
 /* « souvenirs ! » en orange, souligné d'un trait dessiné à la main. */
 .home-hero__title .is-accent {
@@ -137,14 +140,17 @@
     background: no-repeat center / 100% 100%
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 14' fill='none'%3E%3Cpath d='M3 10C60 4 180 2 297 8' stroke='%23ff7a00' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E");
 }
+/* Maquette : 18px, interligne 29px, coupure après « à des » (2 lignes). */
 .home-hero__subtitle {
-    max-width: 470px;
-    font-size: var(--pl-fs-body);
-    line-height: var(--pl-lh-base);
+    max-width: 520px;
+    font-size: 18px;
+    line-height: 29px;
     color: var(--pl-text-secondary);
     margin: 0 0 var(--pl-sp-24);
 }
 .home-hero__actions { display: flex; gap: var(--pl-sp-12); flex-wrap: wrap; margin-bottom: var(--pl-sp-28); }
+/* Maquette : boutons du héros 216×40 (un cran plus compacts que le socle). */
+.home-hero__actions .pl-btn { padding: 9px 12px; min-height: 40px; }
 
 /* Second bouton du hero : blanc, bord discret, texte foncé (sur voile clair). */
 .pl-btn--hero-ghost {
@@ -234,8 +240,11 @@
     gap: var(--pl-sp-24);
     margin-bottom: var(--pl-sp-32);
 }
-/* Maquette 21/07 : grands titres de section (~40px, demi-gras). */
-.home-section__title { font-size: 38px; font-weight: var(--pl-fw-semibold); color: var(--pl-text); margin: 0 0 var(--pl-sp-8); letter-spacing: -.01em; }
+/* Les grilles d'images sortent de 6px ; le texte reste sur la marge 110px. */
+.home-section__head + .card-grid { margin-top: 0; }
+/* Maquette (mesuré au pixel : capitale 36px, largeur 540px pour « Activités
+   coup de coeur ») → Inter 48px graisse 500, sans interlettrage négatif. */
+.home-section__title { font-size: 48px; font-weight: var(--pl-fw-medium); color: var(--pl-text); margin: 0 0 var(--pl-sp-8); letter-spacing: normal; }
 .home-section__subtitle { max-width: 620px; font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0; }
 
 /* Bouton foncé « Voir tout ». */
@@ -258,7 +267,12 @@
 /* ===========================================================================
  *  CARTES (activités & destinations)
  * ======================================================================== */
-.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--pl-sp-24); }
+/* Maquette : les grilles d'images débordent de 6px de chaque côté des blocs
+   de texte (contenu 1232px, x104 → x1335) ; 4 cartes de 296px, gouttière 16. */
+.card-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin-inline: -6px;
+}
 
 .pl-card {
     display: flex;
