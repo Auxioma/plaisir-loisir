@@ -49,6 +49,7 @@
     color: var(--pl-text);
     margin: 0 0 var(--pl-sp-12);
 }
+.auth-welcome__brand { white-space: nowrap; }
 .auth-welcome__title .is-plaisirs { color: var(--pl-success); }  /* vert */
 .auth-welcome__title .is-loisirs  { color: var(--pl-info); }     /* bleu */
 
@@ -91,15 +92,16 @@
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--pl-sp-38);                     /* 38px entre les blocs */
+    /* Maquette : 23px entre l'en-tête et le formulaire (mesuré sur 591:65942). */
+    gap: 23px;
     padding: var(--pl-sp-32) var(--pl-sp-24);
     background: var(--pl-white);
     border-radius: 24px;
     box-shadow: 0 8px 12px rgba(15, 23, 42, .1);
 }
 
-/* Le formulaire empile ses blocs avec le même écart que la carte. */
-.auth-form { display: flex; flex-direction: column; gap: var(--pl-sp-38); }
+/* Maquette : 10px entre le dernier champ et le bloc conditions + bouton. */
+.auth-form { display: flex; flex-direction: column; gap: 10px; }
 
 .auth-card__header { display: flex; flex-direction: column; gap: var(--pl-sp-4); }
 .auth-card__title {
@@ -288,15 +290,11 @@
     box-shadow: 0 0 0 3px var(--pl-action-light);
 }
 
-/* Champ « Statut juridique » : visible seulement quand « Professionnel »
-   est coché (aucun JavaScript nécessaire). */
-.auth-field.auth-field--pro { display: none; }
-.auth-form:has(.auth-acctype input[value="pro"]:checked) .auth-field.auth-field--pro { display: flex; }
-
 .auth-input--select select { cursor: pointer; }
 
 /* ---- Champs de formulaire ---------------------------------------------- */
-.auth-fields { display: flex; flex-direction: column; gap: var(--pl-sp-12); }
+/* Maquette : pas de 93px d'un libellé au suivant, soit 9px entre les champs. */
+.auth-fields { display: flex; flex-direction: column; gap: 9px; }
 
 .auth-field { display: flex; flex-direction: column; gap: var(--pl-sp-8); }
 .auth-field__label {
@@ -387,6 +385,18 @@
     font-size: var(--pl-fs-body);
     color: var(--pl-text);
 }
+
+/* Maquette : l'accès professionnel s'affiche sur deux lignes centrées, sous
+   le lien de connexion. Bloc (et non flex) pour que le retour à la ligne
+   fonctionne. */
+.auth-switch--pro {
+    display: block;
+    text-align: center;
+    line-height: var(--pl-lh-base);
+}
+
+/* Maquette : bouton principal de la carte à 40px de haut. */
+.auth-actions .pl-btn--block { min-height: 40px; }
 
 /* Case à cocher des conditions (inscription). */
 .auth-terms {

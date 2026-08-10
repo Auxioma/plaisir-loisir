@@ -7,6 +7,13 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
+{# Maquette : les écrans d'authentification portent la navbar réduite
+   (Découvrez + langue + Déposer une annonce + S'inscrire), pas la navbar
+   complète du catalogue. C'est déjà celle de l'écran de choix Pro/Client. #}
+{% block header %}
+    {% include '_partials/navbar_home.html.twig' %}
+{% endblock %}
+
 {% block body %}
     <div class="auth-hero">
         <img class="auth-hero__bg" src="{{ asset('images/hero-auth.png') }}" alt="">
@@ -14,9 +21,11 @@
         <div class="auth-hero__row">
             {# ---- Colonne de gauche : accroche + arguments (identique partout) ---- #}
             <section class="auth-welcome">
+                {# Maquette : deux lignes exactement — la seconde ne doit jamais
+                   se couper (elle mesure 588px pour une colonne de 590). #}
                 <h1 class="auth-welcome__title">
                     {{ 'Bienvenue sur'|trans }}<br>
-                    TrouveMoi <span class="is-plaisirs">Plaisirs</span> &amp; <span class="is-loisirs">Loisirs</span>
+                    <span class="auth-welcome__brand">TrouveMoi <span class="is-plaisirs">Plaisirs</span> &amp; <span class="is-loisirs">Loisirs</span></span>
                 </h1>
                 <p class="auth-welcome__subtitle">
                     {{ 'Connectez-vous pour découvrir des activités incroyables, réserver vos loisirs préférés et vivre des expériences inoubliables.'|trans }}
