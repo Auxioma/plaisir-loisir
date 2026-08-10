@@ -10,7 +10,10 @@
 {% endblock %}
 
 {% block body %}
-<div class="act-page">
+{# « ?demo=filtres » ouvre le panneau latéral sans JavaScript : indispensable
+   pour comparer cet état aux maquettes en capture automatisée. #}
+{% set demoFilters = app.request.query.get('demo') == 'filtres' %}
+<div class="act-page{{ demoFilters ? ' has-filters' }}">
 
     {# ==================================================================
        EN-TÊTE DE PAGE : fil d'Ariane, titre, recherche compacte,
@@ -94,7 +97,7 @@
     <div class="act-body" id="act-body">
 
     {# --- Sidebar de filtres (écran D), repliée par défaut. --- #}
-    <aside class="act-filters" id="act-filters" aria-label="{{ 'Filtres'|trans }}" hidden>
+    <aside class="act-filters" id="act-filters" aria-label="{{ 'Filtres'|trans }}" {{ demoFilters ? '' : 'hidden' }}>
         <div class="act-filters__head">
             <span class="act-filters__title">{{ 'Filtres'|trans }}</span>
             <button type="button" class="act-filters__reset" id="act-filters-reset">{{ 'Réinitialiser'|trans }}</button>
@@ -130,12 +133,12 @@
 
         <fieldset class="act-filters__group">
             <legend>{{ 'Type de destination'|trans }}</legend>
-            <button type="button" class="act-filters__dest is-active" data-dest-type>{{ icon.globe(18) }} {{ 'Toutes les destinations'|trans }}</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.building(18) }} {{ 'Villes'|trans }}</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_hiking(18) }} {{ 'Montagnes'|trans }}</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.beach(18) }} {{ 'Mers & Plages'|trans }}</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.tree(18) }} {{ 'Campagnes'|trans }}</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_canoe(18) }} {{ 'Lacs & Rivières'|trans }}</button>
+            <button type="button" class="act-filters__dest is-active" data-dest-type>{{ icon.globe(24) }} {{ 'Toutes les destinations'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.building(24) }} {{ 'Villes'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_hiking(24) }} {{ 'Montagnes'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.beach(24) }} {{ 'Mers & Plages'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.tree(24) }} {{ 'Campagnes'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_canoe(24) }} {{ 'Lacs & Rivières'|trans }}</button>
         </fieldset>
 
         <fieldset class="act-filters__group">
