@@ -42,6 +42,7 @@
     --pl-surface-disabled:   #fafafb;
     --pl-border:             #e5e7eb; /* bordure par défaut */
     --pl-line:               #e5e7eb; /* alias de --pl-border, employé par events.css */
+    --pl-card-border:        #fafafa; /* bordure des cartes de grille (relevé maquette) */
     --pl-border-hover:       #eff1f3;
     --pl-neutral-100:        #dddfe3;
     --pl-black:              #000000;

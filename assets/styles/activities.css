@@ -56,7 +56,8 @@
     display: flex; align-items: center; gap: var(--pl-sp-8);
     font-size: var(--pl-fs-caption);
     color: var(--pl-text-secondary);
-    margin-bottom: var(--pl-sp-24);
+    /* Maquette : 44px entre le bas du fil d'Ariane et le haut du titre. */
+    margin-bottom: var(--pl-sp-32);
 }
 .act-breadcrumb a { color: var(--pl-text-secondary); text-decoration: none; }
 .act-breadcrumb a:hover { color: var(--pl-action); text-decoration: underline; }
@@ -69,7 +70,8 @@
     font-size: 48px;
     font-weight: var(--pl-fw-medium);
     color: var(--pl-text);
-    margin: 0 0 var(--pl-sp-8);
+    /* Maquette : 32px entre le bas du titre et le haut du sous-titre. */
+    margin: 0 0 15px;
 }
 /* Maquette : le sous-titre tient sur UNE ligne de 1059px (x111 -> x1169). */
 .act-head__subtitle {
@@ -203,7 +205,8 @@
 .act-results {
     display: flex; align-items: center; justify-content: space-between;
     gap: var(--pl-sp-16);
-    padding-block: var(--pl-sp-8);
+    /* Maquette : 76px entre le compteur de résultats et le haut des cartes. */
+    padding-block: var(--pl-sp-8) var(--pl-sp-24);
 }
 .act-results__count { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); margin: 0; }
 .act-results__count strong { color: var(--pl-text); font-weight: var(--pl-fw-bold); }

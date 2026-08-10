@@ -276,7 +276,9 @@
 /* Maquette : les grilles d'images débordent de 6px de chaque côté des blocs
    de texte (contenu 1232px, x104 → x1335) ; 4 cartes de 296px, gouttière 16. */
 .card-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    /* Maquette : pas vertical de 426px d'une rangée à l'autre (soit 40px entre
+       les cartes), gouttière horizontale de 16px. */
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px 16px;
     margin-inline: -6px;
 }
 
@@ -284,7 +286,9 @@
     display: flex;
     flex-direction: column;
     background: var(--pl-white);
-    border: 1px solid var(--pl-border);
+    /* Maquette : bordure quasi invisible (#fafafa relevé au pixel), et non le
+       gris de bordure standard qui encadrait visiblement les cartes. */
+    border: 1px solid var(--pl-card-border);
     border-radius: var(--pl-radius-md);
     overflow: hidden;
     text-decoration: none;
@@ -292,7 +296,8 @@
 }
 .pl-card:hover { box-shadow: 0 8px 24px rgba(15, 23, 42, .1); transform: translateY(-2px); }
 
-.pl-card__media { position: relative; aspect-ratio: 3 / 2; overflow: hidden; }
+/* Maquette : la photo mesure 218px pour une carte de 296 (et non 197 en 3/2). */
+.pl-card__media { position: relative; aspect-ratio: 296 / 218; overflow: hidden; }
 /* Image en absolu pour que le conteneur impose son ratio 3:2 (évite que la
    hauteur naturelle d'une image portrait ne fasse gonfler la carte). */
 .pl-card__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -320,7 +325,9 @@
 }
 .pl-card__fav:hover { color: var(--pl-error); }
 
-.pl-card__body { display: flex; flex-direction: column; gap: 6px; padding: var(--pl-sp-16); }
+/* Maquette : 17px entre la photo et le lieu, puis 18px lieu->titre et
+   14px titre->note (mesuré au pixel sur Activités.png). */
+.pl-card__body { display: flex; flex-direction: column; gap: 10px; padding: 13px var(--pl-sp-16) var(--pl-sp-16); }
 .pl-card__title { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
 .pl-card__place { display: flex; align-items: center; gap: 4px; font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
 .pl-card__place .pl-icon { color: var(--pl-text-secondary); }
@@ -340,7 +347,8 @@
 .pl-card__rating span { color: var(--pl-text-secondary); font-weight: var(--pl-fw-regular); }
 .pl-card__extra { display: inline-flex; align-items: center; gap: 4px; font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
 
-.pl-card__foot { display: flex; align-items: baseline; gap: 6px; margin-top: var(--pl-sp-8); padding-top: var(--pl-sp-12); border-top: 1px solid var(--pl-border); }
+/* Maquette : « À partir de » à gauche, prix collé au bord droit de la carte. */
+.pl-card__foot { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; padding-top: var(--pl-sp-12); border-top: 1px solid var(--pl-border); }
 .pl-card__from { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
 .pl-card__price { font-size: var(--pl-fs-s1); font-weight: var(--pl-fw-bold); color: var(--pl-action); }
 

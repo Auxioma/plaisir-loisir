@@ -132,6 +132,9 @@
 .gift-card__tagline { color: var(--pl-text-secondary); font-size: 14px; }
 .gift-card__label { color: var(--pl-error); font-size: 14px; font-weight: 500; }
 .gift-card .pl-card__title { font-size: 17px; }
+/* Maquette « Bon cadeaux » : corps de carte plus aéré que celui d'Activités
+   (31px du libellé au titre, 29px du titre à la note). */
+.gift-card .pl-card__body { gap: 22px; }
 
 /* --------------------------------------------------------------------------
  *  BANNIÈRE « POUR OFFRIR UN CADEAU ? » (fond crème).
