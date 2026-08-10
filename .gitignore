@@ -20,6 +20,14 @@
 
 # Images sources brutes (dump lourd) : on ne versionne que les versions optimisées de assets/images/
 /assets/home/
+/assets/cadeaux/
+/assets/créerunevement/
+/assets/évènementsflow/
+/assets/groupe/
+/assets/profil/
+/assets/figma/
+# Captures de revue reçues par messagerie (contiennent des noms de personnes)
+/assets/images/control/
 
 ###> friendsofphp/php-cs-fixer ###
 /.php-cs-fixer.php

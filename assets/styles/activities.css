@@ -49,7 +49,8 @@
 /* ===========================================================================
  *  EN-TÊTE DE PAGE DU LISTING (écran C)
  * ======================================================================== */
-.act-head { padding-block: var(--pl-sp-32) var(--pl-sp-8); }
+/* Maquette : le fil d'Ariane commence à y142, soit 42px sous la navbar (y100). */
+.act-head { padding-block: 39px var(--pl-sp-8); }
 
 .act-breadcrumb {
     display: flex; align-items: center; gap: var(--pl-sp-8);
@@ -61,15 +62,19 @@
 .act-breadcrumb a:hover { color: var(--pl-action); text-decoration: underline; }
 .act-breadcrumb [aria-current] { color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
 
+/* Maquette : « Toutes nos activités » mesure 456x39 px d'encre. Rendu-test
+   Inter : 48px graisse 500 donne 454x38 — même typographie que les titres de
+   section (.home-section__title), Agnès n'emploie qu'un seul corps de titre. */
 .act-head__title {
-    font-size: var(--pl-fs-h2);
-    font-weight: var(--pl-fw-bold);
+    font-size: 48px;
+    font-weight: var(--pl-fw-medium);
     color: var(--pl-text);
     margin: 0 0 var(--pl-sp-8);
 }
+/* Maquette : le sous-titre tient sur UNE ligne de 1059px (x111 -> x1169). */
 .act-head__subtitle {
-    max-width: 760px;
-    font-size: var(--pl-fs-body-sm);
+    max-width: 1100px;
+    font-size: var(--pl-fs-body);
     line-height: var(--pl-lh-base);
     color: var(--pl-text-secondary);
     margin: 0 0 var(--pl-sp-20);

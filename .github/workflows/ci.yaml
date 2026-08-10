@@ -50,5 +50,10 @@ jobs:
       - name: PHPStan
         run: vendor/bin/phpstan analyse
 
+      # Un var(--pl-…) inexistant invalide toute la déclaration CSS sans aucune
+      # erreur visible : l'espacement disparaît en silence. Voir le script.
+      - name: Jetons CSS (aucune variable --pl-* non déclarée)
+        run: php bin/check-css-tokens.php
+
       - name: PHPUnit
         run: php bin/phpunit
