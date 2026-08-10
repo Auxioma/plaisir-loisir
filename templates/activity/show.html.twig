@@ -202,7 +202,8 @@
             <div class="act-booking__gift">
                 <h3>{{ "C'est pour offrir ?"|trans }}</h3>
                 <p>{{ 'Choisissez le bon cadeau Plaisirs & Loisirs et offrez cette expérience en quelques minutes !'|trans }}</p>
-                <a href="#" class="pl-btn pl-btn--outline-action">{{ icon.gift(16) }} {{ 'Offrir maintenant'|trans }}</a>
+                {# Maquette : bouton violet plein, pleine largeur (et non un contour). #}
+                <a href="#" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Offrir maintenant'|trans }}</a>
             </div>
         </aside>
     </div>
@@ -212,17 +213,20 @@
        ================================================================ #}
     <section class="act-section act-section--alt" id="avis">
         <div class="home-container">
+            {# Maquette : titre puis note globale EMPILÉS à gauche, bouton
+               « Voir plus d'avis » seul à droite — même disposition que le
+               bandeau partagé de Destinations et Cadeaux. #}
             <div class="home-reviews__head">
-                <h2 class="home-section__title">{{ 'Ce que disent nos clients'|trans }}</h2>
-                <div class="home-reviews__score">
-                    <div>
-                        <div class="home-reviews__score-label">{{ 'Note globale'|trans }}</div>
-                        <div class="home-reviews__score-value">{{ detail.reviewsSummary.score }}<span>/{{ detail.reviewsSummary.outOf }}</span></div>
-                        <div class="home-reviews__stars" aria-hidden="true">{% for i in 1..5 %}{{ icon.star(18) }}{% endfor %}</div>
-                        <div class="home-reviews__score-count">{{ 'Basé sur'|trans }} {{ detail.reviewsSummary.total }} {{ 'avis'|trans }}</div>
+                <div class="home-reviews__headline">
+                    <h2 class="home-section__title dest-reviews__title">{{ 'Ce que disent nos clients'|trans }}</h2>
+                    <div class="dest-reviews__score">
+                        <span class="dest-reviews__score-label">{{ 'Note globale'|trans }}</span>
+                        <span class="home-reviews__score-value">{{ detail.reviewsSummary.score }}<span>/{{ detail.reviewsSummary.outOf }}</span></span>
+                        <span class="home-reviews__stars" aria-hidden="true">{% for i in 1..5 %}<span class="{{ i <= 4 ? 'is-on' : 'is-off' }}">{{ icon.star(18) }}</span>{% endfor %}</span>
+                        <span class="home-reviews__score-count">{{ 'Basé sur'|trans }} {{ detail.reviewsSummary.total }} {{ 'avis'|trans }}</span>
                     </div>
-                    <button type="button" class="btn-see-all" data-modal-open>{{ "Voir plus d'avis"|trans }}</button>
                 </div>
+                <button type="button" class="btn-see-all" data-modal-open>{{ "Voir plus d'avis"|trans }}</button>
             </div>
             <div class="home-reviews__grid">
                 {% for r in reviews|slice(0, 2) %}

@@ -413,6 +413,8 @@
 .home-reviews { background: #f4f5f7; }
 .home-reviews__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--pl-sp-24); flex-wrap: wrap; margin-bottom: var(--pl-sp-32); }
 .home-reviews__head > .home-section__title { margin: 0; }
+/* Titre + note globale empilés à gauche (maquette Activités et Cadeaux). */
+.home-reviews__headline { display: flex; flex-direction: column; gap: var(--pl-sp-16); }
 .home-reviews__score { display: flex; align-items: center; gap: var(--pl-sp-32); flex-wrap: wrap; }
 .home-reviews__score-label { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
 .home-reviews__score-value { font-size: 40px; font-weight: var(--pl-fw-bold); color: var(--pl-text); line-height: 1.1; }
@@ -434,7 +436,8 @@
 .review-card__stars .is-off { color: var(--pl-border); }
 .review-card__more { background: 0; border: 0; color: var(--pl-text-secondary); cursor: pointer; padding: 0; }
 .review-card__title { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0; }
-.review-card__text { font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0; }
+/* Maquette : corps d'avis en 16px. */
+.review-card__text { font-size: var(--pl-fs-body); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0; }
 .review-card__author { display: flex; align-items: center; gap: var(--pl-sp-12); margin-top: var(--pl-sp-4); }
 .review-card__avatar {
     width: 44px; height: 44px; flex-shrink: 0;

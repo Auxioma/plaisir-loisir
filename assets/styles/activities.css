@@ -609,6 +609,9 @@ a.act-popup__title:hover { color: var(--pl-action); }
     grid-template-columns: minmax(0, 1fr) 296px;
     gap: var(--pl-sp-16);
     align-items: start;
+    /* Maquette : 37px entre la ligne d'infos du titre et le haut des deux
+       colonnes (galerie et panneau de réservation). */
+    padding-top: 29px;
     padding-bottom: var(--pl-sp-48);
     /* Comme les grilles de cartes, les images débordent de 6px (x104 -> x1335).
        L'élément porte AUSSI .home-container : élargir par marge négative ou par
@@ -718,17 +721,19 @@ a.act-popup__title:hover { color: var(--pl-action); }
 
 /* --- Panneau de réservation sticky. --- */
 .act-booking { position: sticky; top: 116px; display: flex; flex-direction: column; gap: var(--pl-sp-16); }
-.act-booking__panel, .act-booking__gift {
+.act-booking__panel {
     background: var(--pl-white);
     border: 1px solid var(--pl-border);
     border-radius: var(--pl-radius-md);
     box-shadow: 0 8px 24px rgba(15, 23, 42, .08);
     padding: var(--pl-sp-16);
 }
-.act-booking__price { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); margin: 0 0 var(--pl-sp-16); }
+/* Maquette : un filet sépare le prix du formulaire. */
+.act-booking__price { font-size: var(--pl-fs-body); color: var(--pl-text-secondary); margin: 0 0 var(--pl-sp-16); padding-bottom: var(--pl-sp-16); border-bottom: 1px solid var(--pl-border); }
 .act-booking__price strong { font-size: var(--pl-fs-h3); color: var(--pl-text); }
 .act-booking__field { display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--pl-sp-12); }
-.act-booking__field > span:first-child, .act-booking__field-label { font-size: var(--pl-fs-caption); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
+/* Maquette : libellés du formulaire en 16px gras. */
+.act-booking__field > span:first-child, .act-booking__field-label { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
 .act-booking__input {
     display: flex; align-items: center; gap: var(--pl-sp-8);
     padding: 9px 12px;
@@ -759,22 +764,40 @@ a.act-popup__title:hover { color: var(--pl-action); }
 .act-stepper__controls button:hover { border-color: var(--pl-action); color: var(--pl-action); }
 .act-stepper__controls button:disabled { opacity: .4; cursor: not-allowed; }
 .act-stepper__controls output { min-width: 20px; text-align: center; font-weight: var(--pl-fw-semibold); }
+/* Maquette : le total est posé sur fond blanc, séparé par un filet — pas dans
+   un pavé gris. */
 .act-booking__total {
     display: flex; align-items: center; justify-content: space-between;
-    padding: var(--pl-sp-12);
-    background: #f8f9fb;
-    border-radius: var(--pl-radius-sm);
-    font-size: var(--pl-fs-body-sm);
+    padding: var(--pl-sp-16) 0 var(--pl-sp-12);
+    border-top: 1px solid var(--pl-border);
+    font-size: var(--pl-fs-body);
     font-weight: var(--pl-fw-semibold);
     color: var(--pl-text);
     margin: 0 0 var(--pl-sp-12);
 }
-.act-booking__total strong { font-size: var(--pl-fs-s1); }
-.act-booking__note { display: flex; align-items: center; gap: 6px; font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); margin: var(--pl-sp-12) 0 0; }
-.act-booking__note span[aria-hidden] { color: var(--pl-success); font-weight: var(--pl-fw-bold); }
+/* Maquette : montant du total en violet. */
+.act-booking__total strong { font-size: var(--pl-fs-s1); color: var(--pl-action); }
+/* Maquette : « Annulation gratuite » dans un encadré violet clair. */
+.act-booking__note {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px;
+    background: var(--pl-action-light);
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary);
+    margin: var(--pl-sp-12) 0 0;
+}
+.act-booking__note span[aria-hidden] { color: var(--pl-action); font-weight: var(--pl-fw-bold); }
 .act-booking__note strong { color: var(--pl-text); }
-.act-booking__gift h3 { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); margin: 0 0 var(--pl-sp-8); }
-.act-booking__gift p { font-size: var(--pl-fs-caption); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0 0 var(--pl-sp-12); }
+/* Maquette : encart violet plein (et non une carte blanche bordée), titre
+   violet de 26px et bouton plein pleine largeur. */
+.act-booking__gift {
+    background: var(--pl-action-light);
+    border: 0;
+    border-radius: var(--pl-radius-md);
+    padding: var(--pl-sp-20);
+}
+.act-booking__gift h3 { font-size: var(--pl-fs-h3); font-weight: var(--pl-fw-bold); color: var(--pl-action); margin: 0 0 var(--pl-sp-16); }
+.act-booking__gift p { font-size: var(--pl-fs-body); line-height: var(--pl-lh-base); color: var(--pl-text); margin: 0 0 var(--pl-sp-20); }
 
 /* --- Menu « … » des cartes avis (Signaler cet avis). --- */
 .review-card__menu { position: relative; }
