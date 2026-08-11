@@ -18,7 +18,11 @@
  *  Scopé à l'accueil (--home) : la navbar partagée des pages d'authentification
  *  n'est pas impactée.
  * ======================================================================== */
-.pl-navbar--home { padding-inline: 48px; }
+/* Pas de retrait propre : la navbar suit la grille de la page. Les trois
+   maquettes (Accueil, Inscription, Activités) placent son contenu de x108 à
+   x1336, soit le padding de 103px défini sur .pl-navbar. Un retrait de 48px
+   décalait ici le logo de 55px vers la gauche et les boutons de 30px vers la
+   droite — sur toutes les pages. */
 .pl-navbar--home .pl-nav { gap: var(--pl-sp-8); }
 
 .pl-dropdown { position: relative; }
