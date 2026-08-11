@@ -6,11 +6,14 @@
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{# ?modal=rejoindre / rejoindre2 / rejoindre3 : ouverture directe pour l'audit visuel. #}
+{# ?modal=rejoindre / rejoindre2 / rejoindre3 : ouverture directe pour l'audit visuel.
+   Bâtie sur la modale Bootstrap ; seuls les trois états restent pilotés par
+   events.js. #}
 {% set join_qs = app.request.query.get('modal') %}
-<div class="evn-modal" id="evn-join" role="dialog" aria-modal="true" aria-label="{{ 'Rejoindre ce groupe'|trans }}" {{ join_qs not in ['rejoindre', 'rejoindre2', 'rejoindre3'] ? 'hidden' }}>
-    <div class="evn-modal__box">
-        <button type="button" class="evn-modal__close" data-evn-join-close aria-label="{{ 'Fermer'|trans }}">{{ icon.x(18) }}</button>
+<div class="modal fade evn-modal" id="evn-join" tabindex="-1" aria-label="{{ 'Rejoindre ce groupe'|trans }}" {{ join_qs in ['rejoindre', 'rejoindre2', 'rejoindre3'] ? 'data-auto-open' }}>
+  <div class="modal-dialog">
+    <div class="modal-content evn-modal__box">
+        <button type="button" class="evn-modal__close" data-bs-dismiss="modal" aria-label="{{ 'Fermer'|trans }}">{{ icon.x(18) }}</button>
 
         {# État 1 — dropzone. #}
         <div class="evn-modal__step" data-evn-join-step="1" {{ join_qs in ['rejoindre2', 'rejoindre3'] ? 'hidden' }}>
@@ -49,4 +52,5 @@
             </div>
         </div>
     </div>
+</div>
 </div>

@@ -851,15 +851,17 @@ a.act-popup__title:hover { color: var(--pl-action); }
 /* ===========================================================================
  *  MODALE « TOUS LES AVIS » (écran G)
  * ======================================================================== */
-.reviews-modal { position: fixed; inset: 0; z-index: 2000; }
-.reviews-modal[hidden] { display: none; }
-.reviews-modal__overlay { position: absolute; inset: 0; background: rgba(6, 27, 86, .55); }
-.reviews-modal__panel {
-    position: relative;
+/* Positionnement, voile, z-index et fermeture : fournis par .modal de
+   Bootstrap. Il ne reste que la mise en forme du panneau. */
+.reviews-modal .modal-dialog {
     width: min(720px, calc(100vw - 48px));
-    max-height: calc(100vh - 96px);
+    max-width: none;
     margin: 48px auto;
+}
+.reviews-modal__panel {
+    max-height: calc(100vh - 96px);
     background: var(--pl-white);
+    border: 0;
     border-radius: var(--pl-radius-md);
     box-shadow: 0 24px 60px rgba(15, 23, 42, .3);
     display: flex; flex-direction: column;
@@ -932,7 +934,7 @@ a.act-popup__title:hover { color: var(--pl-action); }
     display: flex; flex-direction: column; gap: var(--pl-sp-16);
 }
 /* Blocage du scroll de fond quand la modale est ouverte. */
-body.has-modal { overflow: hidden; }
+/* Le blocage du défilement de fond est assuré par Bootstrap (.modal-open). */
 
 /* ===========================================================================
  *  Adaptation largeurs intermédiaires

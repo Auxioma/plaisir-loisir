@@ -144,6 +144,8 @@ h6, .h6 { font-size: var(--pl-fs-body); }
 .form-check-input:checked { background-color: var(--pl-action); border-color: var(--pl-action); }
 
 .modal-content { border: 0; border-radius: var(--pl-radius-md); }
+/* Voile bleu nuit de la charte plutôt que le noir par défaut. */
+.modal-backdrop { --bs-backdrop-bg: var(--pl-primary); --bs-backdrop-opacity: .55; }
 .dropdown-menu {
     --bs-dropdown-border-color: var(--pl-border);
     --bs-dropdown-border-radius: var(--pl-radius-md);

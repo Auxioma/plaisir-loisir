@@ -226,7 +226,7 @@
                         <span class="home-reviews__score-count">{{ 'Basé sur'|trans }} {{ detail.reviewsSummary.total }} {{ 'avis'|trans }}</span>
                     </div>
                 </div>
-                <button type="button" class="btn-see-all" data-modal-open>{{ "Voir plus d'avis"|trans }}</button>
+                <button type="button" class="btn-see-all" data-bs-toggle="modal" data-bs-target="#reviews-modal">{{ "Voir plus d'avis"|trans }}</button>
             </div>
             <div class="home-reviews__grid">
                 {% for r in reviews|slice(0, 2) %}

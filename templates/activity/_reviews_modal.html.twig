@@ -1,22 +1,27 @@
 {#
-    Modale « Tous les avis » (écran G, spec §9) — trois états gérés par
-    assets/activities.js :
-      G.1 défaut   : en-tête « Avis clients » + note globale + barre d'outils
-      G.2 scrollé  : l'en-tête se contextualise (titre de l'activité + note)
-      G.3 tri      : dropdown « Trier par » ouvert (coche sur l'option active)
-    Fermeture : ✕, clic sur l'overlay, touche Échap. Le scroll du fond est
-    bloqué tant que la modale est ouverte.
+    Modale « Tous les avis » (écran G, spec §9).
+
+    Bâtie sur la MODALE BOOTSTRAP (.modal / .modal-dialog / .modal-content) :
+    l'ouverture, la fermeture, le voile, la touche Échap, le blocage du
+    défilement de fond, le piège à focus et sa restitution au bouton d'origine
+    sont fournis par le framework. Notre code maison réimplémentait les quatre
+    premiers points et n'avait ni piège à focus ni restitution — un lecteur
+    d'écran continuait de lire la page derrière la modale.
+
+    Reste à notre charge dans assets/activities.js, car propre au métier :
+      G.2 scrollé : l'en-tête se contextualise (titre de l'activité + note)
+      G.3 tri     : dropdown « Trier par » et tri effectif de la liste
 
     Variables : detail (reviewsSummary, modalTitle), reviews.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<div class="reviews-modal" id="reviews-modal" role="dialog" aria-modal="true" aria-labelledby="reviews-modal-title" hidden>
-    <div class="reviews-modal__overlay" data-modal-close></div>
-    <div class="reviews-modal__panel">
+<div class="modal fade reviews-modal" id="reviews-modal" tabindex="-1" aria-labelledby="reviews-modal-title">
+  <div class="modal-dialog">
+    <div class="modal-content reviews-modal__panel">
 
         <header class="reviews-modal__head">
-            <button type="button" class="reviews-modal__close" data-modal-close aria-label="{{ 'Fermer les avis'|trans }}">{{ icon.x(20) }}</button>
+            <button type="button" class="reviews-modal__close" data-bs-dismiss="modal" aria-label="{{ 'Fermer les avis'|trans }}">{{ icon.x(20) }}</button>
 
             {# En-tête par défaut (G.1). #}
             <div class="reviews-modal__intro" data-modal-intro>
@@ -63,4 +68,5 @@
         </div>
 
     </div>
+  </div>
 </div>
