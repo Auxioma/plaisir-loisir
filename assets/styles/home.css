@@ -9,11 +9,8 @@
 /* Conteneur centré, aligné sur la navbar.
    Mesuré sur les maquettes (grille de cartes bord à bord : x104 → x1335) :
    contenu de 1232px, donc 104px de marge de chaque côté. */
-.home-container {
-    max-width: var(--pl-container-desktop);   /* 1440px */
-    margin: 0 auto;
-    padding-inline: 110px;
-}
+/* Remplacé par la classe standard .container de Bootstrap, calée sur cette
+   même grille dans assets/styles/bootstrap-theme.css. */
 
 /* ===========================================================================
  *  EN-TÊTE DE L'ACCUEIL (spécifique)
@@ -21,7 +18,11 @@
  *  Scopé à l'accueil (--home) : la navbar partagée des pages d'authentification
  *  n'est pas impactée.
  * ======================================================================== */
-.pl-navbar--home { padding-inline: 48px; }
+/* Pas de retrait propre : la navbar suit la grille de la page. Les trois
+   maquettes (Accueil, Inscription, Activités) placent son contenu de x108 à
+   x1336, soit le padding de 103px défini sur .pl-navbar. Un retrait de 48px
+   décalait ici le logo de 55px vers la gauche et les boutons de 30px vers la
+   droite — sur toutes les pages. */
 .pl-navbar--home .pl-nav { gap: var(--pl-sp-8); }
 
 .pl-dropdown { position: relative; }
@@ -185,6 +186,18 @@
 /* ===========================================================================
  *  BARRE DE RECHERCHE (chevauche le bas du hero)
  * ======================================================================== */
+/* Figma 591:61677 > « Container - Renseignement » : x=68, largeur 1304. La
+   carte de recherche déborde VOLONTAIREMENT de la grille 110/1220 — c'est une
+   des sections que le conteneur standard ne doit pas contraindre.
+   L'élément porte aussi .container : on agit sur son padding, car l'élargir
+   par width ou marge négative serait annulé par son max-width de 1440. */
+/* À REPRENDRE — Figma 591:61677 > « Container - Renseignement » : la carte doit
+   être à x=68 sur 1304 de large (elle déborde volontairement de la grille
+   110/1220) ; nous la rendons sur la grille. Deux tentatives par le padding
+   puis par max-width n'ont pas donné la géométrie attendue : une contrainte de
+   la structure interne reste à identifier. À reprendre par la structure et non
+   par compensation (§41). Le bloc a par ailleurs d'autres écarts : les
+   libellés d'onglets diffèrent de la maquette. Mesures dans docs/grille-figma.md. */
 .home-search-wrap { position: relative; z-index: 3; margin-top: -44px; }
 .home-search {
     background: var(--pl-white);
@@ -276,7 +289,9 @@
 /* Maquette : les grilles d'images débordent de 6px de chaque côté des blocs
    de texte (contenu 1232px, x104 → x1335) ; 4 cartes de 296px, gouttière 16. */
 .card-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    /* Maquette : pas vertical de 426px d'une rangée à l'autre (soit 40px entre
+       les cartes), gouttière horizontale de 16px. */
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px 16px;
     margin-inline: -6px;
 }
 
@@ -284,7 +299,9 @@
     display: flex;
     flex-direction: column;
     background: var(--pl-white);
-    border: 1px solid var(--pl-border);
+    /* Maquette : bordure quasi invisible (#fafafa relevé au pixel), et non le
+       gris de bordure standard qui encadrait visiblement les cartes. */
+    border: 1px solid var(--pl-card-border);
     border-radius: var(--pl-radius-md);
     overflow: hidden;
     text-decoration: none;
@@ -292,7 +309,8 @@
 }
 .pl-card:hover { box-shadow: 0 8px 24px rgba(15, 23, 42, .1); transform: translateY(-2px); }
 
-.pl-card__media { position: relative; aspect-ratio: 3 / 2; overflow: hidden; }
+/* Maquette : la photo mesure 218px pour une carte de 296 (et non 197 en 3/2). */
+.pl-card__media { position: relative; aspect-ratio: 296 / 218; overflow: hidden; }
 /* Image en absolu pour que le conteneur impose son ratio 3:2 (évite que la
    hauteur naturelle d'une image portrait ne fasse gonfler la carte). */
 .pl-card__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -320,7 +338,9 @@
 }
 .pl-card__fav:hover { color: var(--pl-error); }
 
-.pl-card__body { display: flex; flex-direction: column; gap: 6px; padding: var(--pl-sp-16); }
+/* Maquette : 17px entre la photo et le lieu, puis 18px lieu->titre et
+   14px titre->note (mesuré au pixel sur Activités.png). */
+.pl-card__body { display: flex; flex-direction: column; gap: 10px; padding: 13px var(--pl-sp-16) var(--pl-sp-16); }
 .pl-card__title { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
 .pl-card__place { display: flex; align-items: center; gap: 4px; font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
 .pl-card__place .pl-icon { color: var(--pl-text-secondary); }
@@ -340,7 +360,8 @@
 .pl-card__rating span { color: var(--pl-text-secondary); font-weight: var(--pl-fw-regular); }
 .pl-card__extra { display: inline-flex; align-items: center; gap: 4px; font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
 
-.pl-card__foot { display: flex; align-items: baseline; gap: 6px; margin-top: var(--pl-sp-8); padding-top: var(--pl-sp-12); border-top: 1px solid var(--pl-border); }
+/* Maquette : « À partir de » à gauche, prix collé au bord droit de la carte. */
+.pl-card__foot { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; padding-top: var(--pl-sp-12); border-top: 1px solid var(--pl-border); }
 .pl-card__from { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
 .pl-card__price { font-size: var(--pl-fs-s1); font-weight: var(--pl-fw-bold); color: var(--pl-action); }
 
@@ -405,6 +426,8 @@
 .home-reviews { background: #f4f5f7; }
 .home-reviews__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--pl-sp-24); flex-wrap: wrap; margin-bottom: var(--pl-sp-32); }
 .home-reviews__head > .home-section__title { margin: 0; }
+/* Titre + note globale empilés à gauche (maquette Activités et Cadeaux). */
+.home-reviews__headline { display: flex; flex-direction: column; gap: var(--pl-sp-16); }
 .home-reviews__score { display: flex; align-items: center; gap: var(--pl-sp-32); flex-wrap: wrap; }
 .home-reviews__score-label { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
 .home-reviews__score-value { font-size: 40px; font-weight: var(--pl-fw-bold); color: var(--pl-text); line-height: 1.1; }
@@ -426,7 +449,8 @@
 .review-card__stars .is-off { color: var(--pl-border); }
 .review-card__more { background: 0; border: 0; color: var(--pl-text-secondary); cursor: pointer; padding: 0; }
 .review-card__title { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0; }
-.review-card__text { font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0; }
+/* Maquette : corps d'avis en 16px. */
+.review-card__text { font-size: var(--pl-fs-body); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0; }
 .review-card__author { display: flex; align-items: center; gap: var(--pl-sp-12); margin-top: var(--pl-sp-4); }
 .review-card__avatar {
     width: 44px; height: 44px; flex-shrink: 0;
@@ -691,7 +715,7 @@
  *  Adaptation largeurs intermédiaires
  * ======================================================================== */
 @media (max-width: 1100px) {
-    .home-container { padding-inline: var(--pl-sp-32); }
+    /* .container : la variante réduite est dans bootstrap-theme.css. */
     .card-grid { grid-template-columns: repeat(2, 1fr); }
     .home-reviews__grid { grid-template-columns: 1fr; }
     .home-provider__inner { grid-template-columns: 1fr; }

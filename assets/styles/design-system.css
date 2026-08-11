@@ -41,6 +41,8 @@
     --pl-surface-dashboard:  #f8fafc; /* fond de zone / dashboard */
     --pl-surface-disabled:   #fafafb;
     --pl-border:             #e5e7eb; /* bordure par défaut */
+    --pl-line:               #e5e7eb; /* alias de --pl-border, employé par events.css */
+    --pl-card-border:        #fafafa; /* bordure des cartes de grille (relevé maquette) */
     --pl-border-hover:       #eff1f3;
     --pl-neutral-100:        #dddfe3;
     --pl-black:              #000000;
@@ -55,6 +57,7 @@
     --pl-fs-h3:       26px; /* Heading 3 700 / 34 */
     --pl-fs-h4:       24px; /* Heading 4 500 / 28 */
     --pl-fs-s1:       18px; /* Subtitle  700 / 28 */
+    --pl-fs-body-lg:  18px; /* Body lg   400-700 / 28 — même corps que Subtitle */
     --pl-fs-body:     16px; /* Body      400-600 / 24 */
     --pl-fs-body-sm:  14px; /* Body sm   400-600 / 20 */
     --pl-fs-caption:  12px; /* Caption   400 / 16 */
@@ -75,7 +78,12 @@
     --pl-lh-sm:       20px;
     --pl-lh-caption:  16px;
 
-    /* ----- Espacements (px) — échelle Figma ----------------------------- */
+    /* ----- Espacements (px) — échelle Figma -----------------------------
+     * ATTENTION : un var(--pl-sp-N) qui ne correspond à aucun jeton ci-dessous
+     * rend TOUTE la déclaration invalide et le navigateur l'ignore en silence
+     * (marge ou espacement qui disparaît sans erreur). Avant d'employer une
+     * nouvelle valeur, l'ajouter ici. Vérifié par bin/check-css-tokens.sh.
+     */
     --pl-sp-4:   4px;
     --pl-sp-8:   8px;
     --pl-sp-12:  12px;
@@ -83,8 +91,12 @@
     --pl-sp-16:  16px;
     --pl-sp-20:  20px;
     --pl-sp-24:  24px;
+    --pl-sp-28:  28px;
     --pl-sp-32:  32px;
     --pl-sp-38:  38px;
+    --pl-sp-40:  40px;
+    --pl-sp-48:  48px;
+    --pl-sp-64:  64px;
     --pl-sp-104: 104px;
 
     /* ----- Rayons ------------------------------------------------------- */

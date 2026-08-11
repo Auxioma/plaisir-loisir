@@ -15,7 +15,7 @@
        FIL D'ARIANE + EN-TÊTE (titre, note, organisateur).
        ================================================================ #}
     <section class="act-head">
-        <div class="home-container">
+        <div class="container">
             <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
                 {% for crumb in detail.breadcrumb %}
                     {% if loop.first %}
@@ -41,7 +41,7 @@
     {# ==================================================================
        CORPS : colonne principale + panneau de réservation sticky.
        ================================================================ #}
-    <div class="home-container act-detail__layout">
+    <div class="container act-detail__layout">
         <div class="act-detail__main">
 
             {# --- Galerie mosaïque : 1 grande + 4 vignettes. --- #}
@@ -202,7 +202,8 @@
             <div class="act-booking__gift">
                 <h3>{{ "C'est pour offrir ?"|trans }}</h3>
                 <p>{{ 'Choisissez le bon cadeau Plaisirs & Loisirs et offrez cette expérience en quelques minutes !'|trans }}</p>
-                <a href="#" class="pl-btn pl-btn--outline-action">{{ icon.gift(16) }} {{ 'Offrir maintenant'|trans }}</a>
+                {# Maquette : bouton violet plein, pleine largeur (et non un contour). #}
+                <a href="#" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Offrir maintenant'|trans }}</a>
             </div>
         </aside>
     </div>
@@ -211,18 +212,21 @@
        CE QUE DISENT NOS CLIENTS (fond gris) → ouvre la modale (écran G).
        ================================================================ #}
     <section class="act-section act-section--alt" id="avis">
-        <div class="home-container">
+        <div class="container">
+            {# Maquette : titre puis note globale EMPILÉS à gauche, bouton
+               « Voir plus d'avis » seul à droite — même disposition que le
+               bandeau partagé de Destinations et Cadeaux. #}
             <div class="home-reviews__head">
-                <h2 class="home-section__title">{{ 'Ce que disent nos clients'|trans }}</h2>
-                <div class="home-reviews__score">
-                    <div>
-                        <div class="home-reviews__score-label">{{ 'Note globale'|trans }}</div>
-                        <div class="home-reviews__score-value">{{ detail.reviewsSummary.score }}<span>/{{ detail.reviewsSummary.outOf }}</span></div>
-                        <div class="home-reviews__stars" aria-hidden="true">{% for i in 1..5 %}{{ icon.star(18) }}{% endfor %}</div>
-                        <div class="home-reviews__score-count">{{ 'Basé sur'|trans }} {{ detail.reviewsSummary.total }} {{ 'avis'|trans }}</div>
+                <div class="home-reviews__headline">
+                    <h2 class="home-section__title dest-reviews__title">{{ 'Ce que disent nos clients'|trans }}</h2>
+                    <div class="dest-reviews__score">
+                        <span class="dest-reviews__score-label">{{ 'Note globale'|trans }}</span>
+                        <span class="home-reviews__score-value">{{ detail.reviewsSummary.score }}<span>/{{ detail.reviewsSummary.outOf }}</span></span>
+                        <span class="home-reviews__stars" aria-hidden="true">{% for i in 1..5 %}<span class="{{ i <= 4 ? 'is-on' : 'is-off' }}">{{ icon.star(18) }}</span>{% endfor %}</span>
+                        <span class="home-reviews__score-count">{{ 'Basé sur'|trans }} {{ detail.reviewsSummary.total }} {{ 'avis'|trans }}</span>
                     </div>
-                    <button type="button" class="btn-see-all" data-modal-open>{{ "Voir plus d'avis"|trans }}</button>
                 </div>
+                <button type="button" class="btn-see-all" data-bs-toggle="modal" data-bs-target="#reviews-modal">{{ "Voir plus d'avis"|trans }}</button>
             </div>
             <div class="home-reviews__grid">
                 {% for r in reviews|slice(0, 2) %}
@@ -236,7 +240,7 @@
        AJOUTER UN AVIS (formulaire, spec §F).
        ================================================================ #}
     <section class="act-section">
-        <div class="home-container">
+        <div class="container">
             <form class="act-review-form" action="#" method="post">
                 <div class="act-review-form__stars" role="radiogroup" aria-label="{{ 'Votre note'|trans }}">
                     {% for i in 1..5 %}
@@ -258,7 +262,7 @@
        VOUS POURRIEZ AUSSI AIMER…
        ================================================================ #}
     <section class="act-section">
-        <div class="home-container">
+        <div class="container">
             <div class="home-section__head">
                 <h2 class="home-section__title">{{ 'Vous pourriez aussi aimer…'|trans }}</h2>
                 <a href="{{ path('app_activities') }}" class="btn-see-all">{{ 'Voir toutes les activités'|trans }}</a>

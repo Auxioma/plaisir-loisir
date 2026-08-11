@@ -1,3 +1,7 @@
+// Les modales du parcours s'appuient sur le composant Bootstrap ; l'import
+// nomme est necessaire, la version ESM n'expose pas de global window.bootstrap.
+import { Modal } from 'bootstrap';
+
 /*
  * Comportements du wizard « Créer un événement ».
  *
@@ -145,14 +149,14 @@ function initEvnSteppers() {
 /* Détail : modale de signalement (2 étapes). */
 function initEvnReport() {
     const modal = document.getElementById('evn-report');
-    const open = document.getElementById('evn-report-open');
-    if (!modal || !open) return;
+    if (!modal) return;
 
     const steps = modal.querySelectorAll('[data-evn-report-step]');
     const show = (n) => steps.forEach((s) => { s.hidden = s.dataset.evnReportStep !== String(n); });
 
-    open.addEventListener('click', () => { modal.hidden = false; show(1); });
-    modal.querySelectorAll('[data-evn-report-close]').forEach((b) => b.addEventListener('click', () => { modal.hidden = true; }));
+    // Ouverture et fermeture : modale Bootstrap (data-bs-toggle / data-bs-dismiss).
+    // On se contente de revenir à l'étape 1 à chaque ouverture.
+    modal.addEventListener('show.bs.modal', () => { if (!modal.hasAttribute('data-auto-open')) show(1); });
     modal.querySelector('[data-evn-report-next]').addEventListener('click', () => show(2));
     modal.querySelector('[data-evn-report-back]').addEventListener('click', () => show(1));
 
@@ -174,8 +178,8 @@ function initEvnJoin() {
     const steps = modal.querySelectorAll('[data-evn-join-step]');
     const show = (n) => steps.forEach((s) => { s.hidden = s.dataset.evnJoinStep !== String(n); });
 
-    document.querySelectorAll('[data-evn-join-open]').forEach((b) => b.addEventListener('click', () => { modal.hidden = false; show(1); }));
-    modal.querySelectorAll('[data-evn-join-close]').forEach((b) => b.addEventListener('click', () => { modal.hidden = true; }));
+    // Ouverture et fermeture : modale Bootstrap (data-bs-toggle / data-bs-dismiss).
+    modal.addEventListener('show.bs.modal', () => { if (!modal.hasAttribute('data-auto-open')) show(1); });
     const choose = modal.querySelector('[data-evn-join-choose]');
     if (choose) choose.addEventListener('click', () => show(2));
     const cancel = modal.querySelector('[data-evn-join-cancel]');
@@ -253,8 +257,17 @@ initEvnToday();
 initEvnFilters();
 initEvnMyGroups();
 initEvnSteppers();
+/* ?modal=… : ouvre directement la modale, pour figer un etat a l'audit visuel. */
+function initEvnAutoOpen() {
+    document.querySelectorAll('.modal[data-auto-open]').forEach((el) => {
+        el.addEventListener('shown.bs.modal', () => el.removeAttribute('data-auto-open'), { once: true });
+        Modal.getOrCreateInstance(el).show();
+    });
+}
+
 initEvnReport();
 initEvnJoin();
+initEvnAutoOpen();
 initEvnSubtabs();
 initEvnMembers();
 initEvnAbout();

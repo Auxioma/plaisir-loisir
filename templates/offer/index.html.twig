@@ -17,7 +17,7 @@
     <section class="of-hero">
         <img class="of-hero__bg" src="{{ asset('images/offers/hero-offres.jpg') }}" alt="">
         <div class="of-hero__overlay" aria-hidden="true"></div>
-        <div class="home-container of-hero__inner">
+        <div class="container of-hero__inner">
             <h1 class="of-hero__title">{{ 'Offres du moments'|trans }}</h1>
             <p class="of-hero__subtitle">{{ 'Profitez des meilleures offres et promotions sur vos activités préférées.'|trans }}</p>
             <div class="of-hero__pills">
@@ -42,7 +42,7 @@
         </div>
     </section>
 
-    <div class="home-container">
+    <div class="container">
         <nav class="act-breadcrumb of-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
             <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
             <span aria-hidden="true">/</span>
@@ -54,7 +54,7 @@
        CATEGORIES POPULAIRES : pastilles pleines colorées + volume.
        ================================================================ #}
     <section class="home-section">
-        <div class="home-container">
+        <div class="container">
             <div class="home-section__head">
                 <div>
                     <h2 class="home-section__title">{{ 'Categories populaires'|trans }}</h2>
@@ -86,7 +86,7 @@
        OFFRES EXCLUSIVES POUR VOUS.
        ================================================================ #}
     <section class="act-section">
-        <div class="home-container">
+        <div class="container">
             <h2 class="home-section__title of-section-title">{{ 'Offres exclusives pour vous'|trans }}</h2>
             <div class="card-grid">
                 {% for o in exclusives %}
@@ -100,7 +100,7 @@
        BANNIÈRE VENTE FLASH (spec C3).
        ================================================================ #}
     <section class="home-section">
-        <div class="home-container">
+        <div class="container">
             <div class="of-flash">
                 <div class="of-flash__promo" aria-hidden="true">
                     <svg class="of-flash__bolt of-flash__bolt--left" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
@@ -129,7 +129,7 @@
 
     {% include 'offer/_lastminute.html.twig' with { lastMinute: lastMinute } %}
 
-    <div class="home-container of-news-wrap">
+    <div class="container of-news-wrap">
         {% include 'offer/_newsletter.html.twig' %}
     </div>
 

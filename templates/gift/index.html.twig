@@ -16,7 +16,7 @@
        ================================================================ #}
     <section class="gift-hero">
         <img class="gift-hero__img" src="{{ asset('images/gifts/hero-coffret.jpg') }}" alt="Coffret cadeau « Plaisir d'offrir, bonheur de vivre »">
-        <div class="home-container gift-hero__inner">
+        <div class="container gift-hero__inner">
             <h1 class="gift-hero__title">{{ 'Bon cadeaux'|trans }}</h1>
             <p class="gift-hero__subtitle">{{ 'Faites plaisir à vos proche avec un bon pour'|trans }}<br>{{ 'une activités inoubliables.'|trans }}</p>
             <div class="gift-amounts" role="group" aria-label="{{ 'Choisissez un montant'|trans }}">
@@ -37,7 +37,7 @@
 
     {# Rangée d'arguments : 4 pastilles colorées. #}
     <section class="home-section gift-args-section">
-        <div class="home-container">
+        <div class="container">
             <div class="gift-args">
                 <div class="gift-arg gift-arg--violet">{{ icon.book_open(46) }} <span>20.000<br>{{ 'activités'|trans }}</span></div>
                 <div class="gift-arg gift-arg--blue">{{ icon.mail(46) }} <span>{{ 'Par email'|trans }}<br>{{ 'instantanément'|trans }}</span></div>
@@ -51,7 +51,7 @@
        CATÉGORIES POPULAIRES : mosaïque de tuiles.
        ================================================================ #}
     <section class="home-section">
-        <div class="home-container">
+        <div class="container">
             <div class="home-section__head">
                 <h2 class="home-section__title">{{ 'Catégories populaires'|trans }}</h2>
                 <a href="{{ path('app_gifts_category') }}" class="btn-see-all">{{ 'Voir toutes les catégories'|trans }} {{ icon.arrow_up_right(16) }}</a>
@@ -64,7 +64,7 @@
        DOUBLE BANNIÈRE CTA : entreprise (bleu) + montant libre (jaune).
        ================================================================ #}
     <section class="home-section gift-duo-section">
-        <div class="home-container">
+        <div class="container">
             <div class="gift-duo">
                 <div class="gift-banner gift-banner--blue">
                     <div class="gift-banner__text">
@@ -90,7 +90,7 @@
        + 20.000 ACTIVITÉS PARTOUT EN FRANCE : villes + grille 4×2.
        ================================================================ #}
     <section class="act-section">
-        <div class="home-container">
+        <div class="container">
             <div class="home-section__head">
                 <h2 class="home-section__title">{{ '+ 20.000 activités partout en France'|trans }}</h2>
                 <a href="{{ path('app_gifts_category') }}" class="btn-see-all">{{ 'Voir toutes les catégories'|trans }} {{ icon.arrow_up_right(16) }}</a>
@@ -124,7 +124,7 @@
        MEILLEURS VENTES.
        ================================================================ #}
     <section class="act-section">
-        <div class="home-container">
+        <div class="container">
             <h2 class="home-section__title gift-solo-title">{{ 'Meilleurs ventes'|trans }}</h2>
             <div class="card-grid">
                 {% for g in bestSellers %}
@@ -143,7 +143,7 @@
     {# Bande pleine largeur (maquette : fond crème bord à bord, sans arrondi). #}
     <section class="home-section gift-why-section">
         <div class="gift-why">
-            <div class="home-container">
+            <div class="container">
                 <div class="gift-why__text">
                     <h2 class="gift-why__title">{{ 'Pour offrir un cadeau ?'|trans }}</h2>
                     <ul class="gift-why__list">
@@ -178,7 +178,7 @@
        TROUVER LE CADEAU PAR DESTINATAIRES.
        ================================================================ #}
     <section class="act-section">
-        <div class="home-container">
+        <div class="container">
             <h2 class="home-section__title gift-solo-title">{{ 'Trouver le cadeau par destinataires'|trans }}</h2>
             <div class="gift-recipients">
                 {% for r in recipients %}

@@ -989,10 +989,18 @@
  *  MODALES (signalement + rejoindre).
  * ------------------------------------------------------------------------ */
 
-.evn-modal { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: rgba(148, 163, 184, .45); padding: 20px; }
+/* Positionnement, voile, z-index, Échap et blocage du défilement : fournis par
+   .modal de Bootstrap. Reste la mise en forme du panneau. */
+.evn-modal .modal-dialog {
+    width: 660px; max-width: calc(100% - 40px);
+    margin: 20px auto; min-height: calc(100% - 40px);
+    display: flex; align-items: center;
+}
+/* Voile gris clair propre à ce parcours, plus doux que le bleu nuit général. */
+.evn-modal ~ .modal-backdrop { --bs-backdrop-bg: #94a3b8; --bs-backdrop-opacity: .45; }
 .evn-modal__box {
-    position: relative; width: 660px; max-width: 100%; max-height: 92vh; overflow: auto;
-    background: #fff; border-radius: 16px; padding: 34px 32px 30px;
+    position: relative; width: 100%; max-height: 92vh; overflow: auto;
+    background: #fff; border: 0; border-radius: 16px; padding: 34px 32px 30px;
     box-shadow: 0 30px 80px rgba(15, 23, 42, .25);
 }
 .evn-modal__close {

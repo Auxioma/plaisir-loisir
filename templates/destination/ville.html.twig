@@ -20,7 +20,7 @@
        « Activités à Lille » et dropdown de localisation sur le champ lieu.
        ================================================================ #}
     <section class="act-head">
-        <div class="home-container">
+        <div class="container">
 
             <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
                 <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
@@ -102,7 +102,7 @@
        GRILLE 4×3 DES ACTIVITÉS (mode « catégorie », libellé rouge).
        ================================================================ #}
     <section class="act-section">
-        <div class="home-container">
+        <div class="container">
             <div class="card-grid">
                 {% for a in activities %}
                     {% include 'activity/_card.html.twig' with { a: a } %}

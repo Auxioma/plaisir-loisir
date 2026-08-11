@@ -1,3 +1,7 @@
+// La modale « Tous les avis » s'appuie sur le composant Bootstrap ; l'import
+// nommé est nécessaire car la version ESM n'expose pas de global window.bootstrap.
+import { Modal } from 'bootstrap';
+
 /*
  * Comportements du parcours « Activités ».
  *
@@ -86,9 +90,12 @@ function initReviewFormStars(root = document) {
 }
 
 /*
- * 4. Modale « Tous les avis » (écran G) :
- *    - ouverture (Voir plus d'avis) / fermeture (✕, overlay, Échap) ;
- *    - blocage du scroll de fond (body.has-modal) ;
+ * 4. Modale « Tous les avis » (écran G).
+ *
+ * L'ouverture, la fermeture (✕, voile, Échap), le blocage du défilement de
+ * fond, le piège à focus et sa restitution sont assurés par la modale
+ * Bootstrap (attributs data-bs-toggle / data-bs-dismiss dans le template).
+ * Ne reste ici que ce qui est propre au métier :
  *    - en-tête contextualisé au défilement (G.2) ;
  *    - dropdown « Trier par » (G.3) avec tri effectif de la liste.
  */
@@ -100,15 +107,10 @@ function initReviewsModal(root = document) {
     const intro = modal.querySelector('[data-modal-intro]');
     const context = modal.querySelector('[data-modal-context]');
 
-    const open = () => { modal.hidden = false; document.body.classList.add('has-modal'); };
-    const close = () => { modal.hidden = true; document.body.classList.remove('has-modal'); };
-
-    root.querySelectorAll('[data-modal-open]').forEach((btn) => btn.addEventListener('click', open));
-    modal.querySelectorAll('[data-modal-close]').forEach((el) => el.addEventListener('click', close));
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.hidden) close(); });
-
     // Deep-link : /activites/…#tous-les-avis ouvre directement la modale.
-    if (window.location.hash === '#tous-les-avis') open();
+    if (window.location.hash === '#tous-les-avis') {
+        Modal.getOrCreateInstance(modal).show();
+    }
 
     // G.2 : au-delà d'un léger défilement, l'en-tête affiche le titre de
     // l'activité à la place de la note globale.

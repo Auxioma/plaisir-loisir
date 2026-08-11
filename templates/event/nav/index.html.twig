@@ -20,7 +20,7 @@
        ================================================================ #}
     <section class="evn-hero">
         <img class="evn-hero__img" src="{{ asset('images/events/hero-friends-right.jpg') }}" alt="">
-        <div class="home-container evn-hero__inner">
+        <div class="container evn-hero__inner">
             <h1 class="evn-hero__title">{{ 'Trouvez, rejoignez et partagez'|trans }}<br><span>{{ 'des moments uniques.'|trans }}</span></h1>
             <p class="evn-hero__subtitle">{{ 'Découvrez des événements privés près de chez vous ou partout en France.'|trans }}<br>{{ 'Activités entre amis, en famille ou entre passionnées'|trans }}</p>
             <div class="evn-hero__pills">
@@ -32,7 +32,7 @@
     </section>
 
     {# Recherche multi-critères à cheval sur le bas du hero (spec A.2). #}
-    <div class="home-container">
+    <div class="container">
         <form class="evn-search" role="search" action="{{ path('app_events_all') }}" method="get">
             <div class="evn-search__inner">
             <label class="evn-search__field">
@@ -79,7 +79,7 @@
        CATEGORIES POPULAIRES : carousel d'icônes rondes violettes.
        ================================================================ #}
     <section class="evn-section">
-        <div class="home-container">
+        <div class="container">
             <div class="evn-section__head">
                 <div>
                     <h2 class="evn-section__title">{{ 'Categories populaires'|trans }}</h2>
@@ -116,7 +116,7 @@
        corrigée : « Aujourd'h'ui » → Aujourd'hui.
        ================================================================ #}
     <section class="evn-section">
-        <div class="home-container">
+        <div class="container">
             <div class="evn-section__head">
                 <h2 class="evn-section__title">{{ 'Evénements de vos groupes'|trans }}</h2>
                 <div class="evn-today">
@@ -152,7 +152,7 @@
        ÉVÉNEMENTS À VENIR : grille 4×3 <EventCard>.
        ================================================================ #}
     <section class="evn-section">
-        <div class="home-container">
+        <div class="container">
             <div class="evn-section__head">
                 <div>
                     <h2 class="evn-section__title">{{ 'Événements à venir'|trans }}</h2>
@@ -172,7 +172,7 @@
        VOS GROUPES (0) : état vide « À la recherche de votre communauté ? ».
        ================================================================ #}
     <section class="evn-section evn-section--last">
-        <div class="home-container">
+        <div class="container">
             <div class="evn-section__head">
                 <h2 class="evn-section__title">{{ 'Vos groupes (0)'|trans }}</h2>
                 <a href="{{ path('app_groups') }}" class="evn-btn-dark">{{ 'Voir tout'|trans }} {{ icon.arrow_up_right(15) }}</a>

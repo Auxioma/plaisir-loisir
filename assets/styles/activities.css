@@ -49,27 +49,34 @@
 /* ===========================================================================
  *  EN-TÊTE DE PAGE DU LISTING (écran C)
  * ======================================================================== */
-.act-head { padding-block: var(--pl-sp-32) var(--pl-sp-8); }
+/* Maquette : le fil d'Ariane commence à y142, soit 42px sous la navbar (y100). */
+.act-head { padding-block: 39px var(--pl-sp-8); }
 
 .act-breadcrumb {
     display: flex; align-items: center; gap: var(--pl-sp-8);
     font-size: var(--pl-fs-caption);
     color: var(--pl-text-secondary);
-    margin-bottom: var(--pl-sp-24);
+    /* Maquette : 44px entre le bas du fil d'Ariane et le haut du titre. */
+    margin-bottom: var(--pl-sp-32);
 }
 .act-breadcrumb a { color: var(--pl-text-secondary); text-decoration: none; }
 .act-breadcrumb a:hover { color: var(--pl-action); text-decoration: underline; }
 .act-breadcrumb [aria-current] { color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
 
+/* Maquette : « Toutes nos activités » mesure 456x39 px d'encre. Rendu-test
+   Inter : 48px graisse 500 donne 454x38 — même typographie que les titres de
+   section (.home-section__title), Agnès n'emploie qu'un seul corps de titre. */
 .act-head__title {
-    font-size: var(--pl-fs-h2);
-    font-weight: var(--pl-fw-bold);
+    font-size: 48px;
+    font-weight: var(--pl-fw-medium);
     color: var(--pl-text);
-    margin: 0 0 var(--pl-sp-8);
+    /* Maquette : 32px entre le bas du titre et le haut du sous-titre. */
+    margin: 0 0 15px;
 }
+/* Maquette : le sous-titre tient sur UNE ligne de 1059px (x111 -> x1169). */
 .act-head__subtitle {
-    max-width: 760px;
-    font-size: var(--pl-fs-body-sm);
+    max-width: 1100px;
+    font-size: var(--pl-fs-body);
     line-height: var(--pl-lh-base);
     color: var(--pl-text-secondary);
     margin: 0 0 var(--pl-sp-20);
@@ -198,7 +205,8 @@
 .act-results {
     display: flex; align-items: center; justify-content: space-between;
     gap: var(--pl-sp-16);
-    padding-block: var(--pl-sp-8);
+    /* Maquette : 76px entre le compteur de résultats et le haut des cartes. */
+    padding-block: var(--pl-sp-8) var(--pl-sp-24);
 }
 .act-results__count { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); margin: 0; }
 .act-results__count strong { color: var(--pl-text); font-weight: var(--pl-fw-bold); }
@@ -334,7 +342,7 @@
     padding-inline: 100px;
 }
 /* Dans la colonne droite, les conteneurs internes n'ont plus à se centrer. */
-.act-page.has-filters .act-content .home-container { max-width: none; padding-inline: 0; }
+.act-page.has-filters .act-content .container { max-width: none; padding-inline: 0; }
 .act-page.has-filters .act-content .card-grid { grid-template-columns: repeat(3, 1fr); }
 /* Volumes de la maquette : 2 rangées de 4 par défaut (écran C), 2 rangées
    de 3 quand la sidebar est ouverte (écran D), 3 cartes par section ailleurs. */
@@ -364,8 +372,10 @@
 .act-filters__applied:empty { display: none; }
 
 .act-filters__field { display: flex; flex-direction: column; gap: 4px; }
+/* Maquette : titres de groupe en 16px (« Type de destination » mesure 152px
+   de large, contre 133 en 14px). */
 .act-filters__field > span:first-child, .act-filters__group > legend {
-    font-size: var(--pl-fs-body-sm);
+    font-size: var(--pl-fs-body);
     font-weight: var(--pl-fw-semibold);
     color: var(--pl-text);
 }
@@ -382,13 +392,15 @@
 .act-filters__group { border: 0; margin: 0; padding: var(--pl-sp-12) 0 0; border-top: 1px solid var(--pl-border); display: flex; flex-direction: column; gap: var(--pl-sp-8); }
 .act-filters__group > legend { margin-bottom: var(--pl-sp-8); }
 
+/* Maquette : pas de 57px d'une ligne à l'autre (nous étions à 46). */
 .act-filters__dest {
     display: flex; align-items: center; gap: var(--pl-sp-8);
-    padding: 8px 10px;
+    padding: 12px 10px;
     background: 0; border: 0;
     border-radius: var(--pl-radius-sm);
-    font-size: var(--pl-fs-body-sm);
-    color: var(--pl-text-secondary);
+    font-size: var(--pl-fs-body);
+    /* Maquette : libellés en texte principal, pas en gris secondaire. */
+    color: var(--pl-text);
     text-align: left;
     cursor: pointer;
 }
@@ -397,11 +409,13 @@
 
 .act-filters__check {
     display: flex; align-items: center; gap: var(--pl-sp-8);
-    font-size: var(--pl-fs-body-sm);
-    color: var(--pl-text-secondary);
+    padding-block: 6px;
+    font-size: var(--pl-fs-body);
+    color: var(--pl-text);
     cursor: pointer;
 }
-.act-filters__check input { width: 16px; height: 16px; accent-color: var(--pl-action); }
+/* Maquette : cases à cocher de 22px. */
+.act-filters__check input { width: 22px; height: 22px; accent-color: var(--pl-action); }
 .act-filters__stars { display: inline-flex; gap: 2px; }
 .act-filters__stars .is-on { color: var(--pl-warning); }
 .act-filters__stars .is-off { color: var(--pl-border); }
@@ -586,13 +600,24 @@ a.act-popup__title:hover { color: var(--pl-action); }
 .act-detail__organizer { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
 .act-detail__organizer strong { color: var(--pl-text); }
 
-/* Deux colonnes : contenu principal + panneau de réservation. */
+/* Deux colonnes : contenu principal + panneau de réservation.
+   Maquette : la galerie occupe 3 colonnes de 296 + 2 gouttières de 16 = 920,
+   puis 16px et le panneau de 296 — soit exactement les 1232px du conteneur.
+   La gouttière de 40px volait 24px à la galerie. */
 .act-detail__layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 296px;
-    gap: var(--pl-sp-40);
+    gap: var(--pl-sp-16);
     align-items: start;
+    /* Maquette : 37px entre la ligne d'infos du titre et le haut des deux
+       colonnes (galerie et panneau de réservation). */
+    padding-top: 29px;
     padding-bottom: var(--pl-sp-48);
+    /* Comme les grilles de cartes, les images débordent de 6px (x104 -> x1335).
+       L'élément porte AUSSI .home-container : élargir par marge négative ou par
+       width est sans effet, son max-width de 1440px reclampe la boîte. On
+       réduit donc son padding de 110 à 104. */
+    padding-inline: 104px;
 }
 
 /* --- Galerie mosaïque : 3 colonnes, la 1re image couvre 2×2. --- */
@@ -628,7 +653,8 @@ a.act-popup__title:hover { color: var(--pl-action); }
     margin-bottom: var(--pl-sp-16);
 }
 .act-detail__place { display: inline-flex; align-items: center; gap: 6px; font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
-.act-detail__maplink { display: inline-flex; align-items: center; gap: 4px; font-size: var(--pl-fs-body-sm); color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
+/* Maquette : « voir sur la carte » en rouge, pas dans le violet d'action. */
+.act-detail__maplink { display: inline-flex; align-items: center; gap: 4px; font-size: var(--pl-fs-body); color: var(--pl-error); font-weight: var(--pl-fw-semibold); }
 .act-detail__placebar-actions { margin-left: auto; display: inline-flex; gap: var(--pl-sp-8); }
 .pl-iconbtn--bordered { border: 1px solid var(--pl-border); }
 
@@ -641,9 +667,11 @@ a.act-popup__title:hover { color: var(--pl-action); }
     margin-bottom: var(--pl-sp-24);
     border-bottom: 1px solid var(--pl-border);
 }
-.act-fact { display: flex; flex-direction: column; gap: 2px; }
-.act-fact__label { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
-.act-fact__value { display: inline-flex; align-items: center; gap: 4px; font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+/* Maquette : libellés en 16px et en texte principal (nous étions en 12px gris
+   secondaire, d'où un bandeau bien plus discret que sur la maquette). */
+.act-fact { display: flex; flex-direction: column; gap: 6px; }
+.act-fact__label { font-size: var(--pl-fs-body); color: var(--pl-text); }
+.act-fact__value { display: inline-flex; align-items: center; gap: 4px; font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
 .act-fact__value .pl-icon { color: var(--pl-warning); }
 
 /* --- Blocs de contenu. --- */
@@ -654,7 +682,8 @@ a.act-popup__title:hover { color: var(--pl-action); }
     border-radius: var(--pl-radius-md);
     padding: var(--pl-sp-24);
 }
-.act-block__title { font-size: var(--pl-fs-s1); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0 0 var(--pl-sp-12); }
+/* Maquette : titres de bloc (« Présentation générale ») en 26px. */
+.act-block__title { font-size: var(--pl-fs-h3); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0 0 var(--pl-sp-12); }
 .act-block__sep { border: 0; border-top: 1px solid var(--pl-border); margin: 0 0 var(--pl-sp-16); }
 .act-block__subtitle { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0 0 var(--pl-sp-8); }
 .act-block__minititle { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: var(--pl-sp-16) 0 var(--pl-sp-8); }
@@ -692,17 +721,19 @@ a.act-popup__title:hover { color: var(--pl-action); }
 
 /* --- Panneau de réservation sticky. --- */
 .act-booking { position: sticky; top: 116px; display: flex; flex-direction: column; gap: var(--pl-sp-16); }
-.act-booking__panel, .act-booking__gift {
+.act-booking__panel {
     background: var(--pl-white);
     border: 1px solid var(--pl-border);
     border-radius: var(--pl-radius-md);
     box-shadow: 0 8px 24px rgba(15, 23, 42, .08);
     padding: var(--pl-sp-16);
 }
-.act-booking__price { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); margin: 0 0 var(--pl-sp-16); }
+/* Maquette : un filet sépare le prix du formulaire. */
+.act-booking__price { font-size: var(--pl-fs-body); color: var(--pl-text-secondary); margin: 0 0 var(--pl-sp-16); padding-bottom: var(--pl-sp-16); border-bottom: 1px solid var(--pl-border); }
 .act-booking__price strong { font-size: var(--pl-fs-h3); color: var(--pl-text); }
 .act-booking__field { display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--pl-sp-12); }
-.act-booking__field > span:first-child, .act-booking__field-label { font-size: var(--pl-fs-caption); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
+/* Maquette : libellés du formulaire en 16px gras. */
+.act-booking__field > span:first-child, .act-booking__field-label { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
 .act-booking__input {
     display: flex; align-items: center; gap: var(--pl-sp-8);
     padding: 9px 12px;
@@ -733,22 +764,40 @@ a.act-popup__title:hover { color: var(--pl-action); }
 .act-stepper__controls button:hover { border-color: var(--pl-action); color: var(--pl-action); }
 .act-stepper__controls button:disabled { opacity: .4; cursor: not-allowed; }
 .act-stepper__controls output { min-width: 20px; text-align: center; font-weight: var(--pl-fw-semibold); }
+/* Maquette : le total est posé sur fond blanc, séparé par un filet — pas dans
+   un pavé gris. */
 .act-booking__total {
     display: flex; align-items: center; justify-content: space-between;
-    padding: var(--pl-sp-12);
-    background: #f8f9fb;
-    border-radius: var(--pl-radius-sm);
-    font-size: var(--pl-fs-body-sm);
+    padding: var(--pl-sp-16) 0 var(--pl-sp-12);
+    border-top: 1px solid var(--pl-border);
+    font-size: var(--pl-fs-body);
     font-weight: var(--pl-fw-semibold);
     color: var(--pl-text);
     margin: 0 0 var(--pl-sp-12);
 }
-.act-booking__total strong { font-size: var(--pl-fs-s1); }
-.act-booking__note { display: flex; align-items: center; gap: 6px; font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); margin: var(--pl-sp-12) 0 0; }
-.act-booking__note span[aria-hidden] { color: var(--pl-success); font-weight: var(--pl-fw-bold); }
+/* Maquette : montant du total en violet. */
+.act-booking__total strong { font-size: var(--pl-fs-s1); color: var(--pl-action); }
+/* Maquette : « Annulation gratuite » dans un encadré violet clair. */
+.act-booking__note {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px;
+    background: var(--pl-action-light);
+    border-radius: var(--pl-radius-sm);
+    font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary);
+    margin: var(--pl-sp-12) 0 0;
+}
+.act-booking__note span[aria-hidden] { color: var(--pl-action); font-weight: var(--pl-fw-bold); }
 .act-booking__note strong { color: var(--pl-text); }
-.act-booking__gift h3 { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); margin: 0 0 var(--pl-sp-8); }
-.act-booking__gift p { font-size: var(--pl-fs-caption); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); margin: 0 0 var(--pl-sp-12); }
+/* Maquette : encart violet plein (et non une carte blanche bordée), titre
+   violet de 26px et bouton plein pleine largeur. */
+.act-booking__gift {
+    background: var(--pl-action-light);
+    border: 0;
+    border-radius: var(--pl-radius-md);
+    padding: var(--pl-sp-20);
+}
+.act-booking__gift h3 { font-size: var(--pl-fs-h3); font-weight: var(--pl-fw-bold); color: var(--pl-action); margin: 0 0 var(--pl-sp-16); }
+.act-booking__gift p { font-size: var(--pl-fs-body); line-height: var(--pl-lh-base); color: var(--pl-text); margin: 0 0 var(--pl-sp-20); }
 
 /* --- Menu « … » des cartes avis (Signaler cet avis). --- */
 .review-card__menu { position: relative; }
@@ -802,15 +851,17 @@ a.act-popup__title:hover { color: var(--pl-action); }
 /* ===========================================================================
  *  MODALE « TOUS LES AVIS » (écran G)
  * ======================================================================== */
-.reviews-modal { position: fixed; inset: 0; z-index: 2000; }
-.reviews-modal[hidden] { display: none; }
-.reviews-modal__overlay { position: absolute; inset: 0; background: rgba(6, 27, 86, .55); }
-.reviews-modal__panel {
-    position: relative;
+/* Positionnement, voile, z-index et fermeture : fournis par .modal de
+   Bootstrap. Il ne reste que la mise en forme du panneau. */
+.reviews-modal .modal-dialog {
     width: min(720px, calc(100vw - 48px));
-    max-height: calc(100vh - 96px);
+    max-width: none;
     margin: 48px auto;
+}
+.reviews-modal__panel {
+    max-height: calc(100vh - 96px);
     background: var(--pl-white);
+    border: 0;
     border-radius: var(--pl-radius-md);
     box-shadow: 0 24px 60px rgba(15, 23, 42, .3);
     display: flex; flex-direction: column;
@@ -883,7 +934,7 @@ a.act-popup__title:hover { color: var(--pl-action); }
     display: flex; flex-direction: column; gap: var(--pl-sp-16);
 }
 /* Blocage du scroll de fond quand la modale est ouverte. */
-body.has-modal { overflow: hidden; }
+/* Le blocage du défilement de fond est assuré par Bootstrap (.modal-open). */
 
 /* ===========================================================================
  *  Adaptation largeurs intermédiaires

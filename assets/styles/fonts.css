@@ -1,0 +1,43 @@
+/*
+ * ============================================================================
+ *  POLICE INTER — hébergée par le projet
+ *
+ *  Auparavant chargée depuis fonts.googleapis.com. Trois raisons de la
+ *  rapatrier :
+ *
+ *  1. RENDU — avec `display=swap` et une requête vers un tiers, la page
+ *     s'affiche d'abord dans la police de secours (Segoe UI sous Windows)
+ *     puis bascule. Ce clignotement est visible pour les visiteurs, et il
+ *     rendait nos captures de contrôle non déterministes : deux captures de
+ *     la MÊME page différaient de 254 000 pixels, ce qui interdisait toute
+ *     comparaison fiable avec les maquettes.
+ *  2. PERFORMANCE — deux préconnexions et deux allers-retours réseau en moins
+ *     sur le chemin critique de chaque page.
+ *  3. RGPD — servir Google Fonts depuis un tiers transmet l'adresse IP des
+ *     visiteurs à Google ; plusieurs décisions européennes l'ont sanctionné.
+ *     Héberger le fichier supprime la question.
+ *
+ *  Fichiers : police VARIABLE (un seul fichier couvre les graisses 100 à 900),
+ *  sous-ensembles latin et latin-ext, format woff2. Total ~130 Ko.
+ *  `font-display: swap` est conservé : le texte reste lisible pendant le
+ *  chargement, mais le fichier étant servi par nous, la bascule est immédiate.
+ * ============================================================================
+ */
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("../fonts/inter-latin-ext.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("../fonts/inter-latin.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}

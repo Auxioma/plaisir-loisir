@@ -69,7 +69,7 @@
     <div class="of-main">
 
     <section class="act-head">
-        <div class="home-container">
+        <div class="container">
             <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
                 <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
                 <span aria-hidden="true">/</span>
@@ -133,7 +133,7 @@
     </section>
 
     <section class="act-section">
-        <div class="home-container">
+        <div class="container">
             <div class="card-grid of-grid">
                 {% for o in offers %}
                     {% include 'offer/_card.html.twig' with { o: o } %}
@@ -147,7 +147,7 @@
 
     {% include 'offer/_lastminute.html.twig' with { lastMinute: lastMinute } %}
 
-    <div class="home-container of-news-wrap">
+    <div class="container of-news-wrap">
         {% include 'offer/_newsletter.html.twig' %}
     </div>
 

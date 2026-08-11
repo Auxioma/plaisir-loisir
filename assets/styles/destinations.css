@@ -365,11 +365,19 @@
  * ======================================================================== */
 .dest-reviews { background: #f4f5f7; }
 .dest-reviews__title { color: var(--pl-primary); margin-bottom: var(--pl-sp-24); }
+/* Maquette (Activités et Cadeaux) : « Note globale », puis la note, puis les
+   étoiles et le nombre d'avis sur une même ligne — soit trois lignes empilées
+   et non une seule rangée horizontale. */
 .dest-reviews__score {
-    display: flex; align-items: center; gap: var(--pl-sp-16);
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    align-items: center;
+    column-gap: var(--pl-sp-8);
+    row-gap: 4px;
     margin-bottom: var(--pl-sp-32);
 }
+.dest-reviews__score-label,
+.dest-reviews__score .home-reviews__score-value { grid-column: 1 / -1; }
 .dest-reviews__score-label { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
 /* Variante « dans la colonne » (écrans 5-7) : le fond gris reste borné à la
    colonne de droite, avec son propre padding interne. */
