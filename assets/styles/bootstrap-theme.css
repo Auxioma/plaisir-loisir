@@ -1,0 +1,144 @@
+/*
+ * ============================================================================
+ *  THÈME BOOTSTRAP — Plaisir & Loisirs
+ *
+ *  Bootstrap 5.3 est chargé sur toutes les pages (assets/app.js). Ce fichier
+ *  est chargé JUSTE APRÈS lui et avant nos feuilles de parcours. Son rôle :
+ *  caler Bootstrap sur la maquette d'Agnès pour qu'on puisse employer ses
+ *  classes (.container, .row, .col-*, .btn, .modal, .form-control…) sans
+ *  perdre la fidélité au pixel.
+ *
+ *  POURQUOI CE FICHIER
+ *  Jusqu'ici Bootstrap était chargé mais quasi inutilisé : sur 104 templates,
+ *  seules 7 classes Bootstrap réelles étaient employées (toutes dans le
+ *  bandeau de messages flash). On payait le framework sans en tirer parti,
+ *  et sa grille par défaut (conteneur 1320px, gouttières 24px) ne pouvait pas
+ *  produire la géométrie de la maquette (contenu 1232px, cartes 296, gouttière
+ *  16). Ce fichier lève cet obstacle.
+ *
+ *  CE QUE BOOTSTRAP NOUS APPORTE DÉJÀ, ET QU'IL NE FAUT PAS PERDRE
+ *  Son Reboot fournit `*,::after,::before { box-sizing: border-box }`.
+ *  Nos feuilles ne le définissent NULLE PART : tout le CSS du projet repose
+ *  sur cette remise à zéro. Vérifié en capturant les pages sans Bootstrap :
+ *  la mise en page s'effondre (2,2 millions de pixels d'écart sur le listing).
+ *  => Ne jamais retirer bootstrap.min.css sans fournir d'abord son propre
+ *     reset.
+ *
+ *  CE QUI RESTE HORS DE PORTÉE SANS SASS
+ *  Les utilitaires d'espacement (m-3, p-4…) sont figés à la compilation sur
+ *  l'échelle de 0.25rem de Bootstrap ; ils ne suivent pas notre échelle
+ *  (4/8/12/16/20/24/28/32/38/40/48). On les évite donc au profit de nos
+ *  jetons --pl-sp-*. Pour les aligner vraiment il faudrait recompiler
+ *  Bootstrap depuis ses sources Sass (symfonycasts/sass-bundle).
+ * ============================================================================
+ */
+
+/* ---------------------------------------------------------------------------
+ *  1. GRILLE — aligner .container et .row sur la maquette
+ *
+ *  Maquette : page de 1440px, contenu de 1220px commençant à x110 pour les
+ *  blocs de texte ; les grilles d'images débordent de 6px de chaque côté
+ *  (x104 -> x1335, soit 1232px) et portent 4 cartes de 296px espacées de 16.
+ *
+ *  Bootstrap applique padding = --bs-gutter-x / 2 de chaque côté du conteneur.
+ *  Une gouttière de 220px donne donc 110px de marge : exactement notre
+ *  .home-container, dont .container devient l'équivalent standard.
+ * ------------------------------------------------------------------------ */
+.container,
+.container-fluid {
+    --bs-gutter-x: 220px;
+    max-width: var(--pl-container-desktop);   /* 1440px */
+}
+
+/* Bootstrap : la rangée déborde d'une demi-gouttière de chaque côté et chaque
+   colonne la compense en padding. Avec 16px, quatre .col-3 dans un conteneur
+   de 1220px donnent des cartes de 293px — il manque 3px par carte. La classe
+   .row--bleed ajoute le débordement de 6px de la maquette et rétablit les
+   296px exacts, comme le fait déjà .card-grid. */
+.row {
+    --bs-gutter-x: var(--pl-sp-16);
+    --bs-gutter-y: var(--pl-sp-16);
+}
+.row--bleed { margin-inline: calc(-.5 * var(--bs-gutter-x) - 6px); }
+
+/* ---------------------------------------------------------------------------
+ *  2. TYPOGRAPHIE ET SURFACES
+ *  --bs-body-* pilote le Reboot ; le reste sert aux composants.
+ * ------------------------------------------------------------------------ */
+:root {
+    --bs-body-font-size:   var(--pl-fs-body);        /* 16px */
+    --bs-body-line-height: 1.5;
+    --bs-body-font-weight: var(--pl-fw-regular);
+
+    --bs-border-radius-sm: var(--pl-radius-xs);      /* 4px  */
+    --bs-border-radius:    var(--pl-radius-sm);      /* 8px  */
+    --bs-border-radius-lg: var(--pl-radius-md);      /* 12px */
+    --bs-border-radius-xl: 16px;
+    --bs-border-radius-pill: var(--pl-radius-pill);
+
+    --bs-border-color-translucent: var(--pl-border);
+    --bs-secondary-color:  var(--pl-text-secondary);
+    --bs-emphasis-color:   var(--pl-text-strong);
+    --bs-heading-color:    var(--pl-text);
+
+    /* Anneau de focus : violet d'action, comme nos champs maison. */
+    --bs-focus-ring-color: rgba(93, 0, 255, .18);
+    --bs-focus-ring-width: 3px;
+}
+
+/* Bootstrap donne aux titres h1..h4 une taille FLUIDE (calc + vw) : elle varie
+   avec la largeur de la fenêtre et ne peut donc jamais correspondre à une
+   maquette figée à 1440. On la fige sur l'échelle de la charte. Nos 53 classes
+   de titre ont déjà une taille explicite ; ceci protège les titres sans classe
+   et tout futur usage des classes .h1..h6 de Bootstrap.
+
+   On ne touche VOLONTAIREMENT pas à line-height : un sélecteur d'élément le
+   fixerait pour toutes les classes de titre qui ne le déclarent pas, ce qui
+   décalerait les écrans déjà calés au pixel. */
+h1, .h1 { font-size: var(--pl-fs-display); }
+h2, .h2 { font-size: var(--pl-fs-h2); }
+h3, .h3 { font-size: var(--pl-fs-h3); }
+h4, .h4 { font-size: var(--pl-fs-h4); }
+h5, .h5 { font-size: var(--pl-fs-s1); }
+h6, .h6 { font-size: var(--pl-fs-body); }
+
+/* ---------------------------------------------------------------------------
+ *  3. COMPOSANTS — pour que .btn, .form-control, .modal… sortent aux couleurs
+ *     de la charte sans surcharge au cas par cas.
+ * ------------------------------------------------------------------------ */
+.btn {
+    --bs-btn-padding-y: 9px;
+    --bs-btn-padding-x: var(--pl-sp-16);
+    --bs-btn-font-size: var(--pl-fs-body-sm);
+    --bs-btn-font-weight: var(--pl-fw-semibold);
+    --bs-btn-border-radius: var(--pl-radius-sm);
+}
+.btn-primary {
+    --bs-btn-bg: var(--pl-action);
+    --bs-btn-border-color: var(--pl-action);
+    --bs-btn-hover-bg: #4a00cc;
+    --bs-btn-hover-border-color: #4a00cc;
+    --bs-btn-active-bg: #4a00cc;
+}
+
+.form-control, .form-select {
+    --bs-border-color: var(--pl-border);
+    padding: 9px var(--pl-sp-12);
+    font-size: var(--pl-fs-body-sm);
+    border-radius: var(--pl-radius-sm);
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--pl-action);
+    box-shadow: 0 0 0 var(--bs-focus-ring-width) var(--bs-focus-ring-color);
+}
+.form-label { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.form-check-input:checked { background-color: var(--pl-action); border-color: var(--pl-action); }
+
+.modal-content { border: 0; border-radius: var(--pl-radius-md); }
+.dropdown-menu {
+    --bs-dropdown-border-color: var(--pl-border);
+    --bs-dropdown-border-radius: var(--pl-radius-md);
+    --bs-dropdown-link-active-bg: var(--pl-action-light);
+    --bs-dropdown-link-active-color: var(--pl-action);
+}
+.badge { --bs-badge-border-radius: var(--pl-radius-pill); }

@@ -10,7 +10,10 @@ import './stimulus_bootstrap.js';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'leaflet/dist/leaflet.css';   /* vue carte du listing d'activités */
+import './styles/fonts.css';           // Inter, hébergée par le projet
 import './styles/design-system.css';
+// Cale Bootstrap sur la grille et la charte d'Agnès (voir l'en-tête du fichier).
+import './styles/bootstrap-theme.css';
 import './styles/components.css';
 import './styles/auth.css';
 import './styles/home.css';

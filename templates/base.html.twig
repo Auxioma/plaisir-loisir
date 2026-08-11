@@ -7,11 +7,8 @@
         <meta name="description" content="{% block meta_description %}Trouvez et réservez les meilleurs prestataires de loisirs près de chez vous.{% endblock %}">
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🎯</text></svg>">
 
-        {# Google Fonts — Inter pour une typographie moderne et lisible #}
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+        {# Inter est désormais hébergée par le projet (assets/styles/fonts.css) :
+           plus de requête vers Google, plus de clignotement de police. #}
         {% block stylesheets %}
             <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
         {% endblock %}
