@@ -20,7 +20,7 @@
        barres d'outils et de filtres, ligne de résultats (écran C).
        ================================================================ #}
     <section class="act-head">
-        <div class="home-container">
+        <div class="container">
 
             <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
                 <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
@@ -186,7 +186,7 @@
        GRILLE PRINCIPALE : 3 rangées de 4 cartes + « Voir plus ».
        ================================================================ #}
     <section class="act-section">
-        <div class="home-container">
+        <div class="container">
             <div class="card-grid act-grid">
                 {% for a in gridActivities %}
                     {% include 'activity/_card.html.twig' with { a: a } %}
@@ -202,7 +202,7 @@
        VOTRE SÉLECTION D'ACTIVITÉS : chips villes + 4 vignettes.
        ================================================================ #}
     <section class="act-section act-section--alt">
-        <div class="home-container">
+        <div class="container">
             <div class="home-section__head">
                 <div>
                     <h2 class="home-section__title">{{ "Votre sélection d'activités"|trans }}</h2>
@@ -229,7 +229,7 @@
        ACTIVITÉS COUP DE COEUR : cartes 1-4 + pagination.
        ================================================================ #}
     <section class="act-section">
-        <div class="home-container">
+        <div class="container">
             <div class="home-section__head">
                 <div>
                     <h2 class="home-section__title">{{ 'Activités coup de coeur'|trans }}</h2>
@@ -255,7 +255,7 @@
        OFFRES EXCLUSIVES POUR VOUS : 4 cartes remisées + pagination.
        ================================================================ #}
     <section class="act-section act-section--alt">
-        <div class="home-container">
+        <div class="container">
             <div class="home-section__head">
                 <div>
                     <h2 class="home-section__title">{{ 'Offres exclusives pour vous'|trans }}</h2>

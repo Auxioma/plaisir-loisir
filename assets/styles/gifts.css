@@ -148,7 +148,7 @@
     background: #fff2e6; min-height: 545px;
     display: flex; align-items: center;
 }
-.gift-why > .home-container { width: 100%; }
+.gift-why > .container { width: 100%; }
 .gift-why__text { position: relative; z-index: 1; max-width: 46%; }
 .gift-why__title { margin: 0 0 26px; color: var(--pl-cta); font-size: 38px; font-weight: 600; }
 .gift-why__list { list-style: none; margin: 0 0 30px; padding: 0; display: grid; gap: 20px; }

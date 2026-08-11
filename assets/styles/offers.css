@@ -244,8 +244,8 @@
 /* Grille 4 colonnes fermée → 3 colonnes de 6 cartes sidebar ouverte. */
 .of-listing.has-filters .of-grid { grid-template-columns: repeat(3, 1fr); }
 .of-listing.has-filters .of-grid > :nth-child(n+7) { display: none; }
-.of-listing.has-filters .act-head .home-container,
-.of-listing.has-filters .of-main .home-container { max-width: none; }
+.of-listing.has-filters .act-head .container,
+.of-listing.has-filters .of-main .container { max-width: none; }
 
 @media (max-width: 1100px) {
     .of-flash { grid-template-columns: 1fr; }

@@ -9,11 +9,8 @@
 /* Conteneur centré, aligné sur la navbar.
    Mesuré sur les maquettes (grille de cartes bord à bord : x104 → x1335) :
    contenu de 1232px, donc 104px de marge de chaque côté. */
-.home-container {
-    max-width: var(--pl-container-desktop);   /* 1440px */
-    margin: 0 auto;
-    padding-inline: 110px;
-}
+/* Remplacé par la classe standard .container de Bootstrap, calée sur cette
+   même grille dans assets/styles/bootstrap-theme.css. */
 
 /* ===========================================================================
  *  EN-TÊTE DE L'ACCUEIL (spécifique)
@@ -702,7 +699,7 @@
  *  Adaptation largeurs intermédiaires
  * ======================================================================== */
 @media (max-width: 1100px) {
-    .home-container { padding-inline: var(--pl-sp-32); }
+    /* .container : la variante réduite est dans bootstrap-theme.css. */
     .card-grid { grid-template-columns: repeat(2, 1fr); }
     .home-reviews__grid { grid-template-columns: 1fr; }
     .home-provider__inner { grid-template-columns: 1fr; }

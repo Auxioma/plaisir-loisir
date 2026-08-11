@@ -104,7 +104,7 @@
     <div class="of-main">
 
     <section class="act-head">
-        <div class="home-container">
+        <div class="container">
             <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
                 <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
                 <span aria-hidden="true">/</span>
@@ -166,7 +166,7 @@
 
     {# Grille par défaut (écrans 2-3) : 8 ateliers, 4×2. #}
     <section class="act-section" id="gift-grid-default">
-        <div class="home-container">
+        <div class="container">
             <div class="card-grid">
                 {% for g in workshops %}
                     {% include 'gift/_card.html.twig' with { g: g } %}
@@ -180,7 +180,7 @@
 
     {# Grille filtrée (écran 4) : 12 activités, 3×4, avec placeholders. #}
     <section class="act-section" id="gift-grid-filtered" hidden>
-        <div class="home-container">
+        <div class="container">
             <div class="card-grid gift-fgrid">
                 {% for a in filtered %}
                     {% include 'gift/_filtered_card.html.twig' with { a: a } %}
@@ -191,7 +191,7 @@
 
     {# Top catégories (écrans 2-3) : même mosaïque que la landing. #}
     <section class="act-section" id="gift-topcats">
-        <div class="home-container">
+        <div class="container">
             <h2 class="home-section__title gift-solo-title">{{ 'Top catégories'|trans }}</h2>
             {% include 'gift/_mosaic.html.twig' with { categories: categories } %}
             <nav class="act-pagination" aria-label="{{ 'Pagination des catégories'|trans }}">

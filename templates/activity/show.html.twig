@@ -15,7 +15,7 @@
        FIL D'ARIANE + EN-TÊTE (titre, note, organisateur).
        ================================================================ #}
     <section class="act-head">
-        <div class="home-container">
+        <div class="container">
             <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
                 {% for crumb in detail.breadcrumb %}
                     {% if loop.first %}
@@ -41,7 +41,7 @@
     {# ==================================================================
        CORPS : colonne principale + panneau de réservation sticky.
        ================================================================ #}
-    <div class="home-container act-detail__layout">
+    <div class="container act-detail__layout">
         <div class="act-detail__main">
 
             {# --- Galerie mosaïque : 1 grande + 4 vignettes. --- #}
@@ -212,7 +212,7 @@
        CE QUE DISENT NOS CLIENTS (fond gris) → ouvre la modale (écran G).
        ================================================================ #}
     <section class="act-section act-section--alt" id="avis">
-        <div class="home-container">
+        <div class="container">
             {# Maquette : titre puis note globale EMPILÉS à gauche, bouton
                « Voir plus d'avis » seul à droite — même disposition que le
                bandeau partagé de Destinations et Cadeaux. #}
@@ -240,7 +240,7 @@
        AJOUTER UN AVIS (formulaire, spec §F).
        ================================================================ #}
     <section class="act-section">
-        <div class="home-container">
+        <div class="container">
             <form class="act-review-form" action="#" method="post">
                 <div class="act-review-form__stars" role="radiogroup" aria-label="{{ 'Votre note'|trans }}">
                     {% for i in 1..5 %}
@@ -262,7 +262,7 @@
        VOUS POURRIEZ AUSSI AIMER…
        ================================================================ #}
     <section class="act-section">
-        <div class="home-container">
+        <div class="container">
             <div class="home-section__head">
                 <h2 class="home-section__title">{{ 'Vous pourriez aussi aimer…'|trans }}</h2>
                 <a href="{{ path('app_activities') }}" class="btn-see-all">{{ 'Voir toutes les activités'|trans }}</a>

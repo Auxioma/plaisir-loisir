@@ -20,7 +20,7 @@
        recherche compacte, outils d'affichage, chips, ligne de résultats.
        ================================================================ #}
     <section class="act-head">
-        <div class="home-container">
+        <div class="container">
 
             <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
                 <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
@@ -250,7 +250,7 @@
        GRILLE PAR DÉFAUT (écran 2) : 16 destinations, 4×4.
        ================================================================ #}
     <section class="act-section" id="dest-grid-default">
-        <div class="home-container">
+        <div class="container">
             <div class="card-grid dest-default-grid">
                 {% for d in destinations %}
                     {% include 'destination/_card.html.twig' with { d: d } %}
@@ -266,7 +266,7 @@
        GRILLE FILTRÉE (écran 5) : 12 activités Gastronomie, 3×4.
        ================================================================ #}
     <section class="act-section" id="dest-grid-filtered" hidden>
-        <div class="home-container">
+        <div class="container">
             <div class="card-grid dest-gastro-grid">
                 {% for a in gastronomy %}
                     {% include 'activity/_card.html.twig' with { a: a } %}

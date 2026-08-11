@@ -50,6 +50,15 @@
     max-width: var(--pl-container-desktop);   /* 1440px */
 }
 
+/* Sous 1100px la marge de 110px mange tout : on repasse à 32px, comme le
+   faisait .home-container. Cette règle DOIT rester après la définition
+   ci-dessus et après les media queries de Bootstrap (max-width 540 à 1320),
+   que notre max-width remplace. */
+@media (max-width: 1100px) {
+    .container,
+    .container-fluid { --bs-gutter-x: var(--pl-sp-64); }
+}
+
 /* Bootstrap : la rangée déborde d'une demi-gouttière de chaque côté et chaque
    colonne la compense en padding. Avec 16px, quatre .col-3 dans un conteneur
    de 1220px donnent des cartes de 293px — il manque 3px par carte. La classe
