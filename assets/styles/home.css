@@ -186,6 +186,12 @@
 /* ===========================================================================
  *  BARRE DE RECHERCHE (chevauche le bas du hero)
  * ======================================================================== */
+/* À CORRIGER — Figma 591:61677 > « Container - Renseignement » : la carte de
+   recherche doit être à x=68 sur 1304 de large, elle déborde volontairement de
+   la grille 110/1220. Nous la rendons actuellement à x110 sur 1220.
+   Un simple padding-inline: 68px ne suffit pas (rendu obtenu : x178 sur 1084),
+   la structure interne intervient : à reprendre en repartant de la structure,
+   pas par compensation. Valeurs complètes dans docs/grille-figma.md. */
 .home-search-wrap { position: relative; z-index: 3; margin-top: -44px; }
 .home-search {
     background: var(--pl-white);
