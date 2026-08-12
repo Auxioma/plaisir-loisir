@@ -424,6 +424,17 @@
     <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 10-12h-6l1-8z"/></svg>
 {% endmacro %}
 
+{# Calendrier « jours » (six pastilles) : champ Date de la carte de recherche. #}
+{% macro calendar_days(size = 20) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>
+{% endmacro %}
+
+{# Grande roue : onglet « Activités » de la carte de recherche de l'accueil.
+   Tracée sur la maquette (roue, moyeu, six rayons, deux pieds et embase). #}
+{% macro ferris_wheel(size = 20) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7"/><circle cx="12" cy="10" r="2.2"/><path d="M12 3v4.8M12 12.2V17M5.9 6.5l4.2 2.4M13.9 11.1l4.2 2.4M18.1 6.5l-4.2 2.4M10.1 11.1l-4.2 2.4"/><path d="M9.6 16.2 7 22M14.4 16.2 17 22M6 22h12"/></svg>
+{% endmacro %}
+
 {% macro cat_culture(size = 24) %}
     <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5H3z"/><path d="M4 21h16M5 21v-8m5 8v-8m4 8v-8m5 8v-8"/></svg>
 {% endmacro %}
