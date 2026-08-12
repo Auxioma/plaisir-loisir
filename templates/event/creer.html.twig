@@ -14,9 +14,9 @@
 
         <nav class="act-breadcrumb ev-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
             <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
-            <span aria-hidden="true">/</span>
+            <span aria-hidden="true">|</span>
             <a href="{{ path('app_event_create') }}">{{ 'Créer un événement'|trans }}</a>
-            <span aria-hidden="true">/</span>
+            <span aria-hidden="true">|</span>
             <span aria-current="page">{{ steps[step - 1].title }}</span>
         </nav>
 

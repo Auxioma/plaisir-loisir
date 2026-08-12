@@ -55,11 +55,15 @@
 .act-breadcrumb {
     display: flex; align-items: center; gap: var(--pl-sp-8);
     font-size: var(--pl-fs-caption);
-    color: var(--pl-text-secondary);
+    color: #c1c7d1;
     /* Maquette : 44px entre le bas du fil d'Ariane et le haut du titre. */
     margin-bottom: var(--pl-sp-32);
 }
-.act-breadcrumb a { color: var(--pl-text-secondary); text-decoration: none; }
+/* Couleurs relevées sur les maquettes (Offres et Destinations) : les maillons
+   sont en gris très clair #c1c7d1 et le séparateur est une BARRE verticale
+   #e5e7eb — et non un « / » en gris secondaire. */
+.act-breadcrumb a { color: #c1c7d1; text-decoration: none; }
+.act-breadcrumb [aria-hidden] { color: var(--pl-border); }
 .act-breadcrumb a:hover { color: var(--pl-action); text-decoration: underline; }
 .act-breadcrumb [aria-current] { color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
 

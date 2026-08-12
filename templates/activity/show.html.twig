@@ -25,7 +25,7 @@
                     {% else %}
                         <a href="{{ path('app_activities') }}">{{ crumb }}</a>
                     {% endif %}
-                    {% if not loop.last %}<span aria-hidden="true">/</span>{% endif %}
+                    {% if not loop.last %}<span aria-hidden="true">|</span>{% endif %}
                 {% endfor %}
             </nav>
 

@@ -98,24 +98,30 @@
 /* ===========================================================================
  *  ÉCRAN 1 — LANDING DESTINATIONS
  * ======================================================================== */
-/* --- Hero plage : voile blanc à gauche, titre 3 lignes accent orange. --- */
-.dest-hero { position: relative; min-height: 436px; display: flex; align-items: center; overflow: hidden; }
+/* --- Hero plage : voile blanc à gauche, titre 3 lignes accent orange. ---
+   Mesuré au pixel sur assets/figma/destinations.png : bande de y100 à y529
+   (430 de haut), titre de 45px sur 52 d'interligne (« destinations » relevé à
+   265px de large et 34px de hauteur de capitale), paragraphe de 18px sur 28
+   dans la couleur du texte principal — et non en gris secondaire. */
+.dest-hero { position: relative; min-height: 430px; display: flex; align-items: center; overflow: hidden; }
 .dest-hero__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 60%; }
 .dest-hero__overlay {
     position: absolute; inset: 0;
     background: linear-gradient(90deg, rgba(255, 255, 255, .95) 0%, rgba(255, 255, 255, .78) 34%, rgba(255, 255, 255, .25) 62%, rgba(255, 255, 255, 0) 82%);
 }
-.dest-hero__inner { position: relative; z-index: 1; width: 100%; padding-block: 56px; }
+/* Marge basse plus grande de 5px : elle remonte le bloc pour caler le
+   paragraphe sur y367 sans bouger le titre, calé lui a y188. */
+.dest-hero__inner { position: relative; z-index: 1; width: 100%; padding-block: 56px 61px; }
 .dest-hero__title {
     max-width: 580px;
-    margin: 0 0 var(--pl-sp-16);
-    font-size: 42px;
+    margin: 0 0 23px;
+    font-size: 45px;
     font-weight: var(--pl-fw-bold);
-    line-height: 1.25;
+    line-height: 52px;
     color: var(--pl-text);
 }
 .dest-hero__title .is-accent-line { color: var(--pl-cta); }
-.dest-hero__subtitle { max-width: 512px; margin: 0; font-size: var(--pl-fs-body); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); }
+.dest-hero__subtitle { max-width: 512px; margin: 0; font-size: 18px; line-height: 28px; color: var(--pl-text); }
 
 /* --- Carrousel des catégories populaires (cartes horizontales). --- */
 .dest-cats { display: flex; align-items: center; gap: var(--pl-sp-12); }

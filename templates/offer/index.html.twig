@@ -27,13 +27,20 @@
                 <span class="home-pill">{{ icon.ban(16) }} {{ 'Annulation facile'|trans }}</span>
             </div>
         </div>
-        {# Blob orange organique « Jusqu'à -50% » (décor signature). #}
+        {# Blob orange organique « Jusqu'à -50% » (décor signature). Le contour
+           et les quatre traits décoratifs sont RELEVÉS sur la maquette
+           (assets/figma/offres-du-moment.png) : forme de 260x252 posée à x1112
+           y195, traits fins de 2,2px autour. #}
         <div class="of-hero__blob" aria-hidden="true">
-            <svg viewBox="0 0 200 200" class="of-hero__blob-shape">
-                <path fill="var(--pl-cta)" d="M55 22c25-16 62-22 85-8 22 13 34 42 30 68-3 22-18 38-33 55-16 18-40 32-63 26-24-6-40-30-48-54-8-25-6-52 8-68 8-9 13-13 21-19z"/>
+            <svg viewBox="0 0 299 252" class="of-hero__blob-shape">
+                <path fill="var(--pl-cta)" transform="translate(20 0)" d="M237.3 121.8Q240.3 126.7 243.3 132.2Q246.2 137.6 249.9 143.9Q253.5 150.2 255.9 157.1Q258.3 164.0 258.7 171.0Q259.1 178.0 256.7 184.2Q254.3 190.3 249.9 195.3Q245.5 200.3 239.8 204.1Q234.2 207.9 228.6 211.1Q223.0 214.4 216.7 216.3Q210.5 218.3 204.1 219.3Q197.8 220.2 191.5 220.2Q185.3 220.2 179.2 219.2Q173.2 218.2 167.8 217.2Q162.4 216.2 157.7 215.8Q152.9 215.5 148.5 215.9Q144.1 216.3 139.7 217.2Q135.3 218.2 130.5 220.7Q125.8 223.2 120.0 227.7Q114.3 232.1 107.2 237.3Q100.2 242.5 92.4 245.8Q84.6 249.1 76.6 250.3Q68.6 251.5 61.1 250.2Q53.6 248.9 47.2 245.4Q40.8 241.9 36.8 235.5Q32.8 229.2 32.8 220.0Q32.9 210.7 36.9 200.2Q40.9 189.7 43.8 181.9Q46.7 174.1 47.1 168.6Q47.5 163.0 47.1 158.3Q46.8 153.5 43.9 149.5Q41.1 145.4 35.0 141.3Q28.8 137.2 21.8 131.9Q14.8 126.7 10.3 120.3Q5.9 113.9 3.4 107.0Q0.9 100.0 0.9 92.9Q0.8 85.9 2.7 79.2Q4.6 72.5 8.6 66.9Q12.7 61.2 18.5 56.8Q24.3 52.5 31.1 49.6Q37.9 46.8 45.0 45.2Q52.2 43.6 59.3 43.2Q66.5 42.8 73.1 43.2Q79.7 43.5 85.6 44.1Q91.4 44.7 96.4 44.8Q101.4 44.9 105.8 44.4Q110.2 43.9 114.4 43.4Q118.6 42.8 122.7 41.7Q126.8 40.6 131.0 39.7Q135.3 38.7 139.8 37.2Q144.3 35.6 149.2 33.6Q154.2 31.6 160.2 28.2Q166.2 24.8 174.4 18.7Q182.5 12.6 192.3 7.2Q202.0 1.9 211.0 0.9Q220.0 -0.1 227.8 2.2Q235.5 4.6 240.9 10.1Q246.3 15.7 247.8 24.4Q249.3 33.1 246.3 43.8Q243.4 54.5 238.9 64.1Q234.5 73.7 231.8 80.8Q229.1 87.8 228.6 93.2Q228.1 98.5 229.3 103.2Q230.4 107.8 232.4 112.4Q234.3 116.9 237.3 121.8Z"/>
+                <g fill="none" stroke="var(--pl-cta)" stroke-width="2.2" stroke-linecap="round">
+                    <path d="M269 88Q253 80 297 160"/>
+                    <path d="M5 68Q19 31 65 26"/>
+                    <path d="M289 30Q292 45 279 64"/>
+                    <path d="M0 93Q0.5 114 11 127"/>
+                </g>
             </svg>
-            <span class="of-hero__blob-spark of-hero__blob-spark--1"></span>
-            <span class="of-hero__blob-spark of-hero__blob-spark--2"></span>
             <div class="of-hero__blob-text">
                 <span class="of-hero__blob-upto">{{ "Jusqu'à"|trans }}</span>
                 <span class="of-hero__blob-pct">-50%</span>
@@ -45,7 +52,7 @@
     <div class="container">
         <nav class="act-breadcrumb of-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
             <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
-            <span aria-hidden="true">/</span>
+            <span aria-hidden="true">|</span>
             <span aria-current="page">{{ 'Offres du moments'|trans }}</span>
         </nav>
     </div>
