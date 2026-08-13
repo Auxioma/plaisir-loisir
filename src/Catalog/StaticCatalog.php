@@ -57,7 +57,7 @@ final class StaticCatalog
             'visite-guidee-de-labyrinthe' => [
                 'slug' => 'visite-guidee-de-labyrinthe',
                 'place' => 'Labyrinthe en Provence',
-                'title' => 'Visite guidée de labyrinthe',
+                'title' => 'Visite de labyrinthe',
                 'rating' => '4.7',
                 'reviews' => 134,
                 'duration' => '1h30',
@@ -118,9 +118,10 @@ final class StaticCatalog
                 'image' => 'images/activities/yoga.jpg',
                 'lat' => 45.360,
                 'lng' => 4.800,
-                // Exemple d'activité entre particuliers (logo « Gratuite » sur
-                // la carte — demande Loïc du 2026-07-27).
-                'free' => true,
+                // Le drapeau « entre particuliers » (carte gratuite) venait
+                // d'une demande de Loïc du 2026-07-27 ; la maquette affiche
+                // « À partir de 25€ » sur cette carte. Retiré pour s'y
+                // conformer (CTO, 12/08) — voir docs/note-conformite-12-08.md.
             ],
             'concert-live-soiree-musique' => [
                 'slug' => 'concert-live-soiree-musique',

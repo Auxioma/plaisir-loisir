@@ -219,7 +219,10 @@
  *  SECTIONS & GRILLE DU LISTING
  * ======================================================================== */
 .act-section { padding-block: var(--pl-sp-32) var(--pl-sp-40); }
-.act-section--alt { background: #f4f5f7; }
+/* Teinte relevée sur les maquettes qui portent une section grise (détail
+   Activité, Destinations populaires, Destinations par ville) : #fafafb.
+   Le listing Activités, lui, est ENTIÈREMENT blanc dans la maquette. */
+.act-section--alt { background: #fafafb; }
 .act-section .home-section__head { margin-bottom: var(--pl-sp-20); }
 
 .act-more { display: flex; justify-content: center; margin-top: var(--pl-sp-32); }
@@ -254,7 +257,7 @@
 }
 
 /* --- Carte « sélection » : titre + volume seulement. --- */
-.sel-card__count { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
+.sel-card__count { display: inline-flex; align-items: center; gap: 6px; font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
 
 /* --- Logo type d'activité (pro payante / privée gratuite), coin bas-gauche
    de la photo — demande Loïc (commentaire maquette du 2026-07-27). --- */
@@ -348,9 +351,9 @@
 /* Dans la colonne droite, les conteneurs internes n'ont plus à se centrer. */
 .act-page.has-filters .act-content .container { max-width: none; padding-inline: 0; }
 .act-page.has-filters .act-content .card-grid { grid-template-columns: repeat(3, 1fr); }
-/* Volumes de la maquette : 2 rangées de 4 par défaut (écran C), 2 rangées
+/* Volumes de la maquette : 3 rangées de 4 par défaut (écran C — la troisième
+   rangée reprend les cartes 5 à 8, c'est la maquette qui les répète), 2 rangées
    de 3 quand la sidebar est ouverte (écran D), 3 cartes par section ailleurs. */
-.act-grid > :nth-child(n+9) { display: none; }
 .act-page.has-filters .act-grid > :nth-child(n+7) { display: none; }
 .act-page.has-filters .act-content .card-grid:not(.act-grid) > :nth-child(n+4) { display: none; }
 

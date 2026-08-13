@@ -2,12 +2,14 @@
     Carte « sélection » (spec §2.4) : image + titre + « X activités ».
     Ni note, ni prix. Variable : s (title, count, image).
 #}
+{% import '_partials/_icons.html.twig' as icon %}
 <a href="{{ path('app_activities') }}" class="pl-card sel-card">
     <div class="pl-card__media">
         <img src="{{ asset(s.image) }}" alt="{{ s.title }}">
     </div>
     <div class="pl-card__body">
         <span class="pl-card__title">{{ s.title }}</span>
-        <span class="sel-card__count">{{ s.count }} {{ 'activités'|trans }}</span>
+        {# La maquette pose un pictogramme « livre ouvert » devant le compteur. #}
+        <span class="sel-card__count">{{ icon.book_open(14) }} {{ s.count }} {{ 'activités'|trans }}</span>
     </div>
 </a>
