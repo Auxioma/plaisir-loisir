@@ -47,7 +47,7 @@ final class StaticOffers
                 'oldPrice' => 32,
                 'price' => 25,
                 'remaining' => 92040,
-                'image' => 'images/activities/canoe.jpg',
+                'image' => 'images/activities/canoe-riviere.jpg',
                 'slug' => 'descente-en-canoe-gorges-ardeche',
             ],
             [
@@ -59,7 +59,7 @@ final class StaticOffers
                 'oldPrice' => 80,
                 'price' => 60,
                 'remaining' => 92040,
-                'image' => 'images/offers/massage.jpg',
+                'image' => 'images/activities/massage.jpg',
                 'slug' => null,
             ],
             [

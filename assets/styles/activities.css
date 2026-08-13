@@ -197,13 +197,20 @@
     transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 }
 .act-chip:hover { border-color: var(--pl-action); color: var(--pl-action); }
-.act-chip.is-active,
-.act-chip--filter {
+.act-chip.is-active {
     background: var(--pl-action);
     border-color: var(--pl-action);
     color: var(--pl-white);
 }
-.act-chip.is-active:hover, .act-chip--filter:hover { background: #4d00d6; color: var(--pl-white); }
+.act-chip.is-active:hover { background: #4d00d6; color: var(--pl-white); }
+/* Le chip « Filtre » n'est PAS violet dans les maquettes (verifie sur Activites
+   et Destinations populaires) : fond blanc, bord #eceef1, texte gris. */
+.act-chip--filter {
+    background: var(--pl-white);
+    border-color: #eceef1;
+    color: var(--pl-text-secondary);
+}
+.act-chip--filter:hover { border-color: var(--pl-action); color: var(--pl-action); }
 
 /* --- Ligne de résultats. --- */
 .act-results {
