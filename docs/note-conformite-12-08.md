@@ -65,7 +65,40 @@ mesurées.
   Client/Professionnel de l'inscription viennent de demandes postérieures qui contredisent
   Figma. **Quelle est la source de vérité dans ce cas ?**
 
-## 6. Écart restant, hors CSS
+## 6. Deuxième passe — les deux listings (13/08)
+
+Audit page entière, bloc de texte par bloc de texte.
+
+**Listing Activités.** La grille n'affichait que 8 cartes : une règle CSS coupait la
+troisième rangée que la maquette porte bien. Deux sections étaient posées sur un fond gris
+inventé — la maquette du listing est entièrement blanche ; la teinte grise ne subsiste que
+là où la maquette la porte (détail Activité, Destinations), au `#fafafb` relevé. La pastille
+« Pro » / « Gratuite » a été retirée : elle n'est dans aucune maquette. Les blocs 0 à 12 sont
+maintenant alignés à 5 px près, contre une dérive qui atteignait 475 px.
+
+**Listing Destinations.** Les cartes de catégorie étaient posées en ligne, avec bordure et
+pastille pâle ; la maquette les empile (pastille de 48 en violet plein, titre, volume) sur
+216 × 109. Libellés et volumes repris. La mosaïque ne débordait pas de 6 px comme les autres
+grilles d'images (cartes de 293 au lieu de 296) ; villes, volumes et emplacements sont repris
+case par case — les photos de Lille, Bordeaux et Toulouse manquaient et sont **extraites de
+la maquette, à remplacer par des fichiers HD**. Pastille de compteur, bandeau « Partez à la
+découverte du monde » (titre sur une ligne, bouton **bleu** et non orange) et rythme du haut
+de page corrigés.
+
+**Deux défauts trouvés en chemin.** `/offres/toutes` affichait deux cartes sans image (chemins
+morts dans `StaticOffers`) ; sur les 191 références d'images du code, ces deux-là étaient les
+seules cassées. Et le chip « Filtre » était violet plein alors que les maquettes le donnent
+blanc — corrigé sur les cinq listings qui l'emploient.
+
+**Reste à passer** : Activités filtré, détail et avis, Destinations par ville, Cadeaux,
+Événements, Profil, Authentification.
+
+**Un point d'état, pas un défaut** : toutes les maquettes d'écrans intérieurs montrent la
+navbar **connectée** (cœur, messages, cloche, avatar). Le site montre la navbar visiteur tant
+qu'on n'est pas connecté, ce qui est le comportement attendu. Comparer ces écrans à la
+maquette suppose donc de regarder la version connectée.
+
+## 7. Écart restant, hors CSS
 
 La photo du héros Offres est cadrée environ 20 % plus serré que la maquette. Cela vient du
 fichier source, pas de la mise en page.
