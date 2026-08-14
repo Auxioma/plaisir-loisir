@@ -14,9 +14,9 @@
 
         <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
             <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
-            <span aria-hidden="true">/</span>
+            <span aria-hidden="true">|</span>
             <a href="{{ path('app_events') }}">{{ 'Événements'|trans }}</a>
-            <span aria-hidden="true">/</span>
+            <span aria-hidden="true">|</span>
             <span aria-current="page" class="evn-crumb-current">{{ 'Compétitions Canoë / Kayak'|trans }}</span>
         </nav>
 
@@ -96,7 +96,7 @@
                ======================================================== #}
             <aside class="evn-detail__side">
                 <div class="evn-cover">
-                    <img src="{{ asset('images/events/ev-raft.jpg') }}" alt="">
+                    <img src="{{ asset('images/events/ev-raft-clean.jpg') }}" alt="">
                     <button type="button" class="evn-cover__flyer">{{ icon.image(16) }} {{ 'Partager un flyer'|trans }}</button>
                 </div>
 

@@ -22,7 +22,9 @@
 
         <div class="acc-logout__side">
             <h2 class="acc-logout__hello">{{ 'À bientôt, %prenom% ! 👋'|trans({'%prenom%': user.firstName}) }}</h2>
-            <p class="acc-logout__text">{{ 'Vous êtes sur le point de vous déconnecter de votre compte TrouveMoi Plaisirs & Loisirs.'|trans }}</p>
+            {# La maquette casse la ligne après « & » : le paragraphe y tient sur TROIS
+               lignes, ce qui commande le rythme de toute la colonne. #}
+            <p class="acc-logout__text">{{ 'Vous êtes sur le point de vous déconnecter de votre compte TrouveMoi Plaisirs &<br>Loisirs.'|trans|raw }}</p>
 
             <div class="acc-logout__args">
                 <div class="acc-logout__arg">
@@ -48,7 +50,7 @@
     </div>
 
     <div class="acc-help">
-        <span class="acc-help__icon">{{ icon.calendar_check(26) }}</span>
+        <span class="acc-help__icon">{{ icon.calendar_check(34) }}</span>
         <div class="acc-help__text">
             <strong>{{ "Besoin d'aide ?"|trans }}</strong>
             <span>{{ 'Si vous rencontrez un problème ou avez des questions, notre équipe est là pour vous aider.'|trans }}</span>

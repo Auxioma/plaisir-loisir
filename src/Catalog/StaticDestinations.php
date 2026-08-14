@@ -147,22 +147,25 @@ final class StaticDestinations
             'align' => $align,
         ];
 
+        // Villes, volumes et emplacements repris case par case de la maquette
+        // (Destinations.png). Seule exception : Nice, dont la maquette porte
+        // « 00 Activités » (compteur non renseigne) — on garde une valeur.
         return [
-            $t('Paris', 158, 'ville-paris.jpg', 'small', 1, 1),
-            $t('Annecy', 96, 'ville-annecy.jpg', 'small', 3, 1),
-            $t('Strasbourg', 74, 'ville-strasbourg.jpg', 'small', 5, 1),
-            $t('Reims', 63, 'ville-reims.jpg', 'tall', 7, 1),
-            $t('Marseille', 120, 'ville-marseille.jpg', 'wide', 1, 2, 'center'),
-            $t('Nice', 112, 'ville-nice.jpg', 'wide', 4, 2, 'center'),
-            $t('Grenoble', 58, 'ville-grenoble.jpg', 'tall', 1, 3),
-            $t('La Rochelle', 67, 'ville-larochelle.jpg', 'small', 3, 3),
-            $t('Clermont-Ferrand', 41, 'ville-clermont.jpg', 'small', 5, 3),
-            $t('Biarritz', 85, 'ville-biarritz.jpg', 'small', 7, 3),
-            $t('Saint-Malo', 52, 'ville-saintmalo.jpg', 'wide', 3, 4, 'center'),
-            $t('Dijon', 47, 'ville-dijon.jpg', 'wide', 6, 4, 'center'),
-            $t('Versailles', 78, 'ville-versailles.jpg', 'small', 1, 5),
-            $t("Côte d'Azur", 132, 'ville-cotedazur.jpg', 'small', 3, 5),
-            $t('Nantes', 89, 'ville-nantes.jpg', 'xwide', 5, 5, 'center'),
+            $t('Lille', 158, 'ville-lille.jpg', 'small', 1, 1),
+            $t('Bordeaux', 350, 'ville-bordeaux.jpg', 'small', 3, 1),
+            $t('Toulouse', 154, 'ville-toulouse.jpg', 'small', 5, 1),
+            $t('Reims', 59, 'ville-reims.jpg', 'tall', 7, 1),
+            $t('Nantes', 241, 'ville-nantes.jpg', 'wide', 1, 2, 'center'),
+            $t('Marseille', 421, 'ville-marseille.jpg', 'wide', 4, 2, 'center'),
+            $t('Grenoble', 125, 'ville-grenoble.jpg', 'tall', 1, 3),
+            $t('Clermont-Ferrand', 194, 'ville-clermont.jpg', 'small', 3, 3),
+            $t('Annecy', 59, 'ville-annecy.jpg', 'small', 5, 3),
+            $t('Paris', 215, 'ville-paris.jpg', 'small', 7, 3),
+            $t('Nice', 112, 'ville-nice.jpg', 'wide', 3, 4, 'center'),
+            $t('Dijon', 154, 'ville-dijon.jpg', 'wide', 6, 4, 'center'),
+            $t('Strasbourg', 252, 'ville-strasbourg.jpg', 'small', 1, 5),
+            $t('La Rochelle', 156, 'ville-larochelle.jpg', 'small', 3, 5),
+            $t('Saint-Malo', 426, 'ville-saintmalo.jpg', 'xwide', 5, 5, 'center'),
         ];
     }
 
@@ -174,11 +177,13 @@ final class StaticDestinations
     public static function popularCategories(): array
     {
         return [
-            ['label' => 'Canoë / Kayak', 'icon' => 'cat_canoe', 'count' => '10+ activités'],
-            ['label' => 'VTT / Vélo', 'icon' => 'cat_bike', 'count' => '25+ activités'],
-            ['label' => 'Randonnée', 'icon' => 'cat_hiking', 'count' => '18+ activités'],
-            ['label' => 'Sports & Sensations', 'icon' => 'cat_sports', 'count' => '30+ activités'],
-            ['label' => 'Visites culturelles', 'icon' => 'cat_culture', 'count' => '40+ activités'],
+            // Libelles, volumes et pictogramme repris de la maquette
+            // (Destinations.png) : elle pose le meme glyphe sur les cinq.
+            ['label' => 'Sports & Aventures', 'icon' => 'cat_canoe', 'count' => '10+ activités'],
+            ['label' => 'Bien-être', 'icon' => 'cat_canoe', 'count' => '26+ activités'],
+            ['label' => 'Cultures & Découvertes', 'icon' => 'cat_canoe', 'count' => '55+ activités'],
+            ['label' => 'Romantiques', 'icon' => 'cat_canoe', 'count' => '10+ activités'],
+            ['label' => 'Gastronomies', 'icon' => 'cat_canoe', 'count' => '34+ activités'],
         ];
     }
 
@@ -190,9 +195,11 @@ final class StaticDestinations
     public static function ideas(): array
     {
         return [
-            ['title' => 'Descente en Canoë', 'subtitle' => "Gorges de L'Ardèche", 'image' => 'images/home/act-canoe.jpg'],
-            ['title' => 'Vol en montgolfière', 'subtitle' => 'Provence-Alpes-Côte d\'Azur', 'image' => 'images/activities/montgolfiere.jpg'],
-            ['title' => 'Visite du Musée', 'subtitle' => "Muséum d'Histoire Naturelle", 'image' => 'images/home/act-musee.jpg'],
+            // Contenu repris de la maquette (Destinations.png, bandeau
+            // « Partez a la decouverte du monde »).
+            ['title' => 'Les Alpes françaises', 'subtitle' => 'Nature & Aventure', 'image' => 'images/destinations/dest-suisse-1.jpg'],
+            ['title' => 'Road trip en Italie', 'subtitle' => 'Culture & Gastronomie', 'image' => 'images/destinations/dest-amalfi.jpg'],
+            ['title' => 'Bali, Indonésie', 'subtitle' => 'Bien-être & Détente', 'image' => 'images/destinations/dest-thailande.jpg'],
         ];
     }
 

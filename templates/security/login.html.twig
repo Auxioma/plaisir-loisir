@@ -4,6 +4,14 @@
     Symfony (voir config/packages/security.yaml, section form_login).
     Champs attendus : _email, _password, _csrf_token (id « authenticate »),
     _remember_me.
+
+    L'attribut `autofocus` a été retiré : il posait l'anneau de focus violet sur
+    le champ e-mail dès l'ouverture, alors que la maquette montre le champ au
+    repos.
+
+    La maquette « Connexion » ne comporte PAS de bascule Client/Professionnel
+    (retirée le 13/08 comme sur l'inscription) : l'accès professionnel passe par
+    le lien « Accéder à votre espace » vers l'écran de choix.
 #}
 {% extends 'security/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -11,7 +19,7 @@
 {% block title %}{{ 'Connexion'|trans }}{% endblock %}
 
 {% block auth_card %}
-    <div class="auth-card">
+    <div class="auth-card auth-card--login">
         <div class="auth-card__header">
             <h2 class="auth-card__title">{{ 'Connexion'|trans }}</h2>
             <p class="auth-card__subtitle">{{ 'Accédez à votre TrouveMoi'|trans }}</p>
@@ -24,8 +32,6 @@
                 <div class="auth-alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
             {% endif %}
 
-            {% include 'security/_account_type.html.twig' %}
-
             <div class="auth-fields">
                 <div class="auth-field">
                     <label class="auth-field__label" for="inputEmail">{{ 'Adresse e-mail'|trans }}</label>
@@ -33,7 +39,7 @@
                         <span class="auth-input__icon">{{ icon.mail() }}</span>
                         <input id="inputEmail" class="auth-input__control" type="email" name="_email"
                                value="{{ last_username }}" placeholder="{{ 'Votre@email.com'|trans }}"
-                               autocomplete="email" required autofocus>
+                               autocomplete="email" required>
                     </div>
                 </div>
 
@@ -63,7 +69,15 @@
                 <button type="submit" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Se connecter'|trans }}</button>
                 <p class="auth-switch">
                     {{ "Vous n'avez pas de compte ?"|trans }}
-                    <a class="auth-inline-link" href="{{ path('app_register') }}">{{ "S'inscrire"|trans }}</a>
+                    <a class="auth-inline-link" href="{{ path('app_register') }}">{{ 'Créer un compte'|trans }}</a>
+                </p>
+
+                {# Maquette : l'accès professionnel passe par ce lien vers l'écran
+                   de choix, sur deux lignes centrées — et non par une bascule
+                   Client/Professionnel dans le formulaire. #}
+                <p class="auth-switch auth-switch--pro">
+                    {{ 'Vous êtes un professionnel ?'|trans }}<br>
+                    <a class="auth-inline-link" href="{{ path('app_auth_choice') }}?type=pro">{{ 'Accéder à votre espace'|trans }}</a>
                 </p>
             </div>
         </form>

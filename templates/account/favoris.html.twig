@@ -27,20 +27,20 @@
 
     <div class="acc-tabs-row">
         <nav class="acc-tabs" aria-label="{{ 'Types de favoris'|trans }}">
-            <a href="{{ path('app_account_favorites') }}" class="acc-tab{{ tab == 'activites' ? ' is-active' }}">{{ icon.compass(17) }} {{ 'Activités'|trans }}</a>
-            <a href="{{ path('app_account_favorites', { onglet: 'destinations' }) }}" class="acc-tab{{ tab == 'destinations' ? ' is-active' }}">{{ icon.plane(17) }} {{ 'Destinations'|trans }}</a>
+            <a href="{{ path('app_account_favorites') }}" class="acc-tab{{ tab == 'activites' ? ' is-active' }}">{{ icon.ferris_wheel(17) }} {{ 'Activités'|trans }}</a>
+            <a href="{{ path('app_account_favorites', { onglet: 'destinations' }) }}" class="acc-tab{{ tab == 'destinations' ? ' is-active' }}">{{ icon.plane_takeoff(17) }} {{ 'Destinations'|trans }}</a>
             <a href="{{ path('app_account_favorites', { onglet: 'prestataires' }) }}" class="acc-tab{{ tab == 'prestataires' ? ' is-active' }}">{{ icon.person(17) }} {{ 'Prestataires'|trans }}</a>
         </nav>
         <div class="acc-view">
             <button type="button" class="acc-view__map">{{ icon.map(17) }} {{ 'Afficher la carte'|trans }}</button>
-            <button type="button" class="acc-view__btn" aria-label="{{ "Filtres d'affichage"|trans }}">{{ icon.sliders(17) }}</button>
-            <button type="button" class="acc-view__btn" aria-label="{{ 'Vue liste'|trans }}">{{ icon.list_view(17) }}</button>
+            <button type="button" class="acc-view__btn acc-view__btn--fill" aria-label="{{ "Filtres d'affichage"|trans }}">{{ icon.sliders(17) }}</button>
+            <button type="button" class="acc-view__btn acc-view__btn--bare" aria-label="{{ 'Vue liste'|trans }}">{{ icon.list_view_solid(20) }}</button>
         </div>
     </div>
 
     <div class="acc-count-row">
         <span class="acc-count">{{ '0 favoris trouvés'|trans }}</span>
-        <button type="button" class="acc-sort">{{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ empty ? 'Les plus populaires'|trans : "Date d'ajout (Récent)"|trans }}</strong> {{ icon.chevron_down(15) }}</button>
+        <button type="button" class="acc-sort">{{ icon.funnel(16) }} {{ 'Trier par:'|trans }} <strong>{{ empty ? 'Les plus populaires'|trans : "Date d'ajout (Récent)"|trans }}</strong> {{ icon.chevron_down(15) }}</button>
     </div>
 
     {% if empty %}

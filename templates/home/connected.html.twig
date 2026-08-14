@@ -40,13 +40,16 @@
     {# ==================================================================
        BARRE DE RECHERCHE (§2.9) flottante + 4 panneaux (écran B).
        ================================================================ #}
-    <div class="container home-search-wrap" id="home-search">
-        {# Onglets « façon classeur » posés au-dessus de la carte (maquette). #}
-        <div class="home-search__tabs">
-            <button type="button" class="home-search__tab is-active">{{ icon.globe(18) }} {{ 'Activités public'|trans }}</button>
-            <button type="button" class="home-search__tab">{{ icon.users(18) }} {{ 'Activités privées'|trans }}</button>
-        </div>
+    {# .container--search : même carte que l'accueil plateforme — hors grille
+       (x=68 sur 1304), en verre, onglets à l'intérieur (mesuré sur la maquette
+       « Activités - Accueil connecté »). Seul l'onglet actif change de couleur
+       (orange ici, violet là-bas). #}
+    <div class="container container--search home-search-wrap" id="home-search">
         <div class="home-search">
+            <div class="home-search__tabs">
+                <button type="button" class="home-search__tab is-active">{{ icon.globe(20) }} {{ 'Activités public'|trans }}</button>
+                <button type="button" class="home-search__tab">{{ icon.users(20) }} {{ 'Activités privées'|trans }}</button>
+            </div>
             <div class="home-search__fields">
                 {# Maquette : le même pictogramme « épingle » sur les 4 champs,
                    valeur grisée suivie d'un chevron. #}
@@ -54,33 +57,29 @@
                     {{ icon.map_pin(20) }}
                     <span>
                         <span class="home-search__field-label">{{ 'Où voulez-vous aller ?'|trans }}</span>
-                        <span class="home-search__field-value" data-field-value>{{ 'Destination, ville, lieu…'|trans }}</span>
+                        <span class="home-search__field-value" data-field-value>{{ 'Destination, ville, lieu…'|trans }} {{ icon.chevron_down(16) }}</span>
                     </span>
-                    {{ icon.chevron_down(16) }}
                 </button>
                 <button type="button" class="home-search__field" data-search-field="activite">
                     {{ icon.map_pin(20) }}
                     <span>
                         <span class="home-search__field-label">{{ 'Activité ou loisir ?'|trans }}</span>
-                        <span class="home-search__field-value" data-field-value>{{ 'Canoë, musée, VTT…'|trans }}</span>
+                        <span class="home-search__field-value" data-field-value>{{ 'Canoë, musée, VTT…'|trans }} {{ icon.chevron_down(16) }}</span>
                     </span>
-                    {{ icon.chevron_down(16) }}
                 </button>
                 <button type="button" class="home-search__field" data-search-field="date">
                     {{ icon.map_pin(20) }}
                     <span>
                         <span class="home-search__field-label">{{ 'Date'|trans }}</span>
-                        <span class="home-search__field-value" data-field-value>{{ 'Choisissez une date'|trans }}</span>
+                        <span class="home-search__field-value" data-field-value>{{ 'Choisissez une date'|trans }} {{ icon.chevron_down(16) }}</span>
                     </span>
-                    {{ icon.chevron_down(16) }}
                 </button>
                 <button type="button" class="home-search__field" data-search-field="participants">
                     {{ icon.map_pin(20) }}
                     <span>
                         <span class="home-search__field-label">{{ 'Participant(s)'|trans }}</span>
-                        <span class="home-search__field-value" data-field-value>{{ '1 participant'|trans }}</span>
+                        <span class="home-search__field-value" data-field-value>{{ '1 participant'|trans }} {{ icon.chevron_down(16) }}</span>
                     </span>
-                    {{ icon.chevron_down(16) }}
                 </button>
                 <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--cta home-search__submit">{{ 'Recherche'|trans }} {{ icon.search(18) }}</a>
             </div>

@@ -98,58 +98,82 @@
 /* ===========================================================================
  *  ÉCRAN 1 — LANDING DESTINATIONS
  * ======================================================================== */
-/* --- Hero plage : voile blanc à gauche, titre 3 lignes accent orange. --- */
-.dest-hero { position: relative; min-height: 436px; display: flex; align-items: center; overflow: hidden; }
+/* --- Hero plage : voile blanc à gauche, titre 3 lignes accent orange. ---
+   Mesuré au pixel sur assets/figma/destinations.png : bande de y100 à y529
+   (430 de haut), titre de 45px sur 52 d'interligne (« destinations » relevé à
+   265px de large et 34px de hauteur de capitale), paragraphe de 18px sur 28
+   dans la couleur du texte principal — et non en gris secondaire. */
+.dest-hero { position: relative; min-height: 430px; display: flex; align-items: center; overflow: hidden; }
 .dest-hero__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 60%; }
 .dest-hero__overlay {
     position: absolute; inset: 0;
     background: linear-gradient(90deg, rgba(255, 255, 255, .95) 0%, rgba(255, 255, 255, .78) 34%, rgba(255, 255, 255, .25) 62%, rgba(255, 255, 255, 0) 82%);
 }
-.dest-hero__inner { position: relative; z-index: 1; width: 100%; padding-block: 56px; }
+/* Marge basse plus grande de 5px : elle remonte le bloc pour caler le
+   paragraphe sur y367 sans bouger le titre, calé lui a y188. */
+.dest-hero__inner { position: relative; z-index: 1; width: 100%; padding-block: 56px 61px; }
 .dest-hero__title {
     max-width: 580px;
-    margin: 0 0 var(--pl-sp-16);
-    font-size: 42px;
+    margin: 0 0 23px;
+    font-size: 45px;
     font-weight: var(--pl-fw-bold);
-    line-height: 1.25;
+    line-height: 52px;
     color: var(--pl-text);
 }
 .dest-hero__title .is-accent-line { color: var(--pl-cta); }
-.dest-hero__subtitle { max-width: 512px; margin: 0; font-size: var(--pl-fs-body); line-height: var(--pl-lh-base); color: var(--pl-text-secondary); }
+.dest-hero__subtitle { max-width: 512px; margin: 0; font-size: 18px; line-height: 28px; color: var(--pl-text); }
+
+/* Rythme du haut de page relevé sur la maquette : la photo du héros s'arrête à
+   y529, le fil d'Ariane commence à y574 (45px) et le titre à y642, soit 60px
+   sous le fil. Nous étions à 37 et 47. */
+.dest-section--head { padding-top: 45px; }
+.dest-section--head .act-breadcrumb { margin-bottom: 45px; }
 
 /* --- Carrousel des catégories populaires (cartes horizontales). --- */
-.dest-cats { display: flex; align-items: center; gap: var(--pl-sp-12); }
-.dest-cats__scroll { display: flex; gap: var(--pl-sp-12); overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; flex: 1; }
+/* Mesures relevees sur la maquette (Destinations.png) : cinq cartes de
+   216 x 109 espacees de 11, premiere carte a x157 ; contenu CENTRE et empile
+   (pastille ronde de 48 en violet plein, titre, volume) et non aligne en
+   ligne ; fond #f8fafc, sans bordure. */
+/* +8px sous le sous-titre et +12px au-dessus de la mosaique : ecarts releves. */
+.dest-cats { display: flex; align-items: center; gap: var(--pl-sp-12); padding-top: 8px; }
+.dest-cats__scroll { display: flex; gap: 11px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; flex: 1; }
 .dest-cats__scroll::-webkit-scrollbar { display: none; }
 .dest-cat {
-    flex: 0 0 215px;
-    display: flex; align-items: center; gap: var(--pl-sp-12);
-    padding: var(--pl-sp-16);
-    background: var(--pl-white);
-    border: 1px solid var(--pl-border);
+    flex: 0 0 216px;
+    min-height: 109px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 5px;
+    padding: 6px var(--pl-sp-12);
+    background: var(--pl-surface-dashboard);
     border-radius: var(--pl-radius-md);
+    text-align: center;
     text-decoration: none;
     transition: box-shadow .15s ease, transform .15s ease;
 }
 .dest-cat:hover { box-shadow: 0 8px 24px rgba(15, 23, 42, .1); transform: translateY(-2px); }
 .dest-cat__icon {
     flex-shrink: 0;
-    width: 52px; height: 52px;
+    width: 48px; height: 48px;
     display: inline-flex; align-items: center; justify-content: center;
-    background: var(--pl-action-light);
-    color: var(--pl-action);
+    background: var(--pl-action);
+    color: var(--pl-white);
     border-radius: 50%;
 }
 .dest-cat > span:last-child { display: flex; flex-direction: column; gap: 2px; }
 .dest-cat__label { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
 .dest-cat__count { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
 
-/* --- Mosaïque « Toutes nos destinations » : grille 8 colonnes. --- */
+/* --- Mosaïque « Toutes nos destinations » : grille 8 colonnes. ---
+   Comme toutes les grilles d'images de la maquette, elle déborde de 6px de
+   chaque côté des blocs de texte : x102 -> x1334 au lieu de 110 -> 1330,
+   ce qui donne des cartes de 296 et non 293 (mesuré sur Destinations.png). */
 .dest-mosaic {
+    padding-top: 12px;
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     grid-auto-rows: 306px;
     gap: var(--pl-sp-16);
+    margin-inline: -6px;
 }
 .dest-tile {
     position: relative;
@@ -166,14 +190,18 @@
     position: absolute; inset: 0;
     background: linear-gradient(180deg, rgba(6, 27, 86, 0) 45%, rgba(6, 27, 86, .55) 100%);
 }
+/* Mesures relevees sur la maquette : pastille de 109 x 36 posee a 22px du haut
+   et 15px de la droite, coins a 8px (et non en gelule), pictogramme « livre
+   ouvert » devant le compteur. */
 .dest-tile__badge {
-    position: absolute; top: 12px; right: 12px; z-index: 1;
-    padding: 4px 10px;
+    position: absolute; top: 22px; right: 15px; z-index: 1;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 10px;
     background: var(--pl-action);
     color: var(--pl-white);
     font-size: var(--pl-fs-caption);
     font-weight: var(--pl-fw-semibold);
-    border-radius: var(--pl-radius-pill);
+    border-radius: var(--pl-radius-sm);
 }
 .dest-tile__name {
     position: absolute; left: 16px; right: 16px; bottom: 14px; z-index: 1;
@@ -200,7 +228,11 @@
     position: absolute; inset: 0;
     background: linear-gradient(90deg, rgba(6, 27, 86, .88) 0%, rgba(6, 27, 86, .62) 46%, rgba(6, 27, 86, .25) 100%);
 }
-.dest-banner__text { position: relative; z-index: 1; max-width: 480px; }
+/* Le titre tient sur UNE ligne dans la maquette et le bouton y est bleu
+   #2563eb (releve), pas orange. */
+.dest-banner__text { position: relative; z-index: 1; max-width: 620px; }
+.dest-banner__cta { background: #2563eb; color: var(--pl-white); }
+.dest-banner__cta:hover { background: #1d4ed8; color: var(--pl-white); }
 .dest-banner__text h2 { margin: 0 0 var(--pl-sp-12); font-size: var(--pl-fs-h2); font-weight: var(--pl-fw-medium); color: var(--pl-white); }
 .dest-banner__text h2 span { color: #9db8ff; }
 .dest-banner__text p { margin: 0 0 var(--pl-sp-24); font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-base); color: rgba(255, 255, 255, .85); }

@@ -46,44 +46,52 @@
     </section>
 
     {# ===================== BARRE DE RECHERCHE ===================== #}
-    <div class="container">
+    {# .container--search : la carte est hors grille (x=68 sur 1304) et chevauche
+       la photo du héros de 73px. Les onglets sont DANS la carte, qui est en
+       verre : c'est elle qui produit le bandeau translucide de la maquette. #}
+    <div class="container container--search">
         <div class="home-search-wrap">
             <div class="home-search">
+                {# Maquette : deux onglets courts, « Événements » actif (blanc,
+                   violet). Les libellés longs « Consulter Vos Plaisirs… »
+                   venaient d'un commentaire de Loïc du 27/07 : ils ne sont pas
+                   dans la maquette et sont donc retirés (note-revue-11-08 §4). #}
                 <div class="home-search__tabs">
-                    {# Libellés validés par Loïc (commentaire maquette, 2026-07-27). #}
-                    <button type="button" class="home-search__tab is-active">{{ icon.compass(18) }} {{ 'Consulter Vos Plaisirs et Loisirs'|trans }}</button>
-                    <button type="button" class="home-search__tab">{{ icon.calendar_check(18) }} {{ 'Crée, Consulter et Partager Vos Plaisirs et Loisirs Gratuit'|trans }}</button>
+                    <button type="button" class="home-search__tab">{{ icon.ferris_wheel(20) }} {{ 'Activités'|trans }}</button>
+                    <button type="button" class="home-search__tab is-active">{{ icon.cat_culture(20) }} {{ 'Événements'|trans }}</button>
                 </div>
                 <div class="home-search__fields">
                     <div class="home-search__field">
                         {{ icon.map_pin(20) }}
                         <div>
                             <div class="home-search__field-label">{{ 'Où voulez-vous aller ?'|trans }}</div>
-                            <div class="home-search__field-value">{{ 'Destination, ville, lieu…'|trans }}</div>
+                            <div class="home-search__field-value">{{ 'Destination, ville, lieu…'|trans }} {{ icon.chevron_down(16) }}</div>
                         </div>
                     </div>
                     <div class="home-search__field">
-                        {{ icon.compass(20) }}
+                        {{ icon.ferris_wheel(20) }}
                         <div>
                             <div class="home-search__field-label">{{ 'Activité ou loisir ?'|trans }}</div>
-                            <div class="home-search__field-value">{{ 'Canoë, musée, VTT…'|trans }}</div>
+                            <div class="home-search__field-value">{{ 'Canoë, musée, VTT…'|trans }} {{ icon.chevron_down(16) }}</div>
                         </div>
                     </div>
                     <div class="home-search__field">
-                        {{ icon.calendar_check(20) }}
+                        {{ icon.calendar_days(20) }}
                         <div>
                             <div class="home-search__field-label">{{ 'Date'|trans }}</div>
-                            <div class="home-search__field-value">{{ 'Choisissez une date'|trans }}</div>
+                            <div class="home-search__field-value">{{ 'Choisissez une date'|trans }} {{ icon.chevron_down(16) }}</div>
                         </div>
                     </div>
                     <div class="home-search__field">
-                        {{ icon.users(20) }}
+                        {{ icon.person(20) }}
                         <div>
                             <div class="home-search__field-label">{{ 'Participant(s)'|trans }}</div>
-                            <div class="home-search__field-value">{{ '01 participant'|trans }}</div>
+                            <div class="home-search__field-value">{{ '1 participant'|trans }} {{ icon.chevron_down(16) }}</div>
                         </div>
                     </div>
-                    <button type="button" class="pl-btn pl-btn--cta home-search__submit">{{ icon.search(20) }} {{ 'Recherche'|trans }}</button>
+                    {# Maquette : bouton VIOLET, loupe après le libellé (l'accueil
+                       connecté, lui, le porte en orange — ne pas uniformiser). #}
+                    <button type="button" class="pl-btn pl-btn--primary home-search__submit">{{ 'Recherche'|trans }} {{ icon.search(20) }}</button>
                 </div>
             </div>
         </div>

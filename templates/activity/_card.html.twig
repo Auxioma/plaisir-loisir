@@ -22,11 +22,17 @@
             <span class="pl-card__tag {{ a.badge == 'Nouvelle activité' ? 'pl-card__tag--popular' : 'pl-card__tag--bestseller' }}">{{ a.badge }}</span>
         {% endif %}
         <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</button>
-        {# Logo type demandé par Loïc : activité pro payante vs privée gratuite. #}
-        {% if a.free is defined and a.free %}
-            <span class="act-card__kind act-card__kind--free">👥 {{ 'Gratuite'|trans }}</span>
-        {% else %}
-            <span class="act-card__kind act-card__kind--pro">🎟️ {{ 'Pro'|trans }}</span>
+        {# Pastille « Pro » / « Gratuite » : demandée par Loïc mais ABSENTE de
+           toutes les maquettes (vérifié sur Activités, Activités - Filtre et
+           Destinations). Retirée pour se conformer à la maquette, comme
+           demandé par le CTO le 12/08. Pour la rétablir, repasser
+           kind_badge à true. Voir docs/note-conformite-12-08.md §5. #}
+        {% if kind_badge|default(false) %}
+            {% if a.free is defined and a.free %}
+                <span class="act-card__kind act-card__kind--free">👥 {{ 'Gratuite'|trans }}</span>
+            {% else %}
+                <span class="act-card__kind act-card__kind--pro">🎟️ {{ 'Pro'|trans }}</span>
+            {% endif %}
         {% endif %}
     </div>
     <div class="pl-card__body">

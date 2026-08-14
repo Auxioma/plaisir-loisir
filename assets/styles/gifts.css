@@ -199,27 +199,48 @@
  *  TUNNEL « OFFRIR UN CADEAU » (écrans 5-8).
  * ------------------------------------------------------------------------ */
 
-.gift-tunnel-page { padding: 24px 0 64px; }
-.gift-tunnel-page .act-breadcrumb { margin-bottom: 28px; }
+/* Maquette : le fil d'Ariane du tunnel est à y145 (nous étions à 130). */
+.gift-tunnel-page { padding: 39px 0 64px; }
+.gift-tunnel-page .act-breadcrumb { margin-bottom: 39px; }
+/* Maquette « Bon cadeaux (1) » : le tunnel occupe la grille des IMAGES
+   (x104 -> x1336, 1232) et non celle des blocs de texte ; panneau gris de 813,
+   22px d'écart, récapitulatif de 396. */
+.gift-tunnel-page .container { --bs-gutter-x: 208px; }
 .gift-tunnel {
-    display: grid; grid-template-columns: 1fr 400px;
-    gap: 16px; align-items: start;
+    display: grid; grid-template-columns: 1fr 396px;
+    gap: 22px; align-items: start;
 }
 
-/* Colonne gauche : panneau gris clair contenant les cartes blanches. */
-.gift-steps { background: var(--gift-form-bg); border-radius: 12px; padding: 40px; }
+/* Colonne gauche : panneau gris clair contenant les cartes blanches.
+   Maquette : retrait interne de 36 (la carte blanche va de x145 à x884). */
+.gift-steps { background: var(--gift-form-bg); border-radius: 12px; padding: 36px; }
 .gift-formcard {
     background: var(--pl-white); border-radius: 12px;
-    padding: 32px 24px; margin-bottom: 28px;
+    padding: 32px 24px; margin-bottom: 39px;
 }
-.gift-formcard--pay { background: none; padding: 0; margin: 0; }
-.gift-formcard__title { margin: 0 0 18px; font-size: 28px; font-weight: 700; color: var(--pl-text-strong); }
-.gift-formcard__lead { margin: 0 0 6px; font-size: 16px; font-weight: 700; color: var(--pl-text-strong); }
-.gift-formcard__required { margin: 0 0 22px; font-size: 14px; color: var(--pl-text); }
+/* Maquette : dans la carte « A qui vous l'offrez », seul le premier champ est
+   suivi d'un grand écart (105px d'un libellé à l'autre contre 91) ; le champ
+   destinataire retrouve l'écart courant avant la zone de message. Le dernier
+   champ ne porte pas de marge : c'est le retrait de la carte qui ferme le bloc. */
+.gift-formcard--recipient .gift-field:first-of-type { margin-bottom: 25px; }
+.gift-formcard .gift-field:last-child { margin-bottom: 0; }
+/* Maquette : 50px du haut du panneau au titre et 34 jusqu'a la 1re option. */
+.gift-formcard--pay { background: none; padding: 9px 0 0; margin: 0; }
+.gift-formcard--pay .gift-formcard__title { margin-bottom: 32px; }
+/* Maquette : titre de carte 26px (215px d'encre pour « Vos informations »),
+   intitulé 18px (258 pour « Saisissez vos informations ici ») et mention
+   « Champ obligatoire* » en 16px (145) — nous étions à 28 / 16 / 14. */
+.gift-formcard__title { margin: 0 0 27px; font-size: 26px; font-weight: 700; color: var(--pl-text-strong); }
+.gift-formcard__lead { margin: 0 0 6px; font-size: 18px; font-weight: 700; color: var(--pl-text-strong); }
+.gift-formcard__lead--head { margin: 0 0 6px; }
+.gift-formcard__required { margin: 0 0 22px; font-size: 16px; color: var(--pl-text); }
 
-/* Champs (spec C5) : icône préfixe, états focus / rempli / erreur. */
-.gift-field { margin-bottom: 20px; }
-.gift-field__label { display: block; margin-bottom: 8px; font-size: 15px; font-weight: 600; color: var(--pl-text-strong); }
+/* Champs (spec C5) : icône préfixe, états focus / rempli / erreur.
+   Maquette : champ de 48px de haut et 18px jusqu'au libellé suivant (nous
+   étions à 52 et 27, d'où 13px de dérive par champ). */
+.gift-field { margin-bottom: 11px; }
+/* Maquette : les libellés de champ sont en graisse NORMALE, pas demi-grasse. */
+.gift-field__label { display: block; margin-bottom: 8px; font-size: 16px; font-weight: 400; color: var(--pl-text-strong); }
 .gift-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .gift-input { position: relative; }
 .gift-input__icon {
@@ -227,7 +248,7 @@
     color: var(--gift-field-icon); line-height: 0;
 }
 .gift-input input {
-    width: 100%; height: 52px; padding: 0 14px 0 44px;
+    width: 100%; height: 48px; padding: 0 14px 0 44px;
     border: 1px solid var(--gift-field-border); border-radius: 8px;
     font-size: 15px; color: var(--pl-text-strong); background: var(--pl-white);
 }
@@ -238,7 +259,7 @@
 .gift-field__hint { margin: 8px 0 0; font-size: 13px; color: var(--pl-text-disabled); }
 
 .gift-textarea textarea {
-    width: 100%; padding: 14px; resize: vertical; min-height: 110px;
+    width: 100%; padding: 14px; resize: vertical; min-height: 114px;
     border: 1px solid var(--gift-field-border); border-radius: 8px;
     font-size: 15px; color: var(--pl-text-strong); font-family: inherit;
 }
@@ -251,18 +272,22 @@
 
 .gift-tunnel__foot {
     display: flex; align-items: center; justify-content: flex-end;
-    gap: 22px; padding: 4px 8px 8px;
+    gap: 22px; padding: 4px 8px 20px;
 }
 .gift-tunnel__total { margin: 0; font-size: 18px; font-weight: 700; color: var(--pl-text-strong); }
-.gift-next { min-width: 108px; }
+/* Maquette : bouton « Suivant » de 107 x 48, posé 31px sous la dernière carte. */
+.gift-next { min-width: 108px; height: 48px; }
+.gift-formcard:last-of-type { margin-bottom: 26px; }
 
-/* Modes de paiement (spec C7). */
-.gift-pays { display: grid; gap: 18px; }
+/* Modes de paiement (spec C7).
+   Maquette « Bon cadeaux (4) » : options de 84px de haut espacees de 31,
+   retrait interne de 27 et libelle en 18px — nous avions 70 / 18 / 20 / 16. */
+.gift-pays { display: grid; gap: 31px; }
 .gift-pay {
     display: flex; align-items: center; gap: 14px;
     background: var(--pl-white); border: 1px solid transparent; border-radius: 10px;
-    padding: 22px 20px; cursor: pointer;
-    font-size: 16px; font-weight: 700; color: var(--pl-text-strong);
+    padding: 27px; cursor: pointer;
+    font-size: 18px; font-weight: 700; color: var(--pl-text-strong);
 }
 .gift-pay input { width: 20px; height: 20px; accent-color: var(--gift-purple); flex: none; }
 .gift-pay:has(input:checked) { border-color: var(--gift-purple); }
@@ -276,11 +301,16 @@
     background: var(--pl-white); border: 1px solid var(--pl-border);
     border-radius: 12px; padding: 24px;
 }
-.gift-summary__cards { width: 100%; display: block; margin-bottom: 14px; }
+/* Maquette : l'aperçu mesure 332px de large (260 d'encre) et l'encart de
+   validité le suit immédiatement — nous l'étirions sur toute la largeur de la
+   carte, ce qui décalait tout le récapitulatif de 27px. */
+.gift-summary__cards { width: 332px; display: block; margin: 0 auto; }
 
 .gift-valid {
-    display: flex; align-items: flex-start; gap: 14px;
-    background: #f4f5f8; border-radius: 10px; padding: 18px 16px;
+    display: flex; align-items: flex-start; gap: 27px;
+    /* Maquette : encart de 123px de haut sur fond #fafafb, pictogramme de 21
+       suivi de 27px d'écart. */
+    background: #fafafb; border-radius: 10px; padding: 26px 16px;
     margin-bottom: 8px; color: var(--pl-text-strong);
 }
 .gift-valid .pl-icon { flex: none; margin-top: 2px; }
@@ -288,7 +318,8 @@
 
 .gift-summary__total {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 0; border-bottom: 1px solid var(--pl-border);
+    /* Maquette : 76px du total au premier accordéon (nous étions à 61). */
+    padding: 18px 0 33px; border-bottom: 1px solid var(--pl-border);
     font-size: 15px; font-weight: 600; color: var(--pl-text-strong);
 }
 .gift-summary__total strong { font-size: 18px; font-weight: 700; }
@@ -313,7 +344,7 @@
 .gift-acc[open] .gift-acc__toggle { transform: rotate(45deg); }
 .gift-acc__body { padding: 0 0 18px; }
 .gift-acc__body p { margin: 0 0 6px; font-size: 15px; color: var(--pl-text-strong); }
-.gift-acc__label { font-weight: 700; }
+.gift-acc__label { margin: 0; font-weight: 700; }
 
 /* --------------------------------------------------------------------------
  *  RESPONSIVE.
@@ -329,3 +360,98 @@
     .gift-recipients { grid-template-columns: repeat(2, 1fr); }
     .gift-mosaic { grid-auto-rows: 220px; }
 }
+
+/* --------------------------------------------------------------------------
+ *  Listing « Activités Ateliers & Créations » (écrans 2-4) — conformité 13/08.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : le sous-titre court jusqu'au bord de la colonne (x1288) alors que
+   le listing Activités le coupe à 1100 ; et 59px séparent le fil d'Ariane du
+   titre (44 sur Activités). */
+.gift-listing .act-head__subtitle { max-width: none; margin-bottom: 33px; }
+.gift-listing .act-breadcrumb { margin-bottom: 44px; }
+
+/* Maquette : les chips de villes sont des pastilles PLEINES #f8fafc sans
+   bordure (nous les faisions blanches a bordure), hautes de 36 et non 39 ;
+   seul le chip « Filtre » garde le fond blanc et son liseré. */
+.gift-listing .act-chip {
+    height: 36px; padding: 0 16px;
+    background: var(--pl-surface-dashboard); border-color: transparent;
+}
+.gift-listing .act-chip--filter { background: var(--pl-white); border-color: #eceef1; }
+/* Le fond plein ci-dessus a la meme specificite que `.act-chip.is-active` et
+   passait apres : les chips actifs (ville selectionnee, filtre applique)
+   perdaient leur violet et gardaient leur texte BLANC — donc invisibles.
+   Maquette : chip actif violet plein a texte blanc, chip « Filtre » violet lui
+   aussi quand la sidebar est ouverte. */
+.gift-listing .act-chip.is-active,
+.gift-listing .act-chip--filter[aria-expanded="true"] {
+    background: var(--pl-action); border-color: var(--pl-action); color: var(--pl-white);
+}
+
+/* Maquette : « Afficher la carte » porte la meme vignette de carte que dans
+   l'espace compte, et c'est le bouton des FILTRES qui est sur le carre gris,
+   pas celui de la liste. */
+.gift-listing .act-tool {
+    border-color: #b9c9e8; color: var(--pl-text-secondary);
+    background: linear-gradient(rgba(255, 255, 255, .55), rgba(255, 255, 255, .55)),
+        url('../images/account/map-button.jpg') center / cover;
+}
+
+/* Rythme vertical du listing, relevé sur « Cadeaux par villes » : barre de
+   recherche 356->411, outils 444->483, chips 518->553, ligne de résultats
+   588->627, première rangée de cartes à 692. */
+.gift-listing .act-search { margin-bottom: 32px; }
+.gift-listing .act-toolbar { margin-bottom: 31px; }
+.gift-listing .act-chipbar { margin-bottom: 24px; }
+
+/* Rangée de cartes du listing : la maquette pose la deuxième rangée 438px sous
+   la première (nous étions à 464) — le pied de carte y est plus serré. */
+.gift-listing .gift-card .pl-card__body { padding-top: 18px; padding-bottom: 0; }
+.gift-listing .gift-card .pl-card__foot { margin-top: -11px; padding-top: 4px; padding-bottom: 16px; }
+/* Maquette : 29px entre deux rangées de cartes du listing (grille par défaut). */
+.gift-listing .card-grid { row-gap: 29px; }
+
+/* Maquette : 129px entre le bouton « Voir plus d'activités » et le titre
+   « Top catégories » (nous étions à 99), puis 42px avant la mosaïque (26). */
+.gift-listing #gift-topcats { padding-top: 60px; }
+.gift-listing .gift-solo-title { margin-bottom: 42px; }
+
+/* --------------------------------------------------------------------------
+ *  Listing filtré (« Cadeaux- filtre ») — rail de filtres.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : le contenu du rail démarre à x140 et « Filtres » à y181 (nous
+   étions à x121 et y126) ; le rail lui-même part de la navbar comme chez nous. */
+.gift-listing .of-filters { padding: 75px 24px 40px 36px; }
+
+/* Rythme du rail, relevé sur la maquette : « Filtres » y181, « Filtres
+   appliqués » y264, chip y297, « Date » y384, « Participants » y464,
+   « Type de destination » y582. Les écarts n'y sont pas réguliers (83, 33, 48,
+   25, 65) : on pose donc un écart minimal et des marges explicites. */
+.gift-listing .of-filters { gap: 4px; }
+.gift-listing .of-filters .act-filters__applied { gap: 17px; margin: 56px 0 37px; }
+.gift-listing .of-filters .act-filters__field + .act-filters__field { margin-top: 9px; }
+.gift-listing .of-filters .act-filters__group { margin-top: 28px; }
+
+/* La maquette du listing FILTRÉ est plus resserrée que celle du listing plein :
+   titre y200 (210), barre de recherche y336 (356), outils y427 (444), chips
+   y476 (518), résultats y552 (588), première rangée y617 (692). */
+.gift-listing.has-filters .act-head { padding-block: 28px var(--pl-sp-8); }
+.gift-listing.has-filters .act-head__subtitle { margin-bottom: 24px; }
+.gift-listing.has-filters .act-search { margin-bottom: 22px; }
+.gift-listing.has-filters .act-toolbar { margin-bottom: 19px; }
+.gift-listing.has-filters .act-chipbar { margin-bottom: 15px; }
+.gift-listing.has-filters .act-results { padding-block: var(--pl-sp-8) 0; }
+
+/* Maquette : la grille filtrée est à TROIS colonnes de 294 (x416 -> x1329) ;
+   nous gardions les quatre colonnes du listing plein, d'où des cartes de 224
+   et une colonne vide à droite. */
+.gift-listing.has-filters .card-grid { grid-template-columns: repeat(3, 1fr); margin-inline: 0; }
+/* La grille filtrée est dans un `.act-section > .container` qui gardait la
+   gouttière de 220 du conteneur standard : les cartes tombaient à 224 au lieu
+   de 294 et une colonne vide restait à droite. */
+.gift-listing.has-filters .act-section > .container { max-width: none; padding-inline: 0; }
+/* Maquette : 19px entre le rail de filtres et la colonne de contenu (le listing
+   Activités en met 32, hérités par ce flow). */
+.gift-listing.has-filters { column-gap: 19px; }

@@ -70,6 +70,24 @@
 }
 .row--bleed { margin-inline: calc(-.5 * var(--bs-gutter-x) - 6px); }
 
+/* La carte de recherche de l'accueil ne suit PAS la grille 110/1220 : Figma
+   (« Container - Renseignement » 700:78360) la place à x=68 sur 1304, soit
+   42px de débord de chaque côté. On l'obtient par le même levier que la
+   grille — la gouttière du conteneur — et non par une compensation en
+   marge négative ou en max-width, qui se heurtaient au max-width de 1440.
+   Gouttière 136 => 68px de marge => 1440 - 136 = 1304px de contenu. */
+.container--search { --bs-gutter-x: 136px; }
+
+/* Barre de recherche du parcours Evenements : la maquette la pose de x88 a
+   x1351, comme la rangee de champs de l'accueil (1264 de large). Gouttiere
+   176 => 88px de marge. */
+.container--evsearch { --bs-gutter-x: 176px; }
+
+@media (max-width: 1100px) {
+    .container--search,
+    .container--evsearch { --bs-gutter-x: var(--pl-sp-64); }
+}
+
 /* ---------------------------------------------------------------------------
  *  2. TYPOGRAPHIE ET SURFACES
  *  --bs-body-* pilote le Reboot ; le reste sert aux composants.

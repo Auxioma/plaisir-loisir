@@ -10,7 +10,7 @@
     <div class="review-card__top">
         <span class="review-card__stars" aria-label="{{ r.stars }} {{ 'étoiles sur 5'|trans }}">
             {% for i in 1..5 %}
-                <span class="{{ i <= r.stars ? 'is-on' : 'is-off' }}">{{ icon.star(18) }}</span>
+                <span class="{{ i <= r.stars ? 'is-on' : 'is-off' }}">{{ icon.star_solid(20) }}</span>
             {% endfor %}
         </span>
         <details class="review-card__menu">

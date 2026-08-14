@@ -25,15 +25,15 @@
                class="acc-menu__item{{ is_active ? (item.title == 'Déconnexion' ? ' is-active is-danger' : ' is-active') }}"
                {% if is_active %}aria-current="page"{% endif %}>
                 <span class="acc-menu__icon">
-                    {%- if item.icon == 'grid' %}{{ icon.grid(20) }}
-                    {%- elseif item.icon == 'camera' %}{{ icon.camera(20) }}
-                    {%- elseif item.icon == 'badge_check' %}{{ icon.badge_check(20) }}
-                    {%- elseif item.icon == 'receipt' %}{{ icon.receipt(20) }}
-                    {%- elseif item.icon == 'heart' %}{{ icon.heart(20) }}
-                    {%- elseif item.icon == 'bell' %}{{ icon.bell(20) }}
-                    {%- elseif item.icon == 'hand_heart' %}{{ icon.hand_heart(20) }}
-                    {%- elseif item.icon == 'gear' %}{{ icon.gear(20) }}
-                    {%- else %}{{ icon.logout(20) }}
+                    {%- if item.icon == 'grid' %}{{ icon.grid(26) }}
+                    {%- elseif item.icon == 'camera' %}{{ icon.camera(26) }}
+                    {%- elseif item.icon == 'badge_check' %}{{ icon.badge_check(26) }}
+                    {%- elseif item.icon == 'receipt' %}{{ icon.receipt(26) }}
+                    {%- elseif item.icon == 'heart' %}{{ icon.heart(26) }}
+                    {%- elseif item.icon == 'bell' %}{{ icon.bell(26) }}
+                    {%- elseif item.icon == 'hand_heart' %}{{ icon.hand_heart(26) }}
+                    {%- elseif item.icon == 'gear' %}{{ icon.gear(26) }}
+                    {%- else %}{{ icon.logout(26) }}
                     {%- endif -%}
                 </span>
                 <span class="acc-menu__text">

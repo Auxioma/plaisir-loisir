@@ -52,14 +52,24 @@
 /* Maquette : le fil d'Ariane commence à y142, soit 42px sous la navbar (y100). */
 .act-head { padding-block: 39px var(--pl-sp-8); }
 
+/* Maquette : « Accueil » n'y mesure que 33px d'encre, contre 41 en 12,5px —
+   soit 10px. Releve identique sur Activites, Cadeaux et les 4 ecrans du
+   compte. On fige l'interligne a 19px pour que la reduction du corps ne
+   remonte pas tout le contenu des pages deja calees. */
 .act-breadcrumb {
     display: flex; align-items: center; gap: var(--pl-sp-8);
-    font-size: var(--pl-fs-caption);
-    color: var(--pl-text-secondary);
+    font-size: 10px; line-height: 19px;
+    /* Maquette : il demarre 5px a droite du bord de colonne (x115 pour 110). */
+    margin-left: 5px;
+    color: #c1c7d1;
     /* Maquette : 44px entre le bas du fil d'Ariane et le haut du titre. */
     margin-bottom: var(--pl-sp-32);
 }
-.act-breadcrumb a { color: var(--pl-text-secondary); text-decoration: none; }
+/* Couleurs relevées sur les maquettes (Offres et Destinations) : les maillons
+   sont en gris très clair #c1c7d1 et le séparateur est une BARRE verticale
+   #e5e7eb — et non un « / » en gris secondaire. */
+.act-breadcrumb a { color: #c1c7d1; text-decoration: none; }
+.act-breadcrumb [aria-hidden] { color: var(--pl-border); }
 .act-breadcrumb a:hover { color: var(--pl-action); text-decoration: underline; }
 .act-breadcrumb [aria-current] { color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
 
@@ -193,13 +203,20 @@
     transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 }
 .act-chip:hover { border-color: var(--pl-action); color: var(--pl-action); }
-.act-chip.is-active,
-.act-chip--filter {
+.act-chip.is-active {
     background: var(--pl-action);
     border-color: var(--pl-action);
     color: var(--pl-white);
 }
-.act-chip.is-active:hover, .act-chip--filter:hover { background: #4d00d6; color: var(--pl-white); }
+.act-chip.is-active:hover { background: #4d00d6; color: var(--pl-white); }
+/* Le chip « Filtre » n'est PAS violet dans les maquettes (verifie sur Activites
+   et Destinations populaires) : fond blanc, bord #eceef1, texte gris. */
+.act-chip--filter {
+    background: var(--pl-white);
+    border-color: #eceef1;
+    color: var(--pl-text-secondary);
+}
+.act-chip--filter:hover { border-color: var(--pl-action); color: var(--pl-action); }
 
 /* --- Ligne de résultats. --- */
 .act-results {
@@ -215,7 +232,10 @@
  *  SECTIONS & GRILLE DU LISTING
  * ======================================================================== */
 .act-section { padding-block: var(--pl-sp-32) var(--pl-sp-40); }
-.act-section--alt { background: #f4f5f7; }
+/* Teinte relevée sur les maquettes qui portent une section grise (détail
+   Activité, Destinations populaires, Destinations par ville) : #fafafb.
+   Le listing Activités, lui, est ENTIÈREMENT blanc dans la maquette. */
+.act-section--alt { background: #fafafb; }
 .act-section .home-section__head { margin-bottom: var(--pl-sp-20); }
 
 .act-more { display: flex; justify-content: center; margin-top: var(--pl-sp-32); }
@@ -250,7 +270,7 @@
 }
 
 /* --- Carte « sélection » : titre + volume seulement. --- */
-.sel-card__count { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
+.sel-card__count { display: inline-flex; align-items: center; gap: 6px; font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
 
 /* --- Logo type d'activité (pro payante / privée gratuite), coin bas-gauche
    de la photo — demande Loïc (commentaire maquette du 2026-07-27). --- */
@@ -333,20 +353,36 @@
  *  SIDEBAR DE FILTRES (écran D) — la page bascule via .has-filters :
  *  la sidebar s'affiche à gauche et la grille passe de 4 à 3 colonnes.
  * ======================================================================== */
-.act-page.has-filters .act-body {
+/* Sur l'ecran D la maquette met la sidebar TOUT EN HAUT : elle borde le fil
+   d'Ariane, le titre et la barre de recherche, qui passent tous dans la
+   colonne de droite. La page entiere devient donc une grille de deux
+   colonnes (sidebar relevee a x103 -> x398, soit 296 de large). */
+.act-page.has-filters {
     display: grid;
     grid-template-columns: 296px minmax(0, 1fr);
-    gap: var(--pl-sp-32);
+    column-gap: var(--pl-sp-32);
+    align-items: start;
     max-width: var(--pl-container-desktop);
     margin: 0 auto;
     padding-inline: 100px;
 }
-/* Dans la colonne droite, les conteneurs internes n'ont plus à se centrer. */
-.act-page.has-filters .act-content .container { max-width: none; padding-inline: 0; }
+.act-page.has-filters > .act-filters__appliedlabel {
+    display: block;
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text);
+}
+
+.act-filters { grid-column: 1; grid-row: 1 / span 2; }
+.act-page.has-filters > .act-head { grid-column: 2; grid-row: 1; }
+.act-page.has-filters > .act-body { grid-column: 2; grid-row: 2; }
+/* Dans la colonne droite, les conteneurs internes n'ont plus a se centrer. */
+.act-page.has-filters .act-content .container,
+.act-page.has-filters .act-head .container { max-width: none; padding-inline: 0; }
 .act-page.has-filters .act-content .card-grid { grid-template-columns: repeat(3, 1fr); }
-/* Volumes de la maquette : 2 rangées de 4 par défaut (écran C), 2 rangées
+/* Volumes de la maquette : 3 rangées de 4 par défaut (écran C — la troisième
+   rangée reprend les cartes 5 à 8, c'est la maquette qui les répète), 2 rangées
    de 3 quand la sidebar est ouverte (écran D), 3 cartes par section ailleurs. */
-.act-grid > :nth-child(n+9) { display: none; }
 .act-page.has-filters .act-grid > :nth-child(n+7) { display: none; }
 .act-page.has-filters .act-content .card-grid:not(.act-grid) > :nth-child(n+4) { display: none; }
 

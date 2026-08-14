@@ -3,37 +3,50 @@
  *  favoris (3 onglets), listes, notifications, parrainage, déconnexion.
  * ======================================================================== */
 
+/* Maquette « Mes favoris » : la colonne de gauche va de x102 a x400 (298), la
+   colonne de contenu de x416 a x1336 (920 = 3 cartes de 296 + 2 gouttieres de
+   16, la grille d'images du site). D'ou 102 + 298 + 16 = 416. */
 .acc-page {
-    max-width: 1440px; margin: 0 auto; padding: 0 104px 70px;
-    display: grid; grid-template-columns: 297px 1fr; gap: 17px;
+    max-width: 1440px; margin: 0 auto; padding: 0 104px 70px 102px;
+    display: grid; grid-template-columns: 299px 1fr; gap: 15px;
     align-items: start;
 }
-.acc-aside { border-right: 1px solid var(--pl-border); padding: 26px 8px 40px 0; align-self: stretch; }
-.acc-main { padding-top: 26px; min-width: 0; }
+/* La boite du menu est collee sous la navbar dans la maquette : pas de bord
+   haut (celui de la navbar en tient lieu) et pas de marge au-dessus. */
+.acc-aside { align-self: stretch; }
+.acc-main { padding-top: 38px; min-width: 0; }
 
 /* --------------------------------------------------------------------------
  *  <AccountSidebar> : carte profil + menu.
  * ------------------------------------------------------------------------ */
 
+/* Maquette : bords lateraux a x102 et x400 partant de la navbar (y100) jusqu'a
+   y1047, coins BAS arrondis seulement — le haut est coupe par la navbar. Le
+   surlignage de l'entree active va de x126 a x376, soit 24px de retrait. */
 .acc-card {
-    background: var(--pl-white); border: 1px solid var(--pl-border);
-    border-radius: 16px; padding: 22px 16px; position: sticky; top: 20px;
+    background: var(--pl-white); border: 1px solid var(--pl-border); border-top: 0;
+    border-radius: 0 0 16px 16px; padding: 24px 24px 80px;
 }
-.acc-profile { display: flex; gap: 12px; align-items: flex-start; padding: 4px 4px 18px; }
+.acc-profile { display: flex; gap: 8px; align-items: flex-start; padding: 39px 0 23px 7px; }
 .acc-profile__avatar { width: 78px; height: 78px; border-radius: 50%; object-fit: cover; flex: none; }
 .acc-profile__id { display: grid; gap: 3px; min-width: 0; }
 .acc-profile__id strong { font-size: 16px; color: var(--pl-text-strong); }
 .acc-profile__id > span { font-size: 13px; color: var(--pl-text-muted); }
+/* Maquette : pastille de 150x24, texte en graisse NORMALE (nous l'avions en
+   gras, ce qui la faisait mesurer 178x27). */
 .acc-profile__badge {
-    display: inline-block; justify-self: start; margin-top: 3px; white-space: nowrap;
+    display: inline-block; justify-self: start; margin-top: 5px; white-space: nowrap;
     background: var(--pl-action); color: var(--pl-white) !important;
-    font-size: 10.5px; font-weight: 600; padding: 4px 9px; border-radius: 6px;
+    font-size: 10.5px; font-weight: 400; line-height: 14px;
+    padding: 5px 8px; border-radius: 6px;
 }
 
-.acc-menu { display: grid; gap: 4px; }
+/* Maquette : une entree tous les 80px (boite de 64 + 16 d'ecart) ; nous etions
+   a 68,5 (boite de 65 + 4), d'ou une colonne 160px trop courte. */
+.acc-menu { display: grid; gap: 16px; }
 .acc-menu__item {
-    display: flex; align-items: flex-start; gap: 13px;
-    padding: 11px 12px; border-radius: 10px; text-decoration: none;
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 15px; border-radius: 10px; text-decoration: none;
     color: var(--pl-text-strong);
 }
 .acc-menu__item:hover { background: var(--pl-surface-dashboard); color: var(--pl-text-strong); }
@@ -55,44 +68,60 @@
  *  <AccountPageHeader> : fil d'Ariane + H1 + sous-titre.
  * ------------------------------------------------------------------------ */
 
-.acc-crumb { margin: 12px 0 26px; font-size: 12.5px; }
+/* Maquette : fil d'Ariane de 233px d'encre en graisse NORMALE (nous l'avions
+   en gras sur 287), titre de 48px comme partout ailleurs (nous etions a 40),
+   sous-titre de 16px. */
+/* Maquette : le fil d'Ariane demarre a x427 (11px a droite du bord de colonne)
+   et « Acceuil » n'y mesure que 33px d'encre contre 38 chez nous — soit 9,5px
+   et non 12,5 en gras. Releve identique sur les 4 ecrans du compte. */
+.acc-crumb { margin: 5px 0 31px 11px; font-size: 10px; font-weight: 400; }
+.acc-crumb [aria-current] { font-weight: 400; }
 .acc-crumb-current { color: var(--pl-action); }
-.acc-title { margin: 0 0 14px; font-size: 40px; font-weight: 400; color: var(--pl-text-strong); }
-.acc-subtitle { margin: 0 0 26px; font-size: 15.5px; color: var(--pl-text); }
+.acc-title { margin: 0 0 18px; font-size: 48px; font-weight: 500; color: var(--pl-text-strong); }
+.acc-subtitle { margin: 0 0 22px; font-size: 16px; color: var(--pl-text); }
 
 /* --------------------------------------------------------------------------
  *  Mes favoris : onglets + contrôles d'affichage + compteur/tri + grille.
  * ------------------------------------------------------------------------ */
 
 .acc-tabs-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
-.acc-tabs { display: flex; gap: 8px; }
+/* Maquette : les onglets se touchent (leur padding de 14 fait l'ecart) et le
+   libelle est en 16,5px — 93px d'encre pour « Prestataires » contre 88. */
+.acc-tabs { display: flex; gap: 0; }
 .acc-tab {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 10px 14px 14px; font-size: 15.5px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 14px 14px; font-size: 16.5px; font-weight: 600;
     color: var(--pl-text-strong); text-decoration: none;
     border-bottom: 2px solid transparent; margin-bottom: -1px;
 }
 .acc-tab.is-active { color: var(--pl-action); border-bottom-color: var(--pl-action); }
 .acc-tab:hover { color: var(--pl-action); }
 
-.acc-view { display: flex; gap: 10px; align-items: center; padding-bottom: 10px; }
+/* Maquette : « Afficher la carte » fait 158x40 et s'arrête à x1222, puis 23px
+   d'écart, le bouton des filtres (40x40) et 12px d'écart, le bouton liste. */
+.acc-view { display: flex; gap: 12px; align-items: center; padding-bottom: 10px; }
 .acc-view__map {
-    display: inline-flex; align-items: center; gap: 8px;
+    width: 158px; height: 40px; margin-right: 11px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     border: 1px solid var(--pl-border); border-radius: 10px; cursor: pointer;
-    /* Texture de carte croppée de la maquette, voilée pour la lisibilité. */
+    /* Texture de carte relevée sur la maquette (bandes sans libellé). */
     background: linear-gradient(rgba(255, 255, 255, .55), rgba(255, 255, 255, .55)),
         url('../images/account/map-button.jpg') center / cover;
-    color: var(--pl-text-strong);
-    font-size: 14px; font-weight: 600; padding: 10px 14px;
+    color: var(--pl-text-secondary);
+    font-size: 14px; font-weight: 600; padding: 0;
 }
 .acc-view__btn {
     width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center;
     border: 1px solid var(--pl-border); border-radius: 10px; cursor: pointer;
     background: var(--pl-white); color: var(--pl-text-strong);
 }
+/* Maquette : le bouton des filtres est un carré plein #f8fafc SANS bordure et
+   le bouton liste n'a ni fond ni bordure, seulement son pictogramme gris. */
+.acc-view__btn--fill { background: var(--pl-surface-dashboard); border-color: transparent; color: #757b86; }
+.acc-view__btn--bare { background: transparent; border-color: transparent; color: #c2cbdc; }
 .acc-view__btn:hover, .acc-view__map:hover { border-color: var(--pl-action); color: var(--pl-action); }
 
-.acc-count-row { display: flex; align-items: center; justify-content: space-between; margin: 16px 0 20px; }
+.acc-count-row { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 12px; }
 .acc-count { font-size: 14.5px; color: var(--pl-text-muted); }
 .acc-sort {
     display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
@@ -101,8 +130,20 @@
 }
 .acc-sort strong { color: var(--pl-text-strong); }
 
-.acc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-.acc-grid--list { margin-top: 4px; }
+/* Maquette « Mes favoris » : cartes de 296 et gouttiere de 16 comme toutes les
+   grilles d'images du site (416->711, 728->1023, 1040->1335), pas vertical de
+   434px d'une rangee a l'autre (carte de 418 + 16 d'ecart). */
+.acc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.acc-grid--list { margin-top: 9px; }
+
+/* Maquette : la carte de l'espace compte est plus aeree que celle des listings
+   — 33px entre le lieu et le titre, 31 entre le titre et la note (contre 19 et
+   19). Le pied (filet + prix) est identique, on ne touche donc qu'aux deux
+   premiers ecarts, et uniquement dans l'espace compte. */
+.acc-fav .pl-card__title { margin-top: 14px; }
+.acc-fav .act-card__meta { margin-top: 14px; }
+.acc-fav .pl-card__body { padding-top: 16px; padding-bottom: 16px; }
+.acc-fav .pl-card__foot { padding-top: 14px; }
 
 /* <FavoriteCard> : cœur rouge plein + variante placeholder. */
 .acc-fav__heart.is-on { color: var(--pl-error); }
@@ -118,16 +159,24 @@
 }
 
 /* <FavoritesFooterBanner> */
+/* Maquette : bandeau de 105px de haut (nous etions a 88), pose 18px sous la
+   derniere rangee ; retrait interne de 32 (et non 22), coeur de 28, titre de
+   18px et sous-titre de 16px (nous etions a 15,5 et 14,5). */
 .acc-banner {
-    margin-top: 26px; background: var(--pl-surface-dashboard);
-    border-radius: 12px; padding: 20px 22px;
-    display: flex; align-items: center; gap: 16px;
+    margin-top: 18px; background: var(--pl-surface-dashboard);
+    border-radius: 12px; padding: 26px 32px;
+    display: flex; align-items: center; gap: 20px;
 }
 .acc-banner__icon { color: var(--pl-action); display: inline-flex; flex: none; }
 .acc-banner__text { display: grid; gap: 3px; }
-.acc-banner__text strong { font-size: 15.5px; color: var(--pl-action); }
-.acc-banner__text span { font-size: 14.5px; color: var(--pl-text); }
-.acc-banner .pl-btn { margin-left: auto; flex: none; }
+.acc-banner__text strong { font-size: 18px; color: var(--pl-action); }
+.acc-banner__text span { font-size: 16px; color: var(--pl-text); }
+/* Maquette : bouton de 190x32. */
+.acc-banner .pl-btn {
+    margin-left: auto; flex: none;
+    width: 190px; height: 32px; padding: 0; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+}
 
 /* <EmptyState> OOPS */
 .acc-empty { text-align: center; padding: 66px 20px 120px; }
@@ -140,34 +189,42 @@
  * ------------------------------------------------------------------------ */
 
 .acc-ntabs-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 24px; }
-.acc-ntabs { display: flex; gap: 6px; }
+/* Maquette : onglets jointifs, libelles en 16,5px, les onglets INACTIFS en
+   gris #64748b (nous les mettions en texte principal), et le compteur est un
+   petit CERCLE de 16px a simple filet, de la couleur de l'onglet — pas une
+   pastille grise pleine. */
+.acc-ntabs { display: flex; gap: 0; }
 .acc-ntab {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 10px 14px 14px; font-size: 15.5px; font-weight: 600;
-    color: var(--pl-text-strong); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 10px 14px 14px; font-size: 16.5px; font-weight: 600;
+    color: var(--pl-text-secondary); text-decoration: none;
     border-bottom: 2px solid transparent; margin-bottom: -1px;
 }
 .acc-ntab.is-active { color: var(--pl-action); border-bottom-color: var(--pl-action); }
 .acc-ntab__count {
-    min-width: 22px; height: 22px; padding: 0 6px; border-radius: 100px;
-    background: #eceef2; color: var(--pl-text); font-size: 12px; font-weight: 600;
+    width: 16px; height: 16px; padding: 0; border-radius: 50%;
+    border: 1px solid currentColor; background: transparent;
+    color: inherit; font-size: 10px; font-weight: 600;
     display: inline-flex; align-items: center; justify-content: center;
 }
-.acc-ntab.is-active .acc-ntab__count { background: var(--pl-action-light); color: var(--pl-action); }
+.acc-ntab.is-active .acc-ntab__count { background: transparent; color: var(--pl-action); }
 .acc-nactions { display: flex; gap: 22px; padding-bottom: 10px; }
 .acc-nlink { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--pl-action); text-decoration: none; }
 .acc-nlink:hover { text-decoration: underline; color: var(--pl-action); }
 
 .acc-nsection { margin: 26px 0 14px; font-size: 18px; font-weight: 700; color: var(--pl-text-strong); }
+/* Maquette : ligne de 88px (416->1336), fond #f8fafc SANS bordure pour TOUTES
+   les lignes (nous n'en grisions que deux, les autres etaient blanches a
+   bordure), pastille RONDE de 56 et vignette de 72 collee a 10px du bord. */
 .acc-nlist { display: grid; gap: 12px; }
 .acc-notif {
-    display: flex; align-items: center; gap: 16px;
-    background: var(--pl-white); border: 1px solid var(--pl-border);
-    border-radius: 12px; padding: 15px 18px;
+    display: flex; align-items: center; gap: 14px;
+    background: var(--pl-surface-dashboard); border: 0;
+    border-radius: 12px; padding: 8px 10px 8px 15px;
 }
-.acc-notif--muted { background: var(--pl-surface-dashboard); border-color: transparent; }
+.acc-notif--muted { background: var(--pl-surface-dashboard); }
 .acc-notif__icon {
-    width: 44px; height: 44px; border-radius: 10px; flex: none;
+    width: 56px; height: 56px; border-radius: 50%; flex: none;
     display: inline-flex; align-items: center; justify-content: center;
 }
 .acc-notif__icon--violet { background: var(--pl-action-light); color: var(--pl-action); }
@@ -175,22 +232,25 @@
 .acc-notif__icon--blue { background: #e8effc; color: var(--pl-info); }
 .acc-notif__icon--yellow { background: #fdf6e3; color: var(--pl-warning); }
 .acc-notif__body { display: grid; gap: 3px; min-width: 0; }
-.acc-notif__body strong { font-size: 15px; color: var(--pl-text-strong); }
+.acc-notif__body strong { font-size: 16px; color: var(--pl-text-strong); }
 .acc-notif__detail { font-size: 14px; color: var(--pl-text); }
 .acc-notif__sep { color: var(--pl-text-disabled); margin: 0 4px; }
-.acc-notif__time { font-size: 13px; color: var(--pl-text-muted); }
-.acc-notif__thumb { width: 62px; height: 62px; border-radius: 8px; object-fit: cover; margin-left: auto; flex: none; }
+.acc-notif__time { font-size: 12px; color: var(--pl-text-muted); }
+.acc-notif__thumb { width: 72px; height: 72px; border-radius: 10px; object-fit: cover; margin-left: auto; flex: none; }
 .acc-nmore { text-align: center; margin: 30px 0 10px; }
 
 /* --------------------------------------------------------------------------
  *  Déconnexion : illustration + arguments + confirmation + aide.
  * ------------------------------------------------------------------------ */
 
-.acc-logout { display: grid; grid-template-columns: 495px 1fr; gap: 30px; align-items: start; margin-top: 10px; }
+/* Maquette : l'illustration demarre 72px sous le titre (nous etions a 30) et
+   la colonne de droite commence a x950 (illustration 416->912 + 38). */
+.acc-logout { display: grid; grid-template-columns: 495px 1fr; gap: 38px; align-items: start; margin-top: 63px; }
 .acc-logout__img { width: 100%; border-radius: 14px; display: block; }
 .acc-logout__side { padding-top: 12px; }
-.acc-logout__hello { margin: 0 0 16px; font-size: 33px; font-weight: 700; color: var(--pl-text-strong); }
-.acc-logout__text { margin: 0 0 24px; font-size: 16px; line-height: 1.55; color: var(--pl-text); }
+.acc-logout__hello { margin: 0 0 16px; font-size: 34px; font-weight: 700; color: var(--pl-text-strong); }
+/* Maquette : 18px en gris secondaire (nous l'avions en 16 texte principal). */
+.acc-logout__text { margin: 0 0 46px; font-size: 18px; line-height: 1.6; color: var(--pl-text-secondary); }
 .acc-logout__args { display: grid; gap: 18px; margin-bottom: 26px; }
 .acc-logout__arg { display: flex; gap: 14px; align-items: flex-start; }
 .acc-logout__argicon {
@@ -198,32 +258,41 @@
     background: var(--pl-action-light); color: var(--pl-action);
     display: inline-flex; align-items: center; justify-content: center;
 }
-.acc-logout__arg div { display: grid; gap: 3px; }
+/* La regle `.acc-logout__arg span` visait aussi la pastille d'icone (c'est un
+   <span>) et lui imposait la couleur du texte : les pictogrammes sortaient en
+   bleu nuit alors que la maquette les donne VIOLETS. On ne cible plus que la
+   description. Maquette : elle est en gris #64748b et coupee a 290px de large
+   (« Connectez-vous a tout moment pour / retrouver... »). */
+.acc-logout__arg div { display: grid; gap: 3px; max-width: 290px; }
 .acc-logout__arg strong { font-size: 15.5px; color: var(--pl-text-strong); }
-.acc-logout__arg span { font-size: 14px; color: var(--pl-text); line-height: 1.5; }
-.acc-logout__confirm { margin: 0 0 16px; font-size: 16px; font-weight: 600; color: var(--pl-text-strong); }
-.acc-logout__actions { display: flex; gap: 14px; }
+.acc-logout__arg div span { font-size: 14px; color: var(--pl-text-secondary); line-height: 1.5; }
+/* Maquette : la question de confirmation est en gris #64748b, pas en gras. */
+.acc-logout__confirm { margin: 0 0 16px; font-size: 16px; font-weight: 400; color: var(--pl-text-secondary); }
+/* Maquette : les deux boutons occupent toute la colonne — 238 + 37 + 111. */
+.acc-logout__actions { display: flex; gap: 37px; }
 .acc-logout__yes {
-    display: inline-flex; align-items: center; gap: 9px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
     border: 1.5px solid var(--pl-error); border-radius: 10px;
     color: var(--pl-error); background: var(--pl-white); text-decoration: none;
-    font-size: 15px; font-weight: 600; padding: 12px 20px;
+    font-size: 15px; font-weight: 600; width: 238px; height: 40px; padding: 0;
 }
 .acc-logout__yes:hover { background: #fdeaea; color: var(--pl-error); }
 .acc-logout__cancel {
     border: 1.5px solid var(--pl-action); border-radius: 10px; cursor: pointer;
     color: var(--pl-action); background: var(--pl-white);
-    font-size: 15px; font-weight: 600; padding: 12px 26px;
+    font-size: 15px; font-weight: 600; width: 111px; height: 40px; padding: 0;
 }
 .acc-logout__cancel:hover { background: var(--pl-action-light); }
 
 .acc-help {
+    /* Maquette : bandeau de 104px de haut, retrait interne de 26. */
     margin-top: 30px; background: #e8effc; border-radius: 12px;
-    padding: 20px 22px; display: flex; align-items: center; gap: 16px;
+    padding: 28px 26px; display: flex; align-items: center; gap: 16px;
 }
 .acc-help__icon { color: var(--pl-info); display: inline-flex; flex: none; }
 .acc-help__text { display: grid; gap: 3px; }
-.acc-help__text strong { font-size: 15.5px; color: var(--pl-text-strong); }
+/* Maquette : « Besoin d'aide ? » est en BLEU #2563eb, pas en texte principal. */
+.acc-help__text strong { font-size: 15.5px; color: var(--pl-info); }
 .acc-help__text span { font-size: 14.5px; color: var(--pl-text); }
 .acc-help__btn {
     margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: 8px;

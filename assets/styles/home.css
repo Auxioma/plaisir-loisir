@@ -23,7 +23,11 @@
    x1336, soit le padding de 103px défini sur .pl-navbar. Un retrait de 48px
    décalait ici le logo de 55px vers la gauche et les boutons de 30px vers la
    droite — sur toutes les pages. */
-.pl-navbar--home .pl-nav { gap: var(--pl-sp-8); }
+/* Maquette : « Découvrez » commence a x305 (16px apres le logo) et le
+   selecteur de langue le suit sans ecart — les deux menus se touchent,
+   leur padding de 8 fait la separation. */
+.pl-navbar--home .pl-navbar__left { gap: 16px; }
+.pl-navbar--home .pl-nav { gap: 0; }
 
 .pl-dropdown { position: relative; }
 .pl-dropdown__toggle {
@@ -31,7 +35,8 @@
     display: inline-flex; align-items: center; gap: var(--pl-sp-4);
     padding: 10px var(--pl-sp-8);
     color: var(--pl-text);
-    font-size: var(--pl-fs-body-sm);
+    /* Maquette : 16px — « Découvrez » y mesure 81px d'encre contre 72 en 14. */
+    font-size: 16px;
     font-weight: var(--pl-fw-semibold);
     line-height: var(--pl-lh-sm);
     white-space: nowrap;
@@ -79,7 +84,8 @@
 .pl-dropdown__item.is-active { background: var(--pl-action-light); color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
 
 /* Petit drapeau du sélecteur de langue. */
-.pl-flag { display: block; border-radius: 2px; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(0, 0, 0, .08); }
+/* Maquette : disque de 16px, pas un rectangle a coins legerement arrondis. */
+.pl-flag { display: block; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(0, 0, 0, .08); }
 
 /* ===========================================================================
  *  HERO
@@ -170,83 +176,133 @@
 /* Preuve sociale : 4 avatars empilés + compteur d'utilisateurs. */
 .home-hero__proof { display: flex; align-items: center; gap: var(--pl-sp-16); }
 .home-hero__avatars { display: flex; }
+/* Maquette : 4 pastilles de 48 posees a x0/33/66/99, soit 15px de
+   chevauchement (docs/grille-figma.md). */
 .home-avatar {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     border: 3px solid var(--pl-white);
     box-shadow: var(--pl-shadow-sm);
     object-fit: cover;
     background: var(--pl-white);
 }
-.home-avatar + .home-avatar { margin-left: -14px; }
-.home-hero__proof-text { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-medium); color: var(--pl-text); }
-.home-hero__proof-text strong { font-weight: var(--pl-fw-bold); color: var(--pl-primary); }
+.home-avatar + .home-avatar { margin-left: -15px; }
+/* Une seule couleur et une seule graisse dans la maquette : #0f172a, 16px.
+   Le « +250.000 » n'y est ni bleu ni gras. */
+.home-hero__proof-text { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-medium); color: var(--pl-text); }
+.home-hero__proof-text strong { font-weight: var(--pl-fw-medium); color: var(--pl-text); }
 
 /* ===========================================================================
  *  BARRE DE RECHERCHE (chevauche le bas du hero)
  * ======================================================================== */
-/* Figma 591:61677 > « Container - Renseignement » : x=68, largeur 1304. La
-   carte de recherche déborde VOLONTAIREMENT de la grille 110/1220 — c'est une
-   des sections que le conteneur standard ne doit pas contraindre.
-   L'élément porte aussi .container : on agit sur son padding, car l'élargir
-   par width ou marge négative serait annulé par son max-width de 1440. */
-/* À REPRENDRE — Figma 591:61677 > « Container - Renseignement » : la carte doit
-   être à x=68 sur 1304 de large (elle déborde volontairement de la grille
-   110/1220) ; nous la rendons sur la grille. Deux tentatives par le padding
-   puis par max-width n'ont pas donné la géométrie attendue : une contrainte de
-   la structure interne reste à identifier. À reprendre par la structure et non
-   par compensation (§41). Le bloc a par ailleurs d'autres écarts : les
-   libellés d'onglets diffèrent de la maquette. Mesures dans docs/grille-figma.md. */
-.home-search-wrap { position: relative; z-index: 3; margin-top: -44px; }
+/* Figma « Container - Renseignement » 700:78360 : x=68, largeur 1304 — la carte
+   déborde VOLONTAIREMENT de la grille 110/1220. La largeur vient désormais de
+   .container--search (gouttière 136) dans bootstrap-theme.css : on agit sur le
+   conteneur lui-même, comme pour la grille, et non par compensation.
+
+   Mesures relevées au pixel sur les exports de la maquette (assets/figma/
+   accueil-plateforme.png et activites-accueil-connecte.png) — les deux accueils
+   partagent exactement la même carte :
+     - carte            x  68 -> 1371 (1304), padding 20, rayon 12
+     - onglets          y +20 -> +80  (hauteur 60), premier onglet à x=88
+     - rangée bordée    x  88 -> 1351 (1264), hauteur 118, bordure #e5e7eb
+     - séparateurs      x 356 / 639 / 934, pleine hauteur, #9dabc7
+     - champs           x 100 / 394 / 677 / 972
+     - bouton           x 1170, 130 x 48
+
+   La carte est en VERRE et non en blanc plein : au-dessus de la photo du héros
+   elle laisse voir l'image (blanc à 20 % + flou, alpha relevé 0,22 sur les deux
+   maquettes) ; au-dessus du fond de page elle paraît blanche. Seule la rangée
+   des champs est opaque. C'est ce qui produit le bandeau translucide de la
+   maquette, qu'un fond blanc plein ne peut pas reproduire. */
+.home-search-wrap { position: relative; z-index: 3; margin-top: -73px; }
+/* Carte de verre de 1304 : 20px de marge intérieure autour du contenu. */
 .home-search {
-    background: var(--pl-white);
+    background: rgba(255, 255, 255, .2);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     border-radius: var(--pl-radius-md);
     box-shadow: 0 10px 30px rgba(15, 23, 42, .12);
-    overflow: hidden;
+    padding: 20px;
 }
-/* Onglets « classeur » au-dessus de la carte : l'actif est blanc et fusionne
-   avec la carte, l'inactif est gris translucide sur la photo. */
-.home-search__tabs { display: flex; gap: 2px; }
+/* Onglets « classeur » collés l'un à l'autre (aucun écart mesuré), hauteur 60.
+   L'actif est blanc plein et fusionne avec la rangée ; l'inactif est un voile
+   blanc (alpha relevé 0,35) au texte blanc. Retraits relevés : 12px à gauche,
+   16px entre l'icône et le libellé, 20px à droite. */
+.home-search__tabs { display: flex; }
 .home-search__tab {
     display: inline-flex;
     align-items: center;
-    gap: var(--pl-sp-8);
-    padding: 12px 20px;
+    gap: var(--pl-sp-16);
+    height: 60px;
+    padding: 0 20px 0 12px;
     border: 0;
-    background: rgba(210, 214, 222, .8);
-    color: var(--pl-text);
+    background: rgba(255, 255, 255, .35);
+    color: var(--pl-white);
     font-size: var(--pl-fs-body-sm);
     font-weight: var(--pl-fw-semibold);
     border-radius: var(--pl-radius-sm) var(--pl-radius-sm) 0 0;
     cursor: pointer;
 }
-.home-search__tab.is-active { background: var(--pl-white); color: var(--pl-cta); }
-.home-search__tab.is-active .pl-icon { color: var(--pl-cta); }
+.home-search__tab .pl-icon { color: var(--pl-white); }
+.home-search__tab.is-active { background: var(--pl-white); color: var(--pl-action); }
+.home-search__tab.is-active .pl-icon { color: var(--pl-action); }
 
-/* Maquette : rangée de champs de 116px de haut, bouton inséré à 31px du
-   bord droit de la carte. */
+/* Rangée bordée de 1264 x 118, blanche et opaque. Les colonnes reprennent les
+   abscisses Figma : séparateurs à 268 / 551 / 846 et bouton à 1082 (relatifs à
+   la rangée), d'où des colonnes de 268 / 283 / 295 / 236 / 130 et 50px de marge
+   à droite (52 moins les deux bordures, la boîte étant en border-box). */
 .home-search__fields {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr auto;
+    grid-template-columns: 268px 283px 295px 236px 130px;
     align-items: center;
-    gap: var(--pl-sp-8);
-    padding: 26px 31px;
-    border-top: 1px solid var(--pl-border);
+    height: 118px;
+    padding-right: 50px;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
 }
+/* Les séparateurs courent sur toute la hauteur de la rangée (maquette), pas
+   seulement sur celle du champ : la bordure porte donc sur la colonne. */
 .home-search__field {
     display: flex;
     align-items: center;
     gap: var(--pl-sp-12);
-    padding: 8px 12px;
-    border-right: 1px solid var(--pl-border);
+    align-self: stretch;
+    padding-left: 38px;
+    border-right: 1px solid #9dabc7;
 }
+.home-search__field:first-child { padding-left: 12px; }
 .home-search__field:nth-child(4) { border-right: 0; }
-.home-search__field .pl-icon { color: var(--pl-primary); flex-shrink: 0; }
+
+@media (max-width: 1300px) {
+    .home-search__fields {
+        grid-template-columns: repeat(4, 1fr) auto;
+        height: auto;
+        padding: var(--pl-sp-16);
+        gap: var(--pl-sp-8);
+    }
+    .home-search__field { padding-left: var(--pl-sp-12); }
+    .home-search__field:first-child { padding-left: var(--pl-sp-12); }
+}
+/* Couleurs relevées : libellé et pictogramme #0f172a, valeur, chevron et
+   séparateurs #9dabc7 (--pl-text est déjà #0f172a) ; la valeur est en 14px comme le libellé (mesurée à
+   148px de large pour « Destination, ville, lieu… », soit du 14 et non du 12). */
+.home-search__field .pl-icon { color: var(--pl-text); flex-shrink: 0; }
 .home-search__field-label { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
-.home-search__field-value { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
-/* Maquette : 130×48. */
-.home-search__submit { min-height: 48px; height: 48px; padding-inline: 18px; }
+/* Le chevron suit le texte de la valeur (écart relevé : 16px) — il n'est pas
+   aligné sur le bord droit du champ. */
+.home-search__field-value {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-sp-16);
+    font-size: var(--pl-fs-body-sm);
+    color: #9dabc7;
+}
+.home-search__field-value .pl-icon { color: #9dabc7; }
+/* Maquette : 130×48, la loupe APRÈS le libellé. */
+.home-search__submit { min-height: 48px; height: 48px; width: 130px; padding-inline: 0; justify-content: center; }
 
 /* ===========================================================================
  *  SECTIONS génériques
@@ -444,9 +500,18 @@
     display: flex; flex-direction: column; gap: var(--pl-sp-12);
 }
 .review-card__top { display: flex; align-items: center; justify-content: space-between; }
-.review-card__stars { display: inline-flex; gap: 2px; }
-.review-card__stars .is-on { color: var(--pl-warning); }
-.review-card__stars .is-off { color: var(--pl-border); }
+/* Maquette (bandeau « Ce que disent les voyageurs ») : chaque etoile est posee
+   sur une PASTILLE RONDE de 40px en #fafafb, l'etoile pleine en #f4a911 et la
+   derniere en gris-bleu #9dabc7. Nous n'affichions que de petites etoiles
+   nues, toutes orange. */
+.review-card__stars { display: inline-flex; gap: 8px; }
+.review-card__stars > span {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: #fafafb;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.review-card__stars .is-on { color: #f4a911; }
+.review-card__stars .is-off { color: #9dabc7; }
 .review-card__more { background: 0; border: 0; color: var(--pl-text-secondary); cursor: pointer; padding: 0; }
 .review-card__title { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); margin: 0; }
 /* Maquette : corps d'avis en 16px. */
@@ -467,7 +532,8 @@
     font-size: var(--pl-fs-caption); color: var(--pl-text-secondary);
 }
 .review-card__foot span { display: inline-flex; align-items: center; gap: 6px; }
-.review-card__foot a { color: var(--pl-action); text-decoration: none; font-weight: var(--pl-fw-semibold); }
+/* Maquette : « Traduire » est en texte principal SOULIGNE, pas en violet nu. */
+.review-card__foot a { color: var(--pl-text); text-decoration: underline; font-weight: var(--pl-fw-semibold); }
 .review-card__foot a:hover { text-decoration: underline; }
 
 /* ===========================================================================
@@ -485,7 +551,12 @@
         linear-gradient(180deg, rgba(4, 18, 60, .3) 0%, transparent 28%);
 }
 .home-hero--connected .home-hero__inner { padding-block: 97px 0; }
-.home-connected .home-search-wrap { margin-top: -160px; }
+/* Maquette de l'accueil connecté : même carte, posée 109px plus haut que le bas
+   de la photo (carte à y564, photo jusqu'à y673). */
+.home-connected .home-search-wrap { margin-top: -109px; }
+/* Sur cet accueil, l'onglet actif est ORANGE (mesuré) et non violet. */
+.home-connected .home-search__tab.is-active { color: var(--pl-cta); }
+.home-connected .home-search__tab.is-active .pl-icon { color: var(--pl-cta); }
 /* Maquette : 25px (~0,5 cm) entre les boutons du hero et les pilules. */
 .home-hero--connected .home-hero__actions { margin-bottom: 25px; }
 .home-hero--connected .home-hero__bg { object-position: center; }
@@ -510,9 +581,7 @@
 /* --- Barre de recherche : champs cliquables + panneaux déroulants (écran B). --- */
 .home-search { position: relative; overflow: visible; }
 .home-search__field { background: transparent; border-block: 0; border-left: 0; text-align: left; cursor: pointer; }
-.home-search__field > span:not(.pl-icon) { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-/* Chevron d'affordance à droite de chaque champ (maquette). */
-.home-search__field > .pl-icon:last-child { margin-left: auto; color: var(--pl-text-secondary); align-self: center; }
+.home-search__field > span:not(.pl-icon) { display: flex; flex-direction: column; align-items: flex-start; flex: 1; min-width: 0; }
 .home-search__field:hover .home-search__field-label { color: var(--pl-action); }
 .home-search__field.is-open .home-search__field-label { color: var(--pl-action); }
 
@@ -722,4 +791,18 @@
     .home-search__fields { grid-template-columns: 1fr 1fr; }
     .home-search__field { border-right: 0; }
     .home-private__inner, .home-private__panel, .home-gift__inner, .home-pro__inner { grid-template-columns: 1fr; }
+}
+
+/* Maquette (auth-flow/Connexion.png) : les deux boutons de la navbar réduite
+   ne partagent pas la même échelle. « Déposer une annonce » fait 192 de large
+   pour 165 d'encre — c'est déjà notre CTA en 16px/500, il ne manquait que le
+   retrait interne (14 et non 16). « S'incrire » fait 104 pour un pictogramme
+   de 20 et 54 d'encre : le libellé y est en 15px et le retrait tombe à 8
+   (nous étions à 14px demi-gras et 16 de retrait, d'où 129 de large). */
+.pl-navbar .pl-btn { padding-inline: 14px; }
+.pl-navbar .pl-btn--outline-dark {
+    font-size: 15px;
+    font-weight: var(--pl-fw-medium);
+    gap: 10px;
+    padding-inline: 8px;
 }

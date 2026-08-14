@@ -31,11 +31,11 @@
     {# ==================================================================
        CATÉGORIES POPULAIRES : fil d'Ariane + carrousel de 5 cartes.
        ================================================================ #}
-    <section class="act-section">
+    <section class="act-section dest-section--head">
         <div class="container">
             <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
                 <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
-                <span aria-hidden="true">/</span>
+                <span aria-hidden="true">|</span>
                 <span aria-current="page">{{ 'Destinations'|trans }}</span>
             </nav>
 
@@ -88,7 +88,7 @@
                        class="dest-tile dest-tile--{{ t.span }} {{ t.align == 'center' ? 'dest-tile--center' }}"
                        style="grid-column: {{ t.col }} / span {{ t.span == 'xwide' ? 4 : (t.span == 'wide' ? 3 : 2) }}; grid-row: {{ t.row }} / span {{ t.span == 'tall' ? 2 : 1 }};">
                         <img src="{{ asset(t.image) }}" alt="{{ t.name }}">
-                        <span class="dest-tile__badge">{{ t.count }} {{ 'Activités'|trans }}</span>
+                        <span class="dest-tile__badge">{{ icon.book_open(16) }} {{ t.count }} {{ 'Activités'|trans }}</span>
                         <span class="dest-tile__name">{{ t.name }}</span>
                     </a>
                 {% endfor %}
@@ -109,8 +109,8 @@
                 <div class="dest-banner__overlay" aria-hidden="true"></div>
                 <div class="dest-banner__text">
                     <h2>{{ 'Partez à la'|trans }} <span>{{ 'découverte du monde'|trans }}</span></h2>
-                    <p>{{ "Explorez des destinations d'exception, près de chez vous ou à l'autre bout de la France."|trans }}</p>
-                    <a href="{{ path('app_activities') }}#carte" class="pl-btn pl-btn--cta">{{ 'Explorer la carte'|trans }} {{ icon.map(18) }}</a>
+                    <p>{{ "Des expériences uniques vous attendent,"|trans }}<br>{{ "où que vous soyez."|trans }}</p>
+                    <a href="{{ path('app_activities') }}#carte" class="pl-btn dest-banner__cta">{{ 'Explorer la carte'|trans }} {{ icon.map(18) }}</a>
                 </div>
                 <aside class="dest-banner__ideas">
                     <h3>{{ 'Idées du moment'|trans }}</h3>
