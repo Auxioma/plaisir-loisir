@@ -15,6 +15,89 @@
 {% set demoFilters = app.request.query.get('demo') == 'filtres' %}
 <div class="act-page{{ demoFilters ? ' has-filters' }}">
 
+    {# La sidebar de filtres est un enfant direct de .act-page : sur l'ecran D
+       la maquette la fait demarrer TOUT EN HAUT, a cote du fil d'Ariane et du
+       titre, et non sous l'en-tete. #}
+    {# --- Sidebar de filtres (écran D), repliée par défaut. --- #}
+    <aside class="act-filters" id="act-filters" aria-label="{{ 'Filtres'|trans }}" {{ demoFilters ? '' : 'hidden' }}>
+        <div class="act-filters__head">
+            <span class="act-filters__title">{{ 'Filtres'|trans }}</span>
+            <button type="button" class="act-filters__reset" id="act-filters-reset">{{ 'Réinitialiser'|trans }}</button>
+        </div>
+
+        <span class="act-filters__appliedlabel">{{ 'Filtres appliqués'|trans }}</span>
+        <div class="act-filters__applied" id="act-filters-applied">
+            <button type="button" class="act-chip is-active" data-applied-chip>{{ 'Sports & Aventures'|trans }} {{ icon.x(14) }}</button>
+        </div>
+
+        <label class="act-filters__field">
+            <span>{{ 'Où voulez-vous partir ?'|trans }}</span>
+            <span class="act-filters__input">{{ icon.map_pin(16) }}<input type="text" placeholder="{{ 'Destination, ville, lieu…'|trans }}"></span>
+        </label>
+        <label class="act-filters__field">
+            <span>{{ 'Date'|trans }}</span>
+            <span class="act-filters__input">{{ icon.calendar(16) }}<input type="text" placeholder="{{ 'Sélectionnez une date'|trans }}"></span>
+        </label>
+        <label class="act-filters__field">
+            <span>{{ 'Participants'|trans }}</span>
+            <span class="act-filters__input">{{ icon.users(16) }}<input type="text" placeholder="{{ '01 participant'|trans }}"></span>
+        </label>
+
+        {# Le groupe « Type d'activite » (professionnelles / entre particuliers)
+           venait d'une demande client du 27/07 ; la maquette de l'ecran D ne
+           le porte pas. Retire pour s'y conformer (CTO, 12/08) — meme
+           arbitrage que la pastille « Pro » des cartes. #}
+
+        <fieldset class="act-filters__group">
+            <legend>{{ 'Type de destination'|trans }}</legend>
+            <button type="button" class="act-filters__dest is-active" data-dest-type>{{ icon.globe(24) }} {{ 'Toutes les destinations'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.building(24) }} {{ 'Villes'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_hiking(24) }} {{ 'Montagnes'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.beach(24) }} {{ 'Mers & Plages'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.tree(24) }} {{ 'Campagnes'|trans }}</button>
+            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_canoe(24) }} {{ 'Lacs & Rivières'|trans }}</button>
+        </fieldset>
+
+        <fieldset class="act-filters__group">
+            <legend>{{ 'Activités populaires'|trans }}</legend>
+            {% for c in ['Sport & Aventure'|trans, 'Nature & Plein air'|trans, 'Bien-être'|trans, 'En famille'|trans, 'Ateliers & Créations'|trans, 'Soirées & Evénements'|trans] %}
+                <label class="act-filters__check">
+                    <input type="checkbox" data-filter-check {{ loop.first ? 'checked' }}> {{ c }}
+                </label>
+            {% endfor %}
+        </fieldset>
+
+        <fieldset class="act-filters__group" id="act-budget">
+            <legend>{{ 'Budget (par personne)'|trans }}</legend>
+            <div class="act-budget__slider">
+                <div class="act-budget__track" aria-hidden="true"></div>
+                <div class="act-budget__range" data-budget-range aria-hidden="true"></div>
+                <input type="range" min="0" max="1050" step="1" value="154" data-budget-min aria-label="{{ 'Budget minimum'|trans }}">
+                <input type="range" min="0" max="1050" step="1" value="1050" data-budget-max aria-label="{{ 'Budget maximum'|trans }}">
+            </div>
+            <div class="act-budget__bounds"><span>0€</span><span>1050€ et +</span></div>
+            <div class="act-budget__inputs">
+                <input type="text" inputmode="numeric" value="154€" data-budget-input-min aria-label="{{ 'Budget minimum en euros'|trans }}">
+                <input type="text" inputmode="numeric" value="1050+€" data-budget-input-max aria-label="{{ 'Budget maximum en euros'|trans }}">
+            </div>
+        </fieldset>
+
+        <fieldset class="act-filters__group">
+            <legend>{{ 'Note des utilisateurs'|trans }}</legend>
+            {% for n in [5, 4, 3, 2, 1] %}
+                <label class="act-filters__check act-filters__check--stars">
+                    <input type="checkbox" data-filter-check>
+                    <span class="act-filters__stars" aria-label="{{ n }} {{ (n > 1 ? 'étoiles et plus' : 'étoile et plus')|trans }}">
+                        {% for i in 1..5 %}<span class="{{ i <= n ? 'is-on' : 'is-off' }}">{{ icon.star(16) }}</span>{% endfor %}
+                    </span>
+                </label>
+            {% endfor %}
+        </fieldset>
+
+        <button type="button" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Affichez les résultats'|trans }}</button>
+        <p class="act-filters__count"><strong id="act-found-count">412</strong> {{ 'activités trouvées'|trans }}</p>
+    </aside>
+
     {# ==================================================================
        EN-TÊTE DE PAGE : fil d'Ariane, titre, recherche compacte,
        barres d'outils et de filtres, ligne de résultats (écran C).
@@ -96,90 +179,6 @@
        ================================================================ #}
     <div class="act-body" id="act-body">
 
-    {# --- Sidebar de filtres (écran D), repliée par défaut. --- #}
-    <aside class="act-filters" id="act-filters" aria-label="{{ 'Filtres'|trans }}" {{ demoFilters ? '' : 'hidden' }}>
-        <div class="act-filters__head">
-            <span class="act-filters__title">{{ 'Filtres'|trans }}</span>
-            <button type="button" class="act-filters__reset" id="act-filters-reset">{{ 'Réinitialiser'|trans }}</button>
-        </div>
-
-        <div class="act-filters__applied" id="act-filters-applied">
-            <button type="button" class="act-chip is-active" data-applied-chip>{{ 'Sports & Aventures'|trans }} {{ icon.x(14) }}</button>
-        </div>
-
-        <label class="act-filters__field">
-            <span>{{ 'Où voulez-vous partir ?'|trans }}</span>
-            <span class="act-filters__input">{{ icon.map_pin(16) }}<input type="text" placeholder="{{ 'Destination, ville, lieu…'|trans }}"></span>
-        </label>
-        <label class="act-filters__field">
-            <span>{{ 'Date'|trans }}</span>
-            <span class="act-filters__input">{{ icon.calendar(16) }}<input type="text" placeholder="{{ 'Sélectionnez une date'|trans }}"></span>
-        </label>
-        <label class="act-filters__field">
-            <span>{{ 'Participants'|trans }}</span>
-            <span class="act-filters__input">{{ icon.users(16) }}<input type="text" placeholder="{{ '01 participant'|trans }}"></span>
-        </label>
-
-        {# Distinction validée par le client (« Option 1 », 2026-07-27). #}
-        <fieldset class="act-filters__group">
-            <legend>{{ "Type d'activité"|trans }}</legend>
-            <label class="act-filters__check">
-                <input type="checkbox" data-filter-check checked> <span>🎟️ {{ 'Activités professionnelles'|trans }}</span>
-            </label>
-            <label class="act-filters__check">
-                <input type="checkbox" data-filter-check> <span>👥 {{ 'Activités entre particuliers « Gratuite »'|trans }}</span>
-            </label>
-        </fieldset>
-
-        <fieldset class="act-filters__group">
-            <legend>{{ 'Type de destination'|trans }}</legend>
-            <button type="button" class="act-filters__dest is-active" data-dest-type>{{ icon.globe(24) }} {{ 'Toutes les destinations'|trans }}</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.building(24) }} {{ 'Villes'|trans }}</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_hiking(24) }} {{ 'Montagnes'|trans }}</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.beach(24) }} {{ 'Mers & Plages'|trans }}</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.tree(24) }} {{ 'Campagnes'|trans }}</button>
-            <button type="button" class="act-filters__dest" data-dest-type>{{ icon.cat_canoe(24) }} {{ 'Lacs & Rivières'|trans }}</button>
-        </fieldset>
-
-        <fieldset class="act-filters__group">
-            <legend>{{ 'Activités populaires'|trans }}</legend>
-            {% for c in ['Sport & Aventure'|trans, 'Nature & Plein air'|trans, 'Bien-être'|trans, 'En famille'|trans, 'Ateliers & Créations'|trans, 'Soirées & Evénements'|trans] %}
-                <label class="act-filters__check">
-                    <input type="checkbox" data-filter-check {{ loop.first ? 'checked' }}> {{ c }}
-                </label>
-            {% endfor %}
-        </fieldset>
-
-        <fieldset class="act-filters__group" id="act-budget">
-            <legend>{{ 'Budget (par personne)'|trans }}</legend>
-            <div class="act-budget__slider">
-                <div class="act-budget__track" aria-hidden="true"></div>
-                <div class="act-budget__range" data-budget-range aria-hidden="true"></div>
-                <input type="range" min="0" max="1050" step="1" value="154" data-budget-min aria-label="{{ 'Budget minimum'|trans }}">
-                <input type="range" min="0" max="1050" step="1" value="1050" data-budget-max aria-label="{{ 'Budget maximum'|trans }}">
-            </div>
-            <div class="act-budget__bounds"><span>0€</span><span>1050€ et +</span></div>
-            <div class="act-budget__inputs">
-                <input type="text" inputmode="numeric" value="154€" data-budget-input-min aria-label="{{ 'Budget minimum en euros'|trans }}">
-                <input type="text" inputmode="numeric" value="1050+€" data-budget-input-max aria-label="{{ 'Budget maximum en euros'|trans }}">
-            </div>
-        </fieldset>
-
-        <fieldset class="act-filters__group">
-            <legend>{{ 'Note des utilisateurs'|trans }}</legend>
-            {% for n in [5, 4, 3, 2, 1] %}
-                <label class="act-filters__check act-filters__check--stars">
-                    <input type="checkbox" data-filter-check>
-                    <span class="act-filters__stars" aria-label="{{ n }} {{ (n > 1 ? 'étoiles et plus' : 'étoile et plus')|trans }}">
-                        {% for i in 1..5 %}<span class="{{ i <= n ? 'is-on' : 'is-off' }}">{{ icon.star(16) }}</span>{% endfor %}
-                    </span>
-                </label>
-            {% endfor %}
-        </fieldset>
-
-        <button type="button" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Affichez les résultats'|trans }}</button>
-        <p class="act-filters__count"><strong id="act-found-count">412</strong> {{ 'activités trouvées'|trans }}</p>
-    </aside>
 
     <div class="act-content">
     {# ==================================================================

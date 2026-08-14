@@ -31,8 +31,9 @@
         </div>
     </section>
 
-    {# Recherche multi-critères à cheval sur le bas du hero (spec A.2). #}
-    <div class="container">
+    {# Recherche multi-critères à cheval sur le bas du hero (spec A.2).
+       La maquette pose le MÊME pictogramme « épingle » sur les quatre champs. #}
+    <div class="container container--evsearch">
         <form class="evn-search" role="search" action="{{ path('app_events_all') }}" method="get">
             <div class="evn-search__inner">
             <label class="evn-search__field">
@@ -45,7 +46,7 @@
             </label>
             <span class="evn-search__sep" aria-hidden="true"></span>
             <label class="evn-search__field">
-                {{ icon.calendar(18) }}
+                {{ icon.map_pin(18) }}
                 <span class="evn-search__labels">
                     <strong>{{ 'Quand'|trans }}</strong>
                     <input type="text" placeholder="{{ 'Toutes les dates'|trans }}" readonly aria-label="{{ 'Dates'|trans }}">
@@ -54,7 +55,7 @@
             </label>
             <span class="evn-search__sep" aria-hidden="true"></span>
             <label class="evn-search__field">
-                {{ icon.tag(18) }}
+                {{ icon.map_pin(18) }}
                 <span class="evn-search__labels">
                     <strong>{{ 'Catégories'|trans }}</strong>
                     <input type="text" placeholder="{{ 'Toutes les catégories'|trans }}" readonly aria-label="{{ 'Catégories'|trans }}">
@@ -63,7 +64,7 @@
             </label>
             <span class="evn-search__sep" aria-hidden="true"></span>
             <label class="evn-search__field">
-                {{ icon.card(18) }}
+                {{ icon.map_pin(18) }}
                 <span class="evn-search__labels">
                     <strong>{{ "Type d'événement"|trans }}</strong>
                     <input type="text" placeholder="{{ 'Tous les types'|trans }}" readonly aria-label="{{ "Type d'événement"|trans }}">

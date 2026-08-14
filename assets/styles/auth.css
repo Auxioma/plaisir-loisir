@@ -118,12 +118,18 @@
 }
 
 /* Lien retour (écrans mot de passe oublié). */
+/* Maquette : « Retour à la page de connexion » mesure 247px d'encre (218 chez
+   nous), en 16px et en TEXTE PRINCIPAL — nous l'avions en 13px gris. Il est
+   aussi retrait de 11px par rapport au bord de contenu de la carte. Relevé
+   identique sur les trois écrans « Mot de passe oublié ». */
 .auth-back {
     display: inline-flex;
     align-items: center;
+    align-self: flex-start;
     gap: var(--pl-sp-4);
-    color: var(--pl-text-secondary);
-    font-size: var(--pl-fs-body-sm);
+    padding-left: 11px;
+    color: var(--pl-text);
+    font-size: 16px;
     font-weight: var(--pl-fw-medium);
     text-decoration: none;
 }
@@ -132,44 +138,56 @@
 /* ---- Écran d'entrée du flow (maquette register01) ------------------------
    Page centrée : titre bicolore, carte à deux panneaux Pro (violet) /
    Client (vert) séparés par « ou », bande sécurité bleue. */
-.auth-choice-page { padding: 56px 0 72px; background: var(--pl-white); }
+/* Maquette : le titre commence a y173. */
+.auth-choice-page { padding: 66px 0 72px; background: var(--pl-white); }
 
 .auth-choice-page__title {
     margin: 0 0 var(--pl-sp-16);
     text-align: center;
-    font-size: 40px;
+    /* Maquette : 540px d'encre pour « Bienvenue sur TrouveMoi », soit 44px. */
+    font-size: 44px;
     font-weight: var(--pl-fw-bold);
-    line-height: 1.3;
+    line-height: 1.16;
     color: var(--pl-text);
 }
 .auth-choice-page__title .is-plaisirs { color: var(--pl-success); }
 .auth-choice-page__title .is-loisirs { color: var(--pl-info); }
 .auth-choice-page__subtitle {
-    max-width: 620px;
+    /* Maquette : 18px, premiere ligne de 586px d'encre. */
+    max-width: 660px;
     margin: 0 auto var(--pl-sp-32);
     text-align: center;
-    font-size: var(--pl-fs-body);
+    font-size: 18px;
     line-height: var(--pl-lh-base);
     color: var(--pl-text-secondary);
 }
 
+/* Maquette « register01 » : la carte fait 1146 de large (x147 -> x1292) et non
+   toute la grille ; retrait interne de 39, panneaux de 446 et 176px entre eux
+   (nous avions 1222 de large, 33 de retrait, des panneaux de 553 et 50). */
 .auth-choice-card {
+    max-width: 1146px;
+    margin-inline: auto;
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: var(--pl-sp-24);
-    padding: var(--pl-sp-32);
+    grid-template-columns: 446px auto 446px;
+    justify-content: space-between;
+    gap: 0;
+    padding: 39px;
     background: var(--pl-white);
     border: 1px solid var(--pl-border);
     border-radius: var(--pl-radius-md);
     box-shadow: var(--pl-shadow-sm);
 }
 
+/* Maquette : le panneau n'a pas un ecart uniforme — 19px du pictogramme au nom,
+   12 du nom au texte, 45 avant la liste d'avantages, 40 avant le bouton et 19
+   avant le lien. On pose donc un ecart minimal et des marges explicites. */
 .auth-choice-panel {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: var(--pl-sp-12);
+    gap: 2px;
     padding: var(--pl-sp-32) var(--pl-sp-24);
     border-radius: var(--pl-radius-md);
 }
@@ -185,19 +203,24 @@
 .auth-choice-panel--pro .auth-choice-panel__badge { background: var(--pl-action); }
 .auth-choice-panel--client .auth-choice-panel__badge { background: #16a34a; }
 
-.auth-choice-panel__name { margin: 0; font-size: var(--pl-fs-body-lg); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+/* Maquette : 16px (115px d'encre pour « Pro Prestataire »), pose 19px sous
+   le pictogramme. */
+.auth-choice-panel__name { margin: 13px 0 0; font-size: 16px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
 .auth-choice-panel__desc { margin: 0; font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-sm); color: var(--pl-text-secondary); }
 
 .auth-choice-feats {
     list-style: none;
     width: 100%;
-    margin: var(--pl-sp-8) 0 var(--pl-sp-16);
+    margin: 33px 0 27px;
     padding: 0;
-    display: flex; flex-direction: column; gap: var(--pl-sp-16);
+    /* Maquette : 34px d'encre a encre entre deux avantages (nous etions a 30). */
+    display: flex; flex-direction: column; gap: 22px;
     text-align: left;
 }
 .auth-choice-feats li { display: flex; gap: var(--pl-sp-12); font-size: var(--pl-fs-body-sm); line-height: var(--pl-lh-sm); color: var(--pl-text-secondary); }
-.auth-choice-feats strong { display: block; color: var(--pl-text); font-weight: var(--pl-fw-bold); }
+/* Maquette : l'intitule d'un avantage est en 16px (284px d'encre pour
+   « Déposez et gérez vos activités »), la description reste en 14. */
+.auth-choice-feats strong { display: block; font-size: 16px; color: var(--pl-text); font-weight: var(--pl-fw-bold); }
 .auth-choice-feats__icon {
     flex-shrink: 0;
     width: 44px; height: 44px;
@@ -211,7 +234,8 @@
 .pl-btn--client { background: #16a34a; color: var(--pl-white); }
 .pl-btn--client:hover { background: #128a3f; color: var(--pl-white); }
 
-.auth-choice-panel__more { font-size: var(--pl-fs-body-sm); font-weight: var(--pl-fw-semibold); text-decoration: none; }
+/* Maquette : 229px d encre pour « En savoir plus sur l espace pro » (204 en 14px). */
+.auth-choice-panel__more { margin-top: 12px; font-size: 15.5px; font-weight: var(--pl-fw-semibold); text-decoration: none; }
 .auth-choice-panel--pro .auth-choice-panel__more { color: var(--pl-action); }
 .auth-choice-panel--client .auth-choice-panel__more { color: #16a34a; }
 .auth-choice-panel__more:hover { text-decoration: underline; }
@@ -377,14 +401,21 @@
 
 /* ---- Zone d'actions (bouton + phrase de bascule) ----------------------- */
 .auth-actions { display: flex; flex-direction: column; gap: var(--pl-sp-12); }
+/* `margin: 0` indispensable : le Reboot de Bootstrap pose `margin-bottom: 1rem`
+   sur tout <p>, ce qui ajoutait 16px fantomes sous chaque ligne de bascule
+   (l'ecart au bouton de l'ecran « Verifier le code » sortait a 58 pour 42). */
 .auth-switch {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
+    margin: 0;
     font-size: var(--pl-fs-body);
     color: var(--pl-text);
 }
+/* Ligne « Vous n'avez pas reçu de code ? » : alignée à gauche (elle portait un
+   style inline). */
+.auth-switch--start { justify-content: flex-start; }
 
 /* Maquette : l'accès professionnel s'affiche sur deux lignes centrées, sous
    le lien de connexion. Bloc (et non flex) pour que le retour à la ligne
@@ -398,10 +429,13 @@
 /* Maquette : bouton principal de la carte à 40px de haut. */
 .auth-actions .pl-btn--block { min-height: 40px; }
 
-/* Case à cocher des conditions (inscription). */
+/* Case à cocher des conditions (inscription).
+   Maquette : 30px entre la 2e ligne des conditions et le bouton (nous étions
+   à 18). */
 .auth-terms {
     display: flex;
     align-items: flex-start;
+    margin-bottom: 12px;
     gap: var(--pl-sp-8);
     font-size: var(--pl-fs-body-sm);
     line-height: var(--pl-lh-sm);
@@ -455,3 +489,30 @@
     .auth-welcome { width: 100%; max-width: 590px; }
     .auth-card { width: 100%; max-width: 453px; }
 }
+
+/* ---- Carte « Connexion » : rythme propre à cet écran ------------------- */
+/* La maquette « Connexion » est plus aérée que celle de l'inscription (elle a
+   deux champs au lieu de quatre) : 50px du sous-titre au premier libellé
+   (33 sur l'inscription), 31 du dernier champ à la ligne « Se souvenir de
+   moi », 56 avant le bouton et 51 avant les boutons sociaux. Mesuré sur
+   assets/auth-flow/Connexion (1).png. */
+.auth-card--login .auth-card__header { padding-bottom: 15px; }
+.auth-card--login .auth-options { margin-top: 15px; }
+.auth-card--login .auth-actions { margin-top: 42px; }
+.auth-card--login .auth-switch--pro { margin-top: 26px; margin-bottom: 15px; }
+/* Maquette « Inscription » : 34px entre la ligne de bascule et l'acces pro. */
+.auth-card--register .auth-switch--pro { margin-top: 12px; }
+.auth-card--login .auth-socials { margin-top: 16px; }
+
+/* ---- Cartes « Mot de passe oublié » (3 étapes) ------------------------- */
+/* Ces trois écrans sont nettement plus aérés que la connexion : la maquette y
+   met 38px entre les blocs de la carte (23 ailleurs), 55 entre le lien de
+   retour et le titre, et le bouton principal y fait 40px de haut comme partout
+   — chez nous l'ancre `.pl-btn--block` sortait à 48 faute d'être dans
+   `.auth-actions`. Mesuré sur assets/auth-flow/Mot de passe oublié*.png. */
+.auth-card--pw { gap: 38px; padding-top: 41px; }
+.auth-card--pw .auth-back { margin-bottom: 9px; }
+/* Maquette : tous les boutons pleine largeur des ecrans d'authentification
+   font 40px de haut. Sans hauteur explicite, une ancre `.pl-btn` sort a 48. */
+.auth-card .pl-btn--block,
+.auth-choice-panel .pl-btn--block { min-height: 40px; height: 40px; padding-block: 0; }

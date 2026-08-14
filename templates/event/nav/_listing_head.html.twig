@@ -29,7 +29,11 @@
         {% endif %}
 
         <h1 class="act-head__title evn-title">{{ title }}</h1>
-        {% if intro|default(true) %}
+        {# `intro|default(true)` renvoyait TRUE meme avec `intro: false` : le filtre
+           `default` de Twig se declenche sur toute valeur VIDE, et `false` en est
+           une. Le sous-titre s'affichait donc sur « Evenements prives », ou la
+           maquette n'en met pas. #}
+        {% if intro is defined ? intro : true %}
             <p class="act-head__subtitle">{{ "Découvrez les meilleures activités à faire à Lille. Choississez parmi un choix varié d'expériences pour créer des souvenirs inoubliables, en famille ou entre amis. Meilleur prix garanti. Annulation gratuites"|trans }}</p>
         {% endif %}
 

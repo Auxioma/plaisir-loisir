@@ -73,8 +73,10 @@
                 {# ==========================================================
                    CARTE 2 : A QUI VOUS L'OFFREZ.
                    ======================================================== #}
-                <section class="gift-formcard">
-                    <h2 class="gift-formcard__title">{{ "A qui vous l'offrez"|trans }}</h2>
+                <section class="gift-formcard gift-formcard--recipient">
+                    {# Maquette : la seconde carte n'a pas de gros titre — son intitulé est
+                       au même corps que « Saisissez vos informations ici ». #}
+                    <h2 class="gift-formcard__lead gift-formcard__lead--head">{{ "A qui vous l'offrez"|trans }}</h2>
                     <p class="gift-formcard__required">{{ 'Champ obligatoire'|trans }}<span>*</span></p>
 
                     <div class="gift-field">

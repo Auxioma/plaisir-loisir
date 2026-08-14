@@ -78,8 +78,14 @@
    Gouttière 136 => 68px de marge => 1440 - 136 = 1304px de contenu. */
 .container--search { --bs-gutter-x: 136px; }
 
+/* Barre de recherche du parcours Evenements : la maquette la pose de x88 a
+   x1351, comme la rangee de champs de l'accueil (1264 de large). Gouttiere
+   176 => 88px de marge. */
+.container--evsearch { --bs-gutter-x: 176px; }
+
 @media (max-width: 1100px) {
-    .container--search { --bs-gutter-x: var(--pl-sp-64); }
+    .container--search,
+    .container--evsearch { --bs-gutter-x: var(--pl-sp-64); }
 }
 
 /* ---------------------------------------------------------------------------

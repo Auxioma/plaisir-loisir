@@ -308,7 +308,7 @@
     padding: 44px 20px; text-align: center;
 }
 .ev-dropzone p { margin: 0 0 10px; font-size: 15px; color: var(--pl-text-strong); }
-.ev-dropzone__or { color: var(--pl-text-muted); }
+.ev-dropzone__or { margin: 0; color: var(--pl-text-muted); }
 .ev-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .ev-gallery__slot {
     height: 150px; border: 1.5px dashed var(--ev-line); border-radius: 12px;
@@ -484,7 +484,8 @@
 }
 
 .evn-page { background: #fff; padding-bottom: 72px; }
-.evn-page .act-head { padding-top: 24px; }
+/* Maquette : le fil d'Ariane des listings Evenements est a y142 (24 donnait 127). */
+.evn-page .act-head { padding-top: 42px; }
 
 /* --------------------------------------------------------------------------
  *  Boutons et éléments communs.
@@ -521,19 +522,25 @@
 .evn-banner__close { border: 0; background: none; cursor: pointer; color: var(--pl-text-strong); display: grid; place-items: center; }
 
 /* Sections (landing + groupe). */
-.evn-section { padding: 34px 0 10px; }
+/* Maquette : le titre de la 1re section est a y814 (nous etions a y798). */
+.evn-section { padding: 50px 0 17px; }
 .evn-section--last { padding-bottom: 70px; }
-.evn-section__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 26px; }
-.evn-section__title { margin: 0; font-size: 40px; font-weight: 600; color: var(--pl-text-strong); }
+/* Maquette : 39px entre le sous-titre de section et le contenu (nous etions a 26). */
+.evn-section__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 39px; }
+.evn-section__title { margin: 0; font-size: 48px; font-weight: 600; color: var(--pl-text-strong); }
 .evn-section__title--lower { font-weight: 700; }
 .evn-section__lead { margin: 12px 0 0; font-size: 15px; color: var(--pl-text); }
 .evn-section__head .evn-btn-dark { margin-top: 8px; }
+
+/* Maquette : titre de section en 48px (498px d'encre pour « Categories
+   populaires » contre 421 en 40px). */
 
 /* --------------------------------------------------------------------------
  *  <EventCard> / <GroupCard>.
  * ------------------------------------------------------------------------ */
 
-.evn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px 16px; }
+/* Maquette : 410px d'une rangee de cartes a l'autre. */
+.evn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px 16px; }
 
 .evn-card {
     display: flex; flex-direction: column; background: #fff;
@@ -562,7 +569,9 @@
     background: var(--evn-date-bg); color: #fff; border-radius: 6px;
     font-size: 12px; font-weight: 600; padding: 6px 10px;
 }
-.evn-card__body { display: flex; flex-direction: column; gap: 7px; padding: 15px 16px 16px; }
+/* Maquette : 32px du lieu au titre et 34 du titre aux horaires (nous etions a
+   28 et 27) ; le corps de carte y est plus aere. */
+.evn-card__body { display: flex; flex-direction: column; gap: 12px; padding: 15px 16px 16px; }
 .evn-card__title { font-size: 16px; font-weight: 700; color: var(--pl-text-strong); }
 .evn-card__meta { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--pl-text); }
 .evn-card__foot { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
@@ -603,7 +612,8 @@
  *  LANDING — hero, recherche, catégories, dropdown Aujourd'hui.
  * ------------------------------------------------------------------------ */
 
-.evn-hero { position: relative; height: 502px; background: var(--evn-navy); overflow: hidden; }
+/* Maquette : le hero va de y100 a y672, soit 572 de haut (nous etions a 502). */
+.evn-hero { position: relative; height: 572px; background: var(--evn-navy); overflow: hidden; }
 .evn-hero__img {
     position: absolute; top: 0; right: 0; height: 100%; width: 610px;
     object-fit: cover;
@@ -647,23 +657,26 @@
 .evn-landing-crumb { margin: 26px 0 8px; }
 
 /* Carousel de catégories. */
-.evn-cats { display: flex; align-items: stretch; gap: 12px; }
+/* Maquette : les tuiles de categorie sont des blocs PLEINS #f8fafc sans
+   bordure ni ombre, de largeur variable (elles s'ajustent a leur libelle :
+   139px pour « Canoe / Kayak », 93 pour « Bien-etre ») et hautes de 111. */
+.evn-cats { display: flex; align-items: stretch; gap: 9px; }
 .evn-cats__nav {
     align-self: center; flex: none; width: 40px; height: 40px; border-radius: 10px;
     border: 0; background: #f1f5f9; color: var(--pl-text-strong); cursor: pointer;
     display: grid; place-items: center;
 }
 .evn-cat {
-    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; min-width: 0;
-    background: #fff; border: 1px solid #f1f5f9; border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, .04);
-    padding: 22px 10px 20px; text-decoration: none;
+    flex: none; display: flex; flex-direction: column; align-items: center; gap: 11px; min-width: 0;
+    background: #f8fafc; border: 0; border-radius: 12px;
+    box-shadow: none;
+    padding: 17px 22px 11px; text-decoration: none;
 }
 .evn-cat__icon {
-    width: 52px; height: 52px; border-radius: 50%; background: var(--ev-active-bg);
+    width: 47px; height: 47px; border-radius: 50%; background: var(--ev-active-bg);
     color: var(--pl-action); display: grid; place-items: center;
 }
-.evn-cat__label { font-size: 13px; font-weight: 700; color: var(--pl-text-strong); text-align: center; white-space: nowrap; }
+.evn-cat__label { font-size: 13.7px; font-weight: 700; color: var(--pl-text-strong); text-align: center; white-space: nowrap; }
 
 /* Dropdown mini-calendrier « Aujourd'hui ». */
 .evn-today { position: relative; }
@@ -854,7 +867,8 @@
 
 .evn-ghead { display: grid; grid-template-columns: 1fr 296px; gap: 24px; margin-top: 12px; }
 .evn-ghead__cover { width: 100%; border-radius: 14px; aspect-ratio: 903 / 389; object-fit: cover; }
-.evn-ghead__title { margin: 0 0 14px; font-size: 40px; font-weight: 700; color: var(--pl-text-strong); line-height: 1.2; }
+/* Maquette : « Cours » y mesure 97px d'encre contre 114 en 40px, soit 34px. */
+.evn-ghead__title { margin: 0 0 14px; font-size: 34px; font-weight: 700; color: var(--pl-text-strong); line-height: 1.2; }
 .evn-ghead__rating { margin: 0 0 34px; }
 .evn-ghead__meta { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: 15px; color: var(--pl-text-strong); }
 .evn-ghead__share-label { margin: 24px 0 10px; font-size: 15px; font-weight: 700; color: var(--pl-text-strong); }
@@ -867,7 +881,9 @@
 
 .evn-gtabs {
     display: flex; align-items: center; justify-content: space-between; gap: 20px;
-    border-bottom: 1px solid var(--pl-line, #e5e7eb); margin: 34px 0 40px;
+/* Maquette : 65px du bas de la photo aux onglets et 193px des onglets au titre
+       de l onglet actif (nous etions a 34 et 117). */
+    border-bottom: 1px solid var(--pl-line, #e5e7eb); margin: 56px 0 116px;
 }
 .evn-gtabs__nav { display: flex; gap: 8px; }
 .evn-gtab {
@@ -1072,10 +1088,12 @@
  * ------------------------------------------------------------------------ */
 
 .evn-cal { margin-top: 6px; }
-.evn-cal__nav { display: flex; align-items: center; justify-content: center; gap: 140px; padding: 14px 0 26px; }
+/* Maquette : 65px du mois aux noms de jours et 38 jusqu a la grille
+   (nous etions a 52 et 26). */
+.evn-cal__nav { display: flex; align-items: center; justify-content: center; gap: 140px; padding: 14px 0 39px; }
 .evn-cal__nav strong { font-size: 17px; color: var(--pl-text-strong); }
 .evn-cal__nav button { border: 0; background: none; cursor: pointer; color: var(--pl-text-strong); }
-.evn-cal__days { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; padding-bottom: 18px; }
+.evn-cal__days { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; padding-bottom: 30px; }
 .evn-cal__days span { font-size: 16px; font-weight: 600; color: var(--pl-text-strong); }
 .evn-cal__row { display: grid; grid-template-columns: repeat(7, 1fr); }
 .evn-cal__cell {
@@ -1255,3 +1273,60 @@
     .gw-wrap { margin-top: 36px; }
     .gw-title { font-size: 36px; }
 }
+
+/* --------------------------------------------------------------------------
+ *  Listings Événements — conformité 14/08.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : « Afficher la carte » et les deux boutons d'affichage sont calés à
+   DROITE (x1073 -> x1325) ; sans second groupe dans la barre, le
+   `space-between` de `.act-toolbar` les collait à gauche. */
+.evn-toolbar { justify-content: flex-end; }
+
+/* Maquette : le sous-titre du listing court jusqu'au bord de la colonne
+   (« ... en famille ou entre amis. » sur la première ligne) ; le plafond de
+   1100px hérité du listing Activités le coupait trop tôt. */
+.evn-head .act-head__subtitle { max-width: none; }
+
+/* Rythme de l'en-tête de listing, relevé sur « Tous les événements » :
+   bandeau y216, onglets y308, titre y387, sous-titre y472, recherche y534,
+   outils y623, chips y670, résultats y744, première rangée y790. */
+.evn-head .act-head__title { margin-bottom: 31px; }
+.evn-head .act-results { padding-block: var(--pl-sp-8) 0; }
+
+/* Maquette : 35px entre la ligne de resultats et la premiere rangee (48 chez nous). */
+.evn-listing .act-section:has(.evn-grid) { padding-top: 19px; }
+/* Maquette : 125px entre le bouton « Voir plus » et le titre de la section
+   suivante (98 avec le retrait de section courant). */
+.evn-listing .act-section + .act-section { padding-top: 59px; }
+
+/* --------------------------------------------------------------------------
+ *  Détail d'un événement — conformité 14/08.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : le fil d'Ariane est à y143 comme sur les listings ; les pages sans
+   `.act-head` (détail, groupes, calendrier, privés) démarraient à y106. */
+.evn-detail > .container,
+.evn-group > .container,
+.evn-participants > .container { padding-top: 37px; }
+
+/* Rythme du détail, relevé sur « Détails événement » : bandeau y241, titre
+   y379, « Organisé par » y460, carte du groupe y547, « Détails » y646,
+   paragraphe y688, « Participants » y813. */
+.evn-detail .evn-banner { margin: 42px 0 76px; }
+.evn-detail .evn-detail__layout { margin-top: 0; }
+.evn-detail__title { margin-bottom: 30px; }
+.evn-detail .evn-organizer { margin-bottom: 28px; }
+/* La carte du groupe doit être assez large pour que « 4.5 • 14 évaluations »
+   tienne sur une ligne (la maquette la donne d'un seul bloc de 55px). */
+.evn-groupcard { white-space: nowrap; margin-bottom: 41px; }
+.evn-detail__text { margin-bottom: 22px; }
+
+/* Maquette « Liste des participants » : le bandeau est 25px plus haut que chez
+   nous (le fil d'Ariane y respire moins). */
+.evn-participants .act-breadcrumb { margin-bottom: 7px; }
+
+/* Maquette « Groupes Détails » : le fil d'Ariane y est a y184 (143 sur le
+   detail d'un evenement) — les deux planches ne s'accordent pas, on suit
+   celle du groupe pour cet ecran. */
+.evn-group > .container { padding-top: 79px; }

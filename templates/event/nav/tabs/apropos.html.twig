@@ -8,7 +8,9 @@
 <div class="evn-about">
     <div class="evn-about__main">
         <h2 class="evn-gh2">{{ 'À propos de nous'|trans }}</h2>
-        <div class="evn-about__text">
+        {# Maquette « Groupes Détails » : la description est REPLIÉE à l'ouverture
+           (« En savoir plus ») ; l'état déplié est une autre planche. #}
+        <div class="evn-about__text is-collapsed">
             <p>Tu as envie de bouger, t'amuser et retrouver la forme dans une ambiance survoltée ?<br>
             Rejoins le tout nouveau groupe de fitness de Lyon pour des sessions de sport ludiques, conviviales et accessibles à tous ! Que tu sois débutant(e), sportif(ve) confirmé(e), en famille ou entre amis, viens dépenser ton énergie, te dépasser et faire de super rencontres.</p>
             <p>🗓️ Fréquence : Tous les 15 jours<br>
@@ -16,7 +18,7 @@
             🎯 Objectif : Créer une communauté lyonnaise motivée et dynamique — et bientôt, lancer des défis &amp; mini-tournois sportifs !</p>
             <p>Apporte ta tenue de sport, ta gourde, et surtout toute ta bonne humeur. On s'occupe du reste !</p>
         </div>
-        <button type="button" class="evn-more-link" data-evn-about-toggle>{{ 'En savoir moins'|trans }}</button>
+        <button type="button" class="evn-more-link" data-evn-about-toggle>{{ 'En savoir plus'|trans }}</button>
     </div>
 
     <aside class="evn-about__side">

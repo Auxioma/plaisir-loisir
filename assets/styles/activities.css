@@ -52,9 +52,15 @@
 /* Maquette : le fil d'Ariane commence à y142, soit 42px sous la navbar (y100). */
 .act-head { padding-block: 39px var(--pl-sp-8); }
 
+/* Maquette : « Accueil » n'y mesure que 33px d'encre, contre 41 en 12,5px —
+   soit 10px. Releve identique sur Activites, Cadeaux et les 4 ecrans du
+   compte. On fige l'interligne a 19px pour que la reduction du corps ne
+   remonte pas tout le contenu des pages deja calees. */
 .act-breadcrumb {
     display: flex; align-items: center; gap: var(--pl-sp-8);
-    font-size: var(--pl-fs-caption);
+    font-size: 10px; line-height: 19px;
+    /* Maquette : il demarre 5px a droite du bord de colonne (x115 pour 110). */
+    margin-left: 5px;
     color: #c1c7d1;
     /* Maquette : 44px entre le bas du fil d'Ariane et le haut du titre. */
     margin-bottom: var(--pl-sp-32);
@@ -347,16 +353,32 @@
  *  SIDEBAR DE FILTRES (écran D) — la page bascule via .has-filters :
  *  la sidebar s'affiche à gauche et la grille passe de 4 à 3 colonnes.
  * ======================================================================== */
-.act-page.has-filters .act-body {
+/* Sur l'ecran D la maquette met la sidebar TOUT EN HAUT : elle borde le fil
+   d'Ariane, le titre et la barre de recherche, qui passent tous dans la
+   colonne de droite. La page entiere devient donc une grille de deux
+   colonnes (sidebar relevee a x103 -> x398, soit 296 de large). */
+.act-page.has-filters {
     display: grid;
     grid-template-columns: 296px minmax(0, 1fr);
-    gap: var(--pl-sp-32);
+    column-gap: var(--pl-sp-32);
+    align-items: start;
     max-width: var(--pl-container-desktop);
     margin: 0 auto;
     padding-inline: 100px;
 }
-/* Dans la colonne droite, les conteneurs internes n'ont plus à se centrer. */
-.act-page.has-filters .act-content .container { max-width: none; padding-inline: 0; }
+.act-page.has-filters > .act-filters__appliedlabel {
+    display: block;
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text);
+}
+
+.act-filters { grid-column: 1; grid-row: 1 / span 2; }
+.act-page.has-filters > .act-head { grid-column: 2; grid-row: 1; }
+.act-page.has-filters > .act-body { grid-column: 2; grid-row: 2; }
+/* Dans la colonne droite, les conteneurs internes n'ont plus a se centrer. */
+.act-page.has-filters .act-content .container,
+.act-page.has-filters .act-head .container { max-width: none; padding-inline: 0; }
 .act-page.has-filters .act-content .card-grid { grid-template-columns: repeat(3, 1fr); }
 /* Volumes de la maquette : 3 rangées de 4 par défaut (écran C — la troisième
    rangée reprend les cartes 5 à 8, c'est la maquette qui les répète), 2 rangées

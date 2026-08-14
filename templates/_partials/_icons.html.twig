@@ -106,12 +106,14 @@
 {% endmacro %}
 
 {# ---- Petits drapeaux (sélecteur de langue) ------------------------------ #}
-{% macro flag_fr(size = 20) %}
-    <svg class="pl-flag" width="{{ size }}" height="{{ (size * 0.7)|round }}" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#fff"/><rect width="6.67" height="14" fill="#0055A4"/><rect x="13.33" width="6.67" height="14" fill="#EF4135"/></svg>
+{# Maquette : le drapeau du sélecteur de langue est un DISQUE de 16px (nous le
+   dessinions en rectangle 20x14). L'arrondi est porté par `.pl-flag`. #}
+{% macro flag_fr(size = 16) %}
+    <svg class="pl-flag" width="{{ size }}" height="{{ size }}" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" fill="#fff"/><rect width="6.67" height="20" fill="#0055A4"/><rect x="13.33" width="6.67" height="20" fill="#EF4135"/></svg>
 {% endmacro %}
 
-{% macro flag_gb(size = 20) %}
-    <svg class="pl-flag" width="{{ size }}" height="{{ (size * 0.7)|round }}" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#012169"/><path d="M0 0 20 14M20 0 0 14" stroke="#fff" stroke-width="2.8"/><path d="M0 0 20 14M20 0 0 14" stroke="#C8102E" stroke-width="1.4"/><rect x="8" width="4" height="14" fill="#fff"/><rect y="5" width="20" height="4" fill="#fff"/><rect x="8.6" width="2.8" height="14" fill="#C8102E"/><rect y="5.6" width="20" height="2.8" fill="#C8102E"/></svg>
+{% macro flag_gb(size = 16) %}
+    <svg class="pl-flag" width="{{ size }}" height="{{ size }}" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" fill="#012169"/><path d="M0 0 20 20M20 0 0 20" stroke="#fff" stroke-width="3.4"/><path d="M0 0 20 20M20 0 0 20" stroke="#C8102E" stroke-width="1.8"/><rect x="8" width="4" height="20" fill="#fff"/><rect y="8" width="20" height="4" fill="#fff"/><rect x="8.6" width="2.8" height="20" fill="#C8102E"/><rect y="8.6" width="20" height="2.8" fill="#C8102E"/></svg>
 {% endmacro %}
 
 {# ---- Logos des moyens de paiement (pied de page) ------------------------ #}
@@ -449,4 +451,27 @@
 
 {% macro cat_family(size = 24) %}
     <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7" cy="8" r="2.5"/><circle cx="17" cy="8" r="2.5"/><path d="M3 20v-2a4 4 0 0 1 4-4 4 4 0 0 1 4 4v2M13 20v-2a4 4 0 0 1 4-4 4 4 0 0 1 4 4v2"/></svg>
+{% endmacro %}
+
+{# Avion au décollage, plein — onglet « Destinations » des favoris (maquette
+   « Mes favoris » : silhouette pleine posée sur la ligne de piste). #}
+{% macro plane_takeoff(size = 20) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2.5 19h19v2h-19v-2z"/><path d="M22.07 9.64c-.21-.8-1.04-1.28-1.84-1.06L14.92 10 8.02 3.57l-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 2.59 4.49 19.29-5.17c.81-.23 1.28-1.05 1.07-1.85z"/></svg>
+{% endmacro %}
+
+{# Entonnoir — bouton « Trier par » de l'espace compte (la maquette n'y met pas
+   les doubles flèches de tri). #}
+{% macro funnel(size = 20) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+{% endmacro %}
+
+{# Vue liste, pleine — troisième bouton d'affichage des favoris. #}
+{% macro list_view_solid(size = 20) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2" y="4" width="5" height="4.5" rx="1"/><rect x="9" y="4" width="13" height="4.5" rx="1"/><rect x="2" y="10" width="5" height="4.5" rx="1"/><rect x="9" y="10" width="13" height="4.5" rx="1"/><rect x="2" y="16" width="5" height="4.5" rx="1"/><rect x="9" y="16" width="13" height="4.5" rx="1"/></svg>
+{% endmacro %}
+
+{# Étoile pleine aux pointes arrondies — pastilles d'avis (« Ce que disent les
+   voyageurs »). La maquette y pose une étoile massive, pas un contour. #}
+{% macro star_solid(size = 20) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.2 14.6 9.4 20.4 10.2 16.2 14.3 17.2 20 12 17.3 6.8 20 7.8 14.3 3.6 10.2 9.4 9.4z"/></svg>
 {% endmacro %}
