@@ -1,0 +1,42 @@
+{#
+    « Ils nous font confiance » — bloc repris tel quel de l'écran « Devenir
+    partenaire » (mêmes avis, même pagination).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<section class="pw-reviews">
+    <div class="container">
+        <h2 class="pw-section__title">{{ 'Ils nous font confiance'|trans }}</h2>
+
+        <div class="pw-reviews__grid">
+            {% for t in testimonials %}
+                <article class="pw-review">
+                    <div class="pw-review__head">
+                        <span class="pw-stars" aria-hidden="true">
+                            {% for i in 1..5 %}{{ icon.star_solid(22) }}{% endfor %}
+                        </span>
+                        <strong class="pw-review__rating">{{ t.rating }}</strong>
+                        <span class="pw-review__dot" aria-hidden="true"></span>
+                        <a href="#" class="pw-review__count">{{ t.reviews }}</a>
+                    </div>
+                    <p class="pw-review__quote">"{{ t.quote }}"</p>
+                    <div class="pw-review__author">
+                        <img class="pw-review__avatar" src="{{ asset('images/account/avatar-thomas.jpg') }}" alt="">
+                        <span>
+                            <strong class="pw-review__name">{{ t.author }}</strong>
+                            <span class="pw-review__role">{{ t.role }}</span>
+                        </span>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+
+        <nav class="pw-pager" aria-label="{{ 'Pagination des avis'|trans }}">
+            <a href="#" class="pw-pager__arrow" aria-label="{{ 'Page précédente'|trans }}">{{ icon.chevron_left(16) }}</a>
+            {% for p in 1..4 %}
+                <a href="#" class="pw-pager__page{{ p == 1 ? ' is-active' }}"{{ p == 1 ? ' aria-current="page"' : '' }}>{{ p }}</a>
+            {% endfor %}
+            <a href="#" class="pw-pager__arrow" aria-label="{{ 'Page suivante'|trans }}">{{ icon.chevron_right(16) }}</a>
+        </nav>
+    </div>
+</section>

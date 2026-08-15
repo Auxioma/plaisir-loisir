@@ -485,3 +485,204 @@ Corrections structurelles trouvées en chemin :
 votre propre groupe » est à y216 sur « Tous les événements » et à y193 sur
 « Événement privée », pour un gabarit identique. Nous suivons la première ; le
 second écran est donc uniformément 20 px plus bas que sa planche.
+
+---
+
+## 14. Corporate — « Devenir partenaire » (15/08)
+
+Route `/devenir-partenaire`, planche `assets/corporate/Devenir partenaire.png`
+(1440 × 3758 ; la variante « (1) » est un doublon octet pour octet).
+
+Les quatre bandes de fond de la page tombent **au pixel** :
+
+| Bande | Maquette | Rendu |
+| --- | --- | --- |
+| Blanc → `#f8fafc` | y1451 | y1451 |
+| `#f8fafc` → `#fafafb` | y2207 | y2208 |
+| `#fafafb` → crème `#fef5e7` | y2769 | y2769 |
+| Crème → footer | y3314 | y3314 |
+
+Et les blocs de texte, mesurés ligne à ligne, sont à ±2 px partout (héros,
+étapes, avis et bannière sont à 0).
+
+### Ce que la planche nous a appris
+
+- **Le voile du héros n'est pas un dégradé linéaire.** En repositionnant la
+  photo source puis en la soustrayant de la planche, on lit l'opacité colonne
+  par colonne : 1 jusqu'à x235, un **plateau à 0,82** jusqu'à x505, puis une
+  extinction vers x745. Un `linear-gradient` à deux arrêts laissait la photo
+  transparaître derrière le paragraphe ; il en faut cinq.
+- **Cadrage des photos retrouvé par recherche.** Pour le héros comme pour la
+  photo des étapes, on cherche l'échelle et la fenêtre qui minimisent l'écart
+  avec la planche : héros = 1408 × 939 posé en (50, −269) ; étapes = 753 × 526
+  décalée de −22 dans un cadre de 602 × 525.
+- **Les titres de section sont en Medium, pas en Bold.** La comparaison 1:1
+  ne laisse aucun doute, et l'encre le confirme (669 px contre 686 en Bold).
+  Les titres de carte, eux, sont bien en Bold — et en **26 px**, ce qui les
+  fait passer sur deux lignes comme la maquette.
+- **Les étapes ne sont pas une liste à gouttière régulière.** Les pastilles
+  sont espacées de 110, 110, 110 puis **122**. Aucun `gap` uniforme ne
+  reproduit ça : les quatre premières étapes ont une hauteur imposée de 110 et
+  la dernière reçoit 12 px de retrait. Le rail court de la première à la
+  dernière pastille (508 px), le segment violet de 169 à 351.
+- **La largeur des descriptions d'étape ne se déduit pas d'un seul repère.**
+  Il faut 340 px : l'étape 1 tient sur une ligne (335 px d'encre) tandis que
+  les étapes 2, 4 et 5 passent à deux lignes.
+
+### Incohérences de la planche
+
+- **Le titre de la dernière étape** (« Développez votre activité ») est composé
+  en **18 px gras** alors que les quatre autres sont en 24 px demi-gras
+  (223 px d'encre contre 296 pour un libellé de longueur comparable). C'est un
+  écart de la maquette, reproduit tel quel — **à trancher avec Guillaume**.
+- **« Rejoignez l'aventures ! »** : la faute d'accord est conservée telle
+  quelle, comme les autres coquilles listées plus haut.
+- « Gérante -Aventure Nature à Lyon » : espace manquante après le tiret,
+  corrigée.
+
+### Décor de la bannière crème
+
+La vague et le commerçant sont deux images détourées (`cta-vague.png` 1440×544,
+`cta-commercant.png` 477×535, posé en (828, 8)). Les **trois vignettes d'avis**
+flottantes sont en revanche construites en HTML/CSS : boîte blanche de 194
+(200 pour celle du milieu, encadrée d'orange et pourvue de sa pointe), avatar
+de 26, cinq étoiles de 22, puis une ligne de deux traits.
+
+---
+
+## 15. Corporate — « Devenir partenaire : formulaire » (15/08)
+
+Route `/devenir-partenaire/formulaire`, planche
+`assets/corporate/Devenir partenaire- formulaire.png` (1440 × 2587 ; la
+variante « (1) » est un doublon octet pour octet).
+
+**Les onze cadres de champ tombent au pixel** (x364 → x1075, 48 de haut) :
+y542, 634, 726, 818 · 1118, 1210, 1302, 1394, 1486 · 1786 et la zone de texte
+1860 → 1983. Le pied de page démarre à y2193 dans les deux cas, et tous les
+blocs de texte sont à ±2 px.
+
+### Le piège de mesure du jour
+
+J'ai d'abord relevé les cadres à **x371 → x1068** en lisant leur ligne de
+bordure **supérieure** : le rayon de 10 px raccourcit cette ligne de 8 px de
+chaque côté. Les vraies bornes, prises à mi-hauteur, sont **x364 → x1075**,
+soit une colonne unique de 712 centrée sur la page — et non deux bords de
+colonne comme je le croyais. C'est exactement le piège déjà consigné §9 : ne
+jamais mesurer une boîte par son bord supérieur.
+
+### Relevés
+
+- Colonne de 712 centrée (x364 → x1076) : titres, libellés, cadres et bouton
+  partagent le même bord gauche ; le bouton « Envoyer » (86 × 48) est calé sur
+  le bord droit.
+- Rythme constant d'un bloc à l'autre : 61 du titre de bloc à « Saisissez vos
+  informations ici », 31 jusqu'à « Champ obligatoire* », 50 jusqu'au premier
+  libellé, 26 du libellé au cadre, 19 du cadre au libellé suivant, 85 d'un bloc
+  au suivant.
+- Le fil d'Ariane est bien le composant commun en 10 px (mon premier essai en
+  12 px donnait 358 px d'encre contre 305 sur la planche).
+- « Saisissez vos informations ici » est en **18 px** demi-gras, les libellés
+  et « Champ obligatoire* » en 16, la phrase d'acceptation en **14**.
+- Le texte des **listes déroulantes est sombre** (#0f172a) là où les
+  indications de saisie des champs texte sont en #9dabc7.
+- Rangée « Téléphone / Ville » : deux cadres de 350, gouttière 12.
+
+### Incohérences de la planche (à trancher avec Guillaume)
+
+- **Quatre cadres portent un liseré clair** `#e5e7eb` au lieu du `#9dabc7` des
+  sept autres : « Nom de l'entreprise », « Nom & Prénom du responsable »,
+  « Email* » et la zone de texte. Aucune logique apparente (le caractère
+  obligatoire ne l'explique pas : « Téléphone » n'a pas d'astérisque et reste
+  foncé, « Email* » en a une et reste clair). Reproduit tel quel.
+- **Le champ « Code postal* » reprend l'indication du champ entreprise**
+  (« Saisissez le nom de votre entreprise »). Conservé tel quel : le corriger
+  serait inventer un contenu absent de la maquette.
+
+### Coquilles corrigées
+
+« Commencez par nous parler un peu de vous,. » → « … de vous. » ·
+« TrouveMoi PLaisirs & Loisisrs » et « TrouveMoi Plaissirs & Loisirs » →
+« TrouveMoi Plaisirs & Loisirs » · « wwwtrouveplaisirsloisirs.com » →
+« www.trouveplaisirsloisirs.com » · « Saisisssez » → « Saisissez » ·
+« Addesse* » / « votre addresse » → « Adresse* » / « votre adresse » ·
+« Ville / Regions » → « Ville / Régions » · « votre activités » →
+« votre activité » · « cotre expertise » → « votre expertise » ·
+« Devenir partenaires » (fil d'Ariane) → « Devenir partenaire ».
+
+Ces corrections déplacent légèrement les retours à la ligne de l'indication de
+la zone de texte — elle tient sur trois lignes dans les deux cas.
+
+### Hygiène
+
+Deux macros d'icônes que j'avais ajoutées pour la bannière crème
+(`receipt`, `headset`) **écrasaient des macros existantes** portant les mêmes
+noms : renommées `contract_x` et `headset_mic`. Le fichier d'icônes ne contient
+plus aucun doublon.
+
+---
+
+## 16. Corporate — Carrières, offres, contact, paiement et pages légales (15/08)
+
+Six écrans livrés d'un coup, ce qui clôt le flow corporate :
+
+| Route | Planche | Hauteur maquette | Rendu | Écart |
+| --- | --- | --- | --- | --- |
+| `/carrieres` | Carrières.png | 3680 | 3755 | +75 |
+| `/carrieres/offres` (+ `?offre=1`) | … Toutes les offres d'emplois.png | 2785 | 2827 | +42 |
+| `/contactez-nous` | Contactez-nous.png | 2173 | 2207 | +34 |
+| `/paiement-securise` | Paiement sécurisé.png | 1916 | 1881 | −35 |
+| `/mentions-legales` | mentions légales.png | 2263 | 2432 | +169 |
+| `/conditions-generales` | Politiques de confidentialités.png | 2776 | 2813 | +37 |
+
+**Ces six écrans n'ont PAS reçu la passe complète au pixel** appliquée à « À
+propos », « Devenir partenaire » et son formulaire : la structure, les grilles,
+les tailles de texte et les bandes de fond sont calées sur les planches, mais
+les écarts résiduels ci-dessus (35 à 169 px sur des pages de 2000 à 3700) ne
+sont pas résorbés. Ils sont à reprendre avant la revue de Guillaume.
+
+### Ce que les planches ont appris
+
+- **La planche « Politiques de confidentialités » contient les CGU.** Son titre
+  est « Conditions Générales d'Utilisation » et ses dix sections sont bien
+  celles des CGU. La route est donc `/conditions-generales` ; la vraie politique
+  de confidentialité **n'existe pas encore** — à demander à Agnès.
+- **La planche « Détails ofres » n'est pas un écran** : c'est le listing
+  recouvert d'un voile et de la fiche de l'offre. Implémentée sans JavaScript,
+  par `?offre=1` ; la fermeture renvoie au listing.
+- **Le listing porte douze offres**, pas neuf : quatre rangées de trois, cartes
+  de 403 de haut espacées de 33.
+- **La carte de « Contactez-nous » fait 398 de haut**, pas 714. Mon premier
+  découpage englobait la bande grise `#f8fafc` des quatre arguments qui la suit
+  (y1825 → y2140) : les deux sont non blanches, le détecteur les avait fusionnées.
+- **Les pages légales composent leur corps en 24 px** (interlignage 34), leurs
+  titres de section en 26 et le H1 en 48 — nettement plus gros que le reste du
+  site. Le sommaire n'est séparé du contenu que de 17 px.
+- Les deux pages légales se terminent par une bannière violette **« Notre
+  engagement »**, jumelle du « Besoin d'aide ? » de l'écran Paiement.
+
+### Décisions
+
+- Les logos de paiement (`pay_visa`, `pay_mastercard`…) sont des macros figées
+  à 35 × 24 sans paramètre de taille : elles sont agrandies en CSS plutôt que
+  dupliquées.
+- Les arcs concentriques des bannières violettes sont dessinés en
+  `repeating-radial-gradient` — approximation assumée du décor de la planche.
+- Le pied de page et le header institutionnel pointent désormais vers les vraies
+  routes (Qui sommes-nous, Devenir prestataire, Carrières, Contact, Conditions
+  générales, Mentions légales). Seule « FAQ » reste sur `#` : la maquette n'en
+  fournit pas d'écran.
+
+### Coquilles conservées ou corrigées
+
+Conservées telles quelles : « Paiment sécurisé », « Conformitée », « Notre
+addresse », « Ville / Regions », « éminaires », « pour rejoindres notre
+famille », « Vois nos offres d'emplois », « Détails ofres ».
+Corrigées : « activivtés » → « activité », « n'hésitez » → « N'hésitez »,
+« cotre expertise » → « votre expertise ».
+
+### Reste à faire sur le flow
+
+- Résorber les écarts du tableau ci-dessus.
+- Écran **FAQ** (aucune planche fournie).
+- Politique de confidentialité (planche manquante, voir plus haut).
+- Écrans de succès après envoi des deux formulaires (partenaire et contact).

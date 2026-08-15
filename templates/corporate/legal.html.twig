@@ -1,0 +1,82 @@
+{#
+    Écrans 8 et 9 du flow corporate — pages légales (/mentions-legales et
+    /conditions-generales).
+    Maquettes : assets/corporate/mentions légales.png (1440 x 2707) et
+    « Politiques de confidentialités.png » (1440 x 3220 — la planche porte ce
+    nom mais son contenu est bien celui des CGU, voir la note de conformité).
+
+    Gabarit commun : sommaire « Sur cette page » en colonne de gauche, contenu
+    numéroté à droite.
+
+    Variables : page_title, intro, sections, crumb.
+    Préfixe des classes propres à ces écrans : lg-.
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ page_title|trans }}{% endblock %}
+{% block meta_description %}{{ intro|trans }}{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_corporate.html.twig' %}
+{% endblock %}
+
+{% block body %}
+<div class="cor-page lg-page">
+    <div class="container">
+        <div class="lg-cols">
+
+            {# ---- Sommaire ---- #}
+            <aside class="lg-toc">
+                <h2 class="lg-toc__title">{{ 'Sur cette page'|trans }}</h2>
+                <ol class="lg-toc__list">
+                    {% for s in sections %}
+                        <li>
+                            <span class="lg-toc__num">{{ loop.index }}</span>
+                            <a href="#lg-{{ loop.index }}">{{ s.title }}</a>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </aside>
+
+            {# ---- Contenu ---- #}
+            <div class="lg-main">
+                <nav class="act-breadcrumb lg-crumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+                    <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
+                    <span aria-hidden="true">|</span>
+                    <a href="{{ path('app_destinations') }}">{{ 'Destinations'|trans }}</a>
+                    <span aria-hidden="true">|</span>
+                    <span aria-current="page">{{ 'Destination populaires'|trans }}</span>
+                </nav>
+
+                <h1 class="lg-title">{{ page_title|trans }}</h1>
+                <p class="lg-intro">{{ intro|trans }}</p>
+                <p class="lg-date">{{ 'Dernière mise à jour : 20 mai 2024'|trans }}</p>
+
+                {% for s in sections %}
+                    <section class="lg-section" id="lg-{{ loop.index }}">
+                        <h2 class="lg-h2">{{ loop.index }}. {{ s.title }}</h2>
+                        {% if s.intro %}<p class="lg-lead">{{ s.intro }}</p>{% endif %}
+                        {% if s.items %}
+                            <ul class="lg-list">
+                                {% for li in s.items %}<li>{{ li }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                        {% for para in s.paragraphs %}
+                            <p class="lg-p">{{ para }}</p>
+                        {% endfor %}
+                    </section>
+                {% endfor %}
+
+                {# Maquette : bannière violette d'arcs concentriques en pied de
+                   page, identique sur les deux écrans légaux. #}
+                <div class="py-help__panel lg-engage">
+                    <h2 class="py-help__title lg-engage__title">{{ 'Notre engagement'|trans }}</h2>
+                    <p class="py-help__text">{{ 'Chez TrouveMoi Plaisirs & Loisirs, la transparence et la confiance sont au cœur de notre relation avec vous. Nous nous engageons à vous offrir une expérience sécurisée et fiable.'|trans }}</p>
+                    <a href="{{ path('app_corporate_contact') }}" class="pl-btn pl-btn--primary py-help__btn">{{ 'Nous contacter'|trans }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

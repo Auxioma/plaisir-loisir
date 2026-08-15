@@ -1,0 +1,197 @@
+{#
+    Écran 2 du flow corporate — « Devenir partenaire » (/devenir-partenaire).
+    Maquette : assets/corporate/Devenir partenaire.png (1440 x 3758).
+
+    Cinq blocs : héros (poignée de main), « Pourquoi devenir partenaire ? »
+    (grille mixte cartes + photos), « Comment ça marche ? » (photo + étapes
+    reliées par un rail vertical), « Ils nous font confiance » (deux avis) et
+    la bannière crème « Rejoignez l'aventures ! ».
+
+    Préfixe des classes propres à cet écran : pw- (partner / why).
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Devenir partenaire'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Professionnels du loisir, du tourisme ou de l’expérience : gagnez en visibilité et développez votre activité avec TrouveMoi.'|trans }}{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_corporate.html.twig' with { nav_active: 'partenaire' } %}
+{% endblock %}
+
+{% block body %}
+<div class="cor-page">
+
+    {# ================= HÉROS ================= #}
+    <section class="cor-hero cor-hero--partner">
+        <img class="cor-hero__photo" src="{{ asset('images/corporate/partner-hero.jpg') }}" alt="">
+        <div class="container cor-hero__inner">
+            <h1 class="cor-hero__title">{{ 'Devenez partenaire'|trans }}</h1>
+            <p class="cor-hero__text">{{ "Vous êtes un professionnel du loisir, du tourisme ou de l'expérience ? Gagnez en visibilité, attirez plus de clients et développez votre activité grâce à notre plateforme."|trans }}</p>
+            <div class="cor-hero__actions">
+                <a href="{{ path('app_corporate_partner') }}" class="pl-btn pl-btn--cta">{{ 'Devenir partenaire'|trans }} {{ icon.chevron_right(16) }}</a>
+                <a href="#comment-ca-marche" class="pl-btn cor-hero__btn-ghost">{{ 'Voir comment ça marche'|trans }} {{ icon.chevron_right(16) }}</a>
+            </div>
+            {# Maquette : ligne d'argument sous les boutons, bouclier violet. #}
+            <p class="pw-trust">{{ icon.shield(18) }} {{ 'Partenariat 100% gratuit à la création • Sans engagement'|trans }}</p>
+        </div>
+    </section>
+
+    {# ================= POURQUOI DEVENIR PARTENAIRE ================= #}
+    {# Maquette : grille d'images (x104 -> x1336), 4 colonnes de 296, gouttière
+       16 ; les photos occupent une case entière, sans bordure. #}
+    <section class="pw-why">
+        <div class="container">
+            <h2 class="pw-section__title">{{ 'Pourquoi devenir partenaire ?'|trans }}</h2>
+
+            <div class="pw-why__grid">
+                {% for b in benefits %}
+                    {% if b.type == 'photo' %}
+                        <img class="pw-why__photo" src="{{ asset(b.photo) }}" alt="" aria-hidden="true">
+                    {% else %}
+                        <article class="pw-card">
+                            <span class="pw-card__icon pw-card__icon--{{ b.tone }}">
+                                {%- if b.icon == 'rocket' %}{{ icon.rocket(28) }}
+                                {%- elseif b.icon == 'megaphone' %}{{ icon.megaphone(28) }}
+                                {%- elseif b.icon == 'chart_up' %}{{ icon.chart_up(28) }}
+                                {%- elseif b.icon == 'calendar_check' %}{{ icon.calendar_check(28) }}
+                                {%- else %}{{ icon.handshake_solid(28) }}
+                                {%- endif -%}
+                            </span>
+                            <h3 class="pw-card__title">{{ b.title }}</h3>
+                            <p class="pw-card__text">{{ b.text }}</p>
+                        </article>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {# ================= COMMENT ÇA MARCHE ================= #}
+    <section class="pw-how" id="comment-ca-marche">
+        <div class="container">
+            <h2 class="pw-section__title">{{ 'Comment ça marche ?'|trans }}</h2>
+
+            <div class="pw-how__cols">
+                <div class="pw-how__media">
+                    {# La photo source est plus large que le cadre : elle est
+                       recalée à la main dans son cadre (voir corporate.css). #}
+                    <span class="pw-how__frame"><img class="pw-how__photo" src="{{ asset('images/corporate/partner-steps.jpg') }}" alt=""></span>
+                    {# Maquette : pastille blanche posée sur le bas droit de la photo. #}
+                    <a href="{{ path('app_corporate_partner') }}" class="pw-how__badge">{{ 'Devenez partenaire'|trans }} {{ icon.chevron_right(14) }}</a>
+                </div>
+
+                {# Le rail vertical et son segment violet sont décoratifs : ils
+                   sont dessinés en CSS sur la liste elle-même. #}
+                <ol class="pw-steps">
+                    {% for s in steps %}
+                        <li class="pw-step">
+                            <span class="pw-step__icon">
+                                {%- if s.icon == 'user_plus' %}{{ icon.user_plus(30) }}
+                                {%- elseif s.icon == 'store' %}{{ icon.store(30) }}
+                                {%- elseif s.icon == 'calendar_check' %}{{ icon.calendar_check(28) }}
+                                {%- elseif s.icon == 'banknote' %}{{ icon.banknote(30) }}
+                                {%- else %}{{ icon.chart_up(28) }}
+                                {%- endif -%}
+                            </span>
+                            <span class="pw-step__body">
+                                <span class="pw-step__title">{{ s.title }}</span>
+                                <span class="pw-step__text">{{ s.text }}</span>
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+    </section>
+
+    {# ================= ILS NOUS FONT CONFIANCE ================= #}
+    <section class="pw-reviews">
+        <div class="container">
+            <h2 class="pw-section__title">{{ 'Ils nous font confiance'|trans }}</h2>
+
+            <div class="pw-reviews__grid">
+                {% for t in testimonials %}
+                    <article class="pw-review">
+                        <div class="pw-review__head">
+                            <span class="pw-stars" aria-hidden="true">
+                                {% for i in 1..5 %}{{ icon.star_solid(22) }}{% endfor %}
+                            </span>
+                            <strong class="pw-review__rating">{{ t.rating }}</strong>
+                            <span class="pw-review__dot" aria-hidden="true"></span>
+                            <a href="#" class="pw-review__count">{{ t.reviews }}</a>
+                        </div>
+                        <p class="pw-review__quote">"{{ t.quote }}"</p>
+                        <div class="pw-review__author">
+                            <img class="pw-review__avatar" src="{{ asset('images/account/avatar-thomas.jpg') }}" alt="">
+                            <span>
+                                <strong class="pw-review__name">{{ t.author }}</strong>
+                                <span class="pw-review__role">{{ t.role }}</span>
+                            </span>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+
+            {# Maquette : pagination 1-4 centrée sous les deux avis. #}
+            <nav class="pw-pager" aria-label="{{ 'Pagination des avis'|trans }}">
+                <a href="#" class="pw-pager__arrow" aria-label="{{ 'Page précédente'|trans }}">{{ icon.chevron_left(16) }}</a>
+                {% for p in 1..4 %}
+                    <a href="#" class="pw-pager__page{{ p == 1 ? ' is-active' }}"{{ p == 1 ? ' aria-current="page"' : '' }}>{{ p }}</a>
+                {% endfor %}
+                <a href="#" class="pw-pager__arrow" aria-label="{{ 'Page suivante'|trans }}">{{ icon.chevron_right(16) }}</a>
+            </nav>
+        </div>
+    </section>
+
+    {# ================= BANNIÈRE « REJOIGNEZ L'AVENTURES ! » ================= #}
+    {# Coquille de la maquette conservée telle quelle (« l'aventures »), voir
+       docs/note-conformite-12-08.md — à trancher avec Guillaume. #}
+    <section class="pw-cta">
+        <img class="pw-cta__wave" src="{{ asset('images/corporate/cta-vague.png') }}" alt="" aria-hidden="true">
+        <img class="pw-cta__photo" src="{{ asset('images/corporate/cta-commercant.png') }}" alt="" aria-hidden="true">
+
+        {# Trois vignettes d'avis flottantes, purement décoratives : une ligne
+           « avatar + étoiles », puis une ligne de deux traits ; la vignette du
+           milieu est encadrée d'orange, porte quatre étoiles pleines et deux
+           traits supplémentaires. #}
+        {% for v in [{ mod: 'a', stars: 3, bars: false }, { mod: 'b', stars: 4, bars: true }, { mod: 'c', stars: 3, bars: false }] %}
+            <span class="pw-chip pw-chip--{{ v.mod }}" aria-hidden="true">
+                <span class="pw-chip__row">
+                    <span class="pw-chip__avatar"></span>
+                    <span class="pw-chip__stars pw-chip__stars--{{ v.stars }}">
+                        {%- for i in 1..5 %}{{ icon.star_solid(22) }}{% endfor -%}
+                    </span>
+                </span>
+                <span class="pw-chip__dashes"><i></i><i></i></span>
+                {% if v.bars %}<span class="pw-chip__bars"><i></i><i></i></span>{% endif %}
+            </span>
+        {% endfor %}
+
+        <div class="container pw-cta__inner">
+            <h2 class="pw-cta__title">{{ 'Rejoignez l’aventures !'|trans }}</h2>
+            <p class="pw-cta__text">{{ 'Des milliers de professionnels nous font déjà confiance.'|trans }}<br>{{ "Rejoignez-les dès aujourd'hui !"|trans }}</p>
+
+            <ul class="pw-args">
+                {% for a in arguments %}
+                    <li class="pw-arg">
+                        <span class="pw-arg__icon">
+                            {%- if loop.first %}{{ icon.user_plus(22) }}
+                            {%- elseif loop.index == 2 %}{{ icon.contract_x(22) }}
+                            {%- else %}{{ icon.headset_mic(22) }}
+                            {%- endif -%}
+                        </span>
+                        <span class="pw-arg__body">
+                            <strong class="pw-arg__title">{{ a.title }}</strong>
+                            <span class="pw-arg__text">{{ a.text }}</span>
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <a href="{{ path('app_corporate_partner') }}" class="pl-btn pl-btn--cta pw-cta__btn">{{ 'Devenir partenaire'|trans }} {{ icon.chevron_right(16) }}</a>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

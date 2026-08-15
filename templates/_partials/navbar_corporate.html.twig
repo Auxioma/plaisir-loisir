@@ -1,0 +1,53 @@
+{#
+    <CorporateHeader> — troisième variante de header, pour les pages
+    institutionnelles (À propos, Devenir partenaire, Carrières, FAQ, Contact).
+
+    Maquette « A propos de nous » : hauteur 100 comme les deux autres headers
+    (et non 72 comme l'annonce la spec), logo à x108, « Découvrez ⌄ » repris tel
+    quel du header réduit, puis cinq liens en 16px espacés de 35, l'item courant
+    en violet. À droite, les icônes de l'état connecté (cœur, messagerie,
+    cloche, avatar) aux mêmes abscisses que sur le header principal — pas de
+    bouton « Déposer une annonce » ni « Créer un événement ».
+
+    Variable : nav_active (apropos|partenaire|carrieres|faq|contact).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<header class="pl-navbar pl-navbar--home pl-navbar--corporate">
+    <div class="pl-navbar__inner">
+        <div class="pl-navbar__left">
+            <a href="{{ path('app_home') }}" class="pl-navbar__logo" aria-label="{{ 'Accueil TrouveMoi'|trans }}">
+                <img src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir &amp; Loisirs">
+            </a>
+
+            <nav class="pl-nav pl-nav--corporate" aria-label="{{ 'Navigation institutionnelle'|trans }}">
+                <details class="pl-dropdown">
+                    <summary class="pl-dropdown__toggle">{{ 'Découvrez'|trans }} {{ icon.chevron_down(16) }}</summary>
+                    <div class="pl-dropdown__menu">
+                        <a href="{{ path('app_activities') }}" class="pl-dropdown__item">{{ 'Activités'|trans }}</a>
+                        <a href="{{ path('app_destinations') }}" class="pl-dropdown__item">{{ 'Destinations'|trans }}</a>
+                        <a href="{{ path('app_offers') }}" class="pl-dropdown__item">{{ 'Offres du moments'|trans }}</a>
+                        <a href="{{ path('app_gifts') }}" class="pl-dropdown__item">{{ 'Cadeaux'|trans }}</a>
+                    </div>
+                </details>
+
+                <a href="{{ path('app_corporate_about') }}" class="pl-nav__link {{ nav_active|default('') == 'apropos' ? 'is-active' }}">{{ 'À propos de nous'|trans }}</a>
+                <a href="{{ path('app_corporate_partner') }}" class="pl-nav__link {{ nav_active|default('') == 'partenaire' ? 'is-active' }}">{{ 'Devenir partenaire'|trans }}</a>
+                <a href="{{ path('app_corporate_careers') }}" class="pl-nav__link {{ nav_active|default('') == 'carrieres' ? 'is-active' }}">{{ 'Carrières'|trans }}</a>
+                <a href="#" class="pl-nav__link {{ nav_active|default('') == 'faq' ? 'is-active' }}">{{ 'FAQ'|trans }}</a>
+                <a href="{{ path('app_corporate_contact') }}" class="pl-nav__link {{ nav_active|default('') == 'contact' ? 'is-active' }}">{{ 'Contactez-nous'|trans }}</a>
+            </nav>
+        </div>
+
+        <div class="pl-navbar__actions">
+            <a href="{{ path('app_account_favorites') }}" class="pl-iconbtn" aria-label="{{ 'Mes favoris'|trans }}">{{ icon.heart(20) }}</a>
+            <button type="button" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">{{ icon.mail(20) }}</button>
+            <a href="{{ path('app_account_notifications') }}" class="pl-iconbtn" aria-label="{{ 'Notifications'|trans }}">{{ icon.bell(20) }}</a>
+
+            <a href="{{ path('app_account_favorites') }}" class="pl-avatarbtn" aria-label="{{ 'Paramètre du profil'|trans }}">
+                <img src="{{ asset('images/account/avatar-thomas.jpg') }}" alt="">
+                <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
+            </a>
+        </div>
+    </div>
+</header>

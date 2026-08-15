@@ -1,0 +1,21 @@
+{#
+    Barre de recherche des offres : intitulé du poste, secteur, bouton orange.
+    Maquette : bandeau de 55 de haut posé sur la grille de texte.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<form class="cr-search" method="get" action="{{ path('app_corporate_jobs') }}" role="search">
+    <span class="cr-search__field">
+        {{ icon.search(18) }}
+        <input type="search" name="q" placeholder="{{ 'Intitulé du poste'|trans }}" aria-label="{{ 'Intitulé du poste'|trans }}">
+    </span>
+    <span class="cr-search__sep" aria-hidden="true"></span>
+    <span class="cr-search__field cr-search__field--select">
+        {{ icon.search(18) }}
+        <select name="secteur" aria-label="{{ 'Secteur'|trans }}">
+            <option value="">{{ 'Selectionnez un secteur'|trans }}</option>
+        </select>
+        {{ icon.chevron_down(16) }}
+    </span>
+    <button type="submit" class="cr-search__btn" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(18) }}</button>
+</form>

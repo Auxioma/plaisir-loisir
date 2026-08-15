@@ -1,0 +1,136 @@
+{#
+    Écran 1 du flow corporate — « À propos de nous » (/a-propos).
+    Maquette : assets/corporate/A propos de nous.png.
+
+    Six blocs : héros, barre de statistiques à cheval sur le héros, « Pourquoi
+    Nous Choisir ? » (cartes numérotées), « Notre mission » (bande violette
+    pleine largeur), « Votre équipe » (trombinoscope) et la bannière
+    « Rejoignez l'aventure ! ».
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'À propos de nous'|trans }}{% endblock %}
+{% block meta_description %}{{ 'TrouveMoi Plaisirs & Loisirs : la plateforme qui vous aide à trouver les meilleures activités et loisirs partout en France.'|trans }}{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_corporate.html.twig' with { nav_active: 'apropos' } %}
+{% endblock %}
+
+{% block body %}
+<div class="cor-page">
+
+    {# ================= HÉROS ================= #}
+    <section class="cor-hero">
+        <img class="cor-hero__photo" src="{{ asset('images/corporate/hero-equipe.jpg') }}" alt="">
+        <div class="container cor-hero__inner">
+            <h1 class="cor-hero__title">{{ 'Qui sommes-nous'|trans }}</h1>
+            <p class="cor-hero__text">{{ 'TrouveMoi Plaisirs & Loisirs est la plateforme qui vous aide à trouver les meilleures activités et loisirs partout en France'|trans }}</p>
+            <div class="cor-hero__actions">
+                <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--cta">{{ 'Découvrir nos activités'|trans }} {{ icon.chevron_right(16) }}</a>
+                <a href="#" class="pl-btn cor-hero__btn-ghost">{{ 'Nous contacter'|trans }} {{ icon.chevron_right(16) }}</a>
+            </div>
+        </div>
+    </section>
+
+    {# ================= BARRE DE STATISTIQUES ================= #}
+    {# Maquette : carte blanche de 1264 de large (x88 -> x1351) posée à cheval
+       sur le bas du héros. #}
+    <section class="cor-stats-wrap">
+        <div class="cor-stats">
+            {% for s in stats %}
+                <div class="cor-stat">
+                    <span class="cor-stat__icon cor-stat__icon--{{ s.tone }}">
+                        {%- if s.icon == 'book_open' %}{{ icon.book_solid(30) }}
+                        {%- elseif s.icon == 'users' %}{{ icon.users_solid(30) }}
+                        {%- elseif s.icon == 'handshake' %}{{ icon.handshake_solid(30) }}
+                        {%- else %}{{ icon.map_pin_solid(22) }}
+                        {%- endif -%}
+                    </span>
+                    <span class="cor-stat__body">
+                        <strong class="cor-stat__value">{{ s.value }}</strong>
+                        <span class="cor-stat__label">{{ s.label }}</span>
+                    </span>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# ================= POURQUOI NOUS CHOISIR ================= #}
+    {# Maquette : grille de 3 colonnes de 359 (x151 -> x1289), gouttière 32,
+       cartes de 303 de haut ; le bloc de titre occupe la première case. #}
+    <section class="cor-why">
+        <div class="cor-why__grid">
+            <div class="cor-why__head">
+                <h2 class="cor-why__title">{{ 'Pourquoi'|trans }}<br>{{ 'Nous Choisir ?'|trans }}</h2>
+                <p class="cor-why__lead">{{ 'Chez TrouveMoi Loisirs & Plaisirs, nous sommes guidés par de fortes valeurs telles que :'|trans }}</p>
+            </div>
+
+            {% for v in values %}
+                <article class="cor-card{{ v.featured ? ' cor-card--featured' }}">
+                    <span class="cor-card__num">{{ v.num }}</span>
+                    <h3 class="cor-card__title">{{ v.title }}</h3>
+                    <p class="cor-card__text">{{ v.text }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# ================= NOTRE MISSION ================= #}
+    <section class="cor-mission">
+        <div class="cor-mission__inner">
+            <div class="cor-mission__text">
+                <h2 class="cor-mission__title">{{ 'Notre mission'|trans }}</h2>
+                <p>{{ "Nous avons créé TrouveMoi Plaisirs & Loisirs avec une idée simple : rendre les loisirs et les expériences inoubliables accessibles à tous. Que vous soyez en quête d'aventure, de détente, de découvertes culturelles ou d'activités en famille, notre plateforme rassemble les meilleures offres près de chez vous."|trans }}</p>
+                <p class="cor-mission__claim">{{ 'Vivez plus. Explorez plus. Partagez plus.'|trans }} 🔥</p>
+                <a href="#" class="pl-btn cor-mission__cta">{{ "Contactez-nous aujourd'hui"|trans }}</a>
+            </div>
+            {# Collage de deux photos qui se chevauchent (maquette). #}
+            <div class="cor-mission__collage" aria-hidden="true">
+                <img class="cor-mission__photo cor-mission__photo--back" src="{{ asset('images/corporate/mission-1.jpg') }}" alt="">
+                <img class="cor-mission__photo cor-mission__photo--front" src="{{ asset('images/corporate/mission-2.jpg') }}" alt="">
+            </div>
+        </div>
+    </section>
+
+    {# ================= VOTRE ÉQUIPE ================= #}
+    <section class="cor-team">
+        <div class="container">
+            <h2 class="cor-team__title">{{ 'Votre équipe'|trans }}</h2>
+            <p class="cor-team__lead">{{ 'Une équipe passionnée, à votre écoute, et mobilisée chaque jour pour vous offrir la meilleure expérience possible.'|trans }} 👋</p>
+
+            <div class="cor-team__grid">
+                {% for m in team %}
+                    <article class="cor-member">
+                        <img class="cor-member__photo" src="{{ asset(m.photo) }}" alt="">
+                        <h3 class="cor-member__name">{{ m.name }}</h3>
+                        <p class="cor-member__role">{{ m.role }}</p>
+                        <div class="cor-member__socials">
+                            <a href="#" aria-label="LinkedIn">{{ icon.social_linkedin(22) }}</a>
+                            <a href="#" aria-label="Facebook">{{ icon.social_facebook(22) }}</a>
+                            <a href="#" aria-label="X">{{ icon.social_x(22) }}</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {# ================= BANNIÈRE « REJOIGNEZ L'AVENTURE » ================= #}
+    <section class="cor-cta-wrap">
+        <div class="cor-cta">
+            <img class="cor-cta__palms" src="{{ asset('images/corporate/cta-palmiers.png') }}" alt="" aria-hidden="true">
+            <div class="cor-cta__body">
+                <h2 class="cor-cta__title">{{ "Rejoignez l'aventure !"|trans }}</h2>
+                <p class="cor-cta__text">{{ 'Vous partagez notre passion pour les loisirs et les belles expériences ? Rejoignez-nous et participez à cette belle aventure.'|trans }}</p>
+                <div class="cor-cta__actions">
+                    <a href="#" class="pl-btn pl-btn--primary">{{ "Voir nos offres d'emploi"|trans }}</a>
+                    <a href="#" class="pl-btn pl-btn--primary">{{ 'Contactez-nous'|trans }}</a>
+                </div>
+            </div>
+            <img class="cor-cta__photo" src="{{ asset('images/corporate/cta-homme.jpg') }}" alt="" aria-hidden="true">
+        </div>
+    </section>
+
+</div>
+{% endblock %}
