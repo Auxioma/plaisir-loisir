@@ -1,0 +1,1604 @@
+/* ==========================================================================
+ *  PAGES INSTITUTIONNELLES (« corporate », préfixe cor-)
+ *  À propos, Devenir partenaire, Carrières, Contact, Paiement sécurisé, légal.
+ *
+ *  Toutes les valeurs sont relevées au pixel sur les exports 1440
+ *  (assets/corporate/*.png). Ce flow emploie TROIS largeurs différentes, ce
+ *  n'est pas une erreur de lecture :
+ *    - le header et le héros suivent le conteneur de texte (x110 → x1330) ;
+ *    - la barre de statistiques fait 1264 de large (x88 → x1351) ;
+ *    - la grille « Pourquoi nous choisir » fait 1139 (x151 → x1289) ;
+ *    - le trombinoscope et la bannière suivent la grille d'images (x104 → x1336).
+ * ======================================================================== */
+
+/* --------------------------------------------------------------------------
+ *  <CorporateHeader> — variantes propres au header institutionnel.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : cinq liens de 16px espacés de 35, l'item courant en violet. Le
+   header réutilise `.pl-navbar--home` pour le logo et « Découvrez ⌄ ». */
+.pl-nav--corporate { gap: 19px; }
+.pl-nav--corporate .pl-nav__link {
+    padding: 10px 8px;
+    font-size: 16px;
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text);
+    text-decoration: none;
+    white-space: nowrap;
+}
+.pl-nav--corporate .pl-nav__link:hover { color: var(--pl-action); }
+.pl-nav--corporate .pl-nav__link.is-active { color: var(--pl-action); }
+
+/* Le header institutionnel n'a pas de bouton d'action : les icônes se collent
+   au bord droit du conteneur. */
+.pl-navbar--corporate .pl-navbar__actions { gap: var(--pl-sp-16); }
+
+/* --------------------------------------------------------------------------
+ *  <CorporateHero> — photo en fond à droite, texte à gauche.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : bande de 580 (y100 → y679), photo occupant la moitié droite sous
+   un dégradé blanc → transparent. */
+.cor-hero {
+    position: relative;
+    min-height: 580px;
+    overflow: hidden;
+    background: var(--pl-white);
+}
+/* Maquette : la photo source est posée en 1474 x 690 à partir de (-30, -100)
+   par rapport au haut du héros — elle couvre donc toute la largeur, le voile
+   blanc se chargeant de dégager la colonne de texte. Cadrage retrouvé en
+   cherchant l'échelle et la fenêtre qui reproduisent la planche. */
+.cor-hero__photo {
+    position: absolute; left: -30px; top: -100px;
+    width: 1474px; height: 690px;
+    object-fit: cover;
+    z-index: 0;
+}
+/* Le dégradé rend le texte lisible sans assombrir la photo (maquette : le
+   fond est opaque jusqu'à x300, puis s'efface pour disparaître vers x890). */
+.cor-hero::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, #fff 24%, rgba(255, 255, 255, 0) 60%);
+    z-index: 1;
+}
+.cor-hero__inner {
+    position: relative; z-index: 2;
+    padding-top: 112px;
+}
+
+/* Maquette : « Qui sommes-nous » mesure 425px d'encre pour 40 de haut. */
+.cor-hero__title {
+    margin: 0 0 34px;
+    font-size: 48px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 1.1;
+    color: var(--pl-action);
+}
+/* Maquette : 18px, coupé après « qui vous » — le paragraphe y tient sur TROIS
+   lignes (478 / 475 / 80 d'encre). */
+.cor-hero__text {
+    max-width: 485px;
+    margin: 0 0 42px;
+    font-size: 18px;
+    line-height: var(--pl-lh-base);
+    color: var(--pl-text);
+}
+/* Maquette : le second bouton est une pastille BLANCHE sans bordure (ombre
+   douce), et non un bouton à liseré foncé. */
+.cor-hero__actions { display: flex; align-items: center; gap: 14px; }
+.cor-hero__actions .pl-btn { height: 47px; padding-inline: 22px; }
+.cor-hero__btn-ghost {
+    background: var(--pl-white);
+    border: 0;
+    color: var(--pl-text);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, .06);
+}
+.cor-hero__btn-ghost:hover { background: var(--pl-white); color: var(--pl-action); }
+
+/* --------------------------------------------------------------------------
+ *  <StatsBar> — carte blanche à cheval sur le bas du héros.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : x88 → x1351 (1264 de large), 118 de haut, remontée de 141px sur
+   le héros. */
+.cor-stats-wrap { position: relative; z-index: 3; margin-top: -141px; }
+.cor-stats {
+    width: 1264px;
+    max-width: calc(100% - 2 * var(--pl-sp-24));
+    margin-inline: auto;
+    /* Maquette : les cinq blocs ne sont pas a pas egal — ils se dimensionnent
+       sur leur contenu et se repartissent (premiere pastille a x148, soit 59px
+       du bord de la carte). */
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+    padding: 28px 59px;
+}
+.cor-stat { display: flex; align-items: center; gap: 16px; }
+/* Maquette : pastille de 49 portant un glyphe de 21 x 18. */
+.cor-stat__icon {
+    width: 49px; height: 49px; flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+}
+.cor-stat__icon--violet { background: var(--pl-action-light); color: var(--pl-action); }
+.cor-stat__icon--blue { background: #e8effc; color: var(--pl-info); }
+.cor-stat__icon--orange { background: #fdf0e4; color: var(--pl-cta); }
+.cor-stat__icon--green { background: #e8f7ee; color: var(--pl-success); }
+.cor-stat__body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.cor-stat__value { font-size: 24px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.cor-stat__label { font-size: 14px; color: var(--pl-text-secondary); }
+
+/* --------------------------------------------------------------------------
+ *  « Pourquoi Nous Choisir ? » — <NumberedCards>.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : première rangée à y787, grille de 3 x 359 avec 32 de gouttière ;
+   le bloc de titre occupe la première case. */
+.cor-why { padding-block: 130px 0; }
+.cor-why__grid {
+    width: 1139px;
+    max-width: calc(100% - 2 * var(--pl-sp-24));
+    margin-inline: auto;
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+}
+.cor-why__head { padding-top: 46px; }
+.cor-why__title {
+    margin: 0 0 28px;
+    /* Maquette : 48px — « Pourquoi » y mesure 205px d'encre contre 171 en 40. */
+    font-size: 48px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 1.22;
+    color: var(--pl-text);
+}
+.cor-why__lead {
+    margin: 0;
+    max-width: 330px;
+    font-size: 17px;
+    line-height: var(--pl-lh-base);
+    color: var(--pl-text);
+}
+
+.cor-card {
+    min-height: 303px;
+    background: #fafafb;
+    border-radius: 16px;
+    padding: 45px 30px 34px;
+}
+.cor-card__num {
+    display: block; margin-bottom: 23px;
+    font-size: 55px; font-weight: var(--pl-fw-bold); line-height: 1;
+    color: var(--pl-action);
+}
+.cor-card__title { margin: 0 0 13px; font-size: 26px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.cor-card__text { margin: 0; font-size: 18px; line-height: 1.55; color: var(--pl-text-secondary); }
+
+/* Carte mise en avant (02) : violet plein, tout en blanc. */
+.cor-card--featured { background: var(--pl-action); }
+.cor-card--featured .cor-card__num,
+.cor-card--featured .cor-card__title,
+.cor-card--featured .cor-card__text { color: var(--pl-white); }
+
+/* --------------------------------------------------------------------------
+ *  « Notre mission » — bande violette pleine largeur.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : y1458 → y2029, soit 572 de haut, sur toute la largeur. */
+.cor-mission {
+    margin-top: 33px;
+    background: var(--pl-action);
+    color: var(--pl-white);
+}
+.cor-mission__inner {
+    max-width: var(--pl-container-desktop);
+    margin-inline: auto;
+    min-height: 562px;
+    padding: 58px 104px 58px 130px;
+    display: grid; grid-template-columns: 580px 1fr;
+    /* Caler par `align-items: start` + retrait explicite : centrer un bloc rend
+       le réglage indéterministe (chaque variation se partage en deux). */
+    gap: 40px; align-items: start;
+}
+/* Maquette : 48px (« Notre mission » y mesure 319px d'encre contre 265 en 40). */
+.cor-mission__text { padding-top: 34px; }
+.cor-mission__title { margin: 0 0 30px; font-size: 48px; font-weight: var(--pl-fw-bold); color: var(--pl-white); }
+/* Maquette : 18px, coupé à ~530 d'encre — le paragraphe y tient sur SIX lignes. */
+.cor-mission__text p { margin: 0 0 11px; max-width: 545px; font-size: 18px; line-height: 1.55; color: var(--pl-white); }
+/* Marge explicite : sans elle, ce <p> depend du selecteur parent et le
+   detecteur de fuites du Reboot le signale (cf. docs, passe du 13/08). */
+/* Sélecteur double : « .cor-mission__text p » (1 classe + 1 élément) bat une
+   classe seule — le même piège que les pictogrammes de la déconnexion. */
+.cor-mission__text p.cor-mission__claim { margin: 0 0 20px; font-size: 24px; font-weight: var(--pl-fw-bold); }
+/* Bouton noir sur fond violet (maquette). */
+.cor-mission__cta {
+    background: var(--pl-text);
+    color: var(--pl-white);
+    height: 42px; padding-inline: 20px; font-size: 16px;
+}
+.cor-mission__cta:hover { background: #000; color: var(--pl-white); }
+
+/* Collage de deux photos qui se chevauchent. */
+/* Maquette : photo de fond 292 x 459 à x750, photo de dessus 322 x 304 à x968. */
+.cor-mission__collage { position: relative; width: 540px; height: 459px; }
+.cor-mission__photo {
+    position: absolute;
+    border-radius: 12px;
+    border: 6px solid var(--pl-white);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, .18);
+    object-fit: cover;
+}
+.cor-mission__photo--back { left: 0; top: 0; width: 292px; height: 459px; }
+.cor-mission__photo--front { left: 218px; top: 88px; width: 322px; height: 304px; }
+
+/* --------------------------------------------------------------------------
+ *  « Votre équipe » — <TeamGrid>.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : grille d'images (4 x 296, gouttière 16), photo au ratio 296/218,
+   rangées espacées de 361. */
+.cor-team { padding-block: 36px 0; }
+.cor-team__title { margin: 0 0 14px; font-size: 40px; font-weight: var(--pl-fw-medium); color: var(--pl-text); }
+.cor-team__lead { margin: 0 0 46px; font-size: 14px; color: var(--pl-text-secondary); }
+.cor-team__grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 48px 16px;
+    margin-inline: -6px;
+}
+.cor-member { text-align: center; }
+.cor-member__photo {
+    width: 100%; aspect-ratio: 296 / 218;
+    object-fit: cover; border-radius: 12px; display: block;
+    margin-bottom: 16px;
+}
+/* Maquette : nom 16px, rôle 14, pictogrammes sociaux de 20 espacés de 21. */
+.cor-member__name { margin: 0 0 4px; font-size: 16px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.cor-member__role { margin: 0 0 14px; font-size: 14px; color: var(--pl-text-secondary); }
+.cor-member__socials { display: flex; align-items: center; justify-content: center; gap: 21px; }
+.cor-member__socials a { color: var(--pl-text-secondary); display: inline-flex; }
+.cor-member__socials a:hover { color: var(--pl-action); }
+
+/* --------------------------------------------------------------------------
+ *  <CTABanner> « Rejoignez l'aventure ! »
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : x104 → x1336 (grille d'images), 297 de haut, fond violet clair,
+   palmiers dessinés à gauche, photo détourée à droite. */
+.cor-cta-wrap { padding-block: 80px 66px; }
+.cor-cta {
+    position: relative;
+    width: 1232px;
+    max-width: calc(100% - 2 * var(--pl-sp-24));
+    margin-inline: auto;
+    min-height: 297px;
+    /* Maquette : #efe6ff, pas le violet clair du socle. */
+    background: #efe6ff;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex; align-items: center;
+}
+.cor-cta__palms {
+    position: absolute; left: 20px; top: 21px;
+    width: 110px; height: auto;
+    opacity: .9;
+}
+.cor-cta__body { position: relative; z-index: 1; padding: 0 0 0 161px; max-width: 620px; }
+/* Maquette : titre 34px, texte 16. */
+.cor-cta__title { margin: 0 0 18px; font-size: 34px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.cor-cta__text { margin: 0 0 26px; font-size: 16px; line-height: var(--pl-lh-base); color: var(--pl-text); max-width: 440px; }
+.cor-cta__actions { display: flex; gap: 14px; }
+.cor-cta__actions .pl-btn { height: 40px; padding-inline: 18px; }
+.cor-cta__photo {
+    position: absolute; right: 0; top: 0;
+    height: 100%; width: auto;
+    object-fit: cover; object-position: left center;
+}
+
+/* --------------------------------------------------------------------------
+ *  RESPONSIVE.
+ * ------------------------------------------------------------------------ */
+
+@media (max-width: 1200px) {
+    .cor-hero__photo { width: 60%; }
+    .cor-stats { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .cor-why__grid { grid-template-columns: repeat(2, 1fr); }
+    .cor-mission__inner { grid-template-columns: 1fr; padding: 48px 32px; }
+    .cor-mission__collage { height: 380px; }
+    .cor-team__grid { grid-template-columns: repeat(2, 1fr); }
+    .cor-cta__body { padding-left: 32px; }
+    .cor-cta__photo { display: none; }
+}
+
+@media (max-width: 640px) {
+    .cor-stats, .cor-why__grid, .cor-team__grid { grid-template-columns: 1fr; }
+    .cor-hero__photo { display: none; }
+    .cor-hero__title { font-size: 34px; }
+}
+
+/* ==========================================================================
+ *  ÉCRAN « DEVENIR PARTENAIRE » (préfixe pw-)
+ *  Relevés sur assets/corporate/Devenir partenaire.png (1440 x 3758).
+ *
+ *  Bandes de fond mesurées : blanc jusqu'à y1450, #f8fafc de 1451 à 2206,
+ *  #fafafb de 2207 à 2768, crème #fef5e7 de 2769 à 3313, puis le footer.
+ * ======================================================================== */
+
+/* --------------------------------------------------------------------------
+ *  Héros — même composant que « À propos », cadrage et voile propres.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : la bande photo va de y100 à y596, soit 497 de haut (et non 580
+   comme sur « À propos »). */
+.cor-hero--partner { min-height: 497px; }
+/* Cadrage retrouvé par recherche d'échelle et de fenêtre sur la photo source :
+   1408 x 939 posée en (50, -269) par rapport au haut du héros. */
+.cor-hero--partner .cor-hero__photo {
+    left: 50px; top: -269px;
+    width: 1408px; height: 939px;
+}
+/* Le voile n'est pas un simple dégradé : en relevant l'opacité colonne par
+   colonne sur la planche (photo source repositionnée puis soustraite), on
+   obtient 1 jusqu'à x235, un plateau à 0,82 jusqu'à x505, puis une extinction
+   vers x745. */
+.cor-hero--partner::after {
+    background: linear-gradient(90deg,
+        #fff 0, #fff 16.3%,
+        rgba(255, 255, 255, .86) 20.8%,
+        rgba(255, 255, 255, .82) 35.1%,
+        rgba(255, 255, 255, .47) 38.2%,
+        rgba(255, 255, 255, .33) 43.1%,
+        rgba(255, 255, 255, .12) 52.1%,
+        rgba(255, 255, 255, 0) 54.9%);
+}
+.cor-hero--partner .cor-hero__inner { padding-top: 106px; }
+.cor-hero--partner .cor-hero__title { margin-bottom: 33px; }
+/* Maquette : trois lignes coupées après « ou de », « de clients » et
+   « plateforme », interlignage 28. */
+.cor-hero--partner .cor-hero__text {
+    max-width: 492px;
+    margin-bottom: 23px;
+    line-height: 28px;
+}
+.cor-hero--partner .cor-hero__actions .pl-btn { height: 40px; padding-inline: 18px; }
+
+/* Maquette : y465 -> y487, bouclier violet puis texte 16px. */
+.pw-trust {
+    display: flex; align-items: center; gap: 10px;
+    margin: 22px 0 0;
+    font-size: 16px;
+    color: var(--pl-text);
+}
+.pw-trust .pl-icon { color: var(--pl-action); flex: none; }
+
+/* --------------------------------------------------------------------------
+ *  Titres de section — 48px, alignés sur la grille d'images (x104).
+ * ------------------------------------------------------------------------ */
+.pw-section__title {
+    margin: 0 0 41px;
+    font-size: 48px;
+    /* Comparaison 1:1 avec la planche : les titres de section sont en Medium,
+       pas en Bold. */
+    font-weight: var(--pl-fw-medium);
+    line-height: 1.1;
+    color: var(--pl-text);
+}
+
+/* --------------------------------------------------------------------------
+ *  « Pourquoi devenir partenaire ? » — grille mixte cartes + photos.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : titre à y677, première rangée de cartes à y763. */
+.pw-why { padding-block: 73px 63px; }
+/* La grille remonte de 2 par rapport aux autres sections (relevé : titre y677,
+   cartes y763). */
+.pw-why .pw-section__title { margin-bottom: 39px; }
+.pw-why__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px 16px;
+    /* La grille déborde le conteneur de texte de 6px de chaque côté pour
+       retomber sur la grille d'images (x104 -> x1336). */
+    margin-inline: -6px;
+}
+/* Maquette : cartes de 296 x 298, bordure #eff1f3, rayon 12. */
+.pw-card {
+    min-height: 298px;
+    background: var(--pl-white);
+    border: 1px solid #eff1f3;
+    border-radius: 12px;
+    padding: 31px 21px 0;
+}
+.pw-card__icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 56px; height: 56px;
+    border-radius: 12px;
+    margin-bottom: 13px;
+}
+.pw-card__icon--violet { background: #efe6ff; color: var(--pl-action); }
+.pw-card__icon--orange { background: #fff2e6; color: var(--pl-cta); }
+.pw-card__icon--blue { background: #e9effd; color: #2563eb; }
+.pw-card__icon--green { background: #e8f6ed; color: #10893e; }
+.pw-card__title {
+    margin: 0 0 15px;
+    font-size: 26px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 33px;
+    color: var(--pl-text);
+}
+.pw-card__text {
+    margin: 0;
+    font-size: 18px;
+    line-height: 28px;
+    color: var(--pl-text-secondary);
+}
+/* Les photos remplissent la case sans bordure ni marge. */
+.pw-why__photo {
+    display: block;
+    width: 100%; height: 298px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+/* --------------------------------------------------------------------------
+ *  « Comment ça marche ? » — photo à gauche, étapes reliées à droite.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : bande #f8fafc de y1451 à y2206 ; le titre commence à y1532. */
+.pw-how {
+    background: var(--pl-surface-dashboard);
+    padding-block: 71px 51px;
+}
+/* Maquette : photo x104 -> x705 (602 de large), rail à x845. */
+.pw-how__cols {
+    display: grid;
+    grid-template-columns: 602px 1fr;
+    gap: 139px;
+    margin-inline: -6px;
+}
+.pw-how__media { position: relative; }
+/* Le cadre découpe la photo ; la source, plus large que haute, est posée en
+   753 x 526 décalée de -22 à gauche (cadrage retrouvé par recherche). */
+.pw-how__frame {
+    display: block;
+    position: relative;
+    width: 602px; height: 525px;
+    overflow: hidden;
+    border-radius: 12px;
+}
+.pw-how__photo {
+    display: block;
+    position: absolute; left: -22px; top: 0;
+    width: 753px; height: 526px;
+    max-width: none;
+}
+/* Maquette : pastille blanche à cheval sur le bas droit de la photo. */
+.pw-how__badge {
+    position: absolute; left: 476px; top: 390px;
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 40px;
+    padding-inline: 18px;
+    background: var(--pl-white);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: var(--pl-fw-medium);
+    color: var(--pl-action);
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .1);
+}
+
+/* Maquette : la liste démarre 24px AU-DESSUS de la photo (deux cadres
+   indépendants dans Figma) ; les pastilles sont espacées de 110, sauf la
+   dernière qui tombe 122 plus bas. */
+.pw-steps {
+    position: relative;
+    margin: -21px 0 0;
+    padding: 0 0 0 66px;
+    list-style: none;
+    display: flex; flex-direction: column;
+}
+.pw-steps::before,
+.pw-steps::after {
+    content: "";
+    position: absolute;
+    border-radius: 4px;
+}
+/* Le rail court de la première à la dernière pastille (y1620 -> y2128). */
+.pw-steps::before { left: 3px; top: 27px; width: 8px; height: 508px; background: #f0eafb; }
+.pw-steps::after {
+    left: 0; top: 196px;
+    width: 13px; height: 182px;
+    background: var(--pl-action);
+}
+
+.pw-step { display: flex; align-items: center; gap: 25px; min-height: 110px; }
+.pw-step:last-child { margin-top: 12px; }
+/* La maquette compose le titre de la DERNIÈRE étape en 18 gras, plus petit que
+   les quatre autres : incohérence de la planche reproduite telle quelle
+   (à trancher, voir docs/note-conformite-12-08.md). */
+.pw-step:last-child .pw-step__title { font-size: 18px; font-weight: var(--pl-fw-bold); line-height: 24px; }
+.pw-step__icon {
+    flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 56px; height: 56px;
+    border-radius: 12px;
+    background: #efe6ff;
+    color: var(--pl-action);
+}
+.pw-step__body { display: grid; gap: 6px; }
+.pw-step__title {
+    font-size: 24px;
+    font-weight: var(--pl-fw-semibold);
+    line-height: 32px;
+    color: var(--pl-text);
+}
+/* 340 : la description de l'étape 1 tient sur une ligne (335 d'encre) tandis
+   que celles des étapes 2, 4 et 5 passent à deux lignes, comme la maquette. */
+.pw-step__text {
+    max-width: 340px;
+    font-size: 16px;
+    line-height: 25px;
+    color: var(--pl-text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+ *  « Ils nous font confiance » — deux avis + pagination.
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : bande #fafafb de y2207 à y2768, titre à y2286. */
+.pw-reviews {
+    background: #fafafb;
+    padding-block: 72px 64px;
+}
+/* Maquette : deux cartes de 607 (x103 -> x709 et x724 -> x1330). */
+.pw-reviews__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 607px);
+    gap: 14px;
+    margin-inline: -6px;
+}
+.pw-review {
+    background: var(--pl-white);
+    border: 1px solid #eff1f3;
+    border-radius: 12px;
+    padding: 28px 32px 36px;
+}
+.pw-review__head { display: flex; align-items: center; gap: 12px; line-height: 24px; }
+/* Maquette : cinq étoiles de 22 espacées de 5, trois pleines (#f4a911) et deux
+   grisées (#ced5e3). */
+.pw-stars { display: inline-flex; gap: 5px; color: #f4a911; }
+.pw-stars .pl-icon:nth-child(n+4) { color: #ced5e3; }
+.pw-review__rating { font-size: 17px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.pw-review__dot { width: 5px; height: 5px; border-radius: 50%; background: #64748b; }
+.pw-review__count {
+    font-size: 16px;
+    color: #8a96a8;
+    text-decoration: underline;
+    text-decoration-color: #d8dce2;
+}
+.pw-review__quote {
+    margin: 26px 0 0;
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--pl-text);
+}
+.pw-review__author {
+    display: flex; align-items: center; gap: 16px;
+    margin-top: 24px;
+}
+.pw-review__avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+.pw-review__author > span { display: grid; gap: 6px; }
+.pw-review__name { font-size: 17px; font-weight: var(--pl-fw-semibold); color: var(--pl-text); }
+.pw-review__role { font-size: 16px; color: #9ba4bb; }
+
+/* Maquette : pagination centrée, boutons de 40 espacés de 12, y2665 -> y2704. */
+.pw-pager {
+    display: flex; justify-content: center; align-items: center; gap: 12px;
+    margin-top: 24px;
+}
+.pw-pager__page,
+.pw-pager__arrow {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 40px;
+    border-radius: 10px;
+    font-size: 16px;
+    text-decoration: none;
+}
+.pw-pager__page {
+    width: 40px;
+    border: 1px solid #d6dce8;
+    background: var(--pl-white);
+    color: #9dabc7;
+}
+.pw-pager__page.is-active {
+    background: #6d28d9;
+    border-color: #6d28d9;
+    color: var(--pl-white);
+    font-weight: var(--pl-fw-semibold);
+}
+.pw-pager__arrow { width: 32px; color: #9dabc7; }
+
+/* --------------------------------------------------------------------------
+ *  Bannière crème « Rejoignez l'aventures ! »
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : bande pleine largeur de 545 de haut, fond #fef5e7, vague
+   décorative et photo détourée du commerçant. */
+.pw-cta {
+    position: relative;
+    min-height: 545px;
+    background: #fef5e7;
+    overflow: hidden;
+}
+.pw-cta__wave {
+    position: absolute; left: 0; top: 0;
+    width: 1440px; height: 544px;
+    z-index: 0;
+}
+.pw-cta__photo {
+    position: absolute; left: 828px; top: 8px;
+    width: 477px; height: 535px;
+    z-index: 1;
+}
+.pw-cta__inner { position: relative; z-index: 2; padding-top: 82px; }
+
+/* Maquette : titre à x146, soit 36 après le bord du conteneur de texte. */
+.pw-cta__title {
+    margin: 0 0 16px 36px;
+    font-size: 48px;
+    font-weight: var(--pl-fw-medium);
+    line-height: 1.1;
+    color: var(--pl-text);
+}
+.pw-cta__text {
+    margin: 0 0 32px 36px;
+    font-size: 18px;
+    line-height: 28px;
+    color: var(--pl-text);
+}
+
+/* Maquette : trois arguments espacés de 69, pastille orange 48 x 46. */
+.pw-args {
+    list-style: none;
+    margin: 0 0 26px 36px;
+    padding: 0;
+    display: flex; flex-direction: column;
+    gap: 16px;
+}
+.pw-arg { display: flex; align-items: center; gap: 25px; }
+.pw-arg__icon {
+    flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 48px; height: 46px;
+    border-radius: 10px;
+    background: var(--pl-cta);
+    color: var(--pl-white);
+}
+.pw-arg__body { display: grid; gap: 2px; }
+.pw-arg__title { font-size: 18px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.pw-arg__text { font-size: 16px; color: var(--pl-text-secondary); }
+
+.pw-cta__btn { margin-left: 36px; height: 40px; padding-inline: 13px; }
+
+/* Vignettes d'avis flottantes (décor de la maquette). */
+.pw-chip {
+    position: absolute; z-index: 2;
+    display: grid; gap: 7px;
+    width: 194px;
+    padding: 13px 16px 12px;
+    background: var(--pl-white);
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+}
+.pw-chip__avatar {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: #fbe6d5;
+}
+.pw-chip__row { display: flex; align-items: center; gap: 12px; }
+.pw-chip__dashes { display: flex; align-items: center; gap: 6px; }
+.pw-chip__dashes i { display: block; height: 3px; border-radius: 2px; }
+.pw-chip__dashes i:first-child { width: 15px; background: var(--pl-cta); }
+.pw-chip__dashes i:last-child { width: 26px; background: #e9edf2; }
+.pw-chip__stars { display: inline-flex; gap: 4px; color: var(--pl-cta); }
+.pw-chip__stars--3 .pl-icon:nth-child(n+4) { color: #eceff3; }
+.pw-chip__stars--4 .pl-icon:nth-child(n+5) { color: #eceff3; }
+
+/* Maquette : x1058/y2952, x660/y3109 (encadrée orange, avec sa pointe) et
+   x1080/y3204 — positions relatives au haut de la bande crème (y2769). */
+.pw-chip--a { left: 1051px; top: 185px; }
+.pw-chip--c { left: 1079px; top: 435px; }
+.pw-chip--b {
+    left: 658px; top: 341px;
+    width: 200px;
+    border: 1px solid var(--pl-cta);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .08);
+}
+.pw-chip--b .pw-chip__bars { display: grid; gap: 6px; margin-top: 1px; }
+.pw-chip--b .pw-chip__bars i { display: block; height: 3px; border-radius: 2px; background: #edf0f4; }
+.pw-chip--b .pw-chip__bars i:last-child { width: 60%; }
+/* La pointe de la bulle, en bas à gauche. */
+.pw-chip--b::after {
+    content: "";
+    position: absolute; left: 128px; bottom: -13px;
+    width: 0; height: 0;
+    border-left: 13px solid transparent;
+    border-top: 14px solid var(--pl-cta);
+}
+
+/* ==========================================================================
+ *  ÉCRAN « DEVENIR PARTENAIRE — FORMULAIRE » (préfixe pf-)
+ *  Relevés sur assets/corporate/Devenir partenaire- formulaire.png
+ *  (1440 x 2587). Page entièrement blanche, footer à y2193.
+ *
+ *  Colonne unique de 712 centrée sur la page (x364 -> x1076) : titres,
+ *  libellés, cadres de champ et bouton partagent le même bord.
+ *
+ *  ATTENTION à la mesure : le rayon de 10px raccourcit la ligne de bordure du
+ *  HAUT de 2 x 8px. Relevés pris à mi-hauteur, pas sur le bord supérieur.
+ * ======================================================================== */
+
+.pf-page { padding-bottom: 58px; }
+
+/* Le fil d'Ariane reprend le composant commun (10px) ; seule la position
+   change. */
+.pf-crumb { margin: 43px 0 0 2px; }
+
+/* Maquette : « C'est le moment de se lancer ! » démarre à y224, encre 685. */
+.pf-title {
+    margin: 55px 0 0 -6px;
+    font-size: 48px;
+    font-weight: var(--pl-fw-medium);
+    line-height: 1.1;
+    color: var(--pl-text);
+}
+/* Maquette : une seule ligne de 1196 d'encre (x105 -> x1300). */
+.pf-lead {
+    margin: 17px 0 0 -6px;
+    font-size: 16px;
+    line-height: 24px;
+    color: #64748b;
+}
+
+/* Colonne de formulaire : 712 centrée sur la page (x364 -> x1076). */
+.pf-form {
+    width: 712px;
+    margin: 0 auto;
+    padding-top: 58px;
+}
+
+/* --------------------------------------------------------------------------
+ *  Blocs
+ * ------------------------------------------------------------------------ */
+
+/* `fieldset`/`legend` portent des marges et un padding du navigateur : on les
+   remet à plat (le Reboot ne les couvre pas entièrement). */
+.pf-block {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+.pf-block + .pf-block { margin-top: 79px; }
+.pf-block__title {
+    float: none;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    font-size: 26px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 1.2;
+    color: var(--pl-text);
+}
+/* Maquette : 61 du titre de bloc à « Saisissez vos informations ici », puis 31
+   jusqu'à « Champ obligatoire* », puis 50 jusqu'au premier libellé. */
+.pf-block__hint {
+    margin: 31px 0 0;
+    font-size: 18px;
+    font-weight: var(--pl-fw-semibold);
+    line-height: 24px;
+    color: var(--pl-text);
+}
+.pf-block__req {
+    margin: 5px 0 0;
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--pl-text);
+}
+
+/* --------------------------------------------------------------------------
+ *  Champs
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : 26 du libellé au cadre, 19 du bas du cadre au libellé suivant. */
+.pf-block__req + .pf-field { margin-top: 28px; }
+.pf-field + .pf-field,
+.pf-field + .pf-row,
+.pf-row + .pf-field { margin-top: 14px; }
+/* Les deux colonnes de la rangée « Téléphone / Ville » sont côte à côte : la
+   règle ci-dessus ne doit pas décaler la seconde. */
+.pf-row .pf-field + .pf-field { margin-top: 0; }
+
+.pf-label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: var(--pl-fw-medium);
+    line-height: 20px;
+    color: var(--pl-text);
+}
+
+/* Le cadre : 48 de haut, pleine largeur de colonne, liseré de 1,5. */
+.pf-input {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 48px;
+    padding-inline: 12px;
+    background: var(--pl-white);
+    border: 1.5px solid #9dabc7;
+    border-radius: 10px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.pf-input:focus-within {
+    border-color: var(--pl-action);
+    box-shadow: 0 0 0 3px var(--pl-action-light);
+}
+.pf-input__icon { display: flex; flex: none; color: #9dabc7; }
+
+/* Incohérence de la planche : quatre cadres (« Nom de l'entreprise », « Nom &
+   Prénom du responsable », « Email* » et la zone de texte) portent un liseré
+   clair #e5e7eb au lieu du #9dabc7 des autres, sans logique apparente
+   (obligatoire ou non). Reproduit tel quel — à trancher avec Guillaume. */
+.pf-input--soft { border-color: #e5e7eb; }
+
+.pf-input__control {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-family: var(--pl-font-family);
+    font-size: 16px;
+    color: var(--pl-text);
+}
+.pf-input__control::placeholder { color: #9dabc7; }
+
+/* Les listes déroulantes : chevron dessiné à droite, flèche native masquée. */
+.pf-input--select { position: relative; }
+/* Relevé sur la planche : le texte des listes déroulantes est SOMBRE, à la
+   différence des indications de saisie des champs texte. */
+.pf-input--select .pf-input__control {
+    appearance: none;
+    cursor: pointer;
+    color: var(--pl-text);
+}
+.pf-input__chevron {
+    display: flex; flex: none;
+    color: #9dabc7;
+    pointer-events: none;
+}
+
+/* Maquette : deux cadres de 350 (x364 -> x713 et x726 -> x1075). */
+.pf-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+/* --------------------------------------------------------------------------
+ *  Zone de texte, compteur et acceptation
+ * ------------------------------------------------------------------------ */
+
+/* Maquette : 27 sous le champ Email, 698 x 124 (sélecteur composé pour passer
+   devant `.pf-field + .pf-field`). */
+.pf-field + .pf-field--area { margin-top: 27px; }
+.pf-textarea {
+    display: block;
+    width: 100%;
+    height: 124px;
+    padding: 11px 12px;
+    background: var(--pl-white);
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    outline: 0;
+    resize: none;
+    font-family: var(--pl-font-family);
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--pl-text);
+}
+.pf-textarea::placeholder { color: #9dabc7; }
+.pf-textarea:focus { border-color: var(--pl-action); box-shadow: 0 0 0 3px var(--pl-action-light); }
+
+.pf-counter {
+    display: block;
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 20px;
+    color: #9dabc7;
+}
+
+/* Maquette : la case à cocher fait 18, démarre à x367 (4 à droite du bord de
+   colonne) et sa phrase est composée en 14. */
+.pf-check {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 26px 0 0 3px;
+    font-size: 14px;
+    line-height: 22px;
+    color: var(--pl-text);
+    cursor: pointer;
+}
+/* Maquette : carré de 18 à liseré foncé, coins légèrement arrondis. */
+.pf-check input {
+    flex: none;
+    appearance: none;
+    width: 18px; height: 18px;
+    margin: 0;
+    background: var(--pl-white);
+    border: 1.5px solid var(--pl-text);
+    border-radius: 3px;
+    cursor: pointer;
+}
+.pf-check input:checked {
+    background: var(--pl-action);
+    border-color: var(--pl-action);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3.5 8.5 3 3 6-6'/%3E%3C/svg%3E");
+    background-size: 14px 14px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+.pf-check input:focus-visible { outline: 2px solid var(--pl-action); outline-offset: 2px; }
+.pf-check a { color: var(--pl-action); text-decoration: none; }
+.pf-check a:hover { text-decoration: underline; }
+
+/* Maquette : bouton violet 86 x 48, aligné sur le bord droit de la colonne. */
+.pf-actions { display: flex; justify-content: flex-end; margin-top: 26px; }
+.pf-submit {
+    height: 48px;
+    padding-inline: 12px;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+/* Libellé réservé aux lecteurs d'écran (la zone de texte n'en a pas sur la
+   planche, mais un champ sans étiquette n'est pas accessible). */
+.pf-visually-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+ *  HÉROS PARTAGÉS DES ÉCRANS RESTANTS
+ *  Carrières, Contactez-nous et Paiement sécurisé emploient le même gabarit
+ *  que « Devenir partenaire » : bande photo de y100 à y596 (497 de haut),
+ *  voile blanc à gauche, titre violet puis paragraphe.
+ *
+ *  Les photos sont découpées dans les planches à partir de x480 (le voile y
+ *  est presque éteint) et posées à droite ; le dégradé CSS raccorde le bord
+ *  gauche de la découpe au blanc de la page.
+ * ======================================================================== */
+
+.cor-hero--careers,
+.cor-hero--contact,
+.cor-hero--payment { min-height: 497px; }
+
+.cor-hero--careers .cor-hero__photo,
+.cor-hero--contact .cor-hero__photo,
+.cor-hero--payment .cor-hero__photo {
+    left: auto; right: 0; top: 0;
+    width: 960px; height: 497px;
+}
+.cor-hero--careers::after,
+.cor-hero--contact::after,
+.cor-hero--payment::after {
+    background: linear-gradient(90deg,
+        #fff 0, #fff 24%,
+        rgba(255, 255, 255, .82) 33.5%,
+        rgba(255, 255, 255, .35) 40%,
+        rgba(255, 255, 255, 0) 46%);
+}
+.cor-hero--careers .cor-hero__inner,
+.cor-hero--contact .cor-hero__inner,
+.cor-hero--payment .cor-hero__inner { padding-top: 106px; }
+
+.cor-hero--careers .cor-hero__title,
+.cor-hero--contact .cor-hero__title { margin-bottom: 33px; }
+.cor-hero--careers .cor-hero__text,
+.cor-hero--contact .cor-hero__text {
+    max-width: 500px;
+    margin-bottom: 23px;
+    line-height: 28px;
+}
+.cor-hero--careers .cor-hero__actions .pl-btn { height: 40px; padding-inline: 18px; }
+
+/* Le fil d'Ariane des écrans corporate tombe sous le héros. */
+.cr-crumb { margin: 50px 0 0 2px; }
+
+/* ==========================================================================
+ *  CARRIÈRES (préfixe cr-)
+ *  Relevés sur assets/corporate/Carrières.png (1440 x 4124).
+ * ======================================================================== */
+
+.cr-jobs { padding-block: 68px 0; }
+.cr-jobs__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 40px; }
+.cr-jobs__title { margin-bottom: 20px; }
+.cr-jobs__lead {
+    max-width: 700px;
+    margin: 0;
+    font-size: 18px;
+    line-height: 28px;
+    color: var(--pl-text-secondary);
+}
+/* Maquette : pastille bleu nuit alignée à droite, à hauteur du sous-titre. */
+.cr-alloffers {
+    flex: none;
+    display: inline-flex; align-items: center; gap: 10px;
+    margin-top: 32px;
+    height: 48px;
+    padding-inline: 20px;
+    background: var(--pl-text);
+    border-radius: 8px;
+    font-size: 16px;
+    color: var(--pl-white);
+    text-decoration: none;
+    white-space: nowrap;
+}
+.cr-alloffers:hover { color: var(--pl-white); opacity: .92; }
+
+/* ---- Barre de recherche ------------------------------------------------ */
+/* Maquette : bandeau de 55 de haut, deux champs séparés d'un trait, bouton
+   orange carré à droite. */
+.cr-search {
+    display: flex; align-items: center;
+    margin-top: 45px;
+    height: 55px;
+}
+.cr-search__field {
+    display: flex; align-items: center; gap: 12px;
+    height: 100%;
+    padding-inline: 14px;
+    color: #9dabc7;
+}
+.cr-search__field input,
+.cr-search__field select {
+    border: 0; outline: 0; background: transparent;
+    font-family: var(--pl-font-family);
+    font-size: 16px;
+    color: var(--pl-text);
+    min-width: 0;
+}
+.cr-search__field input::placeholder { color: #9dabc7; }
+.cr-search__field--select { width: 375px; }
+.cr-search__field--select select { flex: 1; appearance: none; cursor: pointer; color: #9dabc7; }
+.cr-search__sep { width: 1px; height: 26px; background: #e2e6ec; }
+.cr-search__btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 48px; height: 48px;
+    margin-left: 14px;
+    background: var(--pl-cta);
+    border: 0; border-radius: 8px;
+    color: var(--pl-white);
+    cursor: pointer;
+}
+
+/* ---- Grille et cartes d'offre ------------------------------------------ */
+.cr-jobs__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px 16px;
+    margin: 40px -6px 0;
+}
+.cr-jobs__grid--all { margin-top: 30px; }
+
+.cr-job {
+    min-height: 403px;
+    background: var(--pl-white);
+    border: 1px solid #eff1f3;
+    border-radius: 12px;
+    padding: 24px 22px 22px;
+}
+.cr-job__title {
+    margin: 0 0 18px;
+    font-size: 24px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 33px;
+    color: var(--pl-text);
+}
+.cr-job__text {
+    margin: 0 0 20px;
+    font-size: 16px;
+    line-height: 26px;
+    color: var(--pl-text-secondary);
+}
+.cr-job__meta {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    display: grid; gap: 10px;
+}
+.cr-job__meta li {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 15px;
+    color: var(--pl-text-secondary);
+}
+.cr-job__meta .pl-icon { color: #9dabc7; flex: none; }
+.cr-job__link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 15px;
+    font-weight: var(--pl-fw-medium);
+    color: #2563eb;
+    text-decoration: none;
+}
+.cr-job__link:hover { text-decoration: underline; }
+
+/* ---- Candidature spontanée --------------------------------------------- */
+/* Maquette : bandeau bleu clair de y1407 à y1804, pleine grille d'images. */
+.cr-spontaneous { padding-block: 36px 0; }
+.cr-spont {
+    position: relative;
+    display: flex; align-items: center; justify-content: space-between;
+    min-height: 398px;
+    margin-inline: -6px;
+    padding: 0 40px 0 90px;
+    background: #e9effd;
+    border-radius: 16px;
+    overflow: hidden;
+}
+.cr-spont__title {
+    margin: 0 0 24px;
+    font-size: 44px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 1.3;
+    color: #2563eb;
+}
+.cr-spont__text {
+    margin: 0 0 24px;
+    font-size: 16px;
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text);
+}
+.cr-spont__btn {
+    height: 40px;
+    padding-inline: 18px;
+    background: #2563eb;
+    border: 0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--pl-white);
+}
+.cr-spont__btn:hover { background: #1d4ed8; color: var(--pl-white); }
+.cr-spont__illu { width: 550px; height: auto; }
+
+/* ---- Nos valeurs -------------------------------------------------------- */
+.cr-values { padding-block: 60px 70px; }
+.cr-values__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px 16px;
+    margin-inline: -6px;
+}
+.cr-value { min-height: auto; background: transparent; padding: 34px 30px 30px; }
+.cr-value--featured { background: #f8fafc; }
+.cor-card__num.cr-value__num--violet { color: var(--pl-action); }
+.cor-card__num.cr-value__num--green { color: #10893e; }
+.cor-card__num.cr-value__num--orange { color: var(--pl-cta); }
+.cor-card__num.cr-value__num--blue { color: #2563eb; }
+.cor-card__num.cr-value__num--amber { color: #eab308; }
+.cor-card__num.cr-value__num--navy { color: var(--pl-text); }
+.cr-value__title { margin: 0 0 12px; font-size: 22px; }
+.cr-value__text { font-size: 16px; line-height: 26px; color: var(--pl-text-secondary); }
+
+/* ---- Pourquoi postuler chez nous ---------------------------------------- */
+.cr-why { padding-block: 60px 78px; }
+.cr-why__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px 16px;
+    margin-inline: -6px;
+}
+.cr-why__head { display: flex; align-items: center; }
+.cr-why__title {
+    margin: 0;
+    font-size: 40px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 1.25;
+    color: var(--pl-text);
+}
+.cr-reason {
+    min-height: 210px;
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 26px 28px;
+}
+.cr-reason--featured { background: var(--pl-action); }
+.cor-card__num.cr-reason__num { margin-bottom: 12px; font-size: 40px; color: var(--pl-action); }
+.cr-reason--featured .cor-card__num.cr-reason__num { color: var(--pl-white); }
+.cr-reason__title {
+    margin: 0 0 8px;
+    font-size: 20px;
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-text);
+}
+.cr-reason__text { margin: 0; font-size: 15px; line-height: 24px; color: var(--pl-text-secondary); }
+.cr-reason--featured .cr-reason__title,
+.cr-reason--featured .cr-reason__text { color: var(--pl-white); }
+
+/* ---- Barre d'outils du listing ------------------------------------------ */
+.cr-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 34px;
+}
+.cr-toolbar__count { font-size: 15px; color: var(--pl-text-secondary); }
+.cr-toolbar__sort {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 14px;
+    color: var(--pl-text-secondary);
+}
+.cr-toolbar__sort strong { color: var(--pl-text); }
+
+/* ---- Modale « détail de l'offre » --------------------------------------- */
+/* La planche « Détails ofres » est le listing recouvert d'un voile et de la
+   fiche : pas de JavaScript, la fermeture renvoie au listing. */
+.cr-modal { position: absolute; inset: 0; z-index: 40; }
+.cr-modal__veil {
+    position: fixed; inset: 0;
+    background: rgba(15, 23, 42, .28);
+}
+.cr-modal__panel {
+    position: relative;
+    width: 1232px;
+    margin: 172px auto 60px;
+    background: var(--pl-white);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.cr-modal__head {
+    position: relative;
+    padding: 40px 40px 46px;
+    background: var(--pl-action);
+    text-align: center;
+    color: var(--pl-white);
+}
+.cr-modal__share,
+.cr-modal__close {
+    position: absolute; top: 36px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 0;
+    cursor: pointer;
+}
+.cr-modal__share { left: 40px; width: 32px; height: 32px; background: transparent; color: var(--pl-white); }
+.cr-modal__close {
+    right: 40px; width: 32px; height: 32px;
+    background: var(--pl-white); border-radius: 8px;
+    color: var(--pl-action); text-decoration: none;
+}
+.cr-modal__title {
+    margin: 56px 0 12px;
+    font-size: 40px;
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-white);
+}
+.cr-modal__place { margin: 0 0 42px; font-size: 18px; font-weight: var(--pl-fw-semibold); }
+.cr-modal__note { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 30px; font-size: 14px; }
+.cr-modal__rule { display: block; width: 52px; height: 1px; margin: 0 auto; background: rgba(255, 255, 255, .7); }
+
+.cr-modal__body { padding: 48px 60px 56px; }
+.cr-modal__h3 { margin: 0 0 40px; font-size: 32px; font-weight: var(--pl-fw-medium); color: var(--pl-text); }
+.cr-modal__line { margin: 0 0 30px; font-size: 16px; color: var(--pl-text); }
+.cr-modal__line strong { font-weight: var(--pl-fw-bold); }
+.cr-modal__h4 { margin: 48px 0 14px; font-size: 16px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.cr-modal__list { margin: 0; padding-left: 26px; display: grid; gap: 8px; }
+.cr-modal__list li { font-size: 16px; line-height: 24px; color: var(--pl-text); }
+.cr-modal__actions { display: flex; justify-content: flex-end; margin-top: 60px; }
+.cr-modal__apply { height: 40px; padding-inline: 18px; border-radius: 8px; font-size: 14px; }
+
+/* ==========================================================================
+ *  CONTACTEZ-NOUS (préfixe ct-)
+ *  Relevés sur assets/corporate/Contactez-nous.png (1440 x 2617).
+ * ======================================================================== */
+
+.cor-hero--contact .pw-trust { margin-top: 18px; }
+.ct-trust2 { margin-top: 10px; }
+
+.ct-main { padding-block: 40px 0; }
+/* Les titres de section sur deux lignes gardent l'interlignage serré. */
+.ct-title { line-height: 1.25; margin-bottom: 40px; }
+
+/* Maquette : formulaire de 726 à gauche, colonne de cartes de 462 à droite. */
+.ct-cols {
+    display: grid;
+    grid-template-columns: 726px 1fr;
+    gap: 44px;
+    align-items: start;
+    margin-inline: -6px;
+}
+.ct-card {
+    background: var(--pl-white);
+    border: 1px solid #eff1f3;
+    border-radius: 12px;
+}
+.ct-form { padding: 28px 32px 32px; }
+.ct-form__title {
+    margin: 0 0 26px;
+    font-size: 22px;
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-text);
+}
+.ct-form__row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+/* Les deux colonnes sont côte à côte : la règle générique ne doit pas décaler
+   la seconde (même piège que sur le formulaire partenaire). */
+.ct-form__row .pf-field + .pf-field { margin-top: 0; }
+.ct-form__subject { margin-top: 18px; }
+.ct-form__area { margin-top: 18px; }
+.ct-form__attach {
+    display: flex; align-items: center; gap: 8px;
+    margin: 18px 0 0;
+    font-size: 14px;
+    color: var(--pl-text-secondary);
+}
+.ct-form__actions { display: flex; justify-content: flex-end; margin-top: 24px; }
+.ct-form__submit { height: 40px; padding-inline: 40px; border-radius: 8px; font-size: 15px; }
+
+.ct-methods { display: grid; gap: 20px; }
+.ct-method { display: flex; align-items: flex-start; gap: 18px; padding: 24px 24px 26px; }
+.ct-method__icon {
+    flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 48px; height: 48px;
+    border-radius: 12px;
+}
+.ct-method__icon--blue { background: #e9effd; color: #2563eb; }
+.ct-method__icon--green { background: #e8f6ed; color: #10893e; }
+.ct-method__icon--orange { background: #fff2e6; color: var(--pl-cta); }
+.ct-method__body { min-width: 0; }
+.ct-method__title { margin: 0 0 10px; font-size: 22px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.ct-method__text { max-width: 250px; margin: 0 0 10px; font-size: 16px; line-height: 26px; color: var(--pl-text-secondary); }
+.ct-method__strong { margin: 0 0 4px; font-size: 16px; font-weight: var(--pl-fw-semibold); color: #2563eb; }
+.ct-method__sub { margin: 0; font-size: 15px; color: #2563eb; }
+.ct-method__link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 15px;
+    color: #2563eb;
+    text-decoration: none;
+}
+.ct-method__link:hover { text-decoration: underline; }
+
+/* ---- Carte ------------------------------------------------------------- */
+.ct-map { padding-top: 30px; }
+.ct-map__frame { position: relative; margin-inline: -6px; }
+.ct-map__img { display: block; width: 1232px; height: 398px; object-fit: cover; }
+/* Maquette : encart blanc posé en bas à gauche de la carte. */
+.ct-map__card {
+    position: absolute; left: 44px; bottom: 34px;
+    display: flex; align-items: center; gap: 16px;
+    width: 700px;
+    padding: 18px 22px;
+    background: var(--pl-white);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .08);
+}
+.ct-map__pin {
+    flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: #e9effd;
+    color: #2563eb;
+}
+.ct-map__body { display: grid; gap: 6px; }
+.ct-map__title { font-size: 20px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.ct-map__text { font-size: 16px; color: var(--pl-text); }
+
+/* ---- Quatre arguments --------------------------------------------------- */
+/* Maquette : bande #f8fafc pleine largeur de y1825 à y2140, puis 32 de blanc
+   avant le pied de page. */
+.ct-args {
+    margin-top: 1px;
+    margin-bottom: 32px;
+    padding-block: 82px 82px;
+    background: var(--pl-surface-dashboard);
+}
+.ct-args__grid {
+    list-style: none;
+    margin: 0 -6px;
+    padding: 0;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+}
+.ct-arg { display: grid; justify-items: center; gap: 10px; text-align: center; }
+.ct-arg__icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px;
+    margin-bottom: 6px;
+    border-radius: 12px;
+    background: #e9effd;
+    color: #2563eb;
+}
+.ct-arg__title { font-size: 16px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.ct-arg__text { max-width: 230px; font-size: 14px; line-height: 22px; color: var(--pl-text-secondary); }
+
+/* ==========================================================================
+ *  PAIEMENT SÉCURISÉ (préfixe py-)
+ *  Relevés sur assets/corporate/Paiement sécurisé.png (1440 x 2360).
+ * ======================================================================== */
+
+.py-hero__title { margin-bottom: 14px; color: var(--pl-text); }
+.py-hero__claim {
+    margin: 0 0 22px;
+    font-size: 16px;
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-text);
+}
+.cor-hero--payment .cor-hero__text { max-width: 500px; margin-bottom: 26px; line-height: 26px; }
+
+/* Maquette : trois pastilles alignées sous le paragraphe. */
+.py-badges {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex; gap: 30px;
+    max-width: 620px;
+}
+.py-badges li { display: flex; align-items: flex-start; gap: 10px; }
+.py-badges .pl-icon { color: var(--pl-text); flex: none; margin-top: 2px; }
+.py-badges span { display: block; max-width: 150px; font-size: 14px; line-height: 20px; color: var(--pl-text); }
+.py-badges strong { display: inline; font-weight: var(--pl-fw-bold); }
+.py-badges strong::after { content: " "; }
+
+.py-protect { padding-block: 40px 0; }
+.py-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin-inline: -6px;
+}
+.py-card { min-height: 230px; text-align: center; padding: 26px 22px 24px; }
+.py-card__icon { margin: 0 auto 18px; }
+.py-card__title { margin: 0 0 12px; font-size: 18px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.py-card__text { margin: 0; font-size: 14px; line-height: 22px; color: var(--pl-text-secondary); }
+
+/* ---- Moyens de paiement -------------------------------------------------- */
+.py-means { padding-top: 44px; }
+.py-means__panel {
+    margin-inline: -6px;
+    padding: 46px 98px 50px;
+    background: #f8fafc;
+    border-radius: 16px;
+}
+.py-means__title { margin: 0 0 32px; font-size: 26px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.py-means__cols { display: grid; grid-template-columns: repeat(2, 1fr); gap: 60px; }
+.py-means__col + .py-means__col { border-left: 1px solid #e2e6ec; padding-left: 60px; }
+.py-means__label {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 0 18px;
+    font-size: 15px;
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text);
+}
+.py-means__label .pl-icon { color: #2563eb; }
+.py-logos { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; }
+.py-logos li {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 104px; height: 62px;
+    background: var(--pl-white);
+    border: 1px solid #eff1f3;
+    border-radius: 8px;
+}
+/* Les macros `pay_*` sont figées à 35x24 et n'acceptent pas de taille : on
+   les agrandit en CSS pour remplir la vignette comme sur la planche. */
+.py-logos svg { width: 74px; height: 51px; }
+
+/* ---- Besoin d'aide ------------------------------------------------------- */
+.py-help { padding-block: 62px 96px; }
+/* Maquette : deux jeux d'arcs concentriques violets, en haut à gauche et en bas
+   à droite, dessinés en dégradés radiaux répétés. */
+.py-help__panel {
+    position: relative;
+    margin-inline: -6px;
+    padding: 66px 40px 70px;
+    background: #f3ecff;
+    border-radius: 16px;
+    text-align: center;
+    overflow: hidden;
+}
+.py-help__panel::before,
+.py-help__panel::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+}
+.py-help__panel::before {
+    left: 0; top: 0;
+    width: 300px; height: 220px;
+    background: repeating-radial-gradient(circle at 8% 0,
+        rgba(124, 58, 237, 0) 0 30px,
+        rgba(124, 58, 237, .5) 30px 31px);
+}
+.py-help__panel::after {
+    right: 0; bottom: 0;
+    width: 330px; height: 250px;
+    background: repeating-radial-gradient(circle at 92% 100%,
+        rgba(124, 58, 237, 0) 0 30px,
+        rgba(124, 58, 237, .5) 30px 31px);
+}
+.py-help__title,
+.py-help__text,
+.py-help__btn { position: relative; z-index: 1; }
+.py-help__title { margin: 0 0 14px; font-size: 30px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.py-help__text {
+    max-width: 470px;
+    margin: 0 auto 22px;
+    font-size: 15px;
+    line-height: 24px;
+    color: var(--pl-text-secondary);
+}
+.py-help__btn { height: 38px; padding-inline: 18px; border-radius: 8px; font-size: 14px; }
+
+/* ==========================================================================
+ *  PAGES LÉGALES (préfixe lg-)
+ *  Relevés sur assets/corporate/mentions légales.png et
+ *  « Politiques de confidentialités.png » (contenu = CGU).
+ * ======================================================================== */
+
+.lg-page { padding-block: 44px 70px; }
+/* Maquette : sommaire de 296 à gauche, contenu à partir de x414. */
+.lg-cols {
+    display: grid;
+    grid-template-columns: 296px 1fr;
+    gap: 17px;
+    align-items: start;
+    margin-inline: -6px;
+}
+.lg-toc {
+    background: var(--pl-white);
+    border: 1px solid #eff1f3;
+    border-radius: 12px;
+    padding: 26px 24px 30px;
+}
+.lg-toc__title { margin: 0 0 26px; font-size: 26px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.lg-toc__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 33px; }
+.lg-toc__list li { display: flex; align-items: center; gap: 12px; }
+.lg-toc__num {
+    flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px;
+    border: 1px solid #9dabc7;
+    border-radius: 50%;
+    font-size: 11px;
+    color: var(--pl-text-secondary);
+}
+.lg-toc__list a { font-size: 16px; color: var(--pl-text); text-decoration: underline; }
+.lg-toc__list a:hover { color: var(--pl-action); }
+
+.lg-crumb { margin: 0 0 34px 2px; }
+.lg-title {
+    margin: 0 0 24px;
+    font-size: 48px;
+    font-weight: var(--pl-fw-medium);
+    line-height: 1.2;
+    color: var(--pl-text);
+}
+.lg-intro { max-width: 905px; margin: 0 0 22px; font-size: 20px; line-height: 33px; color: var(--pl-text); }
+.lg-date { margin: 0 0 40px; font-size: 18px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+
+.lg-section + .lg-section { margin-top: 46px; }
+.lg-h2 {
+    margin: 0 0 20px;
+    font-size: 26px;
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-action);
+}
+/* Maquette : le contenu des sections est indenté de 77 par rapport au titre
+   et composé en 24px, interlignage 34. */
+.lg-lead { margin: 0 0 4px 77px; font-size: 24px; line-height: 34px; color: var(--pl-text); }
+.lg-list { margin: 0 0 0 77px; padding-left: 26px; display: grid; }
+.lg-list li { font-size: 24px; line-height: 34px; color: var(--pl-text); }
+.lg-p { max-width: 830px; margin: 0 0 0 83px; font-size: 24px; line-height: 34px; color: var(--pl-text); }
+
+/* Bannière « Notre engagement » des pages légales : même gabarit que
+   « Besoin d'aide ? » de l'écran Paiement sécurisé. */
+.lg-engage { margin: 46px 0 0; }
+.lg-engage__title { font-size: 26px; }

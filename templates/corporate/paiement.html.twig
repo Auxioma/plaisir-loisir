@@ -1,0 +1,106 @@
+{#
+    Écran 7 du flow corporate — « Paiement sécurisé » (/paiement-securise).
+    Maquette : assets/corporate/Paiement sécurisé.png (1440 x 2360).
+
+    Héros, « Comment nous protégeons vos paiements » (4 cartes), « Moyens de
+    paiement acceptés » et la bannière « Besoin d'aide ? ».
+
+    Préfixe des classes propres à cet écran : py-.
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Paiement sécurisé'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Toutes les transactions TrouveMoi sont 100% sécurisées : cryptage SSL, conformité PCI DSS, aucune donnée bancaire stockée.'|trans }}{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_corporate.html.twig' %}
+{% endblock %}
+
+{% block body %}
+<div class="cor-page">
+
+    <section class="cor-hero cor-hero--payment">
+        <img class="cor-hero__photo" src="{{ asset('images/corporate/payment-hero.jpg') }}" alt="">
+        <div class="container cor-hero__inner">
+            {# Coquille de la maquette conservée : « Paiment ». #}
+            <h1 class="cor-hero__title py-hero__title">{{ 'Paiment sécurisé'|trans }}</h1>
+            <p class="py-hero__claim">{{ 'Votre sécurité est notre priorité'|trans }}</p>
+            <p class="cor-hero__text">{{ 'Sur TrouveMoi Plaisirs & Loisirs, toutes les transactions sont 100% sécurisées. Vos données bancaires sont protégées et ne sont jamais stockées sur nos serveurs.'|trans }}</p>
+            <ul class="py-badges">
+                <li>{{ icon.lock(20) }} <span><strong>{{ 'Transaction'|trans }}</strong>{{ '100% sécurisées'|trans }}</span></li>
+                <li>{{ icon.card(20) }} <span><strong>{{ 'Données bancaires'|trans }}</strong>{{ '100% cryptées'|trans }}</span></li>
+                <li>{{ icon.check_badge(20) }} <span><strong>{{ 'Conformitée'|trans }}</strong>{{ 'Normes bancaires les plus strictes'|trans }}</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="container">
+        <nav class="act-breadcrumb cr-crumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
+            <span aria-hidden="true">|</span>
+            <span aria-current="page">{{ 'Paiement Sécurisé'|trans }}</span>
+        </nav>
+    </div>
+
+    <section class="py-protect">
+        <div class="container">
+            <h2 class="pw-section__title ct-title">{{ 'Comment nous protégeons'|trans }}<br>{{ 'vos paiements'|trans }}</h2>
+            <div class="py-grid">
+                {% for c in cards %}
+                    <article class="pw-card py-card">
+                        <span class="pw-card__icon pw-card__icon--{{ c.tone }} py-card__icon">
+                            {%- if c.icon == 'card' %}{{ icon.card(26) }}
+                            {%- elseif c.icon == 'handshake_solid' %}{{ icon.handshake_solid(26) }}
+                            {%- elseif c.icon == 'shield' %}{{ icon.shield(26) }}
+                            {%- else %}{{ icon.eye_off(26) }}
+                            {%- endif -%}
+                        </span>
+                        <h3 class="py-card__title">{{ c.title }}</h3>
+                        <p class="py-card__text">{{ c.text }}</p>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {# ================= MOYENS DE PAIEMENT ================= #}
+    <section class="py-means">
+        <div class="container">
+            <div class="py-means__panel">
+                <h2 class="py-means__title">{{ 'Moyens de paiement acceptés'|trans }}</h2>
+                <div class="py-means__cols">
+                    {% for col in [['pay_visa', 'pay_mastercard', 'pay_applepay', 'pay_applepay'], ['pay_paypal', 'pay_applepay']] %}
+                        <div class="py-means__col">
+                            <p class="py-means__label">{{ icon.lock(16) }} {{ 'Cartes bancaires'|trans }}</p>
+                            <ul class="py-logos">
+                                {% for logo in col %}
+                                    <li>
+                                        {%- if logo == 'pay_visa' %}{{ icon.pay_visa(46) }}
+                                        {%- elseif logo == 'pay_mastercard' %}{{ icon.pay_mastercard(46) }}
+                                        {%- elseif logo == 'pay_paypal' %}{{ icon.pay_paypal(46) }}
+                                        {%- else %}{{ icon.pay_applepay(46) }}
+                                        {%- endif -%}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ================= BESOIN D'AIDE ================= #}
+    <section class="py-help">
+        <div class="container">
+            <div class="py-help__panel">
+                <h2 class="py-help__title">{{ "Besoin d'aide ?"|trans }}</h2>
+                <p class="py-help__text">{{ 'Notre service client est à votre disposition pour toute question concernant la paiement de vos réservations.'|trans }}</p>
+                <a href="{{ path('app_corporate_contact') }}" class="pl-btn pl-btn--primary py-help__btn">{{ 'Nous contacter'|trans }}</a>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

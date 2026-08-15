@@ -1,0 +1,17 @@
+{#
+    <JobCard> — carte d'offre d'emploi (Carrières et listing).
+    Variable : job.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<article class="cr-job">
+    <h3 class="cr-job__title">{{ job.title }}</h3>
+    <p class="cr-job__text">{{ job.text }}</p>
+    <ul class="cr-job__meta">
+        <li>{{ icon.map_pin(16) }} {{ job.city }}</li>
+        <li>{{ icon.receipt(16) }} {{ job.contract }}</li>
+        <li>{{ icon.calendar(16) }} {{ job.time }}</li>
+        <li>{{ icon.users(16) }} {{ job.dept }}</li>
+    </ul>
+    <a href="{{ path('app_corporate_jobs', { offre: 1 }) }}" class="cr-job__link">{{ "Voir l'offre"|trans }} {{ icon.chevron_right(14) }}</a>
+</article>

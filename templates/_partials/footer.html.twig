@@ -32,11 +32,11 @@
             <div class="pl-footer__col">
                 <div class="pl-footer__col-title">{{ 'À propos'|trans }}</div>
                 <div class="pl-footer__links">
-                    <a href="#">{{ 'Qui sommes-nous ?'|trans }}</a>
-                    <a href="#">{{ 'Devenir prestataire'|trans }}</a>
-                    <a href="#">{{ 'Carrières'|trans }}</a>
+                    <a href="{{ path('app_corporate_about') }}">{{ 'Qui sommes-nous ?'|trans }}</a>
+                    <a href="{{ path('app_corporate_partner') }}">{{ 'Devenir prestataire'|trans }}</a>
+                    <a href="{{ path('app_corporate_careers') }}">{{ 'Carrières'|trans }}</a>
                     <a href="#">{{ 'Presse'|trans }}</a>
-                    <a href="#">{{ 'Contact'|trans }}</a>
+                    <a href="{{ path('app_corporate_contact') }}">{{ 'Contact'|trans }}</a>
                 </div>
             </div>
 
@@ -46,9 +46,9 @@
                 <div class="pl-footer__links">
                     <a href="#">{{ "Centre d'aide"|trans }}</a>
                     <a href="#">FAQ</a>
-                    <a href="#">{{ 'Conditions générales'|trans }}</a>
+                    <a href="{{ path('app_corporate_terms') }}">{{ 'Conditions générales'|trans }}</a>
                     <a href="#">{{ 'Politique de confidentialité'|trans }}</a>
-                    <a href="#">{{ 'Mentions légales'|trans }}</a>
+                    <a href="{{ path('app_corporate_legal') }}">{{ 'Mentions légales'|trans }}</a>
                 </div>
             </div>
 

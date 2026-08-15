@@ -1,0 +1,18 @@
+{#
+    Héros commun aux écrans « Carrières » et « Toutes les offres d'emplois ».
+    Maquette : bande photo de y100 à y596 (497 de haut).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<section class="cor-hero cor-hero--careers">
+    <img class="cor-hero__photo" src="{{ asset('images/corporate/careers-hero.jpg') }}" alt="">
+    <div class="container cor-hero__inner">
+        <h1 class="cor-hero__title">{{ 'Carrières'|trans }}</h1>
+        <p class="cor-hero__text">{{ 'Rejoignez l’aventure TrouveMoi Plaisirs & Loisirs'|trans }}<br>{{ 'Nous construisons chaque jour la meilleure plateforme pour inspirer les loisirs et créer des expériences inoubliables. Et si vous faisiez partie de l’histoire ?'|trans }}</p>
+        <div class="cor-hero__actions">
+            <a href="{{ path('app_corporate_jobs') }}" class="pl-btn pl-btn--cta">{{ "Vois nos offres d'emplois"|trans }} {{ icon.chevron_right(16) }}</a>
+            <a href="#" class="pl-btn cor-hero__btn-ghost">{{ 'Culture'|trans }} {{ icon.chevron_right(16) }}</a>
+        </div>
+        <p class="pw-trust">{{ icon.users_solid(18) }} {{ 'Rejoignez une équipe passionnée et bienveillante'|trans }}</p>
+    </div>
+</section>

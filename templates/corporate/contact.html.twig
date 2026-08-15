@@ -1,0 +1,153 @@
+{#
+    Écran 6 du flow corporate — « Contactez-nous » (/contactez-nous).
+    Maquette : assets/corporate/Contactez-nous.png (1440 x 2617).
+
+    Héros, « Tous les moyens de nous contactez » (formulaire à gauche, trois
+    cartes de contact à droite), carte avec l'encart d'adresse, et quatre
+    arguments en pied de page.
+
+    Préfixe des classes propres à cet écran : ct-.
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Contactez-nous'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Une question, une suggestion ou besoin d’aide ? L’équipe TrouveMoi vous répond sous 24h.'|trans }}{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_corporate.html.twig' with { nav_active: 'contact' } %}
+{% endblock %}
+
+{% block body %}
+<div class="cor-page">
+
+    <section class="cor-hero cor-hero--contact">
+        <img class="cor-hero__photo" src="{{ asset('images/corporate/contact-hero.jpg') }}" alt="">
+        <div class="container cor-hero__inner">
+            <h1 class="cor-hero__title">{{ 'Contactez-nous'|trans }}</h1>
+            <p class="cor-hero__text">{{ "Une question, une suggestion ou besoin d'aide ? Notre équipe est à votre écoute et vous répond dans les meilleurs délais."|trans }}</p>
+            <p class="pw-trust">{{ icon.clock(18) }} {{ 'Réponse rapide sous 24h'|trans }}</p>
+            <p class="pw-trust ct-trust2">{{ icon.lock(18) }} {{ 'Vos données sont 100% confidentielles'|trans }}</p>
+        </div>
+    </section>
+
+    <div class="container">
+        <nav class="act-breadcrumb cr-crumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
+            <span aria-hidden="true">|</span>
+            <span aria-current="page">{{ 'Contactez-nous'|trans }}</span>
+        </nav>
+    </div>
+
+    <section class="ct-main">
+        <div class="container">
+            <h2 class="pw-section__title ct-title">{{ 'Tous les moyens de nous'|trans }}<br>{{ 'contactez'|trans }}</h2>
+
+            <div class="ct-cols">
+                {# ---- Formulaire ---- #}
+                <form class="ct-card ct-form" method="post" action="{{ path('app_corporate_contact') }}" novalidate>
+                    <h3 class="ct-form__title">{{ 'Envoyez-nous un message'|trans }}</h3>
+
+                    <div class="ct-form__row">
+                        <div class="pf-field">
+                            <label class="pf-label" for="ct-nom">{{ 'Nom & prénom'|trans }}</label>
+                            <span class="pf-input pf-input--soft">
+                                <span class="pf-input__icon">{{ icon.person(20) }}</span>
+                                <input class="pf-input__control" type="text" id="ct-nom" name="nom" placeholder="{{ 'Saisissez votre nom et prénom'|trans }}">
+                            </span>
+                        </div>
+                        <div class="pf-field">
+                            <label class="pf-label" for="ct-email">{{ 'Email'|trans }}</label>
+                            <span class="pf-input pf-input--soft">
+                                <span class="pf-input__icon">{{ icon.mail(20) }}</span>
+                                <input class="pf-input__control" type="email" id="ct-email" name="email" placeholder="{{ 'Votre email'|trans }}">
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="pf-field ct-form__subject">
+                        <label class="pf-label" for="ct-sujet">{{ 'Sujet de votre demande'|trans }}</label>
+                        <span class="pf-input pf-input--soft">
+                            <input class="pf-input__control" type="text" id="ct-sujet" name="sujet" placeholder="{{ 'Saisissez le sujet de votre demande'|trans }}">
+                        </span>
+                    </div>
+
+                    <div class="pf-field pf-field--area ct-form__area">
+                        <label class="pf-visually-hidden" for="ct-message">{{ 'Votre message'|trans }}</label>
+                        <textarea class="pf-textarea" id="ct-message" name="message" maxlength="150"
+                                  placeholder="{{ "Décrivez en quelques lignes votre activité, le programme que vous proposez, vos petits+. N'hésitez pas à nous dire un peu plus sur vous, votre histoire, votre passion, votre expertise."|trans }}"></textarea>
+                        <span class="pf-counter">0/150</span>
+                    </div>
+
+                    <p class="ct-form__attach">{{ icon.link(16) }} {{ 'Ajouter une pièce jointe (Facultatif)'|trans }}</p>
+
+                    <div class="ct-form__actions">
+                        <button type="submit" class="pl-btn pl-btn--primary ct-form__submit">{{ 'Envoyer'|trans }}</button>
+                    </div>
+                </form>
+
+                {# ---- Trois moyens de contact ---- #}
+                <div class="ct-methods">
+                    {% for m in methods %}
+                        <article class="ct-card ct-method">
+                            <span class="ct-method__icon ct-method__icon--{{ m.tone }}">
+                                {%- if m.icon == 'rocket' %}{{ icon.rocket(24) }}
+                                {%- elseif m.icon == 'phone' %}{{ icon.rocket(24) }}
+                                {%- else %}{{ icon.comment(24) }}
+                                {%- endif -%}
+                            </span>
+                            <div class="ct-method__body">
+                                <h3 class="ct-method__title">{{ m.title }}</h3>
+                                {% if m.text %}<p class="ct-method__text">{{ m.text }}</p>{% endif %}
+                                {% if m.strong %}
+                                    <p class="ct-method__strong">{{ m.strong }}</p>
+                                    <p class="ct-method__sub">{{ m.sub }}</p>
+                                {% endif %}
+                                {% if m.link %}<a href="#" class="ct-method__link">{{ m.link }} {{ icon.chevron_right(14) }}</a>{% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ================= CARTE ================= #}
+    <section class="ct-map">
+        <div class="container">
+            <div class="ct-map__frame">
+                <img class="ct-map__img" src="{{ asset('images/corporate/contact-map.jpg') }}" alt="" aria-hidden="true">
+                <div class="ct-map__card">
+                    <span class="ct-map__pin">{{ icon.map_pin(22) }}</span>
+                    <span class="ct-map__body">
+                        <strong class="ct-map__title">{{ 'Notre addresse'|trans }}</strong>
+                        <span class="ct-map__text">{{ 'TrouveMoi Plaisirs & Loisirs'|trans }} &nbsp;|&nbsp; {{ '28 Rue de la paix, 75002 paris, France'|trans }}</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ================= QUATRE ARGUMENTS ================= #}
+    <section class="ct-args">
+        <div class="container">
+            <ul class="ct-args__grid">
+                {% for a in arguments %}
+                    <li class="ct-arg">
+                        <span class="ct-arg__icon">
+                            {%- if a.icon == 'calendar_check' %}{{ icon.calendar_check(22) }}
+                            {%- elseif a.icon == 'headset_mic' %}{{ icon.headset_mic(22) }}
+                            {%- elseif a.icon == 'clock' %}{{ icon.clock(22) }}
+                            {%- else %}{{ icon.thumbs_up(22) }}
+                            {%- endif -%}
+                        </span>
+                        <strong class="ct-arg__title">{{ a.title }}</strong>
+                        <span class="ct-arg__text">{{ a.text }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

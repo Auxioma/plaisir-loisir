@@ -1,0 +1,178 @@
+{#
+    Écran 3 du flow corporate — « Devenir partenaire : formulaire »
+    (/devenir-partenaire/formulaire).
+    Maquette : assets/corporate/Devenir partenaire- formulaire.png
+    (1440 x 2587 ; la variante « (1) » est un doublon octet pour octet).
+
+    Fil d'Ariane, titre pleine largeur, puis une colonne de formulaire de 698
+    centrée sur la page, découpée en trois blocs (site web, entreprise,
+    connexion) et fermée par le bouton « Envoyer » aligné à droite.
+
+    Préfixe des classes propres à cet écran : pf- (partner form).
+
+    Les coquilles de la planche sont corrigées et listées dans
+    docs/note-conformite-12-08.md.
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Formulaire devenir partenaire'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Remplissez le formulaire partenaire TrouveMoi : un membre de l’équipe vous recontacte après l’envoi.'|trans }}{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_corporate.html.twig' with { nav_active: 'partenaire' } %}
+{% endblock %}
+
+{% block body %}
+<div class="cor-page pf-page">
+    <div class="container">
+
+        <nav class="act-breadcrumb pf-crumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
+            <span aria-hidden="true">|</span>
+            <a href="{{ path('app_corporate_partner') }}">{{ 'Devenir partenaire'|trans }}</a>
+            <span aria-hidden="true">|</span>
+            <span aria-current="page">{{ 'Formulaire devenir partenaire'|trans }}</span>
+        </nav>
+
+        <h1 class="pf-title">{{ "C'est le moment de se lancer !"|trans }}</h1>
+        <p class="pf-lead">{{ "Commencez par nous parler un peu de vous. Après avoir envoyé ce formulaire, vous serez recontacté par un membre de l'équipe TrouveMoi Plaisirs & Loisirs"|trans }}</p>
+
+        <form class="pf-form" method="post" action="{{ path('app_corporate_partner_form') }}" novalidate>
+
+            {# ---------------- Bloc 1 : informations du site web ---------------- #}
+            <fieldset class="pf-block">
+                <legend class="pf-block__title">{{ 'Informations du site web'|trans }}</legend>
+                <p class="pf-block__hint">{{ 'Saisissez vos informations ici'|trans }}</p>
+                <p class="pf-block__req">{{ 'Champ obligatoire*'|trans }}</p>
+
+                <div class="pf-field">
+                    <label class="pf-label" for="pf-nom-site">{{ 'Nom du site*'|trans }}</label>
+                    <span class="pf-input">
+                        <span class="pf-input__icon">{{ icon.globe(20) }}</span>
+                        <input class="pf-input__control" type="text" id="pf-nom-site" name="nom_site" placeholder="{{ 'TrouveMoi Plaisirs & Loisirs'|trans }}" required>
+                    </span>
+                </div>
+
+                <div class="pf-field">
+                    <label class="pf-label" for="pf-url-site">{{ 'URL du site*'|trans }}</label>
+                    <span class="pf-input">
+                        <input class="pf-input__control" type="url" id="pf-url-site" name="url_site" placeholder="www.trouveplaisirsloisirs.com" required>
+                    </span>
+                </div>
+
+                <div class="pf-field">
+                    <label class="pf-label" for="pf-secteur">{{ "Secteur d'activité*"|trans }}</label>
+                    <span class="pf-input pf-input--select">
+                        <select class="pf-input__control" id="pf-secteur" name="secteur" required>
+                            <option value="" selected>{{ "Sélectionnez un secteur d'activité"|trans }}</option>
+                        </select>
+                        <span class="pf-input__chevron">{{ icon.chevron_down(16) }}</span>
+                    </span>
+                </div>
+
+                <div class="pf-field">
+                    <label class="pf-label" for="pf-trafic">{{ 'Trafic mensuel*'|trans }}</label>
+                    <span class="pf-input pf-input--select">
+                        <select class="pf-input__control" id="pf-trafic" name="trafic" required>
+                            <option value="" selected>{{ 'Sélectionnez une valeur'|trans }}</option>
+                        </select>
+                        <span class="pf-input__chevron">{{ icon.chevron_down(16) }}</span>
+                    </span>
+                </div>
+            </fieldset>
+
+            {# ---------------- Bloc 2 : nom de l'entreprise ---------------- #}
+            <fieldset class="pf-block">
+                <legend class="pf-block__title">{{ "Nom de l'entreprise"|trans }}</legend>
+                <p class="pf-block__hint">{{ 'Saisissez vos informations ici'|trans }}</p>
+                <p class="pf-block__req">{{ 'Champ obligatoire*'|trans }}</p>
+
+                <div class="pf-field">
+                    <label class="pf-label" for="pf-entreprise">{{ "Nom de l'entreprise"|trans }}</label>
+                    <span class="pf-input pf-input--soft">
+                        <span class="pf-input__icon">{{ icon.store(20) }}</span>
+                        <input class="pf-input__control" type="text" id="pf-entreprise" name="entreprise" placeholder="{{ 'Saisissez le nom de votre entreprise'|trans }}">
+                    </span>
+                </div>
+
+                <div class="pf-field">
+                    <label class="pf-label" for="pf-responsable">{{ 'Nom & Prénom du responsable'|trans }}</label>
+                    <span class="pf-input pf-input--soft">
+                        <span class="pf-input__icon">{{ icon.person(20) }}</span>
+                        <input class="pf-input__control" type="text" id="pf-responsable" name="responsable" placeholder="martinthomas">
+                    </span>
+                </div>
+
+                {# Maquette : deux colonnes de 336, gouttière 26. #}
+                <div class="pf-row">
+                    <div class="pf-field">
+                        <label class="pf-label" for="pf-tel">{{ 'Téléphone'|trans }}</label>
+                        <span class="pf-input">
+                            <span class="pf-input__icon">{{ icon.phone(20) }}</span>
+                            <input class="pf-input__control" type="tel" id="pf-tel" name="telephone" placeholder="+33">
+                        </span>
+                    </div>
+                    <div class="pf-field">
+                        <label class="pf-label" for="pf-ville">{{ 'Ville / Régions'|trans }}</label>
+                        <span class="pf-input pf-input--select">
+                            <select class="pf-input__control" id="pf-ville" name="ville">
+                                <option value="" selected>{{ 'Lyon, france'|trans }}</option>
+                            </select>
+                            <span class="pf-input__chevron">{{ icon.chevron_down(16) }}</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="pf-field">
+                    <label class="pf-label" for="pf-adresse">{{ 'Adresse*'|trans }}</label>
+                    <span class="pf-input">
+                        <span class="pf-input__icon">{{ icon.map_pin(20) }}</span>
+                        <input class="pf-input__control" type="text" id="pf-adresse" name="adresse" placeholder="{{ 'Saisissez votre adresse'|trans }}" required>
+                    </span>
+                </div>
+
+                <div class="pf-field">
+                    <label class="pf-label" for="pf-cp">{{ 'Code postal*'|trans }}</label>
+                    <span class="pf-input">
+                        {# La planche répète ici le libellé du champ « entreprise » :
+                           conservé tel quel, à trancher avec Guillaume. #}
+                        <input class="pf-input__control" type="text" id="pf-cp" name="code_postal" placeholder="{{ 'Saisissez le nom de votre entreprise'|trans }}" required>
+                    </span>
+                </div>
+            </fieldset>
+
+            {# ---------------- Bloc 3 : informations de connexion ---------------- #}
+            <fieldset class="pf-block">
+                <legend class="pf-block__title">{{ 'Informations de connexion'|trans }}</legend>
+                <p class="pf-block__hint">{{ 'Saisissez vos informations ici'|trans }}</p>
+                <p class="pf-block__req">{{ 'Champ obligatoire*'|trans }}</p>
+
+                <div class="pf-field">
+                    <label class="pf-label" for="pf-email">{{ 'Email*'|trans }}</label>
+                    <span class="pf-input pf-input--soft">
+                        <span class="pf-input__icon">{{ icon.mail(20) }}</span>
+                        <input class="pf-input__control" type="email" id="pf-email" name="email" placeholder="{{ 'TrouveMoi Plaisirs & Loisirs'|trans }}" required>
+                    </span>
+                </div>
+
+                <div class="pf-field pf-field--area">
+                    <label class="pf-visually-hidden" for="pf-description">{{ 'Décrivez votre activité'|trans }}</label>
+                    <textarea class="pf-textarea" id="pf-description" name="description" maxlength="150"
+                              placeholder="{{ "Décrivez en quelques lignes votre activité, le programme que vous proposez, vos petits+. N'hésitez pas à nous dire un peu plus sur vous, votre histoire, votre passion, votre expertise."|trans }}"></textarea>
+                    <span class="pf-counter">0/150</span>
+                </div>
+
+                <label class="pf-check">
+                    <input type="checkbox" name="cgu" required>
+                    <span>{{ "J'accepte les"|trans }} <a href="#">{{ 'conditions générales'|trans }}</a> {{ 'et de la'|trans }} <a href="#">{{ 'politique de confidentialité'|trans }}</a></span>
+                </label>
+            </fieldset>
+
+            <div class="pf-actions">
+                <button type="submit" class="pl-btn pl-btn--primary pf-submit">{{ 'Envoyer'|trans }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

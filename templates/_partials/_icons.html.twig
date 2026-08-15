@@ -475,3 +475,85 @@
 {% macro star_solid(size = 20) %}
     <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.2 14.6 9.4 20.4 10.2 16.2 14.3 17.2 20 12 17.3 6.8 20 7.8 14.3 3.6 10.2 9.4 9.4z"/></svg>
 {% endmacro %}
+
+{# ---- Pages institutionnelles (« corporate ») ---------------------------- #}
+
+{# Poignée de main pleine — pastille « Partenaires & prestataires » de la barre
+   de statistiques de « À propos ». #}
+{% macro handshake(size = 20) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.4 5.7 7.9 8.4a1.6 1.6 0 0 0-.2 2.3 1.6 1.6 0 0 0 2.2.3l2.3-1.7 4.9 4.3a1.4 1.4 0 0 1-1.8 2.1l-.6-.5-.3 1a1.4 1.4 0 0 1-2.1.6l-.6-.5-.3.9a1.4 1.4 0 0 1-2.2.5l-.5-.4-.3.8a1.4 1.4 0 0 1-2.3.4L2 14.6V8.3l3.4-2.6a4 4 0 0 1 4.3-.4z"/><path d="M13 5.4a4 4 0 0 1 3.9.2L22 9.1v5.6l-2.1 1.2-5.6-4.9-2 1.5z" opacity=".72"/></svg>
+{% endmacro %}
+
+{# Réseaux sociaux du trombinoscope : glyphes PLEINS de 20px, gris #64748b —
+   la maquette n'y met pas de contour. #}
+{% macro social_linkedin(size = 20) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 4.5A1.5 1.5 0 0 1 4.5 3h15A1.5 1.5 0 0 1 21 4.5v15A1.5 1.5 0 0 1 19.5 21h-15A1.5 1.5 0 0 1 3 19.5z" /><path fill="#fff" d="M7.6 9.6h1.9V18H7.6zm.95-1.3a1.1 1.1 0 1 1 0-2.2 1.1 1.1 0 0 1 0 2.2zM11.2 9.6h1.8v1.15h.03c.25-.47.87-.97 1.79-.97 1.92 0 2.28 1.26 2.28 2.9V18h-1.9v-3.83c0-.91-.02-2.09-1.27-2.09-1.28 0-1.47 1-1.47 2.03V18h-1.9z"/></svg>
+{% endmacro %}
+
+{% macro social_facebook(size = 20) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path fill="#fff" d="M13.3 18v-5.2h1.75l.26-2.03H13.3V9.47c0-.59.16-.99 1-.99h1.07V6.66c-.19-.02-.82-.08-1.56-.08-1.55 0-2.6.94-2.6 2.67v1.52H9.45v2.03h1.76V18z"/></svg>
+{% endmacro %}
+
+{% macro social_x(size = 20) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3.2"/><path fill="#fff" d="M15.9 6.9h1.85l-4.04 4.62L18.4 17.6h-3.72l-2.91-3.8-3.33 3.8H6.58l4.32-4.94L6.35 6.9h3.81l2.63 3.48zm-.65 9.6h1.02L9.44 7.93H8.34z"/></svg>
+{% endmacro %}
+
+{# ---- Barre de statistiques « À propos » : glyphes PLEINS ---------------- #}
+{# La maquette y emploie des pictogrammes massifs, pas les contours du socle. #}
+
+{% macro book_solid(size = 22) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5.6A1.6 1.6 0 0 1 4.6 4H10a2.2 2.2 0 0 1 2 1.3V20a2.2 2.2 0 0 0-2-1.2H4.6A1.6 1.6 0 0 1 3 17.2z"/><path d="M21 5.6A1.6 1.6 0 0 0 19.4 4H18v6.4l-1.9-1.5L14.2 10V4a2.2 2.2 0 0 0-1.4 1.3V20a2.2 2.2 0 0 1 1.6-1.2h5A1.6 1.6 0 0 0 21 17.2z"/></svg>
+{% endmacro %}
+
+{% macro users_solid(size = 22) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9.2" cy="7.8" r="3.4"/><path d="M2.9 19.1a6.3 6.3 0 0 1 12.6 0 1 1 0 0 1-1 1h-10.6a1 1 0 0 1-1-1z"/><circle cx="16.9" cy="8.6" r="2.6"/><path d="M15.4 13.3a5.4 5.4 0 0 1 5.7 5 1 1 0 0 1-1 1.1h-2.9a7.7 7.7 0 0 0-1.8-5.2z"/></svg>
+{% endmacro %}
+
+{% macro handshake_solid(size = 22) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2.4 13.1 7.7 7.9a2.1 2.1 0 0 1 2.9 0L12 9.2l1.4-1.3a2.1 2.1 0 0 1 2.9 0l5.3 5.2-4.8 4.6a2.1 2.1 0 0 1-2.9 0L12 16.2l-1.9 1.5a2.1 2.1 0 0 1-2.9 0z"/><path stroke="#fff" stroke-width="1.1" stroke-linecap="round" fill="none" d="M6.6 12.9 9.9 16M8.3 11.3l3.3 3.1M10 9.7l3.3 3.1"/></svg>
+{% endmacro %}
+
+{% macro map_pin_solid(size = 22) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.4c-3.6 0-6.5 2.9-6.5 6.5 0 4.6 6.5 12.7 6.5 12.7s6.5-8.1 6.5-12.7c0-3.6-2.9-6.5-6.5-6.5z"/><circle cx="12" cy="8.9" r="2.5" fill="currentColor" stroke="none"/></svg>
+{% endmacro %}
+
+{# ---- « Devenir partenaire » : avantages et étapes ----------------------- #}
+
+{% macro rocket(size = 22) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2.1-.1-2.9a2 2 0 0 0-2.9-.1z"/><path d="M12 15 9 12a11 11 0 0 1 2-6.5C13.4 2.2 16.9 2 19.5 2c.9 0 1.4.1 1.4.1s.1.5.1 1.4c0 2.6-.2 6.1-3.5 8.5A11 11 0 0 1 12 15z"/><path d="M9 12H4s.5-2.8 2-4c1.6-1.3 5-1 5-1M12 15v5s2.8-.5 4-2c1.3-1.6 1-5 1-5"/></svg>
+{% endmacro %}
+
+{% macro megaphone(size = 22) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l6 4V7L6 11H4a1 1 0 0 0-1 1z" fill="currentColor" stroke="none"/><path d="M6 14v3.5A1.5 1.5 0 0 0 7.5 19h.6"/><path d="M16 8.5a4 4 0 0 1 0 7M18.5 6a7.5 7.5 0 0 1 0 12"/></svg>
+{% endmacro %}
+
+{% macro chart_up(size = 22) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2" y="12.5" width="5" height="9" rx="1.2"/><rect x="9.5" y="7.5" width="5" height="14" rx="1.2"/><rect x="17" y="2.5" width="5" height="19" rx="1.2"/></svg>
+{% endmacro %}
+
+{% macro user_plus(size = 22) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.4"/><path d="M2.8 19.4a6.2 6.2 0 0 1 12.4 0"/><path d="M18 8.5v5M20.5 11h-5"/></svg>
+{% endmacro %}
+
+{% macro store(size = 22) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5h17V19a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19z"/><path d="M3 9.5 4.7 4.6A1.5 1.5 0 0 1 6.1 3.5h11.8a1.5 1.5 0 0 1 1.4 1.1L21 9.5"/><path d="M8.2 3.5 7.5 9.5M15.8 3.5l.7 6M3.5 13.5h17"/></svg>
+{% endmacro %}
+
+{% macro banknote(size = 22) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="2"/><circle cx="12" cy="12" r="2.8"/><path d="M6 9.5v5M18 9.5v5"/></svg>
+{% endmacro %}
+
+{% macro shield(size = 18) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5 4.5 5.5v6c0 4.6 3.2 8.7 7.5 10 4.3-1.3 7.5-5.4 7.5-10v-6z"/><path d="m9 12 2 2 4-4"/></svg>
+{% endmacro %}
+
+{# Variantes propres a « Devenir partenaire » : le contrat barre et le casque
+   a micro de la banniere creme. Les macros `receipt` et `headset` existent
+   deja plus haut avec un dessin different — d'ou ces noms distincts. #}
+{% macro contract_x(size = 22) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5h11a1.5 1.5 0 0 1 1.5 1.5v10.5"/><path d="M5 2.5A1.5 1.5 0 0 0 3.5 4v16l2.2-1.4L7.9 20l2.2-1.4L12.3 20"/><path d="M7 7h7M7 10.5h7M7 14h4"/><path d="m15.5 16.5 5 5M20.5 16.5l-5 5"/></svg>
+{% endmacro %}
+
+{% macro headset_mic(size = 22) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="2.6" y="12.6" width="4.4" height="6.4" rx="2.2"/><rect x="17" y="12.6" width="4.4" height="6.4" rx="2.2"/><path d="M20 19v.6a2.4 2.4 0 0 1-2.4 2.4H13"/></svg>
+{% endmacro %}

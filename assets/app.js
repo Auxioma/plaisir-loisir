@@ -23,6 +23,7 @@ import './styles/offers.css';
 import './styles/gifts.css';
 import './styles/events.css';
 import './styles/account.css';
+import './styles/corporate.css';
 import './styles/app.css';
 
 // Comportement des menus déroulants de l'en-tête d'accueil.

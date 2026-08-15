@@ -1,0 +1,108 @@
+{#
+    Écran 5 du flow corporate — « Carrières : toutes les offres d'emplois »
+    (/carrieres/offres) et sa modale de détail (?offre=1).
+    Maquette : assets/corporate/Carrières - Toutes les offres d'emplois.png
+    et « … - Détails ofres.png » (1440 x 3229).
+
+    Même héros et même barre de recherche que « Carrières », puis une grille de
+    neuf cartes précédée du compteur de résultats et du tri.
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ "Toutes les offres d'emplois"|trans }}{% endblock %}
+{% block meta_description %}{{ 'Toutes les offres d’emploi TrouveMoi Plaisirs & Loisirs.'|trans }}{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_corporate.html.twig' with { nav_active: 'carrieres' } %}
+{% endblock %}
+
+{% block body %}
+<div class="cor-page">
+
+    {% include 'corporate/_partials/_careers_hero.html.twig' %}
+
+    <div class="container">
+        <nav class="act-breadcrumb cr-crumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
+            <span aria-hidden="true">|</span>
+            <a href="{{ path('app_corporate_careers') }}">{{ 'Carrières'|trans }}</a>
+            <span aria-hidden="true">|</span>
+            <span aria-current="page">{{ "Toutes les offres d'emplois"|trans }}</span>
+        </nav>
+    </div>
+
+    <section class="cr-jobs cr-jobs--all">
+        <div class="container">
+            <div class="cr-jobs__head">
+                <div>
+                    <h2 class="pw-section__title cr-jobs__title">{{ "Nos offres d'emploi"|trans }}</h2>
+                    <p class="cr-jobs__lead">{{ 'Nous sommes toujours à la recherche de personnes talentueuses pour rejoindres notre famille TrouveMoi Plaisirs & Loisirs'|trans }}</p>
+                </div>
+                <a href="{{ path('app_corporate_jobs') }}" class="cr-alloffers">{{ 'Voir toutes les offres'|trans }} {{ icon.arrow_up_right(16) }}</a>
+            </div>
+
+            {% include 'corporate/_partials/_jobs_search.html.twig' %}
+
+            {# Maquette : compteur à gauche, tri à droite. #}
+            <div class="cr-toolbar">
+                <span class="cr-toolbar__count">{{ '400+ de résultats trouvés'|trans }}</span>
+                <span class="cr-toolbar__sort">
+                    {{ icon.funnel(16) }} {{ 'Trier par:'|trans }} <strong>{{ 'Les plus Recent'|trans }}</strong> {{ icon.chevron_down(14) }}
+                </span>
+            </div>
+
+            <div class="cr-jobs__grid cr-jobs__grid--all">
+                {% for row in 1..4 %}
+                    {% for j in jobs %}
+                        {% include 'corporate/_partials/_job_card.html.twig' with { job: j } %}
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {# ================= MODALE DÉTAIL DE L'OFFRE ================= #}
+    {# La maquette « Détails ofres » est cet écran recouvert d'un voile et de la
+       fiche de l'offre : elle s'ouvre par ?offre=1 et se ferme en revenant au
+       listing (pas de JavaScript). #}
+    {% if detail is not null %}
+        <div class="cr-modal" role="dialog" aria-modal="true" aria-labelledby="cr-modal-title">
+            <a class="cr-modal__veil" href="{{ path('app_corporate_jobs') }}" aria-label="{{ 'Fermer'|trans }}"></a>
+            <div class="cr-modal__panel">
+                <header class="cr-modal__head">
+                    <button type="button" class="cr-modal__share" aria-label="{{ 'Partager'|trans }}">{{ icon.share(22) }}</button>
+                    <a class="cr-modal__close" href="{{ path('app_corporate_jobs') }}" aria-label="{{ 'Fermer'|trans }}">{{ icon.x(16) }}</a>
+                    <h2 class="cr-modal__title" id="cr-modal-title">{{ detail.title }}</h2>
+                    <p class="cr-modal__place">{{ detail.place }}</p>
+                    <p class="cr-modal__note">{{ icon.clock(16) }} {{ detail.note }}</p>
+                    <span class="cr-modal__rule" aria-hidden="true"></span>
+                </header>
+
+                <div class="cr-modal__body">
+                    <h3 class="cr-modal__h3">{{ 'Description du poste'|trans }}</h3>
+                    <p class="cr-modal__line"><strong>{{ 'Supérieur hiérarchique'|trans }}</strong> {{ detail.manager }}</p>
+                    <p class="cr-modal__line"><strong>{{ 'Division :'|trans }}</strong> {{ detail.division }}</p>
+
+                    {% for bloc in [
+                        { title: 'Mission :', items: detail.mission },
+                        { title: 'Description :', items: detail.description },
+                        { title: 'Education', items: detail.education },
+                        { title: 'Expérience :', items: detail.experience }
+                    ] %}
+                        <h4 class="cr-modal__h4">{{ bloc.title|trans }}</h4>
+                        <ul class="cr-modal__list">
+                            {% for li in bloc.items %}<li>{{ li }}</li>{% endfor %}
+                        </ul>
+                    {% endfor %}
+
+                    <div class="cr-modal__actions">
+                        <a href="{{ path('app_corporate_contact') }}" class="pl-btn pl-btn--primary cr-modal__apply">{{ 'Postulez dès maintenant'|trans }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
