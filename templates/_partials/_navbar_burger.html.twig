@@ -1,0 +1,18 @@
+{#
+    Bouton « burger » commun aux quatre en-têtes.
+
+    Il pilote le panneau `offcanvas` de Bootstrap 5.3 (déjà chargé par
+    assets/app.js) qui enveloppe la navigation. Au-dessus de 992px le panneau
+    est neutralisé en CSS et la navigation reprend sa place en ligne — c'est
+    exactement le mécanisme de `navbar-expand-lg` de Bootstrap, réécrit avec
+    nos classes.
+
+    Variable : panel_id (identifiant du panneau à ouvrir).
+#}
+<button class="pl-burger" type="button"
+        data-bs-toggle="offcanvas" data-bs-target="#{{ panel_id }}"
+        aria-controls="{{ panel_id }}" aria-label="{{ 'Ouvrir le menu'|trans }}">
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+</button>

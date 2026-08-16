@@ -975,7 +975,7 @@ a.act-popup__title:hover { color: var(--pl-action); }
 /* ===========================================================================
  *  Adaptation largeurs intermédiaires
  * ======================================================================== */
-@media (max-width: 1100px) {
+@media (max-width: 1199.98px) {
     .act-toolbar { flex-wrap: wrap; }
     .act-detail__layout { grid-template-columns: 1fr; }
     .act-booking { position: static; }

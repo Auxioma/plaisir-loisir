@@ -276,7 +276,7 @@
 .home-search__field:first-child { padding-left: 12px; }
 .home-search__field:nth-child(4) { border-right: 0; }
 
-@media (max-width: 1300px) {
+@media (max-width: 1399.98px) {
     .home-search__fields {
         grid-template-columns: repeat(4, 1fr) auto;
         height: auto;
@@ -783,7 +783,7 @@
 /* ===========================================================================
  *  Adaptation largeurs intermédiaires
  * ======================================================================== */
-@media (max-width: 1100px) {
+@media (max-width: 1199.98px) {
     /* .container : la variante réduite est dans bootstrap-theme.css. */
     .card-grid { grid-template-columns: repeat(2, 1fr); }
     .home-reviews__grid { grid-template-columns: 1fr; }

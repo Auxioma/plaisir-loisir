@@ -464,7 +464,7 @@
  *  RESPONSIVE.
  * ------------------------------------------------------------------------ */
 
-@media (max-width: 1200px) {
+@media (max-width: 1199.98px) {
     .ev-grid { grid-template-columns: 1fr; }
     .ev-col { position: static; }
     .ev-head { flex-direction: column; }
@@ -1147,7 +1147,7 @@
  *  RESPONSIVE (flow navigation).
  * ------------------------------------------------------------------------ */
 
-@media (max-width: 1200px) {
+@media (max-width: 1199.98px) {
     .evn-grid, .evn-similar-grid, .evn-sel-grid { grid-template-columns: repeat(2, 1fr); }
     .evn-gcards3 { grid-template-columns: repeat(2, 1fr); }
     .evn-detail__layout, .evn-ghead, .evn-about, .evn-sent__layout { grid-template-columns: 1fr; }
@@ -1158,7 +1158,7 @@
     .evn-cat { flex: 1 1 150px; }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767.98px) {
     .evn-grid, .evn-similar-grid, .evn-sel-grid, .evn-gcards3 { grid-template-columns: 1fr; }
     .evn-section__head { flex-direction: column; }
     .evn-gtabs { flex-direction: column; align-items: stretch; }
@@ -1269,7 +1269,7 @@
 .gw-success .ev-success__title { font-size: 47px; margin-bottom: 26px; }
 .gw-success .ev-success__badge { width: 230px; margin-bottom: 16px; }
 
-@media (max-width: 900px) {
+@media (max-width: 991.98px) {
     .gw-wrap { margin-top: 36px; }
     .gw-title { font-size: 36px; }
 }

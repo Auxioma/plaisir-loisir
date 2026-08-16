@@ -15,27 +15,38 @@
                 <img src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir & Loisirs">
             </a>
 
-            <nav class="pl-nav" aria-label="{{ 'Navigation principale'|trans }}">
-                <details class="pl-dropdown">
-                    <summary class="pl-dropdown__toggle">{{ 'Découvrez'|trans }} {{ icon.chevron_down(16) }}</summary>
-                    <div class="pl-dropdown__menu">
-                        <a href="{{ path('app_home') }}" class="pl-dropdown__item is-active">Plaisirs &amp; Loisirs</a>
-                        {# Accès au volet Événements de la plateforme (landing du flow). #}
-                        <a href="{{ path('app_events') }}" class="pl-dropdown__item">Plaisirs &amp; Loisirs Events</a>
-                    </div>
-                </details>
+            {# Sous 992px la navigation glisse dans un panneau offcanvas de
+               Bootstrap ; au-dessus, le CSS le neutralise et elle reprend sa
+               place en ligne (mécanique de `navbar-expand-lg`). #}
+            <div class="pl-navbar__panel offcanvas offcanvas-end" id="plNav" tabindex="-1" aria-label="{{ 'Menu'|trans }}">
+                <div class="pl-navbar__panel-head">
+                    <img class="pl-navbar__panel-logo" src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir &amp; Loisirs">
+                    <button type="button" class="pl-navbar__panel-close" data-bs-dismiss="offcanvas" aria-label="{{ 'Fermer'|trans }}">{{ icon.x(16) }}</button>
+                </div>
+                <div class="pl-navbar__panel-body">
+                    <nav class="pl-nav" aria-label="{{ 'Navigation principale'|trans }}">
+                        <details class="pl-dropdown">
+                            <summary class="pl-dropdown__toggle">{{ 'Découvrez'|trans }} {{ icon.chevron_down(16) }}</summary>
+                            <div class="pl-dropdown__menu">
+                                <a href="{{ path('app_home') }}" class="pl-dropdown__item is-active">Plaisirs &amp; Loisirs</a>
+                                {# Accès au volet Événements de la plateforme (landing du flow). #}
+                                <a href="{{ path('app_events') }}" class="pl-dropdown__item">Plaisirs &amp; Loisirs Events</a>
+                            </div>
+                        </details>
 
-                {# Sélecteur de langue : bascule réelle via /langue/{fr|en} (session). #}
-                <details class="pl-dropdown pl-dropdown--lang">
-                    <summary class="pl-dropdown__toggle">
-                        {#- Maquette : le sélecteur de langue ne porte PAS de chevron. -#}
-                        {%- if app.request.locale == 'en' %}{{ icon.flag_gb(16) }} Engl.{% else %}{{ icon.flag_fr(16) }} Fran.{% endif %}</summary>
-                    <div class="pl-dropdown__menu">
-                        <a href="{{ path('app_locale_switch', { locale: 'fr' }) }}" class="pl-dropdown__item{{ app.request.locale != 'en' ? ' is-active' }}">{{ icon.flag_fr(16) }} {{ 'Français'|trans }}</a>
-                        <a href="{{ path('app_locale_switch', { locale: 'en' }) }}" class="pl-dropdown__item{{ app.request.locale == 'en' ? ' is-active' }}">{{ icon.flag_gb(16) }} {{ 'Anglais'|trans }}</a>
-                    </div>
-                </details>
-            </nav>
+                        {# Sélecteur de langue : bascule réelle via /langue/{fr|en} (session). #}
+                        <details class="pl-dropdown pl-dropdown--lang">
+                            <summary class="pl-dropdown__toggle">
+                                {#- Maquette : le sélecteur de langue ne porte PAS de chevron. -#}
+                                {%- if app.request.locale == 'en' %}{{ icon.flag_gb(16) }} Engl.{% else %}{{ icon.flag_fr(16) }} Fran.{% endif %}</summary>
+                            <div class="pl-dropdown__menu">
+                                <a href="{{ path('app_locale_switch', { locale: 'fr' }) }}" class="pl-dropdown__item{{ app.request.locale != 'en' ? ' is-active' }}">{{ icon.flag_fr(16) }} {{ 'Français'|trans }}</a>
+                                <a href="{{ path('app_locale_switch', { locale: 'en' }) }}" class="pl-dropdown__item{{ app.request.locale == 'en' ? ' is-active' }}">{{ icon.flag_gb(16) }} {{ 'Anglais'|trans }}</a>
+                            </div>
+                        </details>
+                    </nav>
+                </div>
+            </div>
         </div>
 
         <div class="pl-navbar__actions">
@@ -43,6 +54,7 @@
             <a href="{{ path('app_auth_choice') }}" class="pl-btn pl-btn--outline-dark">
                 {{ icon.person(20) }} {{ "S'inscrire"|trans }}
             </a>
+            {% include '_partials/_navbar_burger.html.twig' with { panel_id: 'plNav' } %}
         </div>
     </div>
 </header>

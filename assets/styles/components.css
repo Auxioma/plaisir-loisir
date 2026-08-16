@@ -169,7 +169,7 @@
 }
 
 /* Sur écran un peu plus étroit, on réduit les marges latérales de la navbar. */
-@media (max-width: 1280px) {
+@media (max-width: 1399.98px) {
     .pl-navbar { padding: 0 var(--pl-sp-32); }
 }
 
