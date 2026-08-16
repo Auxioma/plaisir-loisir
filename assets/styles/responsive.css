@@ -1,0 +1,1155 @@
+/* ==========================================================================
+ *  RESPONSIVE — surcharges par palier
+ *
+ *  POURQUOI UN FICHIER À PART
+ *  Le site a été calé au pixel sur la maquette 1440. Toucher aux règles
+ *  existantes ferait courir un risque de régression à ce travail de
+ *  conformité. Toutes les adaptations vivent donc ici, dans un fichier chargé
+ *  EN DERNIER : à spécificité égale, une règle de ce fichier l'emporte
+ *  toujours sur celle qu'elle dégrade, et la revue n'a qu'un seul endroit à
+ *  lire.
+ *
+ *  PALIERS — ceux de Bootstrap 5.3, déjà chargé :
+ *    xs   < 576    téléphone portrait
+ *    sm  >= 576    téléphone paysage
+ *    md  >= 768    tablette portrait (iPad 768)
+ *    lg  >= 992    tablette paysage / petit portable
+ *    xl  >= 1200   écran
+ *    xxl >= 1400   la maquette (1440)
+ *
+ *  On écrit en `max-width` (desktop-first) parce que le point de départ est le
+ *  desktop figé. Seule exception assumée : la neutralisation du panneau de
+ *  navigation, écrite en `min-width` — c'est la mécanique de `navbar-expand-*`
+ *  de Bootstrap, qu'on reprend telle quelle.
+ *
+ *  La maquette mobile n'existe pas. Les règles de dégradation appliquées
+ *  partout, et décidées avec le client faute de maquette, sont :
+ *    - les grilles passent 4 -> 2 -> 1 colonne (3 -> 2 -> 1 pour les trios) ;
+ *    - toute largeur figée en px devient 100% de son conteneur ;
+ *    - les héros perdent leur photo de côté, qui repasse en fond ou disparaît ;
+ *    - les blocs à deux colonnes (formulaire + aside) s'empilent ;
+ *    - rien ne défile horizontalement, sauf les rubans de cartes prévus pour.
+ * ======================================================================== */
+
+/* ==========================================================================
+ *  1. SOCLE
+ * ======================================================================== */
+
+/* --------------------------------------------------------------------------
+ *  1.1 Conteneur
+ *  La gouttière de 220px (110 de marge) est celle de la maquette. En dessous
+ *  de 1200px elle mange tout : on redescend par paliers jusqu'à 32px de marge
+ *  sur téléphone.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 1199.98px) {
+    .container,
+    .container-fluid,
+    .container--search,
+    .container--evsearch { --bs-gutter-x: 96px; }
+}
+@media (max-width: 991.98px) {
+    .container,
+    .container-fluid,
+    .container--search,
+    .container--evsearch { --bs-gutter-x: 64px; }
+}
+@media (max-width: 767.98px) {
+    .container,
+    .container-fluid,
+    .container--search,
+    .container--evsearch { --bs-gutter-x: 48px; }
+}
+@media (max-width: 575.98px) {
+    .container,
+    .container-fluid,
+    .container--search,
+    .container--evsearch { --bs-gutter-x: 32px; }
+}
+
+/* --------------------------------------------------------------------------
+ *  1.2 En-tête : panneau de navigation
+ *
+ *  POINT DE BASCULE : 1400px (`xxl`), pas 992px.
+ *  Ce n'est pas un choix de confort mais une mesure. La navigation en ligne du
+ *  header — logo + « Découvrez » + cinq liens + boutons + icônes — a une
+ *  largeur incompressible d'environ 1015px de contenu ; avec les marges elle
+ *  déborde tant que la fenêtre n'atteint pas ~1360px (vérifié sur les quatre
+ *  headers : /activites, /destinations, /evenements, /a-propos). Le premier
+ *  palier Bootstrap standard où elle tient est donc `xxl`. C'est exactement
+ *  `navbar-expand-xxl` — la maquette 1440 garde sa navigation en ligne, et les
+ *  tablettes paysage reçoivent le burger.
+ * ------------------------------------------------------------------------ */
+
+/* Au-dessus de 1400px, le panneau n'existe pas : on annule tout ce que la
+   classe `.offcanvas` de Bootstrap impose, exactement comme le fait
+   `navbar-expand-xxl`. La navigation reprend sa place dans le flux. */
+@media (min-width: 1400px) {
+    .pl-navbar__panel.offcanvas {
+        position: static;
+        z-index: auto;
+        width: auto !important;
+        height: auto !important;
+        max-width: none;
+        visibility: visible !important;
+        background: transparent !important;
+        border: 0 !important;
+        transform: none !important;
+        transition: none;
+    }
+    .pl-navbar__panel-head { display: none; }
+    .pl-navbar__panel-body { display: flex; padding: 0; overflow: visible; }
+}
+
+/* Sous 1400px : le panneau glisse depuis la droite. */
+@media (max-width: 1399.98px) {
+    .pl-navbar__panel.offcanvas { width: 320px; max-width: 86vw; }
+
+    .pl-navbar__panel-head {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--pl-border);
+    }
+    .pl-navbar__panel-logo { height: 36px; width: auto; }
+    .pl-navbar__panel-close {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 36px; height: 36px;
+        background: var(--pl-surface-dashboard);
+        border: 0; border-radius: 50%;
+        color: var(--pl-text);
+        cursor: pointer;
+    }
+
+    .pl-navbar__panel-body { padding: 16px 12px 32px; overflow-y: auto; }
+
+    /* Dans le panneau, les liens s'empilent et prennent toute la largeur. */
+    .pl-navbar__panel .pl-nav {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+    }
+    .pl-navbar__panel .pl-nav__link {
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 8px;
+    }
+    /* La pastille « Nouveau » ne peut plus flotter sous un lien pleine
+       largeur : elle passe à droite du libellé. */
+    .pl-navbar__panel .pl-nav__link--badged { justify-content: flex-start; }
+    .pl-navbar__panel .pl-nav__badge {
+        position: static;
+        transform: none;
+        margin-left: 8px;
+    }
+    /* Les menus déroulants natifs (<details>) s'ouvrent en accordéon. */
+    .pl-navbar__panel .pl-dropdown { width: 100%; }
+    .pl-navbar__panel .pl-dropdown__toggle { padding: 12px; font-size: 16px; }
+    .pl-navbar__panel .pl-dropdown__menu {
+        position: static;
+        width: 100%;
+        margin: 0 0 4px;
+        box-shadow: none;
+        border: 0;
+        padding-left: 12px;
+    }
+}
+
+/* Le burger lui-même : trois traits, 44px de cible tactile.
+   Ce bloc ne déclare AUCUN `display` : une requête média n'ajoute pas de
+   spécificité, donc entre `@media (…) { .pl-burger { … } }` et `.pl-burger { … }`
+   c'est simplement la dernière écrite qui gagne. Les deux `display` sont donc
+   posés juste après, en aval de toute règle de base, pour que l'ordre du
+   fichier ne puisse plus les inverser. */
+.pl-burger {
+    flex-direction: column; justify-content: center;
+    gap: 5px;
+    width: 44px; height: 44px;
+    padding: 0 10px;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+}
+.pl-burger span {
+    display: block;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--pl-text);
+}
+/* Bascule du burger — à laisser en dernier, cf. commentaire ci-dessus. */
+@media (min-width: 1400px) { .pl-burger { display: none; } }
+@media (max-width: 1399.98px) { .pl-burger { display: inline-flex; } }
+
+/* --------------------------------------------------------------------------
+ *  1.3 En-tête : barre elle-même
+ * ------------------------------------------------------------------------ */
+@media (max-width: 1199.98px) {
+    .pl-navbar { padding-inline: 48px; }
+}
+@media (max-width: 991.98px) {
+    .pl-navbar { height: 76px; padding-inline: 32px; }
+    .pl-navbar__logo img { height: 36px; }
+    /* Les boutons d'action de l'en-tête ne tiennent pas à côté du burger. */
+    .pl-navbar__actions .pl-btn { display: none; }
+}
+@media (max-width: 575.98px) {
+    .pl-navbar { height: 68px; padding-inline: 20px; }
+    .pl-navbar__logo img { height: 30px; }
+    /* On ne garde que la cloche et l'avatar à côté du burger. */
+    .pl-navbar__actions .pl-iconbtn:not(:last-of-type) { display: none; }
+    .pl-navbar__actions { gap: 4px; }
+}
+
+/* --------------------------------------------------------------------------
+ *  1.4 Titres et textes
+ *  Les corps de la maquette (48px de titre de section, 40px de H1 de bloc)
+ *  sont dessinés pour 1440. On les réduit par palier plutôt qu'au cas par cas.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 991.98px) {
+    .act-head__title,
+    .pw-section__title,
+    .cor-why__title,
+    .cor-mission__title,
+    .cor-team__title,
+    .home-section__title,
+    .pf-title,
+    .lg-title { font-size: 36px; line-height: 1.15; }
+
+    .cr-why__title,
+    .cr-spont__title,
+    .pw-cta__title,
+    .cor-cta__title,
+    .ct-title { font-size: 32px; line-height: 1.2; }
+}
+@media (max-width: 575.98px) {
+    .act-head__title,
+    .pw-section__title,
+    .cor-why__title,
+    .cor-mission__title,
+    .cor-team__title,
+    .home-section__title,
+    .pf-title,
+    .lg-title { font-size: 28px; }
+
+    .cr-why__title,
+    .cr-spont__title,
+    .pw-cta__title,
+    .cor-cta__title,
+    .ct-title { font-size: 24px; }
+}
+
+/* --------------------------------------------------------------------------
+ *  1.5 Boutons et champs : cible tactile
+ *  Sous 992px on garantit 44px de haut, la cible minimale recommandée par
+ *  Apple comme par Android.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 991.98px) {
+    .pl-btn { min-height: 44px; }
+    .pl-iconbtn { min-width: 44px; min-height: 44px; }
+}
+
+/* --------------------------------------------------------------------------
+ *  1.6 Pied de page
+ * ------------------------------------------------------------------------ */
+/* Les colonnes sont déjà en `flex-wrap: wrap` : il suffit de resserrer la
+   gouttière de 100px, qui force sinon une seule colonne par ligne. */
+@media (max-width: 1199.98px) {
+    .pl-footer { padding-inline: 48px; }
+    .pl-footer__columns { gap: 40px 56px; }
+}
+@media (max-width: 991.98px) {
+    .pl-footer { padding-inline: 32px; }
+    .pl-footer__columns { gap: 36px 40px; }
+}
+@media (max-width: 575.98px) {
+    .pl-footer { padding-inline: 20px; }
+    .pl-footer__columns { flex-direction: column; gap: 28px; }
+    .pl-footer__brand { max-width: none; }
+    .pl-footer__bottom { flex-direction: column; align-items: flex-start; gap: 16px; }
+}
+
+/* --------------------------------------------------------------------------
+ *  1.7 Garde-fou : rien ne doit déborder horizontalement
+ *
+ *  On NE met PAS `overflow-x: hidden` sur `body`. Ce serait un cache-misère :
+ *  il coupe le contenu au lieu de le remettre en page, il masque les
+ *  régressions futures au lieu de les révéler, et il neutralise le
+ *  `position: sticky` des colonnes latérales (Compte, wizard Événements).
+ *  L'absence de débordement est établie par la mesure — 44 routes x 15
+ *  largeurs, de 320 à 1920 — pas par un rognage.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 1399.98px) {
+    img, svg, video { max-width: 100%; }
+}
+
+/* --------------------------------------------------------------------------
+ *  1.8 Téléphone étroit (320 -> 414)
+ *  L'iPhone SE fait 320pt de large : une fois la marge du conteneur déduite,
+ *  il reste 288px. Tout libellé qui refuse de se couper, tout retrait dessiné
+ *  pour le bureau et toute rangée de pastilles y déborde. Ce bloc traite ces
+ *  trois causes une fois pour toutes, plutôt qu'écran par écran.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 575.98px) {
+    /* Un mot plus large que sa colonne déborde de sa boîte sans l'élargir :
+       la boîte reste dans les clous et c'est le texte qui sort. C'était la
+       cause de la moitié des débordements résiduels à 320px (titres de
+       section, fils d'Ariane). On autorise la coupure de mot — sans effet
+       visible tant que rien ne déborde. */
+    body { overflow-wrap: break-word; }
+
+    /* Un champ de formulaire a une largeur intrinsèque (une vingtaine de
+       caractères) qui l'empêche de descendre sous ~280px dans une grille. */
+    input, select, textarea { min-width: 0; max-width: 100%; }
+    /* Un item de grille ou de flex garde par défaut sa largeur `min-content` :
+       borner l'input ne suffit pas, il faut borner la case qui le contient. */
+    .pf-row > *, .ct-form__row > * { min-width: 0; }
+
+    /* Rangées en `flex` dont les enfants ne se replient pas : fil d'Ariane,
+       ligne de participant, actions de l'aperçu du wizard. */
+    .act-breadcrumb,
+    .evn-prow,
+    .evn-prow__actions,
+    .ev-preview__actions,
+    .ev-head__actions,
+    .evn-subtabs,
+    .evn-subtabs__pills,
+    .evn-members-tools,
+    .evn-members-tools__left,
+    .evn-mrow { flex-wrap: wrap; }
+    /* `.ev-head__actions` porte `flex: none` : sans le lever, la rangée refuse
+       de rétrécir même une fois le repli autorisé. */
+    .ev-head__actions { flex: 1 1 auto; }
+
+    /* « Trier par : Les plus populaires ⌄ » fait 363px et porte
+       `white-space: nowrap` : il ne rentre dans aucun téléphone. */
+    .act-tool,
+    .act-chip,
+    .pl-btn { white-space: normal; text-align: left; }
+    .act-toolbar__left,
+    .act-toolbar__right,
+    .dest-sort,
+    .evn-sort { flex-wrap: wrap; }
+
+    /* Les rangées d'onglets ne se replient pas : elles défilent au doigt, avec
+       le même traitement que le menu de l'espace compte. */
+    .acc-tabs,
+    .acc-ntabs {
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+    .acc-tabs::-webkit-scrollbar,
+    .acc-ntabs::-webkit-scrollbar { display: none; }
+    .acc-tab,
+    .acc-ntab { flex: none; white-space: nowrap; }
+}
+
+/* ==========================================================================
+ *  2. ACCUEIL (home-)
+ *  home.css portait déjà une rupture à 1100px ; on la réaligne sur les paliers
+ *  Bootstrap et on descend jusqu'au téléphone.
+ * ======================================================================== */
+
+/* --------------------------------------------------------------------------
+ *  2.1 Héros
+ * ------------------------------------------------------------------------ */
+@media (max-width: 991.98px) {
+    .home-hero { min-height: 460px; }
+    .home-hero__inner { padding-block: 56px 0; }
+    .home-hero__title { max-width: none; font-size: 40px; line-height: 1.2; }
+    .home-hero__subtitle { max-width: none; }
+    /* La photo passe derrière un voile plus opaque : sans elle le texte foncé
+       devient illisible dès que la colonne occupe toute la largeur. */
+    .home-hero__overlay {
+        background:
+            linear-gradient(90deg, rgba(255, 255, 255, .95) 0%, rgba(255, 255, 255, .88) 60%, rgba(255, 255, 255, .72) 100%),
+            linear-gradient(180deg, rgba(255, 255, 255, .6) 0%, transparent 30%);
+    }
+    .home-hero__actions { flex-wrap: wrap; }
+}
+@media (max-width: 575.98px) {
+    .home-hero { min-height: 400px; }
+    .home-hero__title { font-size: 30px; }
+    .home-hero__actions .pl-btn { width: 100%; justify-content: center; }
+}
+
+/* --------------------------------------------------------------------------
+ *  2.2 Carte de recherche
+ *  Cinq colonnes figées (268/283/295/236/130) : elles passent à deux, puis à
+ *  une. Le bouton prend toute la largeur en bas.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 1199.98px) {
+    .home-search-wrap { margin-top: -48px; }
+    .home-search__fields { grid-template-columns: repeat(2, 1fr); }
+    .home-search__field { border-right: 0; }
+}
+@media (max-width: 767.98px) {
+    /* La carte quitte la photo du héros et se pose sur du blanc : le voile
+       translucide et les onglets inactifs en blanc deviendraient invisibles.
+       On repasse donc sur un fond plein et des onglets gris. */
+    .home-search-wrap { margin-top: 24px; }
+    .home-search {
+        padding: 12px;
+        background: var(--pl-white);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        border: 1px solid var(--pl-border);
+    }
+    .home-search__fields { grid-template-columns: 1fr; }
+    .home-search__tab {
+        flex: 1;
+        justify-content: center;
+        padding-inline: 12px;
+        background: var(--pl-surface-dashboard);
+        color: var(--pl-text);
+    }
+    .home-search__tab .pl-icon { color: var(--pl-text-secondary); }
+    .home-search__tab.is-active { background: var(--pl-white); color: var(--pl-action); }
+    .home-search__tab.is-active .pl-icon { color: var(--pl-action); }
+}
+
+/* --------------------------------------------------------------------------
+ *  2.3 Sections et grilles de cartes
+ *  `.card-grid` est la grille partagée des cartes d'activité : 4 colonnes sur
+ *  la maquette, 3 en tablette paysage, 2 en tablette portrait, 1 au téléphone.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 1199.98px) {
+    .card-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 991.98px) {
+    .card-grid { grid-template-columns: repeat(2, 1fr); gap: 28px 16px; }
+    .home-section { padding-block: 40px; }
+    .home-section__head { flex-direction: column; gap: 16px; }
+}
+@media (max-width: 575.98px) {
+    .card-grid { grid-template-columns: 1fr; gap: 24px; }
+    .home-section { padding-block: 32px; }
+}
+
+/* --------------------------------------------------------------------------
+ *  2.4 Blocs à deux colonnes
+ * ------------------------------------------------------------------------ */
+@media (max-width: 991.98px) {
+    .home-provider__inner,
+    .home-reviews__grid,
+    .home-private__inner,
+    .home-private__panel,
+    .home-gift__inner,
+    .home-pro__inner { grid-template-columns: 1fr; }
+
+    /* Les illustrations de ces bandes sont décoratives : sur une colonne elles
+       n'apportent plus rien et coûtent un écran de défilement. */
+    .home-pro__photo,
+    .home-gift__photo { max-height: 260px; object-fit: cover; }
+}
+@media (max-width: 575.98px) {
+    .home-cats { flex-wrap: wrap; }
+    .home-cal__days, .home-cal__grid { gap: 3px; }
+}
+
+/* ==========================================================================
+ *  3. ACTIVITÉS (act-)
+ * ======================================================================== */
+
+/* --------------------------------------------------------------------------
+ *  3.1 En-tête de listing et barre de recherche
+ * ------------------------------------------------------------------------ */
+@media (max-width: 991.98px) {
+    .act-head__subtitle { max-width: none; }
+    .act-search { max-width: none; flex-wrap: wrap; }
+    .act-toolbar { flex-wrap: wrap; gap: 12px; }
+    /* Le ruban de filtres rapides défile au doigt plutôt que de passer à la
+       ligne : c'est le seul défilement horizontal autorisé du site. */
+    .act-chips {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding-bottom: 4px;
+    }
+    .act-chips::-webkit-scrollbar { display: none; }
+    .act-chip { flex: none; }
+}
+
+/* --------------------------------------------------------------------------
+ *  3.2 Listing avec panneau de filtres
+ *  La maquette met les filtres en colonne de gauche. Sous 992px la colonne
+ *  disparaît du flux : les filtres passent au-dessus des résultats, repliés
+ *  dans leur propre bloc, et la grille récupère toute la largeur.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 991.98px) {
+    .act-page.has-filters {
+        display: block;
+        padding-inline: 0;
+    }
+    .act-filters {
+        position: static;
+        max-height: none;
+        overflow: visible;
+        margin-bottom: 24px;
+    }
+    .act-page.has-filters .act-content .container,
+    .act-page.has-filters .act-head .container { max-width: none; }
+    .act-page.has-filters .act-content .card-grid { grid-template-columns: repeat(2, 1fr); }
+    /* La maquette masque les cartes au-delà de la 6e quand la sidebar est
+       ouverte ; sur deux colonnes on rétablit la grille complète. */
+    .act-page.has-filters .act-grid > :nth-child(n+7) { display: grid; }
+}
+@media (max-width: 575.98px) {
+    .act-page.has-filters .act-content .card-grid { grid-template-columns: 1fr; }
+    .act-budget__inputs { grid-template-columns: 1fr; }
+
+    /* Les deux champs de la barre de recherche (ville + mot-clé) se coupent
+       mutuellement sous 576 : ils s'empilent, le bouton passe en pleine
+       largeur sous eux. */
+    .act-search { flex-direction: column; gap: 8px; }
+    .act-search__bar { flex-direction: column; align-items: stretch; border-radius: 8px; padding: 8px 16px; }
+    .act-search__field { min-height: 44px; }
+    .act-search__sep { width: auto; height: 1px; margin: 0; }
+    .act-search__submit { width: 100%; border-radius: 8px; }
+}
+
+/* --------------------------------------------------------------------------
+ *  3.3 Vue carte
+ *  Liste et carte côte à côte n'ont plus de sens sous 992px : la carte passe
+ *  au-dessus, sur une hauteur fixe, et la liste défile en dessous.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 991.98px) {
+    .act-mapview {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    .act-mapview__map { height: 320px; order: -1; }
+    .act-mapview__list {
+        overflow: visible;
+        height: auto;
+        padding: 24px 32px;
+    }
+}
+
+/* --------------------------------------------------------------------------
+ *  3.4 Détail d'une activité
+ * ------------------------------------------------------------------------ */
+@media (max-width: 1199.98px) {
+    .act-detail__layout { padding-inline: 48px; }
+}
+@media (max-width: 991.98px) {
+    .act-detail__layout {
+        grid-template-columns: 1fr;
+        padding-inline: 32px;
+    }
+    .act-booking { position: static; }
+    .act-logistics,
+    .act-includes,
+    .act-review-form__row { grid-template-columns: 1fr; }
+    /* La mosaïque garde sa vedette mais tombe à deux colonnes. */
+    .act-gallery { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 200px; }
+}
+@media (max-width: 575.98px) {
+    .act-detail__layout { padding-inline: 20px; }
+    .act-gallery { grid-template-columns: 1fr; grid-auto-rows: 220px; }
+    .act-gallery__item--big { grid-column: span 1; }
+}
+
+/* ==========================================================================
+ *  4. DESTINATIONS (dest-)
+ * ======================================================================== */
+@media (max-width: 991.98px) {
+    .dest-hero__title,
+    .dest-hero__subtitle { max-width: none; }
+    /* La mosaïque de 8 colonnes devient 3, puis 2, puis 1 ; les vignettes qui
+       couvraient plusieurs cases reprennent une case. */
+    .dest-mosaic { grid-template-columns: repeat(3, 1fr); grid-auto-rows: 220px; }
+    .dest-banner { grid-template-columns: 1fr; }
+    .dest-banner__text { max-width: none; }
+    .dest-reviews--column .home-reviews__grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 767.98px) {
+    .dest-mosaic { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 200px; }
+    .dest-mosaic > * { grid-column: span 1 !important; grid-row: span 1 !important; }
+}
+@media (max-width: 575.98px) {
+    .dest-mosaic { grid-template-columns: 1fr; grid-auto-rows: 200px; }
+    .dest-cal__days, .dest-cal__grid { font-size: 13px; }
+    /* Le ruban de catégories garde ses flèches mais elles ne doivent plus
+       rogner la piste : on les sort du flux, au ras des bords. */
+    .dest-cats { position: relative; }
+    .dest-cats__scroll { padding-inline: 4px; }
+    .dest-cats > button { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; }
+    .dest-cats > button:first-child { left: -6px; }
+    .dest-cats > button:last-child { right: -6px; }
+}
+
+/* ==========================================================================
+ *  5. OFFRES DU MOMENT (of-)
+ * ======================================================================== */
+@media (max-width: 991.98px) {
+    .of-hero__title,
+    .of-hero__subtitle { max-width: none; }
+    /* Les pastilles décoratives du héros n'ont plus de place. */
+    .of-hero__blob { display: none; }
+    .of-flash { grid-template-columns: 1fr; }
+    .of-flash__desc { max-width: none; }
+    .of-news__form { max-width: none; }
+    .of-listing.has-filters .of-grid,
+    .of-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 575.98px) {
+    .of-listing.has-filters .of-grid,
+    .of-grid { grid-template-columns: 1fr; }
+}
+
+/* ==========================================================================
+ *  6. BONS CADEAUX (gift-)
+ * ======================================================================== */
+/* Les quatre pastilles d'argument sont alignées en `flex` sans repli : à elles
+   quatre elles occupent 1300px et débordaient dès 1399. Elles se replient. */
+@media (max-width: 1399.98px) {
+    .gift-args { flex-wrap: wrap; }
+}
+@media (max-width: 575.98px) {
+    .gift-arg { flex-wrap: wrap; }
+}
+@media (max-width: 991.98px) {
+    .gift-mosaic { grid-template-columns: repeat(4, 1fr); }
+    .gift-duo { grid-template-columns: 1fr; }
+    .gift-recipients { grid-template-columns: repeat(2, 1fr); }
+    .gift-fgrid { grid-template-columns: repeat(2, 1fr); }
+    .gift-listing.has-filters .card-grid { grid-template-columns: repeat(2, 1fr); }
+
+    /* Tunnel « Offrir » : le récapitulatif de 396px passe sous le formulaire. */
+    .gift-tunnel { grid-template-columns: 1fr; }
+    .gift-tunnel-page .container { --bs-gutter-x: 64px; }
+    .gift-summary { position: static; }
+}
+@media (max-width: 767.98px) {
+    .gift-mosaic { grid-template-columns: repeat(2, 1fr); }
+    .gift-mosaic > * { grid-column: span 1 !important; grid-row: span 1 !important; }
+    .gift-pays { flex-direction: column; gap: 12px; }
+
+    /* Héros : la photo du bon cadeau est chargée et le texte foncé passe
+       dessus. On l'estompe et on laisse les montants aller à la ligne. */
+    .gift-hero__img { opacity: .22; }
+    .gift-hero__inner { padding-block: 48px 40px; }
+    .gift-hero__title,
+    .gift-hero__subtitle { max-width: none; }
+    .gift-amounts { flex-wrap: wrap; gap: 10px; }
+    .gift-amounts > * { flex: 1 1 auto; min-width: 88px; }
+    .gift-hero__cta { width: 100%; }
+}
+@media (max-width: 575.98px) {
+    .gift-recipients,
+    .gift-fgrid,
+    .gift-row,
+    .gift-listing.has-filters .card-grid { grid-template-columns: 1fr; }
+    .gift-mosaic { grid-template-columns: 1fr; }
+    .gift-tunnel-page .container { --bs-gutter-x: 32px; }
+}
+
+/* ==========================================================================
+ *  7. ÉVÉNEMENTS (ev-, evn-, gw-)
+ *  events.css portait déjà des ruptures à 1200, 900 et 640px. On les réaligne
+ *  sur les paliers Bootstrap et on complète ce qui manquait.
+ * ======================================================================== */
+
+/* --------------------------------------------------------------------------
+ *  7.1 Landing et wizard de création (ev-)
+ * ------------------------------------------------------------------------ */
+/* `.ev-grid` est un « 295px 1fr 295px » : les deux panneaux latéraux du wizard
+   sont figés, et la piste centrale ne descend pas sous la largeur naturelle de
+   son contenu. À 1200 pile la règle d'empilement ci-dessous ne s'applique pas
+   encore — d'où un débordement sur cette largeur exacte. */
+@media (max-width: 1399.98px) {
+    .ev-grid { grid-template-columns: minmax(0, 295px) minmax(0, 1fr) minmax(0, 295px); }
+}
+@media (max-width: 1199.98px) {
+    .ev-grid { grid-template-columns: minmax(0, 1fr); }
+    .ev-grid > * { min-width: 0; }
+    .ev-types,
+    .ev-row { grid-template-columns: 1fr; }
+    .ev-gallery { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 575.98px) {
+    .ev-gallery { grid-template-columns: 1fr; }
+    /* La zone de dépôt de photos et les champs prennent toute la largeur. */
+    .ev-dropzone { padding: 24px 16px; }
+}
+
+/* --------------------------------------------------------------------------
+ *  7.2 Navigation Événements (evn-)
+ * ------------------------------------------------------------------------ */
+/* Le ruban de catégories est un carrousel : ses tuiles sont en `flex: none` et
+   il porte ses propres flèches. On ne le replie donc pas, on lui donne le
+   défilement horizontal qu'il annonce — c'est l'exception prévue par la règle
+   de dégradation n°5. Sans cela, ses 1380px de tuiles font défiler toute la
+   page. */
+@media (max-width: 1399.98px) {
+    .evn-cats { overflow-x: auto; scrollbar-width: none; }
+    .evn-cats::-webkit-scrollbar { display: none; }
+}
+@media (max-width: 1199.98px) {
+    .evn-grid,
+    .evn-similar-grid,
+    .evn-sel-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 991.98px) {
+    .evn-grid,
+    .evn-similar-grid,
+    .evn-sel-grid,
+    .evn-gcards3 { grid-template-columns: repeat(2, 1fr); }
+    .of-listing.has-filters .evn-grid { grid-template-columns: repeat(2, 1fr); }
+
+    /* Les mises en page « contenu + panneau de 296 » s'empilent. */
+    .evn-detail__layout,
+    .evn-ghead,
+    .evn-about,
+    .evn-sent__layout { grid-template-columns: 1fr; gap: 24px; }
+
+    .evn-hero__img { display: none; }
+    .evn-hero__inner { padding-top: 48px; }
+    .evn-hero__title { font-size: 34px; margin-bottom: 24px; line-height: 1.3; }
+    .evn-hero__subtitle { margin-bottom: 28px; }
+    /* Les trois pastilles d'argument passent en colonne : à trois de front
+       leur libellé se coupait en hauteur. */
+    .evn-hero__pills { flex-direction: column; gap: 10px; align-items: flex-start; }
+    /* La barre de recherche du héros aligne quatre champs et un bouton : sous
+       992px ils s'empilent, séparés par un trait horizontal. */
+    .evn-search { margin-top: 24px; }
+    .evn-search__inner { flex-direction: column; align-items: stretch; gap: 4px; }
+    .evn-search__field { padding: 10px 12px; }
+    .evn-search__sep { width: auto; height: 1px; }
+    .evn-search__submit { width: 100%; justify-content: center; }
+    .evn-parts { grid-template-columns: repeat(3, 1fr); }
+    .evn-section__head { flex-direction: column; align-items: flex-start; gap: 12px; }
+
+    /* Onglets de groupe : la rangée d'onglets et les boutons d'action sont en
+       `space-between` sur une seule ligne. Ils passent l'un sous l'autre, et
+       les onglets défilent au doigt plutôt que de se couper. */
+    .evn-gtabs { flex-direction: column; align-items: stretch; gap: 8px; }
+    .evn-gtabs__nav { overflow-x: auto; scrollbar-width: none; }
+    .evn-gtabs__nav::-webkit-scrollbar { display: none; }
+    .evn-gtab { flex: none; white-space: nowrap; }
+    .evn-gtabs__actions { flex-wrap: wrap; }
+
+    /* Barres d'outils des listings et des participants : les boutons se
+       replient au lieu de pousser la page. */
+    .act-toolbar,
+    .evn-toolbar,
+    .evn-participants__tools { flex-wrap: wrap; }
+    .evn-input-search { flex: 1 1 260px; }
+
+    /* Le ruban de photos du groupe porte ses propres flèches : comme le ruban
+       de catégories, il défile dans son cadre au lieu de pousser la page. */
+    .evn-gphotos { overflow-x: auto; scrollbar-width: none; }
+    .evn-gphotos::-webkit-scrollbar { display: none; }
+    .evn-gphotos img { flex: none; }
+}
+@media (max-width: 575.98px) {
+    .evn-grid,
+    .evn-similar-grid,
+    .evn-sel-grid,
+    .evn-gcards3,
+    .of-listing.has-filters .evn-grid { grid-template-columns: 1fr; }
+    .evn-parts { grid-template-columns: repeat(2, 1fr); }
+
+    /* Les deux calendriers restent sur sept colonnes — c'est leur nature, un
+       mois ne se replie pas. On réduit le corps et la hauteur des cases, et on
+       laisse la grille défiler dans son propre cadre en dessous de 620px de
+       large : la page, elle, ne défile pas. */
+    .evn-today__days, .evn-today__grid,
+    .evn-cal__days, .evn-cal__row { font-size: 12px; }
+    .evn-cal__nav { gap: 48px; }
+    .evn-cal__cell { min-height: 110px; padding: 6px; }
+    /* Le numero du jour et sa pastille « aujourd'hui » ne se coupent pas. */
+    .evn-cal__num { padding: 1px 4px; }
+    .evn-cal__event { padding: 6px 8px; }
+    .evn-side-card__avatars { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* --------------------------------------------------------------------------
+ *  7.2 bis — Téléphone étroit
+ * ------------------------------------------------------------------------ */
+@media (max-width: 575.98px) {
+    /* Bannière « rejoindre le groupe » : le texte et ses deux actions sont en
+       `space-between` sur une ligne. Ils passent l'un sous l'autre. */
+    .evn-banner { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px 18px; }
+    .evn-banner__actions { flex-wrap: wrap; gap: 12px; }
+
+    /* La carte de groupe du détail porte `white-space: nowrap` pour tenir le
+       nom, la note et le lien sur une ligne : sur téléphone elle se coupe. */
+    .evn-groupcard { white-space: normal; }
+    .evn-groupcard__name,
+    .evn-groupcard__rating { flex-wrap: wrap; }
+
+    /* Cartes de contact : 16px de retrait laissent encore trop peu de place à
+       320px pour l'icône de 52 et son libellé côte à côte. */
+    .ct-method { flex-direction: column; gap: 10px; }
+
+    /* Les cartes du wizard « Créer un événement » ont 20px de retrait et des
+       champs dessinés pour une colonne de 590 : elles se resserrent. */
+    .ev-card { padding: 16px 14px; }
+    .ev-col { gap: 14px; }
+    .ev-step { padding: 8px 10px; gap: 8px; }
+
+    /* Étape 7 : chaque contact aligne case, avatar de 48, nom et bouton
+       « Annuler l'invitation » en `flex: none`. Le bouton passe à la ligne. */
+    .ev-contact { flex-wrap: wrap; }
+    .ev-contact__text { flex: 1 1 120px; }
+    .ev-contact__btn { flex: 0 1 auto; }
+
+    /* Récapitulatif de l'étape 8 : la vignette de 160px et les libellés en
+       `nowrap` de 128px ne cohabitent pas sur un téléphone. La vignette passe
+       au-dessus et les libellés retrouvent le droit de se couper. */
+    .ev-recap { flex-direction: column-reverse; gap: 14px; padding: 16px; }
+    .ev-recap__thumb { width: 100%; }
+    .ev-recap__list > div { flex-direction: column; gap: 2px; }
+    .ev-recap__list dt { min-width: 0; white-space: normal; }
+
+    /* Écrans de succès : les deux boutons s'empilent en pleine largeur plutôt
+       que de se pousser hors de l'écran. */
+    .ev-success { padding: 56px 16px 72px; }
+    .ev-success__actions { flex-direction: column; align-items: stretch; }
+    .ev-success__actions .pl-btn { width: 100%; justify-content: center; }
+}
+
+/* --------------------------------------------------------------------------
+ *  7.3 Wizard « Créer un groupe » (gw-)
+ * ------------------------------------------------------------------------ */
+/* Un mois ne se replie pas : la grille garde ses sept colonnes et defile dans
+   son propre cadre, jusqu'a la tablette portrait ou elle rentre enfin. C'est
+   l'exception prevue par la regle de degradation n°5. */
+@media (max-width: 767.98px) {
+    .evn-cal { overflow-x: auto; scrollbar-width: none; }
+    .evn-cal::-webkit-scrollbar { display: none; }
+    .evn-cal__days, .evn-cal__row { min-width: 560px; }
+}
+
+@media (max-width: 991.98px) {
+    .gw-wrap { margin-top: 36px; }
+    .gw-title { font-size: 32px; }
+}
+@media (max-width: 575.98px) {
+    .gw-title { font-size: 26px; }
+    /* Le stepper à quatre pastilles ne tient plus : il défile au doigt. */
+    .gw-steps { overflow-x: auto; scrollbar-width: none; }
+    .gw-steps::-webkit-scrollbar { display: none; }
+}
+
+/* ==========================================================================
+ *  8. ESPACE COMPTE (acc-)
+ * ======================================================================== */
+/* L'écran de déconnexion pose un « 495px 1fr » : à 1200 pile, la colonne figée
+   plus le texte de droite dépassent encore le contenu disponible. Les deux
+   pistes deviennent proportionnelles avant l'empilement. */
+@media (max-width: 1399.98px) {
+    .acc-logout { grid-template-columns: minmax(0, 495fr) minmax(0, 400fr); }
+}
+@media (max-width: 1199.98px) {
+    /* La colonne de menu de 299px passe au-dessus du contenu. */
+    .acc-page {
+        grid-template-columns: 1fr;
+        padding: 0 48px 50px;
+        gap: 24px;
+    }
+    /* Sans `min-width: 0`, la piste `1fr` s'élargit à la largeur naturelle du
+       menu qui défile, et toute la page déborde. */
+    .acc-page > * { min-width: 0; }
+    .acc-aside { align-self: auto; }
+    .acc-main { padding-top: 0; }
+    .acc-grid { grid-template-columns: repeat(2, 1fr); }
+    .acc-logout { grid-template-columns: minmax(0, 1fr); gap: 24px; margin-top: 32px; }
+}
+@media (max-width: 991.98px) {
+    .acc-page { padding-inline: 32px; }
+    /* Le menu devient une rangée de pastilles qui défile au doigt. */
+    .acc-menu {
+        grid-auto-flow: column;
+        grid-auto-columns: max-content;
+        overflow-x: auto;
+        scrollbar-width: none;
+        gap: 8px;
+    }
+    .acc-menu::-webkit-scrollbar { display: none; }
+    .acc-menu__item { white-space: nowrap; }
+}
+@media (max-width: 575.98px) {
+    .acc-page { padding-inline: 20px; }
+    .acc-grid { grid-template-columns: 1fr; }
+    .acc-card { padding: 20px 16px 48px; }
+    .acc-logout__arg div { max-width: none; }
+}
+
+/* ==========================================================================
+ *  9. AUTHENTIFICATION (auth-)
+ * ======================================================================== */
+@media (max-width: 1199.98px) {
+    .auth-hero { padding: 48px 32px; min-height: 0; }
+    .auth-hero__row { flex-direction: column; align-items: center; gap: 32px; }
+    .auth-welcome { width: 100%; max-width: 590px; }
+    .auth-card { width: 100%; max-width: 453px; }
+}
+@media (max-width: 991.98px) {
+    /* Écran d'entrée « Client / Professionnel » : les deux panneaux et leur
+       séparateur vertical s'empilent. */
+    .auth-choice-card {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        padding: 24px;
+    }
+    .auth-choice-sep { display: none; }
+    .auth-choice-band__intro span { max-width: none; }
+}
+@media (max-width: 575.98px) {
+    .auth-hero { padding: 32px 20px; }
+    .auth-card { padding: 24px 20px; }
+    /* Les boutons sociaux passent en colonne. */
+    .auth-socials { flex-direction: column; }
+    .auth-socials > * { width: 100%; justify-content: center; }
+    .auth-choice-band__points li { flex-wrap: wrap; }
+}
+
+/* ==========================================================================
+ *  10. CORPORATE (cor-, pw-, pf-, cr-, ct-, py-, lg-)
+ * ======================================================================== */
+
+/* --------------------------------------------------------------------------
+ *  10.1 Héros institutionnels
+ *  Les bandes photo sont découpées à x350 pour 1090 de large : sous 992px il
+ *  ne reste plus de place pour poser le texte par-dessus. La photo disparaît.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 991.98px) {
+    .cor-hero,
+    .cor-hero--partner,
+    .cor-hero--careers,
+    .cor-hero--contact,
+    .cor-hero--payment { min-height: 0; }
+    .cor-hero__photo { display: none; }
+    .cor-hero__inner,
+    .cor-hero--partner .cor-hero__inner,
+    .cor-hero--careers .cor-hero__inner,
+    .cor-hero--contact .cor-hero__inner,
+    .cor-hero--payment .cor-hero__inner { padding-block: 48px 40px; }
+    .cor-hero__text { max-width: none; }
+    .cor-hero__actions { flex-wrap: wrap; }
+    .py-badges { flex-wrap: wrap; gap: 16px 33px; }
+}
+@media (max-width: 575.98px) {
+    .cor-hero__actions .pl-btn { width: 100%; justify-content: center; }
+    .py-badges li:nth-child(1) span,
+    .py-badges li:nth-child(2) span,
+    .py-badges li:nth-child(3) span { width: auto; }
+}
+
+/* --------------------------------------------------------------------------
+ *  10.0 Largeurs figées des blocs institutionnels
+ *
+ *  La grille de la maquette réserve 110px de marge de chaque côté, ce qui ne
+ *  laisse le compte qu'à 1440 : dès qu'on descend, les blocs calés en dur
+ *  (1139, 1232) sont plus larges que le contenu disponible et font défiler la
+ *  page. Ils redeviennent donc fluides sous le palier `xxl` — c'est la règle
+ *  de dégradation n°2, appliquée aux quelques blocs qui n'avaient pas de
+ *  `max-width` de secours.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 1399.98px) {
+    .cr-why__grid { width: auto; max-width: 100%; }
+    .cr-modal__panel { width: auto; margin-inline: 32px; }
+    .ct-map__img { width: 100%; }
+
+    /* Contact : colonne de formulaire figée à 728px et gouttière de 105 — soit
+       833px avant même la colonne de droite. Les deux colonnes deviennent
+       proportionnelles, en gardant le rapport de la maquette (728 / 387). */
+    .ct-cols {
+        grid-template-columns: minmax(0, 728fr) minmax(0, 387fr);
+        gap: 40px;
+        margin-inline: 0;
+    }
+
+    /* Même chose pour « Comment ça marche » (photo de 602 + rail d'étapes) : le
+       rail hérite d'une piste `1fr` qui, non bornée, ne descend pas sous la
+       largeur naturelle de ses libellés. */
+    .pw-how__cols { grid-template-columns: minmax(0, 602fr) minmax(0, 400fr); }
+
+    /* « Notre mission » : texte 580 + collage 540 + 234 de retrait = 1394 de
+       large incompressible. On garde les deux colonnes en comprimant le texte
+       et le retrait ; le collage, dont les photos sont positionnées en absolu,
+       garde sa taille. L'empilement n'arrive qu'à 992. */
+    .cor-mission__inner {
+        grid-template-columns: minmax(0, 1fr) auto;
+        padding: 58px 32px;
+        gap: 24px;
+    }
+}
+
+/* --------------------------------------------------------------------------
+ *  10.2 À propos
+ * ------------------------------------------------------------------------ */
+@media (max-width: 1199.98px) {
+    .cor-stats { width: auto; padding-inline: 32px; flex-wrap: wrap; gap: 24px; justify-content: flex-start; }
+    .cor-stats-wrap { margin-top: 32px; }
+    .cor-why__grid,
+    .cor-team__grid { width: auto; }
+}
+@media (max-width: 991.98px) {
+    .cor-why { padding-block: 48px 0; }
+    .cor-why__grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .cor-mission__inner { grid-template-columns: 1fr; min-height: 0; padding: 40px 32px; gap: 32px; }
+    .cor-mission__text { padding-top: 0; }
+    .cor-mission__collage { width: 100%; height: auto; }
+    .cor-mission__photo--back,
+    .cor-mission__photo--front { position: static; width: 100%; height: auto; }
+    .cor-mission__photo--front { display: none; }
+    .cor-team__grid { grid-template-columns: repeat(3, 1fr); gap: 32px 16px; }
+    .cor-cta { width: auto; min-height: 0; }
+    .cor-cta__palms, .cor-cta__photo { display: none; }
+    .cor-cta__actions { flex-wrap: wrap; }
+}
+@media (max-width: 575.98px) {
+    .cor-why__grid { grid-template-columns: 1fr; }
+    .cor-team__grid { grid-template-columns: repeat(2, 1fr); }
+    .cor-stats { flex-direction: column; }
+}
+
+/* --------------------------------------------------------------------------
+ *  10.3 Devenir partenaire
+ * ------------------------------------------------------------------------ */
+/* Les deux cartes d'avis sont figées à 607px chacune (mesure maquette), soit
+   1228px + gouttière : elles débordaient dès qu'on quittait le 1440. Elles
+   deviennent fluides sous 1400, en gardant leurs deux colonnes. Le `minmax(0,…)`
+   est indispensable : sans lui, la piste `1fr` prend la largeur naturelle du
+   contenu et le débordement revient. */
+@media (max-width: 1399.98px) {
+    .pw-reviews__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-inline: 0; }
+}
+@media (max-width: 991.98px) {
+    .pw-why__grid { grid-template-columns: repeat(2, 1fr); }
+    /* Photo à gauche, étapes à droite : elles s'empilent, le rail vertical
+       n'a plus de sens et disparaît. */
+    .pw-how__cols { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+    .pw-how__frame, .pw-how__photo { width: 100%; height: auto; }
+    .pw-how__photo { position: static; }
+    .pw-how__badge { left: auto; right: 16px; top: auto; bottom: 16px; }
+    .pw-steps { margin-top: 0; padding-left: 0; gap: 24px; }
+    .pw-steps::before, .pw-steps::after { display: none; }
+    .pw-step { min-height: 0; }
+    .pw-step:last-child { margin-top: 0; }
+    .pw-reviews__grid { grid-template-columns: 1fr; }
+    .pw-cta { min-height: 0; }
+    .pw-cta__wave, .pw-cta__photo, .pw-chip { display: none; }
+    .pw-cta__inner { padding-block: 48px; }
+    .pw-cta__title, .pw-cta__text, .pw-args, .pw-cta__btn { margin-left: 0; }
+}
+@media (max-width: 575.98px) {
+    .pw-why__grid { grid-template-columns: 1fr; }
+    /* Meme cause que les cartes de contact : le retrait de 32px ne tient pas. */
+    .pw-review { padding: 20px 16px 24px; }
+    .pw-review__head { flex-wrap: wrap; }
+    .pw-card { min-height: 0; }
+    .pw-why__photo { height: 200px; }
+}
+
+/* --------------------------------------------------------------------------
+ *  10.4 Formulaires partenaire et contact
+ * ------------------------------------------------------------------------ */
+@media (max-width: 991.98px) {
+    .pf-form { width: 100%; }
+    .pf-row { grid-template-columns: 1fr; gap: 0; }
+    .pf-row .pf-field + .pf-field { margin-top: 14px; }
+    .ct-cols { grid-template-columns: 1fr; gap: 24px; }
+    .ct-form__row { grid-template-columns: 1fr; gap: 0; }
+    .ct-form__row .pf-field + .pf-field { margin-top: 14px; }
+    .ct-map__img { width: 100%; height: 260px; }
+    .ct-map__card { position: static; width: auto; margin: -40px 16px 0; }
+    .ct-args__grid { grid-template-columns: repeat(2, 1fr); gap: 28px 16px; }
+}
+@media (max-width: 575.98px) {
+    .pf-submit, .ct-form__submit { width: 100%; min-width: 0; }
+    .ct-args__grid { grid-template-columns: 1fr; }
+    /* 32px de retrait de chaque cote laissent 224px de texte sur un iPhone SE :
+       les cartes de contact et d'avis debordaient de leur propre padding. */
+    .ct-card, .ct-method, .ct-form { padding: 18px 16px 24px; }
+    .ct-method { gap: 12px; }
+}
+
+/* --------------------------------------------------------------------------
+ *  10.5 Carrières et offres d'emploi
+ * ------------------------------------------------------------------------ */
+@media (max-width: 1199.98px) {
+    .cr-jobs__grid { grid-template-columns: repeat(2, 1fr); }
+    .cr-why__grid { width: auto; grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 991.98px) {
+    .cr-jobs__head { flex-direction: column; gap: 16px; }
+    .cr-alloffers { margin-top: 0; }
+    .cr-search { height: auto; flex-wrap: wrap; gap: 8px; }
+    .cr-search__field--query,
+    .cr-search__field--select { width: 100%; padding-left: 18px; }
+    .cr-search__sep { display: none; }
+    .cr-search__btn { width: 100%; }
+    .cr-values__grid { grid-template-columns: repeat(2, 1fr); }
+    .cr-spont { flex-direction: column; min-height: 0; padding: 32px; gap: 24px; }
+    .cr-spont__body { top: 0; }
+    .cr-spont__illu { width: 100%; max-width: 420px; }
+    .cr-why__title { max-width: none; }
+    .cr-toolbar { flex-wrap: wrap; gap: 8px; }
+}
+@media (max-width: 575.98px) {
+    .cr-jobs__grid,
+    .cr-values__grid,
+    .cr-why__grid { grid-template-columns: 1fr; }
+    .cr-job { min-height: 0; }
+    .cr-reason { min-height: 0; }
+}
+
+/* --------------------------------------------------------------------------
+ *  10.6 Modale « détail de l'offre »
+ *  1232px de large et 68px de retrait : elle occupe tout l'écran sous 992px.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 1199.98px) {
+    .cr-modal__panel { width: auto; margin: 96px 32px 48px; }
+}
+@media (max-width: 991.98px) {
+    .cr-modal__panel { margin: 64px 20px 40px; }
+    .cr-modal__head { padding: 32px 24px 28px; }
+    .cr-modal__share, .cr-modal__close { top: 24px; }
+    .cr-modal__share { left: 24px; }
+    .cr-modal__close { right: 24px; }
+    .cr-modal__title { margin-top: 56px; font-size: 32px; line-height: 40px; }
+    .cr-modal__place { font-size: 18px; }
+    .cr-modal__body { padding: 40px 24px; }
+    .cr-modal__h3 { font-size: 30px; line-height: 38px; margin-bottom: 32px; }
+    .cr-modal__line { font-size: 18px; line-height: 26px; margin-bottom: 24px; }
+    .cr-modal__h4 { font-size: 18px; margin-top: 40px; }
+    .cr-modal__list { padding-left: 24px; margin-top: 16px; }
+    .cr-modal__list li { font-size: 18px; line-height: 26px; }
+    .cr-modal__actions { margin-top: 40px; }
+}
+@media (max-width: 575.98px) {
+    .cr-modal__apply { width: 100%; justify-content: center; }
+}
+
+/* --------------------------------------------------------------------------
+ *  10.7 Paiement sécurisé et pages légales
+ * ------------------------------------------------------------------------ */
+@media (max-width: 991.98px) {
+    .py-grid { grid-template-columns: repeat(2, 1fr); }
+    .py-means__panel { padding: 32px; }
+    .py-means__cols { grid-template-columns: 1fr; gap: 32px; }
+    .py-means__col + .py-means__col { border-left: 0; border-top: 1px solid #e2e6ec; padding: 32px 0 0; }
+    .py-help__panel { padding: 40px 24px; }
+    .py-help__panel::before, .py-help__panel::after { display: none; }
+
+    /* Pages légales : le sommaire passe au-dessus du texte, qui perd son
+       indentation de 77px. */
+    .lg-cols { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .lg-cols > * { min-width: 0; }
+    .lg-toc { margin-top: 0; }
+    .lg-lead, .lg-list, .lg-p { margin-left: 0; max-width: none; }
+    .lg-list { padding-left: 24px; }
+    .lg-intro { max-width: none; font-size: 20px; line-height: 30px; }
+    .lg-lead, .lg-list li, .lg-p { font-size: 19px; line-height: 30px; }
+}
+@media (max-width: 575.98px) {
+    .py-grid { grid-template-columns: 1fr; }
+    .py-logos { flex-wrap: wrap; gap: 10px; }
+    .py-logos li { width: 84px; height: 56px; }
+    .py-logos svg { width: 62px; height: 42px; }
+    .lg-intro { font-size: 18px; line-height: 28px; }
+    .lg-lead, .lg-list li, .lg-p { font-size: 17px; line-height: 27px; }
+    .lg-h2 { font-size: 22px; }
+}

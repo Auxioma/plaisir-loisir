@@ -302,7 +302,7 @@
  *  RESPONSIVE.
  * ------------------------------------------------------------------------ */
 
-@media (max-width: 1200px) {
+@media (max-width: 1199.98px) {
     .cor-hero__photo { width: 60%; }
     .cor-stats { grid-template-columns: repeat(2, 1fr); gap: 20px; }
     .cor-why__grid { grid-template-columns: repeat(2, 1fr); }
@@ -313,7 +313,7 @@
     .cor-cta__photo { display: none; }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767.98px) {
     .cor-stats, .cor-why__grid, .cor-team__grid { grid-template-columns: 1fr; }
     .cor-hero__photo { display: none; }
     .cor-hero__title { font-size: 34px; }

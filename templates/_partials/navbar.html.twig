@@ -22,13 +22,24 @@
                 <img src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir & Loisirs">
             </a>
 
-            <nav class="pl-nav pl-nav--connected" aria-label="{{ 'Navigation principale'|trans }}">
-                <a href="{{ path('app_activities') }}" class="pl-nav__link {{ nav_active not in ['offres', 'cadeaux'] ? 'is-active' }}">{{ 'Activités'|trans }}</a>
-                <a href="{{ path('app_destinations') }}" class="pl-nav__link pl-nav__link--badged">{{ 'Destinations'|trans }} <span class="pl-nav__badge">{{ 'Nouveau'|trans }}</span></a>
-                <a href="{{ path('app_offers') }}" class="pl-nav__link pl-nav__link--offres {{ nav_active == 'offres' ? 'is-active-cta' }}">{{ icon.flame(18) }} {{ 'Offres du moments'|trans }}</a>
-                <a href="{{ path('app_gifts') }}" class="pl-nav__link {{ nav_active == 'cadeaux' ? 'is-active' }}">{{ icon.gift(18) }} {{ 'Cadeaux'|trans }}</a>
-                <a href="#" class="pl-nav__link pl-nav__link--badged">{{ 'Activités privées'|trans }} <span class="pl-nav__badge">{{ 'Nouveau'|trans }}</span></a>
-            </nav>
+            {# Sous 992px la navigation glisse dans un panneau offcanvas de
+               Bootstrap ; au-dessus, le CSS le neutralise et elle reprend sa
+               place en ligne (mécanique de `navbar-expand-lg`). #}
+            <div class="pl-navbar__panel offcanvas offcanvas-end" id="plNav" tabindex="-1" aria-label="{{ 'Menu'|trans }}">
+                <div class="pl-navbar__panel-head">
+                    <img class="pl-navbar__panel-logo" src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir &amp; Loisirs">
+                    <button type="button" class="pl-navbar__panel-close" data-bs-dismiss="offcanvas" aria-label="{{ 'Fermer'|trans }}">{{ icon.x(16) }}</button>
+                </div>
+                <div class="pl-navbar__panel-body">
+                    <nav class="pl-nav pl-nav--connected" aria-label="{{ 'Navigation principale'|trans }}">
+                        <a href="{{ path('app_activities') }}" class="pl-nav__link {{ nav_active not in ['offres', 'cadeaux'] ? 'is-active' }}">{{ 'Activités'|trans }}</a>
+                        <a href="{{ path('app_destinations') }}" class="pl-nav__link pl-nav__link--badged">{{ 'Destinations'|trans }} <span class="pl-nav__badge">{{ 'Nouveau'|trans }}</span></a>
+                        <a href="{{ path('app_offers') }}" class="pl-nav__link pl-nav__link--offres {{ nav_active == 'offres' ? 'is-active-cta' }}">{{ icon.flame(18) }} {{ 'Offres du moments'|trans }}</a>
+                        <a href="{{ path('app_gifts') }}" class="pl-nav__link {{ nav_active == 'cadeaux' ? 'is-active' }}">{{ icon.gift(18) }} {{ 'Cadeaux'|trans }}</a>
+                        <a href="#" class="pl-nav__link pl-nav__link--badged">{{ 'Activités privées'|trans }} <span class="pl-nav__badge">{{ 'Nouveau'|trans }}</span></a>
+                    </nav>
+                </div>
+            </div>
         </div>
 
         <div class="pl-navbar__actions">
@@ -46,6 +57,7 @@
             {% else %}
                 <a href="{{ path('app_auth_choice') }}" class="pl-btn pl-btn--outline-dark pl-btn--signup">{{ icon.person(18) }} {{ "S'inscrire"|trans }}</a>
             {% endif %}
+            {% include '_partials/_navbar_burger.html.twig' with { panel_id: 'plNav' } %}
         </div>
     </div>
 </header>

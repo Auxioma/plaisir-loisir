@@ -770,3 +770,214 @@ figerait le texte. Je préfère laisser les CGU 1,5 % plus courtes et le signale
 « Evolution & formation » → « Évolution & formation ». Les textes des sections
 6, 7 et 8 des CGU et des sections 3 à 6 des mentions légales ont été
 retranscrits en entier depuis les planches (ils étaient tronqués).
+
+---
+
+## 18. Passe 8 — adaptation téléphone et tablette (16/08)
+
+### Le point de départ : il n'y a pas de maquette mobile
+
+La designer n'a livré que la planche 1440. Tout ce qui suit est donc, par
+construction, du travail **non maquetté** : je ne peux pas dire « conforme »,
+seulement « cohérent avec la planche desktop et justifié ». Les règles de
+dégradation ont été fixées une fois pour toutes, écrites en tête du fichier, et
+appliquées partout de la même façon — c'est ce qui remplace la maquette :
+
+1. les grilles passent 4 → 2 → 1 colonne (3 → 2 → 1 pour les trios) ;
+2. toute largeur figée en pixels devient 100 % de son conteneur ;
+3. les héros perdent leur photo de côté, qui repasse en fond ou disparaît ;
+4. les blocs à deux colonnes (formulaire + colonne latérale) s'empilent ;
+5. rien ne défile horizontalement, sauf les rubans de cartes prévus pour ;
+6. toute cible tactile fait au moins 44 px.
+
+Chacune de ces six règles est un arbitrage. Elles sont soumises à validation,
+et si la designer produit une planche mobile, elles sautent au profit de la
+planche.
+
+### Un fichier à part, chargé en dernier
+
+Tout vit dans `assets/styles/responsive.css`, importé en dernier par
+`assets/app.js`. Deux raisons :
+
+- **ne pas toucher au pixel-perfect.** Les feuilles existantes sont calées sur
+  la planche 1440 ; y insérer des règles ferait courir un risque de régression à
+  sept passes de conformité. Ici, aucune règle existante n'est modifiée.
+- **à spécificité égale, la dernière écrite gagne.** Comme le fichier est chargé
+  en dernier, une règle de dégradation l'emporte toujours sur celle qu'elle
+  dégrade, sans avoir à surenchérir en sélecteurs ni à sortir `!important`.
+
+La revue n'a donc qu'un seul fichier à lire pour juger tout le comportement
+mobile, et un seul à supprimer pour revenir en arrière.
+
+### Les paliers : ceux de Bootstrap, et rien d'autre
+
+| palier | largeur | cible |
+| --- | --- | --- |
+| `xs` | < 576 | téléphone portrait |
+| `sm` | ≥ 576 | téléphone paysage |
+| `md` | ≥ 768 | tablette portrait (iPad 768) |
+| `lg` | ≥ 992 | tablette paysage |
+| `xl` | ≥ 1200 | écran |
+| `xxl` | ≥ 1400 | la maquette (1440) |
+
+Les feuilles écrites pendant les flows contenaient **18 requêtes média sur des
+paliers inventés** — 1100, 1200, 1280, 1300, 900, 640 px. Elles ont toutes été
+ramenées sur les paliers Bootstrap. Deux remarques :
+
+- un `max-width: 1200px` **se chevauche d'un pixel** avec un `min-width: 1200px` :
+  à 1200 pile, les deux règles s'appliquent. La forme correcte est `1199.98px`,
+  et c'est celle que Bootstrap emploie. Ce défaut était présent cinq fois.
+- toutes ces requêtes étant en `max-width` sous 1400, **leur renumérotation ne
+  change rien au rendu 1440** : la conformité au pixel n'est pas touchée. Là où
+  le palier a bougé (1100 → 1199,98 par exemple), la dégradation se déclenche
+  plus tôt, donc du côté sûr.
+
+Deux blocs de `bootstrap-theme.css` déclaraient une deuxième fois la
+dégradation de la gouttière du conteneur. Ils ont été remplacés par un renvoi :
+deux sources de vérité pour la même marge finissent toujours par diverger.
+
+Une décision de méthode, enfin : **pas de `overflow-x: hidden` sur `body`.**
+C'est le raccourci habituel pour faire disparaître un débordement, et c'est un
+cache-misère — il coupe le contenu au lieu de le remettre en page, il masque
+les régressions futures au lieu de les révéler, et il neutralise le
+`position: sticky` des colonnes latérales (Compte, wizard Événements). Il avait
+été posé en début de passe ; il a été retiré une fois chaque débordement
+réellement corrigé.
+
+### La navigation : `navbar-expand-xxl`, et pourquoi pas `-lg`
+
+La navigation est enveloppée dans un `offcanvas` Bootstrap piloté par un bouton
+burger (`templates/_partials/_navbar_burger.html.twig`, inclus par les quatre
+en-têtes). Au-dessus du palier, le CSS neutralise l'`offcanvas` — `position:
+static`, `visibility: visible`, `transform: none` — et la navigation reprend sa
+place dans le flux. C'est très exactement la mécanique de `navbar-expand-*` de
+Bootstrap, réécrite avec nos classes parce que nos en-têtes ne sont pas des
+`.navbar`.
+
+Le palier de bascule est **1400 (`xxl`), pas 992**. Ce n'est pas un choix de
+confort mais une mesure : la navigation en ligne — logo, « Découvrez », cinq
+liens, boutons et icônes — a une largeur incompressible d'environ 1015 px de
+contenu. Mesurée sur les quatre en-têtes, elle déborde tant que la fenêtre
+n'atteint pas ~1360 px. Le premier palier standard où elle tient est donc
+`xxl` : la planche 1440 garde sa navigation en ligne intacte, et les tablettes
+paysage reçoivent le burger.
+
+### Deux pièges de cascade, tous les deux sur le même bouton
+
+Ils méritent d'être notés parce qu'ils sont invisibles à la lecture et qu'ils
+se ressemblent :
+
+- **une requête média n'ajoute aucune spécificité.** Entre
+  `@media (min-width: 1400px) { .pl-burger { display: none } }` et
+  `.pl-burger { display: inline-flex }` écrit plus bas, c'est le second qui
+  gagne — à toutes les largeurs. Résultat : le burger s'affichait **aussi sur le
+  bureau 1440**, à côté de l'avatar. Une régression directe sur la planche, que
+  seule la mesure a révélée.
+- corriger en inversant (`display: none` en base, `inline-flex` dans la requête
+  mobile) reproduit le même bug **à l'envers** si la requête est écrite avant la
+  base : le burger disparaît alors partout, y compris sur téléphone.
+
+La forme retenue place les deux `display` **après toute règle de base**, dans
+deux requêtes symétriques, avec le commentaire qui explique pourquoi il ne faut
+pas les déplacer.
+
+### La méthode de contrôle : mesurer, pas regarder
+
+Une capture d'écran ne montre pas un débordement horizontal — la page est
+simplement coupée, et une bande pleine largeur coupée ressemble à une bande
+pleine largeur. Le contrôle a donc été fait sur la seule grandeur qui décide :
+`document.documentElement.scrollWidth` comparé à `clientWidth`.
+
+Un fichier de sonde temporaire charge chaque page dans une `iframe` qu'il
+redimensionne à chaque palier, puis publie les deux valeurs et la liste des
+éléments qui dépassent, triée. Passe finale :
+**60 routes × 18 largeurs, de 320 à 1920 px**, soit **1 080 mesures**, toutes
+sans débordement. La sonde a été supprimée après l'audit.
+
+Trois précautions apprises en route, qui ont chacune coûté un faux diagnostic :
+
+- les éléments d'un conteneur en `overflow: hidden` apparaissent quand même
+  comme « débordants » via `getBoundingClientRect` alors qu'ils ne créent aucun
+  défilement. Les photos de héros sont dans ce cas : faux positifs.
+- de même pour tout élément enfermé dans un cadre qui défile — ruban de
+  catégories, calendrier. Leur position en coordonnées fenêtre est trompeuse.
+  La sonde écarte donc tout élément ayant un ancêtre en `overflow-x` non
+  `visible`, et le panneau `offcanvas`, translaté hors écran par construction.
+- quand **aucun** élément n'atteint le `scrollWidth`, le coupable est un mot
+  trop long, un pseudo-élément ou une marge. Il faut alors chercher par
+  dichotomie : masquer chaque enfant à tour de rôle et regarder si la mesure
+  baisse. C'est ce qui a révélé la cause de la moitié des débordements à 320 px.
+
+Enfin, **ne pas déborder ne suffit pas** : les paliers ont aussi été relus en
+capture (500, 768, 1024, 1200) pour vérifier que la page reste lisible et non
+seulement contenue.
+
+### Ce que la mesure a trouvé
+
+| symptôme | cause réelle |
+| --- | --- |
+| burger visible à 1440 | cascade : règle de base écrite après la requête média |
+| en-tête débordant de 87 à 158 px entre 992 et 1399 | navigation en ligne à 1015 px de contenu incompressible |
+| `/devenir-partenaire` et `/carrieres` +261 px à 1024 | grille d'avis figée à `repeat(2, 607px)` |
+| `/contactez-nous` +191 px à 1024 | `grid-template-columns: 728px 1fr` |
+| `/cadeaux` +115 px à 1200 | quatre pastilles d'argument en `flex` sans repli |
+| `/compte` et `/conditions-generales` | piste `1fr` non bornée, élargie par son contenu |
+| une dizaine d'écrans à 1200 pile | règle de dégradation écrite en `max-width: 1199.98px` |
+| moitié des écrans à 320 px | un mot plus long que sa colonne, qui sort de sa boîte |
+| l'autre moitié à 320 px | rangées `flex` sans `flex-wrap`, retraits dessinés pour 1440 |
+
+Trois de ces causes méritent un mot, parce qu'elles reviendront :
+
+1. **une piste `1fr` ne descend pas sous la largeur `min-content` de son
+   contenu.** Un enfant qui défile, un champ de formulaire ou un long libellé
+   impose donc sa largeur à toute la page. Le remède est `minmax(0, 1fr)` sur
+   la piste, et `min-width: 0` sur les items — un réflexe à avoir
+   systématiquement dans une grille adaptative.
+2. **un mot plus large que sa colonne déborde de sa boîte sans l'élargir.** La
+   boîte reste dans les clous, la mesure d'un élément ne montre rien, et c'est
+   le texte qui sort. D'où `overflow-wrap: break-word` sur le corps en dessous
+   de 576 px.
+3. **une règle écrite en `max-width: 1199.98px` ne protège pas 1200 pile.**
+   Quand un bloc est calé pour 1440, sa dégradation doit démarrer à `xxl`
+   (1399.98), pas à `xl` : entre 1200 et 1399, la marge de 110 px de la
+   maquette est encore là et le contenu disponible tombe à 980 px.
+
+### Limite de l'outillage à signaler
+
+Edge en mode `--headless=old` **ne descend pas sous ~500 px de largeur de
+fenêtre** sous Windows : une capture demandée à 390 px est en réalité un rendu
+500 px recadré, ce qui donne une page faussement cassée. Vérifié en encadrant
+la valeur, puis contourné en mesurant dans une `iframe`, qui elle accepte
+n'importe quelle largeur. Les contrôles au-dessous de 500 px ont donc été faits
+par la sonde, pas par capture.
+
+### Non-régression du bureau
+
+Le contrôle décisif : mesurer la hauteur de chaque page à 1440 **avec** la
+couche responsive, puis la mettre de côté (`git stash`) et remesurer **sans**.
+
+Sur les **35 pages** couvertes — tous les parcours, pas seulement le corporate —
+les deux relevés sont **identiques au pixel**. La conformité obtenue en sept
+passes n'a donc pas bougé d'un pixel, et ce n'est pas une impression : c'est un
+`diff` vide entre deux séries de mesures.
+
+Une précaution de méthode : une `iframe` de 1440 de large ne rend que 1425 px
+utiles, la barre de défilement prenant le reste — il faut la déclarer à 1455
+pour obtenir vraiment 1440. Une comparaison faite sans cela donne des écarts
+qui n'existent pas.
+
+### Ce qui reste ouvert
+
+- Les six règles de dégradation ci-dessus attendent une validation, ou une
+  planche mobile qui les remplacerait.
+- Les paliers n'ont été contrôlés qu'en mesure et en capture, pas sur appareil
+  réel. Un passage sur un iPhone et un Android physiques reste à faire avant la
+  démonstration : la mesure garantit qu'aucune page ne déborde, pas que le
+  toucher, le clavier virtuel et le défilement par inertie se comportent bien.
+- Les 18 requêtes média sur paliers inventés ont été renumérotées, mais
+  certaines règles qu'elles portaient mériteraient d'être relues au fond : elles
+  ont été écrites au fil des parcours, sans vue d'ensemble.
+- Le point de bascule de l'en-tête à 1400 px signifie qu'un portable de 1366 px
+  — encore courant — affiche le burger. C'est la conséquence directe d'une
+  navigation à 1015 px de contenu. Si le client la refuse, la seule autre
+  sortie est de raccourcir les libellés ou d'en retirer un.

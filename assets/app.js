@@ -26,6 +26,10 @@ import './styles/account.css';
 import './styles/corporate.css';
 import './styles/app.css';
 
+// Adaptations telephone / tablette. Charge EN DERNIER : a specificite egale,
+// ses regles doivent l'emporter sur le CSS de bureau qu'elles degradent.
+import './styles/responsive.css';
+
 // Comportement des menus déroulants de l'en-tête d'accueil.
 import './home_header.js';
 

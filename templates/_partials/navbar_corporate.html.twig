@@ -20,23 +20,34 @@
                 <img src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir &amp; Loisirs">
             </a>
 
-            <nav class="pl-nav pl-nav--corporate" aria-label="{{ 'Navigation institutionnelle'|trans }}">
-                <details class="pl-dropdown">
-                    <summary class="pl-dropdown__toggle">{{ 'Découvrez'|trans }} {{ icon.chevron_down(16) }}</summary>
-                    <div class="pl-dropdown__menu">
-                        <a href="{{ path('app_activities') }}" class="pl-dropdown__item">{{ 'Activités'|trans }}</a>
-                        <a href="{{ path('app_destinations') }}" class="pl-dropdown__item">{{ 'Destinations'|trans }}</a>
-                        <a href="{{ path('app_offers') }}" class="pl-dropdown__item">{{ 'Offres du moments'|trans }}</a>
-                        <a href="{{ path('app_gifts') }}" class="pl-dropdown__item">{{ 'Cadeaux'|trans }}</a>
-                    </div>
-                </details>
+            {# Sous 992px la navigation glisse dans un panneau offcanvas de
+               Bootstrap ; au-dessus, le CSS le neutralise et elle reprend sa
+               place en ligne (mécanique de `navbar-expand-lg`). #}
+            <div class="pl-navbar__panel offcanvas offcanvas-end" id="plNav" tabindex="-1" aria-label="{{ 'Menu'|trans }}">
+                <div class="pl-navbar__panel-head">
+                    <img class="pl-navbar__panel-logo" src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir &amp; Loisirs">
+                    <button type="button" class="pl-navbar__panel-close" data-bs-dismiss="offcanvas" aria-label="{{ 'Fermer'|trans }}">{{ icon.x(16) }}</button>
+                </div>
+                <div class="pl-navbar__panel-body">
+                    <nav class="pl-nav pl-nav--corporate" aria-label="{{ 'Navigation institutionnelle'|trans }}">
+                        <details class="pl-dropdown">
+                            <summary class="pl-dropdown__toggle">{{ 'Découvrez'|trans }} {{ icon.chevron_down(16) }}</summary>
+                            <div class="pl-dropdown__menu">
+                                <a href="{{ path('app_activities') }}" class="pl-dropdown__item">{{ 'Activités'|trans }}</a>
+                                <a href="{{ path('app_destinations') }}" class="pl-dropdown__item">{{ 'Destinations'|trans }}</a>
+                                <a href="{{ path('app_offers') }}" class="pl-dropdown__item">{{ 'Offres du moments'|trans }}</a>
+                                <a href="{{ path('app_gifts') }}" class="pl-dropdown__item">{{ 'Cadeaux'|trans }}</a>
+                            </div>
+                        </details>
 
-                <a href="{{ path('app_corporate_about') }}" class="pl-nav__link {{ nav_active|default('') == 'apropos' ? 'is-active' }}">{{ 'À propos de nous'|trans }}</a>
-                <a href="{{ path('app_corporate_partner') }}" class="pl-nav__link {{ nav_active|default('') == 'partenaire' ? 'is-active' }}">{{ 'Devenir partenaire'|trans }}</a>
-                <a href="{{ path('app_corporate_careers') }}" class="pl-nav__link {{ nav_active|default('') == 'carrieres' ? 'is-active' }}">{{ 'Carrières'|trans }}</a>
-                <a href="#" class="pl-nav__link {{ nav_active|default('') == 'faq' ? 'is-active' }}">{{ 'FAQ'|trans }}</a>
-                <a href="{{ path('app_corporate_contact') }}" class="pl-nav__link {{ nav_active|default('') == 'contact' ? 'is-active' }}">{{ 'Contactez-nous'|trans }}</a>
-            </nav>
+                        <a href="{{ path('app_corporate_about') }}" class="pl-nav__link {{ nav_active|default('') == 'apropos' ? 'is-active' }}">{{ 'À propos de nous'|trans }}</a>
+                        <a href="{{ path('app_corporate_partner') }}" class="pl-nav__link {{ nav_active|default('') == 'partenaire' ? 'is-active' }}">{{ 'Devenir partenaire'|trans }}</a>
+                        <a href="{{ path('app_corporate_careers') }}" class="pl-nav__link {{ nav_active|default('') == 'carrieres' ? 'is-active' }}">{{ 'Carrières'|trans }}</a>
+                        <a href="#" class="pl-nav__link {{ nav_active|default('') == 'faq' ? 'is-active' }}">{{ 'FAQ'|trans }}</a>
+                        <a href="{{ path('app_corporate_contact') }}" class="pl-nav__link {{ nav_active|default('') == 'contact' ? 'is-active' }}">{{ 'Contactez-nous'|trans }}</a>
+                    </nav>
+                </div>
+            </div>
         </div>
 
         <div class="pl-navbar__actions">
@@ -48,6 +59,7 @@
                 <img src="{{ asset('images/account/avatar-thomas.jpg') }}" alt="">
                 <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
             </a>
+            {% include '_partials/_navbar_burger.html.twig' with { panel_id: 'plNav' } %}
         </div>
     </div>
 </header>
