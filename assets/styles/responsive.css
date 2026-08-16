@@ -244,6 +244,54 @@
 @media (max-width: 991.98px) {
     .pl-btn { min-height: 44px; }
     .pl-iconbtn { min-width: 44px; min-height: 44px; }
+
+    /* Les boutons d'icône font 12 à 36px de côté : c'est le dessin de la
+       maquette, et on n'y touche pas. On leur ajoute une zone de clic
+       transparente de 44px centrée sur le bouton — la cible devient conforme
+       à la recommandation Apple comme Android SANS déplacer un seul pixel
+       visible. `position: relative` sans décalage ne bouge rien ; le cœur des
+       cartes, lui, est déjà positionné et n'a pas besoin qu'on y touche.
+       Les commandes EN LIGNE dans une phrase (« Est-ce que ça vous a aidé ? »,
+       « En savoir plus ») sont volontairement exclues : le critère de taille de
+       cible ne s'y applique pas, et les élargir déformerait la ligne de texte. */
+    .evn-banner__close,
+    .auth-input__eye,
+    .evn-dots,
+    .act-citybar__nav,
+    .evn-gphotos__nav,
+    .cr-modal__share,
+    .evn-mrow__msg { position: relative; }
+
+    .pl-card__fav::after,
+    .evn-banner__close::after,
+    .auth-input__eye::after,
+    .evn-dots::after,
+    .act-citybar__nav::after,
+    .evn-gphotos__nav::after,
+    .cr-modal__share::after,
+    .evn-mrow__msg::after {
+        content: '';
+        position: absolute;
+        left: 50%; top: 50%;
+        width: 44px; height: 44px;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* --------------------------------------------------------------------------
+ *  1.5 bis Plancher de lisibilité sur téléphone
+ *  La maquette compose certains libellés en 10 ou 11px, et une étiquette de
+ *  participant en 8,5px. À 1440 sur un écran de bureau, cela passe ; tenu à
+ *  bout de bras sur un téléphone, non. Sous 576px on pose un plancher à 12px.
+ *  C'est une septième règle de dégradation, à valider comme les six autres.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 575.98px) {
+    .act-breadcrumb,
+    .acc-crumb-current,
+    .evn-crumb-current,
+    .of-card__badge,
+    .of-flash__cell,
+    .evn-part__tag { font-size: 12px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -593,6 +641,23 @@
 @media (max-width: 575.98px) {
     .of-listing.has-filters .of-grid,
     .of-grid { grid-template-columns: 1fr; }
+    /* La bande « Vente Flash » a 60px de retrait de chaque côté et porte
+       `overflow: hidden` : sur un téléphone elle rognait son propre contenu
+       sans que rien ne défile — donc sans qu'aucune mesure de débordement ne
+       le signale. */
+    .of-flash { padding: 32px 20px; gap: 24px; }
+    .of-flash__promo { max-width: 100%; min-height: 0; }
+    .of-flash__panel { padding: 28px 16px; }
+    /* « -50% » est composé en 96px et le titre en 44 : à 320px de large, une
+       fois les retraits déduits, il reste 240px. On redescend l'échelle. */
+    .of-flash__pct { font-size: 60px; }
+    .of-flash__title { font-size: 28px; }
+    .of-flash__count { flex-wrap: wrap; gap: 8px; }
+    .of-flash__cell { min-width: 54px; }
+    /* Les deux éclairs sont des décorations posées hors cadre, volontairement
+       rognées ; sur téléphone ils mangent la moitié du panneau. */
+    .of-flash__bolt { display: none; }
+    .of-news { padding: 32px 20px; }
 }
 
 /* ==========================================================================
@@ -766,6 +831,11 @@
  *  7.2 bis — Téléphone étroit
  * ------------------------------------------------------------------------ */
 @media (max-width: 575.98px) {
+    /* Bloc « explorer » : texte et illustration côte à côte dans un cadre en
+       `overflow: hidden`, qui rognait le texte de 184px. Ils s'empilent. */
+    .evn-explore { flex-direction: column; align-items: stretch; gap: 20px; min-height: 0; padding: 20px; }
+    .evn-explore__body { max-width: none; }
+
     /* Bannière « rejoindre le groupe » : le texte et ses deux actions sont en
        `space-between` sur une ligne. Ils passent l'un sous l'autre. */
     .evn-banner { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px 18px; }
@@ -786,6 +856,15 @@
     .ev-card { padding: 16px 14px; }
     .ev-col { gap: 14px; }
     .ev-step { padding: 8px 10px; gap: 8px; }
+
+    /* Barre d'outils de l'éditeur : ses boutons sont dans un cadre en
+       `overflow: hidden`, donc ils étaient rognés sans rien faire défiler. */
+    .ev-editor__toolbar { flex-wrap: wrap; }
+
+    /* `.ev-setting__text` est une grille dont la piste implicite ne descend pas
+       sous la largeur naturelle du libellé : son texte sortait de la carte. */
+    .ev-setting__text { grid-template-columns: minmax(0, 1fr); }
+    .ev-setting { flex-wrap: wrap; }
 
     /* Étape 7 : chaque contact aligne case, avatar de 48, nom et bouton
        « Annuler l'invitation » en `flex: none`. Le bouton passe à la ligne. */
@@ -885,6 +964,12 @@
     .auth-card { width: 100%; max-width: 453px; }
 }
 @media (max-width: 991.98px) {
+    /* « TrouveMoi Plaisirs & Loisirs » est en 44px avec `white-space: nowrap`
+       sur la marque : il ne se coupait jamais et sortait du héros, rogné de
+       286px à 360. On lève le `nowrap` et on descend la taille. */
+    .auth-welcome__title { font-size: 32px; line-height: 40px; }
+    .auth-welcome__brand { white-space: normal; }
+
     /* Écran d'entrée « Client / Professionnel » : les deux panneaux et leur
        séparateur vertical s'empilent. */
     .auth-choice-card {
@@ -902,6 +987,9 @@
     .auth-socials { flex-direction: column; }
     .auth-socials > * { width: 100%; justify-content: center; }
     .auth-choice-band__points li { flex-wrap: wrap; }
+    /* La colonne d'arguments est figée à 304px : trop large pour un
+       iPhone SE une fois les marges du héros déduites. */
+    .auth-features { width: 100%; }
 }
 
 /* ==========================================================================

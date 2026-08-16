@@ -48,7 +48,10 @@ final class StaticOffers
                 'price' => 25,
                 'remaining' => 92040,
                 'image' => 'images/activities/canoe-riviere.jpg',
-                'slug' => 'descente-en-canoe-gorges-ardeche',
+                // Le slug doit exister dans StaticCatalog, sinon la fiche
+                // renvoie un 404 : « descente-en-canoe-gorges-ardeche » n'y
+                // figure pas, la fiche s'appelle « descente-en-canoe ».
+                'slug' => 'descente-en-canoe',
             ],
             [
                 'place' => 'Aix-en-provence',

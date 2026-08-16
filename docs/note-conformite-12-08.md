@@ -966,6 +966,82 @@ utiles, la barre de défilement prenant le reste — il faut la déclarer à 145
 pour obtenir vraiment 1440. Une comparaison faite sans cela donne des écarts
 qui n'existent pas.
 
+### Deuxième passe : ce que la mesure de débordement ne voyait pas
+
+Le contrôle décrit plus haut établissait qu'aucune page ne fait défiler
+l'écran horizontalement. C'est nécessaire, ce n'est pas suffisant. Une seconde
+passe a cherché les défauts qu'il laisse passer par construction.
+
+**1. Le texte coupé sans défilement.** Un titre plus large que sa colonne,
+placé dans un conteneur en `overflow: hidden` — un héros, une carte — ne crée
+aucun défilement : la mesure dit « rien à signaler » et la moitié du mot a
+pourtant disparu. Deux détecteurs supplémentaires ont été écrits :
+`scrollWidth > clientWidth` sur chaque **élément** (contenu plus large que sa
+boîte), et le bord droit de chaque élément comparé à celui du premier ancêtre
+qui le rogne. Ils ont trouvé cinq défauts réels, invisibles à la première
+mesure :
+
+| écran | défaut | cause |
+| --- | --- | --- |
+| authentification (7 pages) | titre coupé de 286 px | `white-space: nowrap` sur la marque, en 44 px |
+| offres, bande « Vente Flash » | contenu rogné de 90 à 128 px | « -50 % » en 96 px et 60 px de retrait |
+| événements, bloc « explorer » | texte rogné de 184 px | texte et illustration côte à côte |
+| wizard, barre d'outils | boutons rognés | `flex` sans repli dans un cadre rogné |
+| wizard, réglages | libellé coupé de 58 px | piste de grille non bornée |
+
+**2. Les états ouverts.** Le menu burger déployé, les modales
+(`?modal=rejoindre`, `?modal=signaler`) et les menus déroulants ont été
+rejoués et mesurés : aucun débordement.
+
+**3. Les largeurs intermédiaires.** Le balayage est passé de quelques paliers
+à un **intervalle continu de 320 à 1920 px par pas de 10** — 161 largeurs par
+page. Rien ne garantissait qu'il n'y avait pas un défaut à 470 ou 1150 px.
+
+**4. L'inventaire des routes.** Les URL ne sont plus listées à la main mais
+**découvertes par exploration** du site, en suivant tous les liens. Ce sont
+**76 routes** au lieu des 60 listées, avec les variantes `?type=pro`,
+`?onglet=…`, les cinq onglets de groupe et les huit fiches d'activité. Cette
+exploration a aussi révélé un **lien mort** : une offre pointait vers le slug
+`descente-en-canoe-gorges-ardeche`, absent du catalogue — 404 en pleine
+démonstration. Corrigé.
+
+**5. Ergonomie tactile.** Les boutons d'icône font 12 à 36 px de côté, comme
+la maquette les dessine. Plutôt que de les agrandir — ce qui déformerait la
+planche — ils reçoivent sous 992 px une **zone de clic transparente de 44 px**
+centrée, conforme aux recommandations Apple et Android sans déplacer un pixel
+visible. Les commandes en ligne dans une phrase en sont exclues : le critère de
+taille de cible ne s'y applique pas. Un **plancher de 12 px** est également
+posé sur les libellés composés en 8,5 à 11 px (fils d'Ariane, badges) : c'est
+une septième règle de dégradation, à valider comme les six autres.
+
+### Un piège d'outillage qui a failli faire corriger un faux problème
+
+Une capture prise avec `--force-device-scale-factor=2` et `--window-size=360`
+montrait la page **cassée** à 360 px : titre débordant, burger disparu. La
+mesure, elle, disait que tout allait bien. L'un des deux mentait.
+
+C'était la capture : le facteur d'échelle agrandit l'image mais `--window-size`
+reste exprimé en pixels CSS, si bien que le rendu était en réalité à 720 px et
+non 360. La bonne méthode consiste à rendre la page dans une `iframe` de la
+largeur voulue et à capturer celle-ci — ce qui a confirmé que le rendu à 360 px
+était correct.
+
+La leçon vaut d'être notée : **avant de corriger sur la foi d'une capture,
+vérifier que la capture montre bien ce qu'on croit.** Sans ce recoupement,
+plusieurs règles auraient été ajoutées pour un défaut qui n'existait pas.
+
+### Chiffres de la vérification finale
+
+- **76 routes découvertes par exploration**, toutes en HTTP 200 ;
+- **débordement** : 320 → 1920 px par pas de 10, soit **12 236 mesures**,
+  aucun débordement ; états ouverts inclus ;
+- **texte coupé** : 76 routes à 320, 360 et 414 px, aucun texte coupé ni bloc
+  rogné (restent les faux positifs attendus : `visually-hidden`, cercles
+  internes aux SVG, décorations posées hors cadre) ;
+- **non-régression du bureau** : hauteurs des 76 routes à 1440 px mesurées avec
+  puis sans la couche responsive — `diff` vide, identiques au pixel ;
+- `lint:twig`, `php-cs-fixer` et PHPStan niveau 6 passent.
+
 ### Ce qui reste ouvert
 
 - Les six règles de dégradation ci-dessus attendent une validation, ou une
