@@ -992,24 +992,25 @@
 .cor-hero--careers .cor-hero__photo,
 .cor-hero--contact .cor-hero__photo,
 .cor-hero--payment .cor-hero__photo {
-    left: auto; right: 0; top: 0;
-    width: 960px; height: 497px;
+    left: 350px; right: auto; top: 0;
+    width: 1090px; height: 497px;
 }
+/* Ces trois bandes sont découpées dans les planches AVEC leur voile : le
+   dégradé CSS est donc inutile, il ferait double emploi. Les lignes que le
+   texte de la maquette recouvrait ont été reconstruites par interpolation
+   verticale (voir la note de conformité). */
 .cor-hero--careers::after,
 .cor-hero--contact::after,
-.cor-hero--payment::after {
-    background: linear-gradient(90deg,
-        #fff 0, #fff 24%,
-        rgba(255, 255, 255, .82) 33.5%,
-        rgba(255, 255, 255, .35) 40%,
-        rgba(255, 255, 255, 0) 46%);
-}
+.cor-hero--payment::after { content: none; }
 .cor-hero--careers .cor-hero__inner,
-.cor-hero--contact .cor-hero__inner,
-.cor-hero--payment .cor-hero__inner { padding-top: 106px; }
+.cor-hero--contact .cor-hero__inner { padding-top: 106px; }
+.cor-hero--payment .cor-hero__inner { padding-top: 114px; }
 
-.cor-hero--careers .cor-hero__title,
 .cor-hero--contact .cor-hero__title { margin-bottom: 33px; }
+/* Maquette Carrières : 27 sous le H1, et la ligne d'argument 2px plus bas que
+   sur les autres héros. */
+.cor-hero--careers .cor-hero__title { margin-bottom: 27px; }
+.cor-hero--careers .pw-trust { margin-top: 24px; }
 .cor-hero--careers .cor-hero__text,
 .cor-hero--contact .cor-hero__text {
     max-width: 500px;
@@ -1019,18 +1020,18 @@
 .cor-hero--careers .cor-hero__actions .pl-btn { height: 40px; padding-inline: 18px; }
 
 /* Le fil d'Ariane des écrans corporate tombe sous le héros. */
-.cr-crumb { margin: 50px 0 0 2px; }
+.cr-crumb { margin: 45px 0 0 2px; }
 
 /* ==========================================================================
  *  CARRIÈRES (préfixe cr-)
  *  Relevés sur assets/corporate/Carrières.png (1440 x 4124).
  * ======================================================================== */
 
-.cr-jobs { padding-block: 68px 0; }
+.cr-jobs { padding-block: 54px 0; }
 .cr-jobs__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 40px; }
-.cr-jobs__title { margin-bottom: 20px; }
+.cr-jobs__title { margin-bottom: 26px; }
 .cr-jobs__lead {
-    max-width: 700px;
+    max-width: 760px;
     margin: 0;
     font-size: 18px;
     line-height: 28px;
@@ -1040,12 +1041,12 @@
 .cr-alloffers {
     flex: none;
     display: inline-flex; align-items: center; gap: 10px;
-    margin-top: 32px;
+    margin-top: 24px;
     height: 48px;
-    padding-inline: 20px;
+    padding-inline: 16px;
     background: var(--pl-text);
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 15px;
     color: var(--pl-white);
     text-decoration: none;
     white-space: nowrap;
@@ -1053,35 +1054,37 @@
 .cr-alloffers:hover { color: var(--pl-white); opacity: .92; }
 
 /* ---- Barre de recherche ------------------------------------------------ */
-/* Maquette : bandeau de 55 de haut, deux champs séparés d'un trait, bouton
-   orange carré à droite. */
+/* Maquette : bandeau de 56 de haut (x110 -> x861), deux champs séparés d'un
+   trait vertical à x323, bouton orange carré de 56 à droite. */
 .cr-search {
     display: flex; align-items: center;
-    margin-top: 45px;
-    height: 55px;
+    margin-top: 31px;
+    height: 56px;
 }
 .cr-search__field {
     display: flex; align-items: center; gap: 12px;
     height: 100%;
-    padding-inline: 14px;
+    padding-left: 18px;
     color: #9dabc7;
 }
+.cr-search__field--query { width: 213px; }
 .cr-search__field input,
 .cr-search__field select {
     border: 0; outline: 0; background: transparent;
     font-family: var(--pl-font-family);
-    font-size: 16px;
+    font-size: 15px;
     color: var(--pl-text);
     min-width: 0;
 }
 .cr-search__field input::placeholder { color: #9dabc7; }
-.cr-search__field--select { width: 375px; }
+/* Le second champ démarre 54 après le trait (icône à x378). */
+.cr-search__field--select { width: 482px; padding-left: 54px; padding-right: 17px; }
 .cr-search__field--select select { flex: 1; appearance: none; cursor: pointer; color: #9dabc7; }
-.cr-search__sep { width: 1px; height: 26px; background: #e2e6ec; }
+.cr-search__sep { flex: none; width: 1px; height: 26px; background: #e2e6ec; }
 .cr-search__btn {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 48px; height: 48px;
-    margin-left: 14px;
+    flex: none;
+    width: 56px; height: 56px;
     background: var(--pl-cta);
     border: 0; border-radius: 8px;
     color: var(--pl-white);
@@ -1092,39 +1095,42 @@
 .cr-jobs__grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 32px 16px;
-    margin: 40px -6px 0;
+    gap: 28px 23px;
+    margin: 31px -6px 0;
 }
-.cr-jobs__grid--all { margin-top: 30px; }
+/* Maquette : 33 entre la dernière rangée et le pied de page. */
+.cr-jobs--all { padding-bottom: 34px; }
+.cr-jobs__grid--all { margin-top: 41px; }
 
 .cr-job {
     min-height: 403px;
     background: var(--pl-white);
     border: 1px solid #eff1f3;
     border-radius: 12px;
-    padding: 24px 22px 22px;
+    padding: 22px 22px 34px;
 }
 .cr-job__title {
-    margin: 0 0 18px;
-    font-size: 24px;
+    margin: 0 0 13px;
+    font-size: 26px;
     font-weight: var(--pl-fw-bold);
-    line-height: 33px;
+    line-height: 34px;
     color: var(--pl-text);
 }
 .cr-job__text {
-    margin: 0 0 20px;
-    font-size: 16px;
-    line-height: 26px;
+    margin: 0 0 15px;
+    font-size: 15px;
+    line-height: 24px;
     color: var(--pl-text-secondary);
 }
 .cr-job__meta {
     list-style: none;
     margin: 0 0 20px;
     padding: 0;
-    display: grid; gap: 10px;
+    display: grid; gap: 16px;
 }
 .cr-job__meta li {
     display: flex; align-items: center; gap: 10px;
+    line-height: 16px;
     font-size: 15px;
     color: var(--pl-text-secondary);
 }
@@ -1146,27 +1152,30 @@
     display: flex; align-items: center; justify-content: space-between;
     min-height: 398px;
     margin-inline: -6px;
-    padding: 0 40px 0 90px;
+    padding: 0 40px 0 58px;
     background: #e9effd;
     border-radius: 16px;
     overflow: hidden;
 }
+/* Le bloc est centré verticalement dans le bandeau ; la maquette le pose 5px
+   plus haut. */
+.cr-spont__body { position: relative; top: -5px; }
 .cr-spont__title {
-    margin: 0 0 24px;
-    font-size: 44px;
+    margin: 0 0 17px;
+    font-size: 48px;
     font-weight: var(--pl-fw-bold);
-    line-height: 1.3;
+    line-height: 67px;
     color: #2563eb;
 }
 .cr-spont__text {
     margin: 0 0 24px;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: var(--pl-fw-semibold);
     color: var(--pl-text);
 }
 .cr-spont__btn {
     height: 40px;
-    padding-inline: 18px;
+    padding-inline: 23px;
     background: #2563eb;
     border: 0;
     border-radius: 8px;
@@ -1177,14 +1186,16 @@
 .cr-spont__illu { width: 550px; height: auto; }
 
 /* ---- Nos valeurs -------------------------------------------------------- */
-.cr-values { padding-block: 60px 70px; }
+.cr-values { padding-block: 69px 33px; }
+/* Le titre de cette section est aligné sur la grille d'images (x104). */
+.cr-values .pw-section__title { margin-left: -6px; margin-bottom: 48px; }
 .cr-values__grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 40px 16px;
+    gap: 8px 16px;
     margin-inline: -6px;
 }
-.cr-value { min-height: auto; background: transparent; padding: 34px 30px 30px; }
+.cr-value { min-height: auto; background: transparent; padding: 34px 40px 30px; }
 .cr-value--featured { background: #f8fafc; }
 .cor-card__num.cr-value__num--violet { color: var(--pl-action); }
 .cor-card__num.cr-value__num--green { color: #10893e; }
@@ -1192,48 +1203,56 @@
 .cor-card__num.cr-value__num--blue { color: #2563eb; }
 .cor-card__num.cr-value__num--amber { color: #eab308; }
 .cor-card__num.cr-value__num--navy { color: var(--pl-text); }
-.cr-value__title { margin: 0 0 12px; font-size: 22px; }
-.cr-value__text { font-size: 16px; line-height: 26px; color: var(--pl-text-secondary); }
+.cr-value .cor-card__num { margin-bottom: 16px; }
+.cr-value__title { margin: 0 0 21px; font-size: 26px; }
+.cr-value__text { font-size: 18px; line-height: 28px; color: var(--pl-text-secondary); }
 
 /* ---- Pourquoi postuler chez nous ---------------------------------------- */
-.cr-why { padding-block: 60px 78px; }
+/* Maquette : grille de 1139 centrée (x153 -> x1291), comme « Pourquoi Nous
+   Choisir » de l'écran À propos ; cartes de 361 x 230, gouttières 28 et 34. */
+.cr-why { padding-block: 32px 31px; }
 .cr-why__grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px 16px;
-    margin-inline: -6px;
+    gap: 34px 28px;
+    width: 1139px;
+    margin-inline: auto;
 }
-.cr-why__head { display: flex; align-items: center; }
+/* Maquette : le bloc de titre est calé sur le bas de la première rangée et
+   tient sur trois lignes. */
+.cr-why__head { display: flex; align-items: flex-end; }
 .cr-why__title {
+    max-width: 350px;
     margin: 0;
-    font-size: 40px;
+    font-size: 48px;
     font-weight: var(--pl-fw-bold);
-    line-height: 1.25;
+    line-height: 59px;
     color: var(--pl-text);
 }
 .cr-reason {
-    min-height: 210px;
+    min-height: 230px;
     background: #f8fafc;
     border-radius: 16px;
-    padding: 26px 28px;
+    padding: 36px 30px;
 }
 .cr-reason--featured { background: var(--pl-action); }
-.cor-card__num.cr-reason__num { margin-bottom: 12px; font-size: 40px; color: var(--pl-action); }
+.cor-card__num.cr-reason__num { margin-bottom: 6px; font-size: 55px; color: var(--pl-action); }
 .cr-reason--featured .cor-card__num.cr-reason__num { color: var(--pl-white); }
 .cr-reason__title {
-    margin: 0 0 8px;
-    font-size: 20px;
+    margin: 0 0 2px;
+    font-size: 26px;
     font-weight: var(--pl-fw-bold);
+    line-height: 26px;
     color: var(--pl-text);
 }
-.cr-reason__text { margin: 0; font-size: 15px; line-height: 24px; color: var(--pl-text-secondary); }
+.cr-reason__text { margin: 0; font-size: 18px; line-height: 29px; color: var(--pl-text-secondary); }
 .cr-reason--featured .cr-reason__title,
 .cr-reason--featured .cr-reason__text { color: var(--pl-white); }
 
 /* ---- Barre d'outils du listing ------------------------------------------ */
 .cr-toolbar {
     display: flex; align-items: center; justify-content: space-between;
-    margin-top: 34px;
+    margin-top: 41px;
 }
 .cr-toolbar__count { font-size: 15px; color: var(--pl-text-secondary); }
 .cr-toolbar__sort {
@@ -1249,26 +1268,26 @@
 .cr-modal { position: absolute; inset: 0; z-index: 40; }
 .cr-modal__veil {
     position: fixed; inset: 0;
-    background: rgba(15, 23, 42, .28);
+    background: rgba(15, 23, 42, .26);
 }
 .cr-modal__panel {
     position: relative;
     width: 1232px;
-    margin: 172px auto 60px;
+    margin: 177px auto 60px;
     background: var(--pl-white);
     border-radius: 4px;
     overflow: hidden;
 }
 .cr-modal__head {
     position: relative;
-    padding: 40px 40px 46px;
+    padding: 52px 40px 41px;
     background: var(--pl-action);
     text-align: center;
     color: var(--pl-white);
 }
 .cr-modal__share,
 .cr-modal__close {
-    position: absolute; top: 36px;
+    position: absolute; top: 52px;
     display: inline-flex; align-items: center; justify-content: center;
     border: 0;
     cursor: pointer;
@@ -1280,42 +1299,48 @@
     color: var(--pl-action); text-decoration: none;
 }
 .cr-modal__title {
-    margin: 56px 0 12px;
-    font-size: 40px;
+    margin: 104px 0 0;
+    font-size: 56px;
     font-weight: var(--pl-fw-bold);
+    line-height: 67px;
     color: var(--pl-white);
 }
-.cr-modal__place { margin: 0 0 42px; font-size: 18px; font-weight: var(--pl-fw-semibold); }
-.cr-modal__note { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 30px; font-size: 14px; }
-.cr-modal__rule { display: block; width: 52px; height: 1px; margin: 0 auto; background: rgba(255, 255, 255, .7); }
+.cr-modal__place { margin: 19px 0 0; font-size: 24px; font-weight: var(--pl-fw-semibold); }
+.cr-modal__note { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 55px 0 0; font-size: 18px; }
+.cr-modal__rule { display: block; width: 99px; height: 1px; margin: 69px auto 0; background: rgba(255, 255, 255, .7); }
 
-.cr-modal__body { padding: 48px 60px 56px; }
-.cr-modal__h3 { margin: 0 0 40px; font-size: 32px; font-weight: var(--pl-fw-medium); color: var(--pl-text); }
-.cr-modal__line { margin: 0 0 30px; font-size: 16px; color: var(--pl-text); }
+/* Maquette : contenu rentré de 68, listes indentées de 102 supplémentaires,
+   corps composé en 24px (interlignage 28). */
+.cr-modal__body { padding: 70px 68px 64px; }
+.cr-modal__h3 { margin: 0 0 59px; font-size: 48px; line-height: 58px; font-weight: var(--pl-fw-medium); color: var(--pl-text); }
+.cr-modal__line { margin: 0 0 59px; font-size: 24px; line-height: 29px; color: var(--pl-text); }
 .cr-modal__line strong { font-weight: var(--pl-fw-bold); }
-.cr-modal__h4 { margin: 48px 0 14px; font-size: 16px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
-.cr-modal__list { margin: 0; padding-left: 26px; display: grid; gap: 8px; }
-.cr-modal__list li { font-size: 16px; line-height: 24px; color: var(--pl-text); }
-.cr-modal__actions { display: flex; justify-content: flex-end; margin-top: 60px; }
-.cr-modal__apply { height: 40px; padding-inline: 18px; border-radius: 8px; font-size: 14px; }
+.cr-modal__h4 { margin: 107px 0 0; font-size: 24px; line-height: 29px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.cr-modal__list { margin: 23px 0 0; padding-left: 124px; display: grid; gap: 13px; }
+.cr-modal__list li { font-size: 24px; line-height: 28px; color: var(--pl-text); }
+.cr-modal__actions { display: flex; justify-content: flex-end; margin-top: 104px; }
+.cr-modal__apply { height: 56px; padding-inline: 13px; border-radius: 8px; font-size: 16px; }
 
 /* ==========================================================================
  *  CONTACTEZ-NOUS (préfixe ct-)
  *  Relevés sur assets/corporate/Contactez-nous.png (1440 x 2617).
  * ======================================================================== */
 
-.cor-hero--contact .pw-trust { margin-top: 18px; }
-.ct-trust2 { margin-top: 10px; }
+.cor-hero--contact .pw-trust { margin-top: 18px; font-size: 18px; }
+/* `.cor-hero--contact .pw-trust` (0,2,0) prime sur `.ct-trust2` : il faut le
+   même niveau de spécificité pour resserrer la seconde ligne. */
+.cor-hero--contact .ct-trust2 { margin-top: 8px; }
 
-.ct-main { padding-block: 40px 0; }
+.ct-main { padding-block: 42px 0; }
 /* Les titres de section sur deux lignes gardent l'interlignage serré. */
-.ct-title { line-height: 1.25; margin-bottom: 40px; }
+/* Maquette : deux lignes espacées de 72. */
+.ct-title { line-height: 72px; margin-bottom: 22px; }
 
 /* Maquette : formulaire de 726 à gauche, colonne de cartes de 462 à droite. */
 .ct-cols {
     display: grid;
-    grid-template-columns: 726px 1fr;
-    gap: 44px;
+    grid-template-columns: 728px 1fr;
+    gap: 105px;
     align-items: start;
     margin-inline: -6px;
 }
@@ -1324,10 +1349,10 @@
     border: 1px solid #eff1f3;
     border-radius: 12px;
 }
-.ct-form { padding: 28px 32px 32px; }
+.ct-form { padding: 28px 32px 41px; }
 .ct-form__title {
     margin: 0 0 26px;
-    font-size: 22px;
+    font-size: 26px;
     font-weight: var(--pl-fw-bold);
     color: var(--pl-text);
 }
@@ -1336,42 +1361,44 @@
    la seconde (même piège que sur le formulaire partenaire). */
 .ct-form__row .pf-field + .pf-field { margin-top: 0; }
 .ct-form__subject { margin-top: 18px; }
-.ct-form__area { margin-top: 18px; }
+/* `.pf-field + .pf-field--area` (0,2,0) prime : il faut la même spécificité. */
+.ct-form .pf-field--area { margin-top: 9px; }
 .ct-form__attach {
     display: flex; align-items: center; gap: 8px;
-    margin: 18px 0 0;
+    margin: 11px 0 0;
     font-size: 14px;
     color: var(--pl-text-secondary);
 }
-.ct-form__actions { display: flex; justify-content: flex-end; margin-top: 24px; }
-.ct-form__submit { height: 40px; padding-inline: 40px; border-radius: 8px; font-size: 15px; }
+.ct-form__actions { display: flex; justify-content: flex-end; margin-top: 17px; }
+/* Maquette : le bouton fait 283 de large (x524 -> x807). */
+.ct-form__submit { min-width: 283px; height: 48px; border-radius: 8px; font-size: 15px; }
 
-.ct-methods { display: grid; gap: 20px; }
-.ct-method { display: flex; align-items: flex-start; gap: 18px; padding: 24px 24px 26px; }
+.ct-methods { display: grid; gap: 25px; }
+.ct-method { display: flex; align-items: flex-start; gap: 20px; padding: 22px 28px 32px; }
 .ct-method__icon {
     flex: none;
     display: inline-flex; align-items: center; justify-content: center;
-    width: 48px; height: 48px;
+    width: 52px; height: 52px;
     border-radius: 12px;
 }
 .ct-method__icon--blue { background: #e9effd; color: #2563eb; }
 .ct-method__icon--green { background: #e8f6ed; color: #10893e; }
 .ct-method__icon--orange { background: #fff2e6; color: var(--pl-cta); }
 .ct-method__body { min-width: 0; }
-.ct-method__title { margin: 0 0 10px; font-size: 22px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
-.ct-method__text { max-width: 250px; margin: 0 0 10px; font-size: 16px; line-height: 26px; color: var(--pl-text-secondary); }
-.ct-method__strong { margin: 0 0 4px; font-size: 16px; font-weight: var(--pl-fw-semibold); color: #2563eb; }
-.ct-method__sub { margin: 0; font-size: 15px; color: #2563eb; }
+.ct-method__title { margin: 0 0 8px; font-size: 26px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.ct-method__text { max-width: 250px; margin: 0 0 6px; font-size: 18px; line-height: 24px; color: var(--pl-text-secondary); }
+.ct-method__strong { margin: 0 0 4px; font-size: 18px; font-weight: var(--pl-fw-semibold); color: #2563eb; }
+.ct-method__sub { margin: 0; font-size: 18px; color: #2563eb; }
 .ct-method__link {
     display: inline-flex; align-items: center; gap: 6px;
-    font-size: 15px;
+    font-size: 18px;
     color: #2563eb;
     text-decoration: none;
 }
 .ct-method__link:hover { text-decoration: underline; }
 
 /* ---- Carte ------------------------------------------------------------- */
-.ct-map { padding-top: 30px; }
+.ct-map { padding-top: 1px; }
 .ct-map__frame { position: relative; margin-inline: -6px; }
 .ct-map__img { display: block; width: 1232px; height: 398px; object-fit: cover; }
 /* Maquette : encart blanc posé en bas à gauche de la carte. */
@@ -1402,7 +1429,7 @@
 .ct-args {
     margin-top: 1px;
     margin-bottom: 32px;
-    padding-block: 82px 82px;
+    padding-block: 87px 87px;
     background: var(--pl-surface-dashboard);
 }
 .ct-args__grid {
@@ -1421,7 +1448,7 @@
     color: #2563eb;
 }
 .ct-arg__title { font-size: 16px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
-.ct-arg__text { max-width: 230px; font-size: 14px; line-height: 22px; color: var(--pl-text-secondary); }
+.ct-arg__text { max-width: 260px; font-size: 14px; line-height: 24px; color: var(--pl-text-secondary); }
 
 /* ==========================================================================
  *  PAIEMENT SÉCURISÉ (préfixe py-)
@@ -1430,51 +1457,55 @@
 
 .py-hero__title { margin-bottom: 14px; color: var(--pl-text); }
 .py-hero__claim {
-    margin: 0 0 22px;
-    font-size: 16px;
+    margin: 0 0 33px;
+    font-size: 18px;
     font-weight: var(--pl-fw-bold);
     color: var(--pl-text);
 }
 .cor-hero--payment .cor-hero__text { max-width: 500px; margin-bottom: 26px; line-height: 26px; }
 
 /* Maquette : trois pastilles alignées sous le paragraphe. */
+/* Maquette : trois pastilles de largeurs differentes (le texte de chacune est
+   cadre a 124, 149 puis 177), icone a 18 du texte, 33 entre les pastilles. */
 .py-badges {
     list-style: none;
     margin: 0; padding: 0;
-    display: flex; gap: 30px;
-    max-width: 620px;
+    display: flex; gap: 33px;
 }
-.py-badges li { display: flex; align-items: flex-start; gap: 10px; }
+.py-badges li { display: flex; align-items: flex-start; gap: 18px; }
 .py-badges .pl-icon { color: var(--pl-text); flex: none; margin-top: 2px; }
-.py-badges span { display: block; max-width: 150px; font-size: 14px; line-height: 20px; color: var(--pl-text); }
+.py-badges span { display: block; font-size: 14px; line-height: 20px; color: var(--pl-text); }
+.py-badges li:nth-child(1) span { width: 124px; }
+.py-badges li:nth-child(2) span { width: 149px; }
+.py-badges li:nth-child(3) span { width: 177px; }
 .py-badges strong { display: inline; font-weight: var(--pl-fw-bold); }
 .py-badges strong::after { content: " "; }
 
-.py-protect { padding-block: 40px 0; }
+.py-protect { padding-block: 48px 0; }
 .py-grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
     margin-inline: -6px;
 }
-.py-card { min-height: 230px; text-align: center; padding: 26px 22px 24px; }
+.py-card { min-height: 260px; text-align: center; padding: 31px 22px 24px; }
 .py-card__icon { margin: 0 auto 18px; }
 .py-card__title { margin: 0 0 12px; font-size: 18px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
-.py-card__text { margin: 0; font-size: 14px; line-height: 22px; color: var(--pl-text-secondary); }
+.py-card__text { margin: 0; font-size: 14px; line-height: 24px; color: var(--pl-text-secondary); }
 
 /* ---- Moyens de paiement -------------------------------------------------- */
-.py-means { padding-top: 44px; }
+.py-means { padding-top: 62px; }
 .py-means__panel {
     margin-inline: -6px;
-    padding: 46px 98px 50px;
+    padding: 67px 98px 72px;
     background: #f8fafc;
     border-radius: 16px;
 }
-.py-means__title { margin: 0 0 32px; font-size: 26px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.py-means__title { margin: 0 0 34px; font-size: 34px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
 .py-means__cols { display: grid; grid-template-columns: repeat(2, 1fr); gap: 60px; }
 .py-means__col + .py-means__col { border-left: 1px solid #e2e6ec; padding-left: 60px; }
 .py-means__label {
     display: flex; align-items: center; gap: 8px;
-    margin: 0 0 18px;
-    font-size: 15px;
+    margin: 0 0 37px;
+    font-size: 20px;
     font-weight: var(--pl-fw-semibold);
     color: var(--pl-text);
 }
@@ -1482,24 +1513,24 @@
 .py-logos { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; }
 .py-logos li {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 104px; height: 62px;
+    width: 108px; height: 72px;
     background: var(--pl-white);
     border: 1px solid #eff1f3;
     border-radius: 8px;
 }
 /* Les macros `pay_*` sont figées à 35x24 et n'acceptent pas de taille : on
    les agrandit en CSS pour remplir la vignette comme sur la planche. */
-.py-logos svg { width: 74px; height: 51px; }
+.py-logos svg { width: 92px; height: 63px; }
 
 /* ---- Besoin d'aide ------------------------------------------------------- */
-.py-help { padding-block: 62px 96px; }
+.py-help { padding-block: 57px 13px; }
 /* Maquette : deux jeux d'arcs concentriques violets, en haut à gauche et en bas
    à droite, dessinés en dégradés radiaux répétés. */
 .py-help__panel {
     position: relative;
     margin-inline: -6px;
-    padding: 66px 40px 70px;
-    background: #f3ecff;
+    padding: 66px 40px 66px;
+    background: #efe6ff;
     border-radius: 16px;
     text-align: center;
     overflow: hidden;
@@ -1543,7 +1574,7 @@
  *  « Politiques de confidentialités.png » (contenu = CGU).
  * ======================================================================== */
 
-.lg-page { padding-block: 44px 70px; }
+.lg-page { padding-block: 46px 41px; }
 /* Maquette : sommaire de 296 à gauche, contenu à partir de x414. */
 .lg-cols {
     display: grid;
@@ -1552,14 +1583,17 @@
     align-items: start;
     margin-inline: -6px;
 }
+/* Maquette : l'encadré démarre 10px au-dessus du fil d'Ariane de la colonne
+   de contenu. */
 .lg-toc {
+    margin-top: -10px;
     background: var(--pl-white);
     border: 1px solid #eff1f3;
     border-radius: 12px;
-    padding: 26px 24px 30px;
+    padding: 24px 24px 44px;
 }
-.lg-toc__title { margin: 0 0 26px; font-size: 26px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
-.lg-toc__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 33px; }
+.lg-toc__title { margin: 0 0 43px; font-size: 26px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.lg-toc__list { list-style: none; margin: 0; padding-left: 13px; display: grid; gap: 33px; }
 .lg-toc__list li { display: flex; align-items: center; gap: 12px; }
 .lg-toc__num {
     flex: none;
@@ -1573,32 +1607,35 @@
 .lg-toc__list a { font-size: 16px; color: var(--pl-text); text-decoration: underline; }
 .lg-toc__list a:hover { color: var(--pl-action); }
 
-.lg-crumb { margin: 0 0 34px 2px; }
+.lg-crumb { margin: 0 0 44px 2px; }
 .lg-title {
-    margin: 0 0 24px;
+    margin: 0 0 18px;
     font-size: 48px;
     font-weight: var(--pl-fw-medium);
     line-height: 1.2;
     color: var(--pl-text);
 }
-.lg-intro { max-width: 905px; margin: 0 0 22px; font-size: 20px; line-height: 33px; color: var(--pl-text); }
-.lg-date { margin: 0 0 40px; font-size: 18px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
+.lg-intro { max-width: 905px; margin: 0 0 14px; font-size: 24px; line-height: 33px; color: var(--pl-text); }
+.lg-date { margin: 0 0 35px; font-size: 18px; font-weight: var(--pl-fw-bold); color: var(--pl-text); }
 
-.lg-section + .lg-section { margin-top: 46px; }
+.lg-section + .lg-section { margin-top: 32px; }
 .lg-h2 {
-    margin: 0 0 20px;
+    margin: 0 0 13px;
     font-size: 26px;
     font-weight: var(--pl-fw-bold);
     color: var(--pl-action);
 }
 /* Maquette : le contenu des sections est indenté de 77 par rapport au titre
    et composé en 24px, interlignage 34. */
-.lg-lead { margin: 0 0 4px 77px; font-size: 24px; line-height: 34px; color: var(--pl-text); }
+.lg-lead { margin: 0 0 0 77px; font-size: 24px; line-height: 34px; color: var(--pl-text); }
 .lg-list { margin: 0 0 0 77px; padding-left: 26px; display: grid; }
-.lg-list li { font-size: 24px; line-height: 34px; color: var(--pl-text); }
-.lg-p { max-width: 830px; margin: 0 0 0 83px; font-size: 24px; line-height: 34px; color: var(--pl-text); }
+.lg-list li { font-size: 24px; line-height: 33px; color: var(--pl-text); }
+.lg-p { max-width: 812px; margin: 0 0 0 83px; font-size: 24px; line-height: 33px; color: var(--pl-text); }
 
 /* Bannière « Notre engagement » des pages légales : même gabarit que
    « Besoin d'aide ? » de l'écran Paiement sécurisé. */
-.lg-engage { margin: 46px 0 0; }
+.lg-engage { margin: 40px -6px 0; padding-block: 44px 44px; }
 .lg-engage__title { font-size: 26px; }
+
+/* Sur Carrières, la bande des avis est en #f8fafc et non en #fafafb. */
+.pw-reviews--soft { background: var(--pl-surface-dashboard); }

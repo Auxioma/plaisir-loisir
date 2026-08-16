@@ -5,7 +5,7 @@
 {% import '_partials/_icons.html.twig' as icon %}
 
 <form class="cr-search" method="get" action="{{ path('app_corporate_jobs') }}" role="search">
-    <span class="cr-search__field">
+    <span class="cr-search__field cr-search__field--query">
         {{ icon.search(18) }}
         <input type="search" name="q" placeholder="{{ 'Intitulé du poste'|trans }}" aria-label="{{ 'Intitulé du poste'|trans }}">
     </span>

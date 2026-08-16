@@ -199,7 +199,7 @@ final class StaticCorporate
     {
         return [
             ['num' => '01', 'title' => 'Télétravail flexible', 'text' => 'Organisation du travail adaptée à votre quotidien', 'featured' => false],
-            ['num' => '02', 'title' => 'Evolution & formation', 'text' => 'Des opportunités pour grandir et apprendre', 'featured' => true],
+            ['num' => '02', 'title' => 'Évolution & formation', 'text' => 'Des opportunités pour grandir et apprendre', 'featured' => true],
             ['num' => '03', 'title' => 'Équilibre vie pro/perso', 'text' => 'Nous respectons votre équilibre et votre bien-être', 'featured' => false],
             ['num' => '04', 'title' => 'Avantages', 'text' => 'Tickets restaurant, mutuelle, avantages loisirs…', 'featured' => false],
             ['num' => '05', 'title' => "Événements d'équipe", 'text' => 'éminaires, activités et bons moments garantis !', 'featured' => false],
@@ -229,7 +229,7 @@ final class StaticCorporate
             'manager' => 'Responsable senior - IT,Design et communication',
             'division' => 'IT, Design et communication',
             'mission' => [$a, $b, $c],
-            'description' => [$a, $b, $c, $a, $b, $c, $a, $b, $c],
+            'description' => [$a, $b, $c, $a, $b, $c, $a, $b, $c, $a, $b, $c],
             'education' => $court,
             'experience' => $court,
         ];
@@ -355,9 +355,9 @@ final class StaticCorporate
             'Utilisation de la plateforme' => "Vous vous engagez à utiliser la plateforme conformément à la loi et aux présentes CGU. Il est interdit d'utiliser la plateforme à des fins illégales, frauduleuses ou portant atteinte aux droits de tiers.",
             'Comptes utilisateurs' => 'Vous êtes responsable de la confidentialité de vos identifiants et de toutes les activités effectuées depuis votre compte. Vous devez nous informer immédiatement de toute utilisation non autorisée de votre compte.',
             'Contenus et activités' => "Les informations, descriptions, photos et avis présents sur la plateforme sont fournis par les utilisateurs ou nos partenaires. TrouveMoi Plaisirs & Loisirs ne peut être tenu responsable de l'exactitude ou de l'exhaustivité de ces informations.",
-            'Réservations et paiements' => 'Les réservations effectuées via la plateforme sont soumises aux conditions particulières du prestataire concerné. Les paiements sont sécurisés et traités par nos partenaires certifiés.',
-            'Responsabilités' => "TrouveMoi agit en qualité d'intermédiaire entre les utilisateurs et les prestataires. Sa responsabilité ne saurait être engagée en cas de manquement du prestataire à ses obligations.",
-            'Données personnelles' => 'Les données personnelles collectées sont traitées conformément à notre politique de confidentialité et à la réglementation en vigueur.',
+            'Réservations et paiements' => 'Les réservations effectuées via la plateforme sont soumises aux conditions des prestataires partenaires. Les paiements sont sécurisés et traités par nos partenaires de paiement agréés. Les conditions d\'annulation et de remboursement sont précisées avant chaque réservation.',
+            'Responsabilités' => "TrouveMoi Plaisirs & Loisirs met tout en œuvre pour assurer la disponibilité et la fiabilité de la plateforme, mais ne garantit pas l'absence d'erreurs ou d'interruptions. Notre responsabilité ne saurait être engagée pour tout dommage indirect lié à l'utilisation de la plateforme.",
+            'Données personnelles' => 'La collecte et le traitement de vos données personnelles sont effectués conformément à notre Politique de Confidentialité, disponible sur notre site.',
             'Modification des CGU' => 'TrouveMoi se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront informés de toute modification substantielle.',
             'Droit applicable et litiges' => 'Les présentes CGU sont soumises au droit français. En cas de litige, une solution amiable sera recherchée avant toute action judiciaire.',
         ];

@@ -4,7 +4,7 @@
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<section class="pw-reviews">
+<section class="pw-reviews{{ reviews_variant is defined ? ' pw-reviews--' ~ reviews_variant : '' }}">
     <div class="container">
         <h2 class="pw-section__title">{{ 'Ils nous font confiance'|trans }}</h2>
 
