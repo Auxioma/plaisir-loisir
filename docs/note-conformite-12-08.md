@@ -686,3 +686,87 @@ Corrigées : « activivtés » → « activité », « n'hésitez » → « N'h�
 - Écran **FAQ** (aucune planche fournie).
 - Politique de confidentialité (planche manquante, voir plus haut).
 - Écrans de succès après envoi des deux formulaires (partenaire et contact).
+
+---
+
+## 17. Corporate — reprise au pixel des six derniers écrans (16/08)
+
+La passe complète annoncée en §16 a été faite. Résultat, mesuré sur la hauteur
+totale de page (position du pied de page) :
+
+| Route | Maquette | Rendu | Écart |
+| --- | --- | --- | --- |
+| `/carrieres` | 3680 | 3680 | **0** |
+| `/carrieres/offres` | 2785 | 2785 | **0** |
+| `/carrieres/offres?offre=1` | 2785 | 2785 | **0** |
+| `/contactez-nous` | 2173 | 2177 | +4 |
+| `/paiement-securise` | 1916 | 1920 | +4 |
+| `/mentions-legales` | 2263 | 2266 | +3 |
+| `/conditions-generales` | 2776 | 2734 | −42 |
+
+Et bloc par bloc, les six écrans sont à ±5 px (la plupart des sections à 0),
+sauf la réserve sur les CGU ci-dessous.
+
+### Le vrai sujet : les bandes de héros
+
+Carrières, Contactez-nous et Paiement sécurisé n'ont **pas de photo source**.
+Mon premier découpage partait de x480 (à droite du texte de la planche) et
+laissait donc 130 px de blanc là où la maquette montre la photo sous un voile
+translucide.
+
+La planche ne peut pas être découpée telle quelle : le titre, le paragraphe et
+les boutons sont **posés par-dessus** ce voile. La bande est donc reconstruite :
+
+1. on construit un masque des pixels d'encre — le navy `#0f172a` des textes,
+   l'orange `#ff7a00` des boutons, le violet et le bleu des icônes ;
+2. on le dilate de 3 px pour absorber l'antialiasing ;
+3. on rebouche chaque pixel masqué par **interpolation verticale** entre les
+   pixels propres de la même colonne.
+
+Le voile et la photo varient lentement sur ces quelques dizaines de lignes : la
+réparation est invisible, et la bande peut être découpée dès x350 — c'est-à-dire
+tout le dégradé, sans aucun `linear-gradient` CSS à recalibrer.
+
+**Deux pièges rencontrés** : un seuil « pixel sombre » attrape les vêtements et
+les meubles de la photo, pas seulement le texte — d'où le masque par couleur
+exacte ; et le texte du héros va bien plus loin que le paragraphe (les pastilles
+de Paiement sécurisé s'étendent jusqu'à x738), ce qui laissait des **fantômes de
+texte** cuits dans l'image au premier essai.
+
+### Relevés notables
+
+- **Le listing porte douze offres**, en quatre rangées de trois : cartes de
+  396 × 403, gouttières 23 et 28.
+- La **modale de détail** compose son corps en 24 px (interlignage 28), listes
+  indentées de 124, tête violette de 471 de haut et titre en 56.
+  Sa liste « Description » compte **douze puces**, pas neuf.
+- Sur Carrières, la bande des avis est en `#f8fafc` et non en `#fafafb` comme
+  sur « Devenir partenaire » — d'où le modificateur `.pw-reviews--soft`.
+- Le bloc de titre « Pourquoi postuler chez nous? » est calé sur le **bas** de
+  la première rangée, en 48 px sur trois lignes ; la grille reprend les 1139 de
+  « Pourquoi Nous Choisir » (À propos).
+- La **carte de Contactez-nous fait 398 de haut** : la bande grise des quatre
+  arguments qui la suit n'en fait pas partie.
+- Les trois pastilles du héros Paiement sécurisé ont **trois largeurs
+  différentes** (124, 149, 177) : c'est ce qui commande leurs retours à la ligne.
+- Les pages légales composent leur corps en 24 px, leurs titres de section en 26
+  et le H1 en 48 ; le sommaire n'est séparé du contenu que de 17 px et démarre
+  10 px plus haut que le fil d'Ariane.
+
+### Réserve : les CGU, −42 px
+
+Les dix sections des CGU tombent à −2 px chacune, sans que la faute soit
+localisable dans une marge : à largeur de colonne égale, **Figma et le
+navigateur ne coupent pas les longues lignes au même mot**. Compenser en
+élargissant la colonne fait perdre une ligne ailleurs (essai à 843 : −75), en
+la resserrant en ajoute une (essai à 790 : idem). Les compteurs de lignes sont
+bons, seuls les blocs sont 2 px trop courts.
+
+Corriger cet écart demanderait de forcer les césures mot à mot, ce qui
+figerait le texte. Je préfère laisser les CGU 1,5 % plus courtes et le signaler.
+
+### Coquilles corrigées en passant
+
+« Evolution & formation » → « Évolution & formation ». Les textes des sections
+6, 7 et 8 des CGU et des sections 3 à 6 des mentions légales ont été
+retranscrits en entier depuis les planches (ils étaient tronqués).

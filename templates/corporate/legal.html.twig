@@ -68,14 +68,16 @@
                     </section>
                 {% endfor %}
 
-                {# Maquette : bannière violette d'arcs concentriques en pied de
-                   page, identique sur les deux écrans légaux. #}
-                <div class="py-help__panel lg-engage">
-                    <h2 class="py-help__title lg-engage__title">{{ 'Notre engagement'|trans }}</h2>
-                    <p class="py-help__text">{{ 'Chez TrouveMoi Plaisirs & Loisirs, la transparence et la confiance sont au cœur de notre relation avec vous. Nous nous engageons à vous offrir une expérience sécurisée et fiable.'|trans }}</p>
-                    <a href="{{ path('app_corporate_contact') }}" class="pl-btn pl-btn--primary py-help__btn">{{ 'Nous contacter'|trans }}</a>
-                </div>
             </div>
+        </div>
+
+        {# Maquette : bannière violette d'arcs concentriques en pied de page,
+           identique sur les deux écrans légaux ; elle occupe toute la grille
+           d'images et non la seule colonne de contenu. #}
+        <div class="py-help__panel lg-engage">
+            <h2 class="py-help__title lg-engage__title">{{ 'Notre engagement'|trans }}</h2>
+            <p class="py-help__text">{{ 'Chez TrouveMoi Plaisirs & Loisirs, la transparence et la confiance sont au cœur de notre relation avec vous. Nous nous engageons à vous offrir une expérience sécurisée et fiable.'|trans }}</p>
+            <a href="{{ path('app_corporate_contact') }}" class="pl-btn pl-btn--primary py-help__btn">{{ 'Nous contacter'|trans }}</a>
         </div>
     </div>
 </div>
