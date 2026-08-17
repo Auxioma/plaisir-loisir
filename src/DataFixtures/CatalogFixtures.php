@@ -39,6 +39,11 @@ final class CatalogFixtures extends Fixture
         $user->setFirstName('Camille');
         $user->setLastName('Diop');
         $user->setStatus(UserStatus::Active);
+        // Ce compte porte un dossier prestataire vérifié : il doit donc aussi
+        // porter le rôle, sinon il ne pourra pas entrer dans l'espace
+        // professionnel. L'oubli datait d'avant le câblage, où le rôle ne
+        // servait à rien.
+        $user->setRoles(['ROLE_PROVIDER']);
         $user->setPassword($this->passwordHasher->hashPassword($user, 'Password123'));
         $manager->persist($user);
 

@@ -43,4 +43,32 @@ final class ProviderOnboardingService
 
         return $profile;
     }
+
+    /**
+     * Ouvre un dossier prestataire VIDE, laissé en brouillon.
+     *
+     * Appelé à l'inscription, quand le visiteur est passé par la tuile « Pro
+     * Prestataire » de l'écran de choix. À ce moment on ne connaît que son nom :
+     * ni raison sociale, ni statut juridique, ni présentation. Le dossier reste
+     * donc en « draft » et n'est PAS soumis à vérification — contrairement à
+     * becomeProvider(), qui suppose un dossier déjà renseigné.
+     *
+     * C'est le futur espace professionnel qui complétera ces informations puis
+     * déclenchera la transition « submit ».
+     */
+    public function startDraftProfile(User $user, string $displayName): ProviderProfile
+    {
+        if (null !== $this->providerProfiles->findOneByUser($user)) {
+            throw new ConflictHttpException('Cet utilisateur est déjà prestataire.');
+        }
+
+        $profile = new ProviderProfile();
+        $profile->setUser($user);
+        $profile->setDisplayName($displayName);
+
+        $this->entityManager->persist($profile);
+        $this->entityManager->flush();
+
+        return $profile;
+    }
 }

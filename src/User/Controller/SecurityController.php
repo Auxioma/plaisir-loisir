@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Controller;
 
+use App\User\Enum\AccountType;
 use App\User\Form\RegistrationFormType;
 use App\User\Service\PasswordResetService;
 use App\User\Service\RegistrationService;
@@ -223,19 +224,29 @@ final class SecurityController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
-        $form = $this->createForm(RegistrationFormType::class);
+        // Le type vient de l'écran de choix (« /register?type=pro ») et n'existe
+        // que dans l'URL du GET : il est recopié dans un champ caché pour
+        // survivre à l'envoi du formulaire.
+        $form = $this->createForm(RegistrationFormType::class, [
+            'accountType' => AccountType::fromInput($request->query->get('type'))->value,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $registrationService->register(
+                $user = $registrationService->register(
                     (string) $form->get('fullName')->getData(),
                     (string) $form->get('email')->getData(),
                     (string) $form->get('password')->getData(),
                     $form->get('phone')->getData(),
+                    AccountType::fromInput($form->get('accountType')->getData()),
                 );
 
-                $this->addFlash('success', 'Votre compte a été créé avec succès. Connectez-vous pour continuer.');
+                // Un professionnel doit savoir que son dossier est ouvert mais
+                // pas encore complet : sans cela, il croirait pouvoir publier.
+                $this->addFlash('success', \in_array('ROLE_PROVIDER', $user->getRoles(), true)
+                    ? 'Votre compte professionnel a été créé. Connectez-vous pour compléter votre dossier prestataire.'
+                    : 'Votre compte a été créé avec succès. Connectez-vous pour continuer.');
 
                 return $this->redirectToRoute('app_login');
             } catch (ConflictHttpException) {

@@ -130,7 +130,54 @@ Décisions :
   d'e-mail n'a été maquetté, en inventer un figerait une mise en forme que
   personne n'a validée.
 
-### 2.6 Les e-mails ne partent pas tout seuls — point d'exploitation
+### 2.6 Le compte professionnel — le choix était perdu en silence
+
+L'écran d'entrée envoyait bien vers `/register?type=pro`, mais **le paramètre
+n'était lu nulle part**. Ni rôle, ni dossier prestataire : un compte créé par la
+tuile « Pro Prestataire » était rigoureusement identique à un compte client en
+base. L'utilisateur croyait s'inscrire comme professionnel et obtenait un compte
+client, sans le moindre message. C'est le pire des cas — un défaut silencieux.
+
+Corrigé le 18/08, **sans ajouter le moindre élément visible** :
+
+- Une énumération `App\User\Enum\AccountType` (`client` / `pro`) reprend les
+  valeurs qui circulent déjà dans les URL de la maquette. Toute valeur inconnue
+  retombe sur « client » : un paramètre bricolé à la main ne doit jamais
+  provoquer d'erreur, et le compte le moins privilégié est le bon défaut.
+- Le type voyage dans un **champ caché** de `RegistrationFormType`. Il le fallait :
+  le formulaire poste vers `/register` sans la chaîne de requête, le `?type=pro`
+  disparaissait donc à l'envoi. `form_end()` le rend avec le jeton CSRF, la carte
+  n'est pas touchée — vérifié par mesure, les six écrans sont inchangés.
+- Un compte professionnel reçoit `ROLE_PROVIDER` et un `ProviderProfile` ouvert
+  **en brouillon**, via une nouvelle méthode `startDraftProfile()`.
+
+Pourquoi une nouvelle méthode plutôt que `becomeProvider()` : cette dernière
+applique aussitôt la transition `submit`, qui envoie le dossier en vérification.
+Or à l'inscription on ne connaît que le nom — ni raison sociale, ni statut
+juridique, ni présentation. Soumettre un dossier vide à l'administration n'aurait
+aucun sens. Le dossier reste donc en `draft` ; c'est le futur espace
+professionnel qui le complétera puis déclenchera `submit`.
+
+**Le rôle n'ouvre aucun droit de publication.** N'importe qui peut ajouter
+`?type=pro` à l'URL : c'est sans conséquence, parce que
+`ActivityPublishingService` refuse déjà toute mise en ligne tant que le dossier
+n'est pas `Verified`. Le rôle donne accès à l'espace professionnel, la
+vérification donne le droit de publier. Ce sont deux verrous distincts, et c'est
+volontaire.
+
+Le message de confirmation diffère pour un professionnel — « complétez votre
+dossier prestataire » — sans quoi il croirait pouvoir publier immédiatement.
+
+Au passage : le prestataire de démonstration `annonceur@trouvemoi.test` avait un
+dossier **vérifié** mais **aucun rôle**. Il n'aurait pas pu entrer dans l'espace
+professionnel. Corrigé dans `CatalogFixtures` et dans la base locale.
+
+`templates/security/_account_type.html.twig` (bascule Client/Pro + statut
+juridique) reste **inclus nulle part** : la maquette ne le montre pas. Il est
+conservé parce que le statut juridique devra bien être collecté quelque part,
+vraisemblablement dans le formulaire de l'espace professionnel.
+
+### 2.7 Les e-mails ne partent pas tout seuls — point d'exploitation
 
 `messenger.yaml` route `SendEmailMessage` vers le transport `async`. **Sans
 worker Messenger en service, aucun e-mail n'est envoyé** : le message reste dans
@@ -203,8 +250,23 @@ avatar. La hauteur de page ne change pas. **À valider.**
   tunnel côté front est à faire.
 - **Lot 5 — événements et groupes** : seul domaine sans aucune entité, et plus
   gros consommateur de statique (29 appels).
-- **Connexion par Google / Facebook** : les boutons existent sur la maquette,
-  mais il faut des identifiants d'application côté client.
+- **Espace professionnel** : le fond est prêt (rôle, dossier en brouillon,
+  workflow de vérification, service de publication conditionné au statut
+  vérifié), mais **aucun écran n'existe et aucune route `/pro` n'est déclarée**.
+  Il n'y a pas non plus de règle `access_control` pour ce préfixe : protéger un
+  chemin inexistant ne protège rien, elle sera ajoutée avec les routes.
+  Restent à collecter dans ces écrans : raison sociale, statut juridique,
+  adresse fiscale, présentation, puis la transition `submit`.
+  Les liens « En savoir plus sur l'espace pro / client » de l'écran de choix
+  sont encore inertes (`href="#"`).
+- **Connexion par Google / « Se connecter avec Apple » / Facebook** : les
+  boutons existent sur la maquette, désactivés. En attente de l'aval du CTO sur
+  les identifiants d'application. Trois dépendances à ne pas découvrir trop
+  tard : Apple exige une adhésion payante au programme développeur et une
+  vérification de domaine ; Google et Meta réclament une **URL de politique de
+  confidentialité publiée** — la page n'existe pas encore ; et il faudra
+  trancher le cas d'une connexion Google sur une adresse déjà inscrite par mot
+  de passe.
 - **Photo de profil** : l'entité `User` n'en porte aucune ; l'avatar de la
   maquette est encore affiché pour tout le monde.
 - **Vérification de l'adresse e-mail** : les comptes sont actifs immédiatement.
