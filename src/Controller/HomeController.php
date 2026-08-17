@@ -38,10 +38,12 @@ final class HomeController extends AbstractController
         // Deux pages distinctes (précision du 27/07) : l'accueil plateforme
         // (« Crée des souvenirs », navbar Découvrez/langue) pour les visiteurs,
         // et l'accueil Activités (hero kayak, navbar complète) une fois connecté.
+        // Ici, l'état de connexion sert à choisir la PAGE, pas seulement
+        // l'en-tête : ce sont deux écrans distincts de la maquette. La navbar,
+        // elle, détermine son propre état à partir de la session.
         if ($connected) {
             return $this->render('home/connected.html.twig', [
                 'activities' => array_values(StaticCatalog::activities()),
-                'connected' => true,
             ]);
         }
 

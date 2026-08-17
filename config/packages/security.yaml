@@ -38,16 +38,32 @@ security:
                 path: /
 
     # Règles d'accès (la première qui correspond s'applique).
+    #
+    # Rappel : tout chemin qui ne figure PAS dans cette liste est accessible
+    # sans compte. Le catalogue, les destinations, les offres, les cadeaux, les
+    # pages institutionnelles et les écrans d'authentification restent donc
+    # publics sans qu'il faille les énumérer.
     access_control:
-        - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/register, roles: PUBLIC_ACCESS }
+        # Écrans d'authentification : accessibles justement quand on n'est pas
+        # connecté. Ils sont listés explicitement pour rester lisibles.
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/register$, roles: PUBLIC_ACCESS }
+        - { path: ^/authentification, roles: PUBLIC_ACCESS }
         - { path: ^/mot-de-passe-oublie, roles: PUBLIC_ACCESS }
-        - { path: ^/$, roles: PUBLIC_ACCESS }
-        - { path: ^/categories, roles: PUBLIC_ACCESS }
-        - { path: ^/services, roles: PUBLIC_ACCESS }
-        - { path: ^/account, roles: ROLE_USER }
-        - { path: ^/provider, roles: ROLE_PROVIDER }
+
+        # Espace compte. Les règles précédentes visaient « ^/account » et
+        # « ^/provider », deux préfixes qui ne correspondent à AUCUNE route :
+        # /compte/favoris, /compte/notifications et /compte/parrainage étaient
+        # donc consultables par n'importe quel visiteur. Corrigé au câblage.
+        - { path: ^/compte, roles: ROLE_USER }
+
+        # Réservé à l'administration ; aucune route n'existe encore, la règle
+        # est posée pour que le préfixe ne puisse pas s'ouvrir par inadvertance.
         - { path: ^/admin, roles: ROLE_ADMIN }
+
+        # L'espace professionnel (ROLE_PROVIDER) viendra avec le « mode Pro » :
+        # il aura sa règle quand ses routes existeront. En protéger un préfixe
+        # imaginaire ne protège rien.
 
 when@test:
     security:

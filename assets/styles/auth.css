@@ -512,6 +512,13 @@
    `.auth-actions`. Mesuré sur assets/auth-flow/Mot de passe oublié*.png. */
 .auth-card--pw { gap: 38px; padding-top: 41px; }
 .auth-card--pw .auth-back { margin-bottom: 9px; }
+/* Au câblage du 17/08, les champs et le bouton de ces trois écrans ont été
+   entourés d'un <form> pour pouvoir être postés. Ils passaient ainsi de
+   l'espacement de la carte (38px) à celui de `.auth-form` (10px) : les trois
+   écrans perdaient exactement 28px de haut, mesure à l'appui. Le formulaire
+   n'ayant ni marge ni bordure, lui rendre le gap de la carte restitue la
+   géométrie de la maquette au pixel près. */
+.auth-card--pw .auth-form { gap: 38px; }
 /* Maquette : tous les boutons pleine largeur des ecrans d'authentification
    font 40px de haut. Sans hauteur explicite, une ancre `.pl-btn` sort a 48. */
 .auth-card .pl-btn--block,

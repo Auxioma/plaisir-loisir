@@ -50,15 +50,25 @@
             </div>
         </div>
 
+        {# La maquette institutionnelle ne montre que l'état connecté (cœur,
+           messagerie, cloche, avatar). Depuis le câblage, un visiteur non
+           connecté verrait ces icônes le renvoyer vers la page de connexion :
+           on lui présente le bouton « S'inscrire », qui est l'état visiteur
+           déjà maquetté sur les autres en-têtes. Le rendu connecté, lui, ne
+           bouge pas d'un pixel. #}
         <div class="pl-navbar__actions">
-            <a href="{{ path('app_account_favorites') }}" class="pl-iconbtn" aria-label="{{ 'Mes favoris'|trans }}">{{ icon.heart(20) }}</a>
-            <button type="button" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">{{ icon.mail(20) }}</button>
-            <a href="{{ path('app_account_notifications') }}" class="pl-iconbtn" aria-label="{{ 'Notifications'|trans }}">{{ icon.bell(20) }}</a>
+            {% if app.user is not null or (app.debug and app.request.query.getBoolean('connecte')) %}
+                <a href="{{ path('app_account_favorites') }}" class="pl-iconbtn" aria-label="{{ 'Mes favoris'|trans }}">{{ icon.heart(20) }}</a>
+                <button type="button" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">{{ icon.mail(20) }}</button>
+                <a href="{{ path('app_account_notifications') }}" class="pl-iconbtn" aria-label="{{ 'Notifications'|trans }}">{{ icon.bell(20) }}</a>
 
-            <a href="{{ path('app_account_favorites') }}" class="pl-avatarbtn" aria-label="{{ 'Paramètre du profil'|trans }}">
-                <img src="{{ asset('images/account/avatar-thomas.jpg') }}" alt="">
-                <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
-            </a>
+                <a href="{{ path('app_account_favorites') }}" class="pl-avatarbtn" aria-label="{{ 'Paramètre du profil'|trans }}">
+                    <img src="{{ asset('images/account/avatar-thomas.jpg') }}" alt="">
+                    <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
+                </a>
+            {% else %}
+                <a href="{{ path('app_auth_choice') }}" class="pl-btn pl-btn--outline-dark pl-btn--signup">{{ icon.person(18) }} {{ "S'inscrire"|trans }}</a>
+            {% endif %}
             {% include '_partials/_navbar_burger.html.twig' with { panel_id: 'plNav' } %}
         </div>
     </div>

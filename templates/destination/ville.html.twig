@@ -5,11 +5,9 @@
 {% block meta_description %}{{ 'Découvrez les meilleures activités à faire à %ville% : expériences variées, meilleur prix garanti, annulation gratuite.'|trans({'%ville%': city}) }}{% endblock %}
 
 {% block header %}
-    {% if connected %}
-        {% include '_partials/navbar_connected.html.twig' with { nav_active: 'destinations' } %}
-    {% else %}
-        {% include '_partials/navbar_guest.html.twig' with { nav_active: 'destinations' } %}
-    {% endif %}
+    {# Un seul include : navbar.html.twig choisit lui-même l'état connecté
+       ou visiteur d'après la session. #}
+    {% include '_partials/navbar.html.twig' with { nav_active: 'destinations' } %}
 {% endblock %}
 
 {% block body %}

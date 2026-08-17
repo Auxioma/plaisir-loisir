@@ -1,3 +1,9 @@
 framework:
     mailer:
         dsn: '%env(MAILER_DSN)%'
+
+        # Expéditeur appliqué à tout message qui n'en précise pas : les e-mails
+        # du projet (notifications, code de réinitialisation) sont construits
+        # sans « From », Symfony les refuserait sinon.
+        headers:
+            from: '%env(MAILER_SENDER)%'

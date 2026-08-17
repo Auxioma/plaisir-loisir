@@ -1,2 +1,3 @@
-{# Alias conservé pour les templates existants : header commun, variante visiteur. #}
-{% include '_partials/navbar.html.twig' with { connected: false } %}
+{# Alias conservé pour les templates existants. L'état visiteur ne se force
+   plus ici : navbar.html.twig le lit dans la session. #}
+{% include '_partials/navbar.html.twig' with { nav_active: nav_active|default('') } %}

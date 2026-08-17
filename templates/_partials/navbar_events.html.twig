@@ -6,13 +6,14 @@
     Typos maquette corrigées : « Créer un évenement » → événement,
     « Evénément privées » → Événements privés, « S'incrire » → S'inscrire.
 
-    Variables :
-      - connected (bool, défaut false) : icônes + avatar au lieu du bouton
-        « S'inscrire » (le landing est en déconnecté, le reste en connecté).
+    Variable :
       - nav_active : evenements | groupes | calendrier | prives.
+
+    L'état connecté vient de la session, comme dans navbar.html.twig : ce
+    n'est plus un paramètre écrit en dur par chaque écran du flow.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
-{% set connected = connected|default(false) %}
+{% set connected = app.user is not null or (app.debug and app.request.query.getBoolean('connecte')) %}
 {% set nav_active = nav_active|default('evenements') %}
 
 <header class="pl-navbar pl-navbar--connected">

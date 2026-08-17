@@ -1,8 +1,18 @@
 {#
     Écran d'inscription — conforme à la maquette Figma 591:65942.
-    ⚠️ Front-end uniquement pour l'instant : les champs sont en HTML « brut ».
-    Le branchement sur le formulaire Symfony (RegistrationFormType), la
-    validation et le traitement du POST seront faits dans la phase « câblage ».
+
+    Câblé sur RegistrationFormType (câblage back du 17/08). Le balisage ne
+    change PAS : chaque champ écrit à la main est remplacé par le widget
+    Symfony équivalent, auquel on repasse la même classe, le même id et le
+    même placeholder. Ce que le widget apporte en plus est invisible à
+    l'écran mais indispensable :
+      - le nom posté devient « registration_form[...] », celui qu'attend le
+        contrôleur (avant, les noms bruts ne correspondaient à rien et aucun
+        compte n'était créé) ;
+      - form_end() dépose le jeton CSRF, absent jusqu'ici alors que l'écran
+        de connexion en avait un.
+    Aucun attribut `required` n'est ajouté (`required => false` dans le type) :
+    la validation est côté serveur, comme dans la maquette qui n'en porte pas.
 
     La maquette ne comporte NI bascule Client/Professionnel, NI champ Statut
     juridique, NI confirmation du mot de passe : l'accès professionnel passe
@@ -22,14 +32,16 @@
             <p class="auth-card__subtitle">{{ 'Nous allons tout mettre en place pour que vous puissiez accéder à votre compte personnel.'|trans }}</p>
         </div>
 
-        <form class="auth-form" method="post" action="{{ path('app_register') }}">
+        {{ form_start(registrationForm, { attr: { class: 'auth-form' }, action: path('app_register'), method: 'post' }) }}
             <div class="auth-fields">
                 <div class="auth-field">
                     <label class="auth-field__label" for="inputFullName">{{ 'Nom & prénom'|trans }}</label>
                     <div class="auth-input">
                         <span class="auth-input__icon">{{ icon.person() }}</span>
-                        <input id="inputFullName" class="auth-input__control" type="text" name="fullName"
-                               placeholder="martinthomas@gmail.com" autocomplete="name">
+                        {{ form_widget(registrationForm.fullName, {
+                            id: 'inputFullName',
+                            attr: { class: 'auth-input__control', placeholder: 'martinthomas@gmail.com', autocomplete: 'name' }
+                        }) }}
                     </div>
                 </div>
 
@@ -37,8 +49,10 @@
                     <label class="auth-field__label" for="inputEmail">{{ 'Adresse e-mail'|trans }}</label>
                     <div class="auth-input">
                         <span class="auth-input__icon">{{ icon.mail() }}</span>
-                        <input id="inputEmail" class="auth-input__control" type="email" name="email"
-                               placeholder="{{ 'Votre@email.com'|trans }}" autocomplete="email">
+                        {{ form_widget(registrationForm.email, {
+                            id: 'inputEmail',
+                            attr: { class: 'auth-input__control', placeholder: 'Votre@email.com'|trans, autocomplete: 'email' }
+                        }) }}
                     </div>
                 </div>
 
@@ -46,8 +60,10 @@
                     <label class="auth-field__label" for="inputPhone">{{ 'Numéro de téléphone'|trans }}</label>
                     <div class="auth-input">
                         <span class="auth-input__icon">{{ icon.phone() }}</span>
-                        <input id="inputPhone" class="auth-input__control" type="tel" name="phone"
-                               placeholder="{{ 'Votre@email.com'|trans }}" autocomplete="tel">
+                        {{ form_widget(registrationForm.phone, {
+                            id: 'inputPhone',
+                            attr: { class: 'auth-input__control', placeholder: 'Votre@email.com'|trans, autocomplete: 'tel' }
+                        }) }}
                     </div>
                 </div>
 
@@ -55,9 +71,15 @@
                     <label class="auth-field__label" for="inputPassword">{{ 'Mot de passe'|trans }}</label>
                     <div class="auth-input" data-controller="password-toggle">
                         <span class="auth-input__icon">{{ icon.lock() }}</span>
-                        <input id="inputPassword" class="auth-input__control" type="password" name="password"
-                               data-password-toggle-target="input" placeholder="{{ '8 caractères minimum'|trans }}"
-                               autocomplete="new-password">
+                        {{ form_widget(registrationForm.password, {
+                            id: 'inputPassword',
+                            attr: {
+                                class: 'auth-input__control',
+                                placeholder: '8 caractères minimum'|trans,
+                                autocomplete: 'new-password',
+                                'data-password-toggle-target': 'input'
+                            }
+                        }) }}
                         <button type="button" class="auth-input__eye" data-action="password-toggle#toggle" aria-label="{{ 'Afficher ou masquer le mot de passe'|trans }}">
                             <span data-password-toggle-target="show">{{ icon.eye() }}</span>
                             <span data-password-toggle-target="hide" hidden>{{ icon.eye_off() }}</span>
@@ -69,8 +91,12 @@
 
             <div class="auth-actions">
                 <label class="auth-terms">
-                    <input type="checkbox" name="agreeTerms">
-                    <span>{{ "J'accepte les"|trans }} <a class="auth-inline-link" href="#">{{ 'conditions générales'|trans }}</a> {{ 'et de la'|trans }} <a class="auth-inline-link" href="#">{{ 'politique de confidentialité'|trans }}</a></span>
+                    {{ form_widget(registrationForm.agreeTerms) }}
+                    {# « conditions générales » pointe sur la page qui existe.
+                       « politique de confidentialité » reste sans lien : cette
+                       page n'a jamais été maquettée ni écrite, et la faire
+                       pointer sur les mentions légales serait faux. #}
+                    <span>{{ "J'accepte les"|trans }} <a class="auth-inline-link" href="{{ path('app_corporate_terms') }}">{{ 'conditions générales'|trans }}</a> {{ 'et de la'|trans }} <a class="auth-inline-link" href="#">{{ 'politique de confidentialité'|trans }}</a></span>
                 </label>
 
                 <button type="submit" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Créer un compte'|trans }}</button>
@@ -87,7 +113,7 @@
                     <a class="auth-inline-link" href="{{ path('app_auth_choice') }}?type=pro">{{ 'Accéder à votre espace'|trans }}</a>
                 </p>
             </div>
-        </form>
+        {{ form_end(registrationForm) }}
 
         {% include 'security/_social_login.html.twig' %}
     </div>
