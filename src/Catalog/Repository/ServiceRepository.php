@@ -27,6 +27,60 @@ class ServiceRepository extends ServiceEntityRepository
     }
 
     /**
+     * Les activités publiées, dans l'ordre d'affichage de la maquette.
+     *
+     * Les formules, les médias et la catégorie sont chargés dans la MÊME
+     * requête. Sans ces jointures, afficher douze cartes déclencherait
+     * trente-six requêtes supplémentaires — une par relation et par carte.
+     *
+     * `getResult()` renvoie ici des entités distinctes malgré les jointures :
+     * Doctrine reconstruit les collections et ne duplique pas les racines.
+     *
+     * @return list<Service>
+     */
+    public function findPublishedForListing(?int $limit = null): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->addSelect('p', 'm', 'c')
+            ->leftJoin('s.packages', 'p')
+            ->leftJoin('s.media', 'm')
+            ->leftJoin('s.category', 'c')
+            ->andWhere('s.status = :published')
+            ->andWhere('s.deletedAt IS NULL')
+            ->setParameter('published', ServiceStatus::Published)
+            ->orderBy('s.position', 'ASC')
+            ->addOrderBy('s.createdAt', 'ASC');
+
+        if (null !== $limit) {
+            $qb->setMaxResults($limit);
+        }
+
+        /** @var list<Service> $results */
+        $results = $qb->getQuery()->getResult();
+
+        return $results;
+    }
+
+    /**
+     * Une activité publiée avec tout ce qu'il faut pour l'afficher.
+     */
+    public function findPublishedBySlug(string $slug): ?Service
+    {
+        return $this->createQueryBuilder('s')
+            ->addSelect('p', 'm', 'c')
+            ->leftJoin('s.packages', 'p')
+            ->leftJoin('s.media', 'm')
+            ->leftJoin('s.category', 'c')
+            ->andWhere('s.slug = :slug')
+            ->andWhere('s.status = :published')
+            ->andWhere('s.deletedAt IS NULL')
+            ->setParameter('slug', $slug)
+            ->setParameter('published', ServiceStatus::Published)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
      * @param string[] $ids
      *
      * @return Service[]

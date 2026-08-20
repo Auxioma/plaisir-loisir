@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace App\DataFixtures;
 
 use App\Catalog\Entity\Category;
-use App\Catalog\Entity\Destination;
 use App\Catalog\Entity\Media;
 use App\Catalog\Entity\Service;
 use App\Catalog\Entity\ServicePackage;
-use App\Catalog\Enum\ActivityLevel;
 use App\Catalog\Enum\BookingType;
-use App\Catalog\Enum\CancellationPolicy;
 use App\Catalog\Enum\PricingUnit;
 use App\Catalog\Enum\ServiceStatus;
 use App\Provider\Entity\ProviderProfile;
@@ -23,16 +20,223 @@ use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
- * Données d'exemple pour le catalogue (dev) : un annonceur vérifié, des catégories,
- * une destination et deux activités publiées.
+ * Catalogue de la maquette, mis en base.
+ *
+ * LE CONTENU EST REPRIS MOT POUR MOT de App\Catalog\StaticCatalog. C'est la
+ * condition posée au lot 2 : les huit écrans du parcours Activités sont calés
+ * au pixel et validés ; un titre plus long, une ville différente ou une photo
+ * d'un autre format les décalerait. Chaque chaîne ci-dessous doit donc rester
+ * identique à celle de StaticCatalog tant que les deux cohabitent.
+ *
+ * Les notes et le nombre d'avis sont posés directement sur l'activité plutôt
+ * que reconstitués à partir de vrais avis : afficher « 256 avis » demanderait
+ * d'inventer 256 commentaires, ce qui n'apporterait rien et ralentirait le
+ * chargement des données pour rien.
  */
-final class CatalogFixtures extends Fixture
+class CatalogFixtures extends Fixture
 {
-    public function __construct(private readonly UserPasswordHasherInterface $passwordHasher)
-    {
+    /**
+     * Les huit activités du listing, dans l'ordre de la maquette.
+     *
+     * @var list<array<string, mixed>>
+     */
+    private const ACTIVITIES = [
+        [
+            'slug' => 'descente-en-canoe',
+            'title' => 'Descente en Canoë',
+            'place' => "Gorges de L'Ardèche",
+            'rating' => '4.80',
+            'reviews' => 256,
+            'duration' => '2h-3h',
+            'minutes' => 150,
+            'price' => 25,
+            'badge' => 'Bestseller',
+            'image' => 'images/home/act-canoe.jpg',
+            'lat' => '44.405000',
+            'lng' => '4.395000',
+            'category' => 'sports-aventures',
+        ],
+        [
+            'slug' => 'location-vtt-electrique',
+            'title' => 'Location VTT électrique',
+            'place' => 'Massif du Vercors',
+            'rating' => '4.80',
+            'reviews' => 178,
+            'duration' => 'Journée',
+            'minutes' => 480,
+            'price' => 45,
+            'badge' => null,
+            'image' => 'images/home/act-vtt.jpg',
+            'lat' => '45.050000',
+            'lng' => '5.400000',
+            'category' => 'sports-aventures',
+        ],
+        [
+            'slug' => 'visite-guidee-de-labyrinthe',
+            'title' => 'Visite de labyrinthe',
+            'place' => 'Labyrinthe en Provence',
+            'rating' => '4.70',
+            'reviews' => 134,
+            'duration' => '1h30',
+            'minutes' => 90,
+            'price' => 12,
+            'badge' => null,
+            'image' => 'images/home/act-labyrinthe.jpg',
+            'lat' => '43.830000',
+            'lng' => '5.050000',
+            'category' => 'cultures-decouvertes',
+        ],
+        [
+            'slug' => 'visite-du-musee',
+            'title' => 'Visite du Musée',
+            'place' => "Muséum d'Histoire Naturelle",
+            'rating' => '4.80',
+            'reviews' => 312,
+            'duration' => '2h',
+            'minutes' => 120,
+            'price' => 16,
+            'badge' => null,
+            'image' => 'images/home/act-musee.jpg',
+            'lat' => '48.842000',
+            'lng' => '2.356000',
+            'category' => 'cultures-decouvertes',
+        ],
+        [
+            'slug' => 'atelier-cuisine-provencale',
+            'title' => 'Atelier cuisine provençale',
+            'place' => "Provence-Alpes-Côte d'Azur",
+            'rating' => '4.80',
+            'reviews' => 64,
+            'duration' => '2h30',
+            'minutes' => 150,
+            'price' => 25,
+            'badge' => null,
+            'image' => 'images/activities/cuisine.jpg',
+            'lat' => '43.530000',
+            'lng' => '5.450000',
+            'category' => 'ateliers-creations',
+        ],
+        [
+            'slug' => 'vol-en-montgolfiere',
+            'title' => 'Vol en montgolfière',
+            'place' => "Provence-Alpes-Côte d'Azur",
+            'rating' => '5.00',
+            'reviews' => 93,
+            'duration' => '3h',
+            'minutes' => 180,
+            'price' => 180,
+            'badge' => null,
+            'image' => 'images/activities/montgolfiere.jpg',
+            'lat' => '43.900000',
+            'lng' => '6.000000',
+            'category' => 'sports-aventures',
+        ],
+        [
+            'slug' => 'seance-de-yoga-en-pleine-nature',
+            'title' => 'Séance de yoga en pleine nature',
+            'place' => 'Auvergne-Rhône-Alpes',
+            'rating' => '4.90',
+            'reviews' => 37,
+            'duration' => '1h30',
+            'minutes' => 90,
+            'price' => 25,
+            'badge' => null,
+            'image' => 'images/activities/yoga.jpg',
+            'lat' => '45.360000',
+            'lng' => '4.800000',
+            'category' => 'bien-etre',
+        ],
+        [
+            'slug' => 'concert-live-soiree-musique',
+            'title' => 'Concert live - Soirée musique',
+            'place' => 'Lyon, Auvergne-Rhône-Alpes',
+            'rating' => '4.50',
+            'reviews' => 68,
+            'duration' => '3h',
+            'minutes' => 180,
+            'price' => 30,
+            'badge' => null,
+            'image' => 'images/activities/soiree.jpg',
+            'lat' => '45.760000',
+            'lng' => '4.840000',
+            'category' => 'soirees-evenements',
+        ],
+    ];
+
+    /**
+     * Catégories, avec les libellés exacts des pastilles de la maquette.
+     *
+     * @var array<string, string>
+     */
+    private const CATEGORIES = [
+        'sports-aventures' => 'Sports & Aventures',
+        'cultures-decouvertes' => 'Cultures & Découvertes',
+        'ateliers-creations' => 'Ateliers & Créations',
+        'bien-etre' => 'Bien-être',
+        'soirees-evenements' => 'Soirées & Évènements',
+        'en-famille' => 'En famille',
+        'gastronomies' => 'Gastronomies',
+    ];
+
+    public function __construct(
+        private readonly UserPasswordHasherInterface $passwordHasher,
+    ) {
     }
 
     public function load(ObjectManager $manager): void
+    {
+        $provider = $this->createProvider($manager);
+        $categories = $this->createCategories($manager);
+
+        foreach (self::ACTIVITIES as $position => $data) {
+            $service = new Service();
+            $service
+                ->setProvider($provider)
+                ->setCategory($categories[$data['category']])
+                ->setTitle((string) $data['title'])
+                ->setSlug((string) $data['slug'])
+                // La maquette ne fournit de texte de présentation que pour la
+                // descente en canoë. Plutôt que d'en inventer sept, on reprend
+                // le titre : la description n'est affichée sur aucun des écrans
+                // câblés à ce stade.
+                ->setDescription((string) $data['title'])
+                ->setPlaceLabel((string) $data['place'])
+                ->setDurationLabel((string) $data['duration'])
+                ->setDurationMinutes((int) $data['minutes'])
+                ->setBadge($data['badge'] ?? null)
+                ->setRatingSummary((string) $data['rating'], (int) $data['reviews'])
+                ->setLatitude((string) $data['lat'])
+                ->setLongitude((string) $data['lng'])
+                ->setCurrency('EUR')
+                ->setBookingType(BookingType::Calendar)
+                ->setStatus(ServiceStatus::Published);
+
+            $service->addPackage(
+                (new ServicePackage())
+                    ->setName('Tarif unique')
+                    ->setPrice(number_format((float) $data['price'], 2, '.', ''))
+                    ->setCurrency('EUR')
+                    ->setPricingUnit(PricingUnit::PerPerson),
+            );
+
+            $service->addMedia(
+                (new Media())
+                    ->setPath((string) $data['image'])
+                    ->setType('image')
+                    ->setPosition(0),
+            );
+
+            // La position sert à retrouver l'ordre exact de la maquette : un
+            // tri par titre ou par date de création le bousculerait.
+            $service->setPosition($position);
+
+            $manager->persist($service);
+        }
+
+        $manager->flush();
+    }
+
+    private function createProvider(ObjectManager $manager): ProviderProfile
     {
         $user = new User();
         $user->setEmail('annonceur@trouvemoi.test');
@@ -54,48 +258,25 @@ final class CatalogFixtures extends Fixture
         $provider->setStatus(ProviderStatus::Verified);
         $manager->persist($provider);
 
-        $bienEtre = (new Category())->setName('Bien-être')->setSlug('bien-etre')->setPosition(1);
-        $massage = (new Category())->setName('Massage')->setSlug('massage')->setPosition(1)->setParent($bienEtre);
-        $aventure = (new Category())->setName('Aventure')->setSlug('aventure')->setPosition(2);
-        $manager->persist($bienEtre);
-        $manager->persist($massage);
-        $manager->persist($aventure);
+        return $provider;
+    }
 
-        $dakar = (new Destination())
-            ->setName('Dakar')->setSlug('dakar')->setCountry('SN')->setRegion('Dakar')
-            ->setDescription('Capitale du Sénégal, entre océan et culture.');
-        $manager->persist($dakar);
+    /**
+     * @return array<string, Category>
+     */
+    private function createCategories(ObjectManager $manager): array
+    {
+        $categories = [];
+        $position = 1;
 
-        $massageActivity = new Service();
-        $massageActivity->setProvider($provider)->setCategory($massage)->setDestination($dakar)
-            ->setTitle('Massage relaxant au bord de mer')->setSlug('massage-relaxant-bord-de-mer')
-            ->setShortDescription('1h de détente face à l-océan')
-            ->setDescription('Un massage relaxant complet pour évacuer le stress, face à l-océan.')
-            ->setBookingType(BookingType::ServiceProduct)->setStatus(ServiceStatus::Published)
-            ->setDurationMinutes(60)->setCapacity(1)->setLevel(ActivityLevel::AllLevels)
-            ->setLanguages(['fr', 'en'])->setIncluded('Huiles essentielles, serviettes')
-            ->setCancellationPolicy(CancellationPolicy::Flexible)
-            ->setCity('Dakar')->setCountry('SN');
-        $massageActivity->addPackage(
-            (new ServicePackage())->setName('Standard')->setPrice('25000.00')->setCurrency('XOF')->setPricingUnit(PricingUnit::PerPerson)
-        );
-        $massageActivity->addMedia((new Media())->setPath('uploads/massage.jpg')->setType('image')->setPosition(0));
-        $manager->persist($massageActivity);
+        foreach (self::CATEGORIES as $slug => $name) {
+            $category = new Category();
+            $category->setName($name)->setSlug($slug)->setPosition($position++);
+            $manager->persist($category);
 
-        $kayakActivity = new Service();
-        $kayakActivity->setProvider($provider)->setCategory($aventure)->setDestination($dakar)
-            ->setTitle('Sortie kayak au lac rose')->setSlug('kayak-lac-rose')
-            ->setShortDescription('2h d-aventure guidée')
-            ->setDescription('Excursion guidée en kayak sur le célèbre lac rose.')
-            ->setBookingType(BookingType::ServiceProduct)->setStatus(ServiceStatus::Published)
-            ->setDurationMinutes(120)->setCapacity(8)->setLevel(ActivityLevel::Beginner)
-            ->setLanguages(['fr'])->setCancellationPolicy(CancellationPolicy::Moderate)
-            ->setCity('Dakar')->setCountry('SN');
-        $kayakActivity->addPackage(
-            (new ServicePackage())->setName('Découverte')->setPrice('15000.00')->setCurrency('XOF')->setPricingUnit(PricingUnit::PerPerson)
-        );
-        $manager->persist($kayakActivity);
+            $categories[$slug] = $category;
+        }
 
-        $manager->flush();
+        return $categories;
     }
 }
