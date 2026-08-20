@@ -22,6 +22,12 @@ use App\Catalog\Entity\Service;
  */
 final class ActivityPresenter
 {
+    /** Vignette de la carte. */
+    public const MEDIA_COVER = 'cover';
+
+    /** Photos du carrousel de la fiche détaillée. */
+    public const MEDIA_GALLERY = 'gallery';
+
     /**
      * Carte d'activité du listing et des grilles.
      *
@@ -93,6 +99,57 @@ final class ActivityPresenter
     }
 
     /**
+     * Fiche détaillée, dans la forme que StaticCatalog::detail() produisait.
+     *
+     * Renvoie null si l'activité n'a pas de contenu éditorial : c'est à
+     * l'appelant de décider quoi faire, plutôt que de laisser l'écran se
+     * rendre à moitié vide.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function detail(Service $service): ?array
+    {
+        $detail = $service->getDetail();
+
+        if (null === $detail) {
+            return null;
+        }
+
+        return [
+            'breadcrumb' => $detail->getBreadcrumb(),
+            'title' => $service->getTitle(),
+            'rating' => $this->rating($service),
+            'reviewsCount' => $service->getReviewsCount(),
+            'organizer' => $detail->getOrganizer(),
+            'gallery' => $this->gallery($service),
+            'place' => $service->getPlaceLabel(),
+            'keyFacts' => $detail->getKeyFacts(),
+            'price' => $detail->getPrice(),
+            'presentation' => [
+                'subtitle' => $detail->getPresentationSubtitle(),
+                'text' => $detail->getPresentationText(),
+                'bulletsTitle' => $detail->getHighlightsTitle(),
+                'bullets' => $detail->getHighlights(),
+            ],
+            'included' => $detail->getIncluded(),
+            'excluded' => $detail->getExcluded(),
+            'cannotParticipate' => $detail->getCannotParticipate(),
+            'toBring' => $detail->getToBring(),
+            'logistics' => [
+                'map' => $detail->getMapImage(),
+                'meeting' => $detail->getMeetingPoints(),
+                'guarantees' => $detail->getGuarantees(),
+            ],
+            'reviewsSummary' => [
+                'score' => $detail->getReviewsScore(),
+                'outOf' => $detail->getReviewsOutOf(),
+                'total' => $detail->getReviewsTotal(),
+            ],
+            'modalTitle' => $detail->getModalTitle(),
+        ];
+    }
+
+    /**
      * Note affichée : « 4.8 », avec une seule décimale.
      *
      * La colonne est un décimal à deux décimales, que Doctrine rend sous forme
@@ -133,20 +190,53 @@ final class ActivityPresenter
     }
 
     /**
-     * Image de couverture : le premier média, dans l'ordre de position.
+     * Image de couverture : le premier média de type « cover ».
+     *
+     * Le filtre sur le type est indispensable depuis que les photos de la
+     * galerie sont elles aussi des médias : sans lui, la vignette de la carte
+     * deviendrait la première photo de la galerie, qui n'est pas la même image.
      */
     private function coverImage(Service $service): ?string
     {
-        $cover = null;
-        $bestPosition = null;
+        return $this->firstPathOfType($service, self::MEDIA_COVER);
+    }
+
+    /**
+     * Les photos de la galerie, dans l'ordre.
+     *
+     * @return list<string>
+     */
+    private function gallery(Service $service): array
+    {
+        $items = [];
 
         foreach ($service->getMedia() as $media) {
-            if (null === $bestPosition || $media->getPosition() < $bestPosition) {
-                $bestPosition = $media->getPosition();
-                $cover = $media->getPath();
+            if (self::MEDIA_GALLERY === $media->getType()) {
+                $items[] = ['position' => $media->getPosition(), 'path' => $media->getPath()];
             }
         }
 
-        return $cover;
+        usort($items, static fn (array $a, array $b): int => $a['position'] <=> $b['position']);
+
+        return array_map(static fn (array $item): string => $item['path'], $items);
+    }
+
+    private function firstPathOfType(Service $service, string $type): ?string
+    {
+        $path = null;
+        $bestPosition = null;
+
+        foreach ($service->getMedia() as $media) {
+            if ($type !== $media->getType()) {
+                continue;
+            }
+
+            if (null === $bestPosition || $media->getPosition() < $bestPosition) {
+                $bestPosition = $media->getPosition();
+                $path = $media->getPath();
+            }
+        }
+
+        return $path;
     }
 }

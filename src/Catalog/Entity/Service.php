@@ -99,6 +99,15 @@ class Service
     private ?string $badge = null;
 
     /**
+     * Contenu editorial de la fiche detaillee.
+     *
+     * Table separee : une quinzaine de champs qui ne servent qu'a un seul
+     * ecran n'ont pas a alourdir chaque requete de listing.
+     */
+    #[ORM\OneToOne(mappedBy: 'service', cascade: ['persist', 'remove'])]
+    private ?ServiceDetail $detail = null;
+
+    /**
      * Rang d'affichage dans les listes.
      *
      * La maquette fixe l'ordre des huit cartes du listing. Sans ce champ, il
@@ -355,6 +364,22 @@ class Service
     public function getBadge(): ?string
     {
         return $this->badge;
+    }
+
+    public function getDetail(): ?ServiceDetail
+    {
+        return $this->detail;
+    }
+
+    public function setDetail(?ServiceDetail $detail): static
+    {
+        $this->detail = $detail;
+
+        if (null !== $detail && $detail->getService() !== $this) {
+            $detail->setService($this);
+        }
+
+        return $this;
     }
 
     public function setBadge(?string $badge): static

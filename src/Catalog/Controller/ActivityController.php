@@ -23,9 +23,10 @@ use Symfony\Component\Routing\Attribute\Route;
  *    parcours Offres, qui a sa propre modélisation (lot à part).
  *  - `selections`, `cities`, `filterChips` : listes éditoriales de la maquette,
  *    sans entité correspondante à ce stade.
- *  - `detail`, `reviews`, `suggestions` : la fiche détaillée réclame une
- *    dizaine de blocs (programme, inclus/non inclus, à apporter, logistique)
- *    que l'entité ne porte pas encore.
+ *  - `reviews`, `suggestions` : les avis et les suggestions de fin de fiche
+ *    relevent des entites Review et d'un moteur de recommandation, a venir.
+ *
+ * La fiche detaillee, elle, vient de la base depuis le 20/08 (ServiceDetail).
  *
  * Les routes sont publiques : aucune règle d'access_control ne couvre
  * /activites, donc l'accès est libre par défaut.
@@ -64,9 +65,17 @@ final class ActivityController extends AbstractController
             throw $this->createNotFoundException(sprintf('Activité « %s » introuvable.', $slug));
         }
 
+        $detail = $this->presenter->detail($service);
+
+        if (null === $detail) {
+            // Une activite publiee sans contenu editorial afficherait une page
+            // a moitie vide. Mieux vaut un 404 franc, qui se voit.
+            throw $this->createNotFoundException(sprintf("L'activite « %s » n'a pas de fiche detaillee.", $slug));
+        }
+
         return $this->render('activity/show.html.twig', [
             'activity' => $this->presenter->card($service),
-            'detail' => StaticCatalog::detail($slug),
+            'detail' => $detail,
             'reviews' => StaticCatalog::reviews(),
             'suggestions' => StaticCatalog::suggestions(),
         ]);

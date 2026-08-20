@@ -7,10 +7,12 @@ namespace App\DataFixtures;
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\Media;
 use App\Catalog\Entity\Service;
+use App\Catalog\Entity\ServiceDetail;
 use App\Catalog\Entity\ServicePackage;
 use App\Catalog\Enum\BookingType;
 use App\Catalog\Enum\PricingUnit;
 use App\Catalog\Enum\ServiceStatus;
+use App\Catalog\Presenter\ActivityPresenter;
 use App\Provider\Entity\ProviderProfile;
 use App\Provider\Enum\ProviderStatus;
 use App\User\Entity\User;
@@ -164,6 +166,84 @@ class CatalogFixtures extends Fixture
     ];
 
     /**
+     * Contenu de la fiche détaillée, repris mot pour mot de la maquette.
+     *
+     * ⚠️ LA MAQUETTE N'EN FOURNIT QU'UNE SEULE, celle de la descente en canoë.
+     * Le code statique l'affichait pour TOUTES les activités : ouvrir « Visite
+     * du Musée » montrait « Descente en Canoë », titre compris. On reproduit ce
+     * comportement à l'identique pour ne pas modifier le rendu, mais le contenu
+     * réel des sept autres fiches reste à fournir par le client.
+     *
+     * @var array<string, mixed>
+     */
+    private const DETAIL = [
+        'breadcrumb' => ['Accueil', 'Toutes les destinations', 'Paris, France', 'Sports & aventures'],
+        'organizer' => 'Thomas Martin',
+        'gallery' => [
+            'images/activities/gallery-1.jpg',
+            'images/home/act-canoe.jpg',
+            'images/activities/canoe-riviere.jpg',
+            'images/activities/gallery-2.jpg',
+            'images/activities/gallery-3.jpg',
+        ],
+        'keyFacts' => [
+            ['label' => 'Durée', 'value' => '2h-3h'],
+            ['label' => 'Maximum de personnes', 'value' => '18 personnes'],
+            ['label' => "Moyenne d'âge", 'value' => '12 ans +'],
+            ['label' => "Type d'activités", 'value' => 'Sport & Aventure'],
+            ['label' => 'Avis clients', 'value' => '4.8 (15 avis)', 'star' => true],
+        ],
+        'price' => 29,
+        'presentationSubtitle' => "Descente intégrale des Gorges de l'Ardèche en canoë kayak",
+        'presentationText' => "Vivez une aventure inoubliable au cœur d'un des plus beaux canyons d'Europe. Accompagné de votre moniteur diplômé, pagayez au fil de l'eau entre falaises vertigineuses et plages sauvages, à votre rythme, en famille ou entre amis.",
+        'highlightsTitle' => 'Cette descente sportive vous permet de :',
+        'highlights' => [
+            "Passer sous l'arche naturelle du Pont d'Arc, emblème des Gorges",
+            "Traverser la Réserve Naturelle des Gorges de l'Ardèche",
+            'Admirer des paysages spectaculaires inaccessibles par la route',
+            'Profiter de pauses baignade dans une eau limpide',
+        ],
+        'included' => [
+            'La location des bateaux et du matériel de navigation',
+            'Location du petit matériel (pagaies, gilets, bidons étanches)',
+            "L'initiation de départ avec un moniteur diplômé",
+            'Le retour des personnes & du matériel en fin de parcours',
+        ],
+        'excluded' => [
+            'Les repas et les boissons',
+            "L'équipement personnel (chaussures fermées, maillot)",
+            "Le transport jusqu'à l'embarcadère de départ",
+            "L'assurance annulation personnelle",
+        ],
+        'cannotParticipate' => [
+            'Enfants de moins de 7 ans',
+            'Femmes enceintes',
+            'Personnes ne sachant pas nager',
+            'Parcours non adapté aux débutants',
+        ],
+        'toBring' => [
+            "De l'eau (1,5 L par personne minimum) et un pique-nique",
+            'Chaussures fermées, maillot de bain, serviette, crème solaire et lunettes attachées',
+        ],
+        'mapImage' => 'images/activities/map.jpg',
+        'meetingPoints' => [
+            ['label' => 'Lieu de départ', 'value' => "A 8h30 depuis l'embarcadère"],
+            ['label' => "Gorges de l'Ardèche", 'value' => "Vallon-Pont-d'Arc, France"],
+            ['label' => 'Arrivée à', 'value' => 'Embarcadère parking Alain Bateau'],
+        ],
+        'guarantees' => [
+            ['title' => 'Annulation : Flexible', 'text' => "Annulation gratuite jusqu'à 7 jours avant le départ."],
+            ['title' => 'Garantie méteo', 'text' => 'Report ou remboursement si la météo est défavorable.'],
+            ['title' => 'Paiement 100% sécurisé', 'text' => 'Réglez en toute confiance par carte ou Paypal.'],
+            ['title' => "Une équipe d'experts", 'text' => 'À votre service 7j/7 pour préparer votre sortie.'],
+        ],
+        'reviewsScore' => '4,5',
+        'reviewsOutOf' => 5,
+        'reviewsTotal' => 8955,
+        'modalTitle' => "Descente en Canoë de l'Ardèche de Gorges : 02 heures",
+    ];
+
+    /**
      * Catégories, avec les libellés exacts des pastilles de la maquette.
      *
      * @var array<string, string>
@@ -224,12 +304,26 @@ class CatalogFixtures extends Fixture
                     ->setPricingUnit(PricingUnit::PerPerson),
             );
 
+            // Vignette de la carte. Le type la distingue des photos de la
+            // galerie, qui sont des medias eux aussi : sans cette distinction,
+            // la carte afficherait la premiere photo du carrousel.
             $service->addMedia(
                 (new Media())
                     ->setPath((string) $data['image'])
-                    ->setType('image')
+                    ->setType(ActivityPresenter::MEDIA_COVER)
                     ->setPosition(0),
             );
+
+            foreach (self::DETAIL['gallery'] as $index => $path) {
+                $service->addMedia(
+                    (new Media())
+                        ->setPath((string) $path)
+                        ->setType(ActivityPresenter::MEDIA_GALLERY)
+                        ->setPosition($index),
+                );
+            }
+
+            $service->setDetail($this->buildDetail());
 
             // La position sert à retrouver l'ordre exact de la maquette : un
             // tri par titre ou par date de création le bousculerait.
@@ -264,6 +358,41 @@ class CatalogFixtures extends Fixture
         $manager->persist($provider);
 
         return $provider;
+    }
+
+    /**
+     * Construit le bloc editorial de la fiche.
+     *
+     * Le meme contenu pour les huit activites : la maquette n'en fournit
+     * qu'un. Seuls le titre, le lieu, la note et le nombre d'avis different
+     * d'une fiche a l'autre — ils viennent de l'activite elle-meme.
+     */
+    private function buildDetail(): ServiceDetail
+    {
+        $detail = new ServiceDetail();
+
+        return $detail
+            ->setBreadcrumb(self::DETAIL['breadcrumb'])
+            ->setOrganizer(self::DETAIL['organizer'])
+            ->setKeyFacts(self::DETAIL['keyFacts'])
+            ->setPrice(self::DETAIL['price'])
+            ->setPresentationSubtitle(self::DETAIL['presentationSubtitle'])
+            ->setPresentationText(self::DETAIL['presentationText'])
+            ->setHighlightsTitle(self::DETAIL['highlightsTitle'])
+            ->setHighlights(self::DETAIL['highlights'])
+            ->setIncluded(self::DETAIL['included'])
+            ->setExcluded(self::DETAIL['excluded'])
+            ->setCannotParticipate(self::DETAIL['cannotParticipate'])
+            ->setToBring(self::DETAIL['toBring'])
+            ->setMapImage(self::DETAIL['mapImage'])
+            ->setMeetingPoints(self::DETAIL['meetingPoints'])
+            ->setGuarantees(self::DETAIL['guarantees'])
+            ->setReviewsSummary(
+                self::DETAIL['reviewsScore'],
+                self::DETAIL['reviewsOutOf'],
+                self::DETAIL['reviewsTotal'],
+            )
+            ->setModalTitle(self::DETAIL['modalTitle']);
     }
 
     /**
