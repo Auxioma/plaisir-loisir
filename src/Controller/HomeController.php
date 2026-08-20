@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Catalog\StaticCatalog;
+use App\Catalog\Presenter\ActivityPresenter;
+use App\Catalog\Repository\ServiceRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,13 +20,15 @@ use Symfony\Component\Routing\Attribute\Route;
  * qu'un utilisateur est en session ; en environnement de dev,
  * « /?connecte=1 » permet de le prévisualiser sans se connecter.
  *
- * NB : front statique d'après la maquette — le câblage des vraies
- * données (catégories, destinations à la une) viendra ensuite.
+ * Les activités de l'accueil connecté viennent de la base depuis le lot 2 ;
+ * les autres blocs (catégories, destinations à la une) suivront.
  */
 final class HomeController extends AbstractController
 {
     public function __construct(
         #[Autowire('%kernel.debug%')] private readonly bool $debug,
+        private readonly ServiceRepository $services,
+        private readonly ActivityPresenter $presenter,
     ) {
     }
 
@@ -43,7 +46,7 @@ final class HomeController extends AbstractController
         // elle, détermine son propre état à partir de la session.
         if ($connected) {
             return $this->render('home/connected.html.twig', [
-                'activities' => array_values(StaticCatalog::activities()),
+                'activities' => $this->presenter->cards($this->services->findPublishedForListing()),
             ]);
         }
 
