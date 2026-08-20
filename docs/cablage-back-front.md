@@ -196,7 +196,169 @@ d'envoyer (« An email must have a From or a Sender header »).
 
 ---
 
-## 3. Conformité : une régression trouvée et corrigée
+## 3. Socle juridique (18/08, demande du CTO)
+
+### 3.1 Cinq tables
+
+| Table | Rôle |
+| --- | --- |
+| `legal_document` | Les **versions** des textes : CGU, CGV, confidentialité, mentions légales, cookies |
+| `legal_acceptance` | La **preuve** qu'un membre a accepté une version précise |
+| `cookie_consent` | Le choix du bandeau, y compris avant connexion |
+| `company_identity` | L'identité légale d'un prestataire |
+| `social_identity` | Le lien vers un compte Google, Facebook ou Apple |
+
+### 3.2 Un document publié ne se modifie jamais
+
+C'est le principe qui gouverne `legal_document`. Corriger le texte des CGU en
+place effacerait la seule chose qui compte en cas de litige : savoir ce que
+l'utilisateur a réellement accepté le jour où il a coché la case. On publie donc
+une nouvelle ligne, et les acceptations passées continuent de pointer vers
+l'ancienne. La clé étrangère de `legal_acceptance` est en `RESTRICT` : la base
+refuse de supprimer une version encore référencée.
+
+### 3.3 Le consentement n'était pas conservé
+
+La case « J'accepte les conditions générales » était validée puis **oubliée**.
+Rien en base ne permettait de démontrer que qui que ce soit avait accepté quoi
+que ce soit, alors que l'article 7.1 du RGPD exige du responsable de traitement
+qu'il soit « en mesure de démontrer » ce consentement.
+
+L'inscription enregistre désormais les quatre éléments qui font la preuve : qui,
+quelle version exactement, quand, et depuis quelle adresse IP et quel navigateur.
+
+### 3.4 Les textes ne sont pas inventés
+
+La commande `app:legal:publish` reprend **mot pour mot** le contenu déjà affiché
+sur `/conditions-generales` et `/mentions-legales`, et le met en base en
+version 1.0.
+
+Elle NE publie PAS la politique de confidentialité, la politique de cookies ni
+les CGV : aucun texte n'existe pour ces trois documents. Les rédiger à la place
+du client serait au mieux inutile, au pire dangereux — ces textes engagent
+l'éditeur. La commande le signale au lieu de combler le vide.
+
+Conséquence directe : tant que la politique de confidentialité n'est pas
+publiée, l'inscription n'enregistre le consentement que pour les CGU. Le jour où
+elle le sera, les inscriptions suivantes l'enregistreront aussi, sans changement
+de code.
+
+### 3.5 Identité légale du prestataire
+
+`company_identity` remplace les trois colonnes `fiscal_*` de `provider_profile`,
+que personne ne lisait, qui étaient vides en base et qui ne suffisaient à aucun
+dossier réel. Elle porte : forme juridique, raison sociale, nom commercial,
+SIREN, SIRET, TVA et franchise en base, RCS, code APE, capital social, adresse du
+siège, représentant légal, et l'assurance responsabilité civile professionnelle
+(assureur, numéro de police, échéance).
+
+Deux points à connaître :
+
+- **La liste des formes juridiques est celle du client**, arrêtée le 27/07 et
+  consignée dans `docs/corrections-client-2026-07-27.md` §2 : EI,
+  Micro-entreprise, EURL, SARL, SAS, SASU, Association, Autre. L'ancienne
+  énumération `FiscalStatus` n'en proposait que trois, qui ne correspondaient à
+  aucune demande. Elle est supprimée.
+- **Le SIRET est contrôlé par sa clé de Luhn**, sans aucun appel réseau. Un
+  SIRET n'est pas qu'une suite de quatorze chiffres : la dernière est une clé de
+  contrôle. Vérifier ce calcul écarte les fautes de frappe et les numéros
+  inventés.
+
+### 3.6 Cookies
+
+`cookie_consent` mémorise le choix par un jeton anonyme déposé dans un cookie
+technique — lui-même exempté de consentement, puisqu'il ne sert qu'à se souvenir
+de la réponse, y compris d'un refus. Quatre catégories (nécessaires,
+préférences, mesure d'audience, publicité), les trois dernières refusées par
+défaut : un consentement ne se présume pas. Durée de treize mois, conformément à
+la recommandation de la CNIL.
+
+Le service est prêt et testé ; **le bandeau lui-même n'existe pas** : il n'est
+pas maquetté.
+
+---
+
+## 4. Connexion Google, Facebook et Apple
+
+### 4.1 Sans aucune dépendance nouvelle
+
+Le flux est écrit avec `symfony/http-client`, déjà présent. Aucun paquet n'a été
+ajouté : moins de dépendances à suivre, et un code que Guillaume peut relire en
+entier.
+
+### 4.2 Ce que chaque fournisseur impose
+
+- **Google** — OpenID Connect complet. Le plus simple des trois.
+- **Facebook** — pas d'OpenID Connect : jeton d'accès puis API Graph, avec la
+  liste explicite des champs voulus, sans quoi seul l'identifiant revient. Les
+  requêtes sont signées (`appsecret_proof`) pour qu'un jeton volé ailleurs ne
+  serve à rien. L'adresse e-mail **peut manquer** : un compte Facebook ouvert
+  avec un numéro de téléphone n'en a pas.
+- **Apple** — trois singularités. Le secret client n'est pas une chaîne fixe
+  mais un **jeton JWT signé en ES256** avec une clé privée elliptique,
+  reconstruit à chaque échange. Le retour se fait **en POST**. Et le nom n'est
+  transmis **qu'une seule fois**, à la première autorisation : ne pas
+  l'enregistrer à cet instant, c'est le perdre définitivement.
+
+La signature ES256 demandait une conversion du format DER produit par OpenSSL
+vers le format brut attendu par un JWT. Sans elle, Apple rejette le secret avec
+un « invalid_client » parfaitement opaque. La conversion a été **vérifiée sur
+500 signatures réelles**, dont le cas piégeux où un composant tient sur moins de
+32 octets.
+
+### 4.3 La décision de sécurité qui compte
+
+Quand une identité externe inconnue présente une adresse qui est déjà celle d'un
+compte, on rattache **uniquement si le fournisseur atteste avoir vérifié cette
+adresse**. Sinon, refus net.
+
+Sans cette règle, quiconque saurait faire dire « je suis alice@exemple.fr » à un
+fournisseur complaisant entrerait dans le compte d'Alice sans jamais connaître
+son mot de passe. Pour la même raison, la recherche se fait toujours sur le
+couple (fournisseur, identifiant externe) et **jamais sur l'e-mail** :
+l'identifiant est stable et appartient au fournisseur, l'adresse peut changer ou
+n'être qu'un relais.
+
+L'aller-retour est protégé par un `state` (contre la falsification de requête)
+et un `nonce` (contre le rejeu), tous deux à usage unique, retirés de la session
+avant tout traitement. Comparaison par `hash_equals`, à temps constant.
+
+### 4.4 Identifiants de démonstration
+
+`.env` porte des valeurs préfixées par `test-`. **Tout le code est écrit et
+fonctionnel** ; seules ces lignes resteront à remplacer, sans toucher au code.
+
+Tant qu'un fournisseur n'est pas configuré, son bouton **reste inactif**,
+exactement comme avant le câblage — le rendu ne bouge pas d'un pixel — et la
+route affiche un message clair au lieu de mener à une erreur du fournisseur.
+
+Les vraies valeurs iront dans `.env.local`, jamais dans `.env`, qui est committé.
+
+### 4.5 Ce que le CTO doit fournir
+
+| Fournisseur | À obtenir | Préalable |
+| --- | --- | --- |
+| Google | Client ID + secret (console.cloud.google.com) | Gratuit. **Politique de confidentialité publiée** |
+| Facebook | App ID + secret (developers.facebook.com) | **Politique de confidentialité publiée** |
+| Apple | Services ID, Team ID, Key ID, fichier `.p8` | Programme développeur **payant (99 $/an)** + vérification du domaine |
+
+Et, pour les trois, l'URL de retour déclarée **au caractère près** :
+`<base>/connexion/{google|facebook|apple}/retour`.
+
+La politique de confidentialité est donc sur le chemin critique : sans elle, ni
+Google ni Facebook ne valideront l'application.
+
+### 4.6 Réserve à lever
+
+La maquette n'affiche **aucune mention** « en continuant, vous acceptez les
+conditions générales » à côté des boutons sociaux. Une inscription par Google
+reste une inscription : le consentement est enregistré, mais il repose sur les
+liens présents sur la page, ce qui est plus faible qu'une case cochée. **À
+signaler à la designer.**
+
+---
+
+## 5. Conformité : une régression trouvée et corrigée
 
 Entourer les champs d'un `<form>` a un coût géométrique. Sur les trois écrans de
 mot de passe, `.auth-card--pw` espace ses blocs de 38 px ; `.auth-form` de 10 px.
@@ -218,7 +380,7 @@ avatar. La hauteur de page ne change pas. **À valider.**
 
 ---
 
-## 4. Vérifications passées
+## 6. Vérifications passées
 
 - Inscription : compte créé en base, e-mail déjà pris renvoyé en message
   d'erreur (et non plus en page d'erreur HTTP 409), formulaire vide rejeté avec
@@ -238,7 +400,7 @@ avatar. La hauteur de page ne change pas. **À valider.**
 
 ---
 
-## 5. Ce qui reste
+## 7. Ce qui reste
 
 - **Lot 2 — catalogue** : jeu de données reprenant mot pour mot le contenu des
   classes `Static*`, puis `ActivityController` et `DestinationController` lisant

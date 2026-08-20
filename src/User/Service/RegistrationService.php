@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\User\Service;
 
+use App\Legal\Service\ConsentService;
 use App\Provider\Service\ProviderOnboardingService;
 use App\User\Entity\User;
 use App\User\Enum\AccountType;
 use App\User\Enum\UserStatus;
 use App\User\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -28,6 +30,10 @@ final class RegistrationService
         // une règle métier, pas une affaire de contrôleur. La flèche va dans
         // ce sens et jamais dans l'autre.
         private readonly ProviderOnboardingService $providerOnboarding,
+        // Même raisonnement pour le domaine Legal : « accepter les conditions
+        // générales fait naître une preuve » est une règle métier.
+        private readonly ConsentService $consentService,
+        private readonly RequestStack $requestStack,
     ) {
     }
 
@@ -94,6 +100,18 @@ final class RegistrationService
                 trim($firstName.' '.$lastName) ?: $user->getEmail(),
             );
         }
+
+        // La case « J'accepte les conditions générales » était validée puis
+        // oubliée : rien en base ne prouvait que qui que ce soit avait accepté
+        // quoi que ce soit, alors que l'article 7.1 du RGPD l'exige. On
+        // enregistre désormais la version acceptée, la date, l'adresse IP et
+        // l'agent utilisateur.
+        $request = $this->requestStack->getCurrentRequest();
+        $this->consentService->recordRegistrationConsent(
+            $user,
+            $request,
+            $request?->getLocale() ?? 'fr',
+        );
 
         return $user;
     }
