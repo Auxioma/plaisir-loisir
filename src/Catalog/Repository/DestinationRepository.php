@@ -19,6 +19,32 @@ class DestinationRepository extends ServiceEntityRepository
     }
 
     /**
+     * Les destinations dans l'ordre d'affichage de la maquette.
+     *
+     * @return list<Destination>
+     */
+    public function findForListing(?int $limit = null): array
+    {
+        $qb = $this->createQueryBuilder('d')
+            ->orderBy('d.position', 'ASC')
+            ->addOrderBy('d.createdAt', 'ASC');
+
+        if (null !== $limit) {
+            $qb->setMaxResults($limit);
+        }
+
+        /** @var list<Destination> $results */
+        $results = $qb->getQuery()->getResult();
+
+        return $results;
+    }
+
+    public function findOneBySlug(string $slug): ?Destination
+    {
+        return $this->findOneBy(['slug' => $slug]);
+    }
+
+    /**
      * @param string[] $ids
      *
      * @return Destination[]

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Catalog\Controller;
 
+use App\Catalog\Presenter\ActivityPresenter;
+use App\Catalog\Presenter\DestinationPresenter;
+use App\Catalog\Repository\DestinationRepository;
+use App\Catalog\Repository\ServiceRepository;
 use App\Catalog\StaticCatalog;
 use App\Catalog\StaticDestinations;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,12 +21,39 @@ use Symfony\Component\Routing\Attribute\Route;
  *  - /destinations/populaires : listing 16 destinations + filtres/popovers
  *  - /destinations/{ville}    : activités d'une ville (maquette : Lille)
  *
- * L'en-tête suit l'état de connexion, mais ce n'est plus au contrôleur de le
- * dire : navbar.html.twig le lit dans la session (câblage du 17/08). La
- * prévisualisation de dev « ?connecte=1 » y est conservée.
+ * CÂBLAGE DU LOT 2 : les cartes de destination et les activités de la page
+ * ville viennent de la base ; les blocs éditoriaux restent dans
+ * StaticDestinations, faute d'entité correspondante — mosaïque (une grille
+ * CSS : colonnes, rangées, alignements), idées du moment, catégories, avis de
+ * voyageurs, et la sélection « gastronomie », dont les activités n'existent
+ * pas au catalogue.
+ *
+ * L'en-tête suit l'état de connexion, mais ce n'est pas au contrôleur de le
+ * dire : navbar.html.twig le lit dans la session.
  */
 final class DestinationController extends AbstractController
 {
+    /**
+     * Destinations mises en favori, telles que la maquette les montre.
+     *
+     * Provisoire et assumé : les favoris sont le lot 3. La maquette dessine un
+     * cœur plein sur New York pour illustrer l'état ; le reproduire ici évite
+     * à la fois de stocker un faux favori en base et de faire disparaître ce
+     * cœur avant que la fonction n'existe. À remplacer par une lecture du
+     * dépôt Favorite pour l'utilisateur connecté.
+     *
+     * @var list<string>
+     */
+    private const MAQUETTE_FAVORITES = ['new-york-usa'];
+
+    public function __construct(
+        private readonly DestinationRepository $destinations,
+        private readonly ServiceRepository $services,
+        private readonly DestinationPresenter $destinationPresenter,
+        private readonly ActivityPresenter $activityPresenter,
+    ) {
+    }
+
     #[Route('/destinations', name: 'app_destinations')]
     public function index(): Response
     {
@@ -30,7 +61,10 @@ final class DestinationController extends AbstractController
             'categories' => StaticDestinations::popularCategories(),
             'mosaic' => StaticDestinations::mosaic(),
             'ideas' => StaticDestinations::ideas(),
-            'destinations' => array_slice(StaticDestinations::popular(), 0, 4),
+            'destinations' => $this->destinationPresenter->cards(
+                $this->destinations->findForListing(4),
+                self::MAQUETTE_FAVORITES,
+            ),
         ]);
     }
 
@@ -38,7 +72,10 @@ final class DestinationController extends AbstractController
     public function popular(): Response
     {
         return $this->render('destination/populaires.html.twig', [
-            'destinations' => StaticDestinations::popular(),
+            'destinations' => $this->destinationPresenter->cards(
+                $this->destinations->findForListing(),
+                self::MAQUETTE_FAVORITES,
+            ),
             'gastronomy' => StaticDestinations::gastronomy(),
             'selections' => StaticCatalog::selections(),
             'cities' => StaticCatalog::cities(),
@@ -55,10 +92,44 @@ final class DestinationController extends AbstractController
 
         return $this->render('destination/ville.html.twig', [
             'city' => 'Lille',
-            'activities' => StaticDestinations::cityActivities(),
+            'activities' => $this->cityActivities(),
             'selections' => StaticCatalog::selections(),
             'cities' => StaticCatalog::cities(),
             'reviews' => StaticDestinations::travelerReviews(),
         ]);
+    }
+
+    /**
+     * Les douze cartes de la page ville.
+     *
+     * Les DONNÉES viennent de la base ; la COMPOSITION reste celle de la
+     * maquette, qui affiche huit activités puis répète les quatre dernières
+     * pour remplir la troisième rangée. C'est une mise en page, pas un contenu :
+     * elle n'a rien à faire en base.
+     *
+     * Contrairement au listing général, la pastille de catégorie est affichée
+     * ici — d'où `withCategory`.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function cityActivities(): array
+    {
+        $activities = $this->activityPresenter->cards(
+            $this->services->findPublishedForListing(),
+            withCategory: true,
+        );
+
+        $rowOne = \array_slice($activities, 0, 4);
+        $rowTwo = \array_slice($activities, 4, 4);
+
+        // La maquette pose un second « Bestseller » sur le yoga dans les
+        // rangées 2 et 3, alors que la carte n'en porte pas ailleurs.
+        foreach ($rowTwo as $index => $card) {
+            if ('seance-de-yoga-en-pleine-nature' === $card['slug']) {
+                $rowTwo[$index]['badge'] = 'Bestseller';
+            }
+        }
+
+        return array_merge($rowOne, $rowTwo, $rowTwo);
     }
 }

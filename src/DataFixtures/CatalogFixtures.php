@@ -170,7 +170,12 @@ class CatalogFixtures extends Fixture
      */
     private const CATEGORIES = [
         'sports-aventures' => 'Sports & Aventures',
-        'cultures-decouvertes' => 'Cultures & Découvertes',
+        // « Découverte » au singulier : c'est l'orthographe de la pastille sur
+        // l'écran ville, seul endroit où ce libellé est affiché. La barre de
+        // filtres du listing écrit « Cultures & Découverte » elle aussi, tandis
+        // que le parcours Offres met un « s ». Incohérence de la maquette, à
+        // signaler ; en attendant, on suit l'écran concerné.
+        'cultures-decouvertes' => 'Cultures & Découverte',
         'ateliers-creations' => 'Ateliers & Créations',
         'bien-etre' => 'Bien-être',
         'soirees-evenements' => 'Soirées & Évènements',
