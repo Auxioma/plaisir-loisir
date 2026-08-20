@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Repository\ServiceRepository;
+use App\Favorite\Service\CurrentUserFavorites;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,6 +30,7 @@ final class HomeController extends AbstractController
         #[Autowire('%kernel.debug%')] private readonly bool $debug,
         private readonly ServiceRepository $services,
         private readonly ActivityPresenter $presenter,
+        private readonly CurrentUserFavorites $favorites,
     ) {
     }
 
@@ -46,7 +48,10 @@ final class HomeController extends AbstractController
         // elle, détermine son propre état à partir de la session.
         if ($connected) {
             return $this->render('home/connected.html.twig', [
-                'activities' => $this->presenter->cards($this->services->findPublishedForListing()),
+                'activities' => $this->presenter->cards(
+                    $this->services->findPublishedForListing(),
+                    favoriteSlugs: $this->favorites->activitySlugs(),
+                ),
             ]);
         }
 

@@ -52,7 +52,18 @@
     {% else %}
         <div class="acc-grid">
             {% for f in favorites %}
-                {% include 'account/_favorite_card.html.twig' with { f: f, hearts: tab == 'prestataires' ? 'outline' : 'red' } %}
+                {% if tab == 'destinations' %}
+                    {# La carte de l'espace compte attend la forme d'une
+                       ACTIVITE (lieu, duree, prix a la personne) : une
+                       destination n'a rien de tout cela. La maquette ne montre
+                       cet onglet qu'a l'etat vide, elle ne dit donc pas a quoi
+                       ressemble une destination en favori. On reprend la carte
+                       de destination deja utilisee et validee ailleurs sur le
+                       site, plutot que d'inventer une mise en page. #}
+                    {% include 'destination/_card.html.twig' with { d: f } %}
+                {% else %}
+                    {% include 'account/_favorite_card.html.twig' with { f: f, hearts: tab == 'prestataires' ? 'outline' : 'red' } %}
+                {% endif %}
             {% endfor %}
         </div>
 

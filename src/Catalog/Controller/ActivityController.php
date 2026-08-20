@@ -7,6 +7,7 @@ namespace App\Catalog\Controller;
 use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Repository\ServiceRepository;
 use App\Catalog\StaticCatalog;
+use App\Favorite\Service\CurrentUserFavorites;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -36,13 +37,17 @@ final class ActivityController extends AbstractController
     public function __construct(
         private readonly ServiceRepository $services,
         private readonly ActivityPresenter $presenter,
+        private readonly CurrentUserFavorites $favorites,
     ) {
     }
 
     #[Route('/activites', name: 'app_activities')]
     public function index(): Response
     {
-        $activities = $this->presenter->cards($this->services->findPublishedForListing());
+        $activities = $this->presenter->cards(
+            $this->services->findPublishedForListing(),
+            favoriteSlugs: $this->favorites->activitySlugs(),
+        );
 
         return $this->render('activity/index.html.twig', [
             'activities' => $activities,
@@ -74,7 +79,7 @@ final class ActivityController extends AbstractController
         }
 
         return $this->render('activity/show.html.twig', [
-            'activity' => $this->presenter->card($service),
+            'activity' => $this->presenter->card($service, favoriteSlugs: $this->favorites->activitySlugs()),
             'detail' => $detail,
             'reviews' => StaticCatalog::reviews(),
             'suggestions' => StaticCatalog::suggestions(),

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\User\Controller;
 
+use App\Catalog\Entity\Destination;
+use App\Catalog\Entity\Service;
+use App\Catalog\Presenter\ActivityPresenter;
+use App\Catalog\Presenter\DestinationPresenter;
+use App\Favorite\Repository\FavoriteRepository;
 use App\User\Entity\User;
 use App\User\StaticAccount;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,6 +30,54 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 final class AccountController extends AbstractController
 {
+    public function __construct(
+        private readonly FavoriteRepository $favorites,
+        private readonly ActivityPresenter $activityPresenter,
+        private readonly DestinationPresenter $destinationPresenter,
+    ) {
+    }
+
+    /**
+     * L'utilisateur en session, avec la garantie de type qu'attend PHPStan.
+     *
+     * La classe entière exige ROLE_USER : getUser() ne peut pas être nul ici.
+     */
+    private function currentUser(): User
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        return $user;
+    }
+
+    /**
+     * Tout ce qui est affiché sur cet écran est, par définition, en favori :
+     * les cœurs sont donc tous actifs, sans réinterroger la base.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function cardsForFavoriteActivities(User $user): array
+    {
+        $services = $this->favorites->findServicesForUser($user);
+        $slugs = array_map(static fn (Service $service): string => $service->getSlug(), $services);
+
+        return $this->activityPresenter->cards($services, favoriteSlugs: $slugs);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function cardsForFavoriteDestinations(User $user): array
+    {
+        $destinations = $this->favorites->findDestinationsForUser($user);
+        $slugs = array_map(static fn (Destination $destination): string => $destination->getSlug(), $destinations);
+
+        return $this->destinationPresenter->cards($destinations, $slugs);
+    }
+
     #[Route('/compte/favoris', name: 'app_account_favorites')]
     public function favorites(Request $request): Response
     {
@@ -33,11 +86,24 @@ final class AccountController extends AbstractController
             $tab = 'activites';
         }
 
-        // États par défaut fidèles aux captures : Activités et Prestataires
-        // remplis, Destinations vide ; ?vide=1 force l'état vide de démo.
+        // Les onglets Activités et Destinations affichent désormais les VRAIS
+        // favoris. L'onglet Prestataires reste en démonstration : mettre un
+        // prestataire en favori n'existe pas encore côté entité Favorite, qui
+        // ne connaît que les activités et les destinations.
+        $user = $this->currentUser();
+
+        $favorites = match ($tab) {
+            'activites' => $this->cardsForFavoriteActivities($user),
+            'destinations' => $this->cardsForFavoriteDestinations($user),
+            default => StaticAccount::providers(),
+        };
+
+        // L'état vide n'est plus décidé d'avance : il découle de ce que la
+        // personne a réellement mis en favori. La maquette fournit les deux
+        // états ; « ?vide=1 » sert encore à les comparer en développement.
         $empty = $request->query->has('vide')
             ? $request->query->getBoolean('vide')
-            : 'destinations' === $tab;
+            : [] === $favorites;
 
         return $this->render('account/favoris.html.twig', [
             'user' => $this->accountUser(),
@@ -45,7 +111,7 @@ final class AccountController extends AbstractController
             'active' => 'Mes favoris',
             'tab' => $tab,
             'empty' => $empty,
-            'favorites' => 'prestataires' === $tab ? StaticAccount::providers() : StaticAccount::favorites(),
+            'favorites' => $favorites,
         ]);
     }
 

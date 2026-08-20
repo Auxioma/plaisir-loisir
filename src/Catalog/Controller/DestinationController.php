@@ -10,6 +10,7 @@ use App\Catalog\Repository\DestinationRepository;
 use App\Catalog\Repository\ServiceRepository;
 use App\Catalog\StaticCatalog;
 use App\Catalog\StaticDestinations;
+use App\Favorite\Service\CurrentUserFavorites;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -33,24 +34,12 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class DestinationController extends AbstractController
 {
-    /**
-     * Destinations mises en favori, telles que la maquette les montre.
-     *
-     * Provisoire et assumé : les favoris sont le lot 3. La maquette dessine un
-     * cœur plein sur New York pour illustrer l'état ; le reproduire ici évite
-     * à la fois de stocker un faux favori en base et de faire disparaître ce
-     * cœur avant que la fonction n'existe. À remplacer par une lecture du
-     * dépôt Favorite pour l'utilisateur connecté.
-     *
-     * @var list<string>
-     */
-    private const MAQUETTE_FAVORITES = ['new-york-usa'];
-
     public function __construct(
         private readonly DestinationRepository $destinations,
         private readonly ServiceRepository $services,
         private readonly DestinationPresenter $destinationPresenter,
         private readonly ActivityPresenter $activityPresenter,
+        private readonly CurrentUserFavorites $favorites,
     ) {
     }
 
@@ -63,7 +52,7 @@ final class DestinationController extends AbstractController
             'ideas' => StaticDestinations::ideas(),
             'destinations' => $this->destinationPresenter->cards(
                 $this->destinations->findForListing(4),
-                self::MAQUETTE_FAVORITES,
+                $this->favorites->destinationSlugs(),
             ),
         ]);
     }
@@ -74,7 +63,7 @@ final class DestinationController extends AbstractController
         return $this->render('destination/populaires.html.twig', [
             'destinations' => $this->destinationPresenter->cards(
                 $this->destinations->findForListing(),
-                self::MAQUETTE_FAVORITES,
+                $this->favorites->destinationSlugs(),
             ),
             'gastronomy' => StaticDestinations::gastronomy(),
             'selections' => StaticCatalog::selections(),
@@ -117,6 +106,7 @@ final class DestinationController extends AbstractController
         $activities = $this->activityPresenter->cards(
             $this->services->findPublishedForListing(),
             withCategory: true,
+            favoriteSlugs: $this->favorites->activitySlugs(),
         );
 
         $rowOne = \array_slice($activities, 0, 4);

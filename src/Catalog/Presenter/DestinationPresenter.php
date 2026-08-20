@@ -32,6 +32,9 @@ final class DestinationPresenter
             'price' => $destination->getPriceFrom(),
             'badge' => $destination->getBadge(),
             'favorite' => \in_array($destination->getSlug(), $favoriteSlugs, true),
+            // Le slug ne s'affiche pas : il sert au coeur des favoris a dire
+            // au serveur de quelle destination il parle.
+            'slug' => $destination->getSlug(),
             'image' => $destination->getHeroImage(),
         ];
     }

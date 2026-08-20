@@ -21,7 +21,24 @@
                Bientôt complet) restent rouges — spec Destinations §1.10. #}
             <span class="pl-card__tag {{ a.badge == 'Nouvelle activité' ? 'pl-card__tag--popular' : 'pl-card__tag--bestseller' }}">{{ a.badge }}</span>
         {% endif %}
-        <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</button>
+        {# Coeur des favoris. Le balisage visible ne change pas : seuls des
+           attributs `data-` s'ajoutent, que le script lit pour appeler la
+           route. Une carte sans slug (offres editoriales, gastronomie) ne
+           correspond a aucune activite en base : son coeur reste inerte
+           plutot que de pointer dans le vide. #}
+        {% if a.slug is defined and a.slug %}
+            <button type="button" class="pl-card__fav {{ a.favorite|default(false) ? 'is-active' }}"
+                    aria-label="{{ (a.favorite|default(false) ? 'Retirer des favoris' : 'Ajouter aux favoris')|trans }}"
+                    aria-pressed="{{ a.favorite|default(false) ? 'true' : 'false' }}"
+                    data-favorite-slug="{{ a.slug }}"
+                    data-favorite-type="activite"
+                    data-favorite-url="{{ path('app_favorite_toggle') }}"
+                    data-favorite-token="{{ csrf_token('submit') }}"
+                    data-favorite-label-on="{{ 'Retirer des favoris'|trans }}"
+                    data-favorite-label-off="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</button>
+        {% else %}
+            <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</button>
+        {% endif %}
         {# Pastille « Pro » / « Gratuite » : demandée par Loïc mais ABSENTE de
            toutes les maquettes (vérifié sur Activités, Activités - Filtre et
            Destinations). Retirée pour se conformer à la maquette, comme

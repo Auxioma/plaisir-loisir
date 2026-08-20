@@ -36,9 +36,11 @@ final class ActivityPresenter
      * une. Ajouter la clé partout ferait apparaître une pastille là où la
      * maquette n'en veut pas.
      *
+     * @param list<string> $favoriteSlugs activités déjà en favori chez le visiteur
+     *
      * @return array<string, mixed>
      */
-    public function card(Service $service, bool $withCategory = false): array
+    public function card(Service $service, bool $withCategory = false, array $favoriteSlugs = []): array
     {
         $card = [
             'slug' => $service->getSlug(),
@@ -52,6 +54,7 @@ final class ActivityPresenter
             'image' => $this->coverImage($service),
             'lat' => null !== $service->getLatitude() ? (float) $service->getLatitude() : null,
             'lng' => null !== $service->getLongitude() ? (float) $service->getLongitude() : null,
+            'favorite' => \in_array($service->getSlug(), $favoriteSlugs, true),
         ];
 
         if ($withCategory) {
@@ -63,15 +66,16 @@ final class ActivityPresenter
 
     /**
      * @param iterable<Service> $services
+     * @param list<string>      $favoriteSlugs
      *
      * @return list<array<string, mixed>>
      */
-    public function cards(iterable $services, bool $withCategory = false): array
+    public function cards(iterable $services, bool $withCategory = false, array $favoriteSlugs = []): array
     {
         $cards = [];
 
         foreach ($services as $service) {
-            $cards[] = $this->card($service, $withCategory);
+            $cards[] = $this->card($service, $withCategory, $favoriteSlugs);
         }
 
         return $cards;
