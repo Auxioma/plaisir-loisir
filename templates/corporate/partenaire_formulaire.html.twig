@@ -39,6 +39,8 @@
         <p class="pf-lead">{{ "Commencez par nous parler un peu de vous. Après avoir envoyé ce formulaire, vous serez recontacté par un membre de l'équipe TrouveMoi Plaisirs & Loisirs"|trans }}</p>
 
         <form class="pf-form" method="post" action="{{ path('app_corporate_partner_form') }}" novalidate>
+            {# Jeton anti-CSRF : champ cache, sans effet sur le rendu. #}
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
 
             {# ---------------- Bloc 1 : informations du site web ---------------- #}
             <fieldset class="pf-block">

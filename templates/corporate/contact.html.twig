@@ -46,6 +46,8 @@
             <div class="ct-cols">
                 {# ---- Formulaire ---- #}
                 <form class="ct-card ct-form" method="post" action="{{ path('app_corporate_contact') }}" novalidate>
+            {# Jeton anti-CSRF : champ cache, sans effet sur le rendu. #}
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                     <h3 class="ct-form__title">{{ 'Envoyez-nous un message'|trans }}</h3>
 
                     <div class="ct-form__row">
