@@ -1183,6 +1183,9 @@
 
 /* Colonne centrée mesurée sur la maquette : 672px (1440 : x 384 → 1056). */
 .gw-wrap { max-width: 672px; margin: 62px auto 0; }
+/* Meme dispositif que l'assistant d'evenement : le formulaire ne cree aucune
+   boite, il n'a donc aucun effet sur l'agencement. */
+.gw-wizard__form { display: contents; }
 
 /* <StepperHorizontal> : pastilles 01-04 + barre de progression. */
 .gw-stepper { display: flex; align-items: center; margin-bottom: 38px; }

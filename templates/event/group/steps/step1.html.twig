@@ -13,7 +13,7 @@
 <div class="gw-loc" id="gw-loc">
     <div class="gw-field">
         <span class="gw-field__icon">{{ icon.map_pin(20) }}</span>
-        <input id="gw-loc-input" class="gw-field__control" type="text" placeholder="Lille"
+        <input id="gw-loc-input" name="lieu" value="{{ draft.lieu|default('') }}" class="gw-field__control" type="text" placeholder="Lille"
                role="combobox" aria-expanded="false" aria-controls="gw-loc-menu"
                aria-label="{{ 'Emplacement du groupe'|trans }}" autocomplete="off">
         <button type="button" class="gw-loc__clear" id="gw-loc-clear" hidden

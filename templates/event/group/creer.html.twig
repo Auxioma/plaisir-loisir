@@ -38,6 +38,12 @@
         <a href="{{ step > 1 ? path('app_group_create', { etape: step - 1 }) : path('app_groups') }}" class="gw-back">{{ icon.arrow_left(16) }} {{ 'Retour'|trans }}</a>
 
         <div class="gw-wrap">
+            {# Les quatre etapes s'enchainaient par de simples liens : rien
+               n'etait conserve, et l'ecran de succes s'affichait sans qu'aucun
+               groupe n'ait ete cree. #}
+            <form class="gw-wizard__form" method="post" action="{{ path('app_group_create', { etape: step }) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+
             {% include 'event/group/_stepper.html.twig' with { step: step } %}
 
             {% include 'event/group/steps/step' ~ step ~ '.html.twig' %}
@@ -46,9 +52,9 @@
                gérés par events.js) ; l'étape 3 arrive préremplie → actif. #}
             {% set next_disabled = step != 3 %}
             <div class="gw-next">
-                <a href="{{ step < 4 ? path('app_group_create', { etape: step + 1 }) : path('app_group_create_success') }}"
+                <button type="submit"
                    id="gw-next" class="pl-btn pl-btn--primary gw-next__btn{{ next_disabled ? ' is-disabled' }}"
-                   {% if next_disabled %}aria-disabled="true"{% endif %}>{{ 'Suivant'|trans }} {{ icon.chevron_right(16) }}</a>
+                   {% if next_disabled %}aria-disabled="true"{% endif %}>{{ 'Suivant'|trans }} {{ icon.chevron_right(16) }}</button>
             </div>
 
             {% if advice %}
@@ -57,6 +63,7 @@
                     <p class="gw-advice__text">{{ advice }}</p>
                 </aside>
             {% endif %}
+            </form>
         </div>
 
     </div>

@@ -7,6 +7,6 @@
 <h1 class="gw-title">{{ 'Nommez votre groupe'|trans }}</h1>
 
 <div class="gw-field">
-    <input id="gw-name" class="gw-field__control" type="text" value="Plaisir & Loisirs"
+    <input id="gw-name" name="nom" class="gw-field__control" type="text" value="{{ draft.nom|default('Plaisir & Loisirs') }}"
            maxlength="60" aria-label="{{ 'Nom du groupe'|trans }}">
 </div>
