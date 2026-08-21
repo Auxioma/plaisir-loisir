@@ -52,6 +52,61 @@ class EventRepository extends ServiceEntityRepository
         return $results;
     }
 
+    /**
+     * Les evenements compris dans un intervalle, pour une grille de calendrier.
+     *
+     * @return list<Event>
+     */
+    public function findBetween(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        /** @var list<Event> $results */
+        $results = $this->createQueryBuilder('e')
+            ->addSelect('c')
+            ->leftJoin('e.category', 'c')
+            ->andWhere('e.deletedAt IS NULL')
+            ->andWhere('e.startsAt >= :debut')
+            ->andWhere('e.startsAt < :fin')
+            ->setParameter('debut', $from)
+            ->setParameter('fin', $to)
+            ->orderBy('e.startsAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $results;
+    }
+
+    /**
+     * Le mois a ouvrir par defaut sur le calendrier.
+     *
+     * Celui du prochain evenement a venir ; a defaut, celui du dernier passe ;
+     * a defaut encore, le mois courant. Ouvrir sur un mois vide alors que le
+     * site a des evenements donnerait l'impression qu'il n'y en a aucun.
+     */
+    public function findDefaultCalendarMonth(): \DateTimeImmutable
+    {
+        $maintenant = new \DateTimeImmutable();
+
+        $prochain = $this->createQueryBuilder('e')
+            ->andWhere('e.deletedAt IS NULL')
+            ->andWhere('e.startsAt >= :maintenant')
+            ->setParameter('maintenant', $maintenant)
+            ->orderBy('e.startsAt', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if (!$prochain instanceof Event) {
+            $prochain = $this->createQueryBuilder('e')
+                ->andWhere('e.deletedAt IS NULL')
+                ->orderBy('e.startsAt', 'DESC')
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+        }
+
+        return $prochain instanceof Event ? $prochain->getStartsAt() : $maintenant;
+    }
+
     public function findOneBySlug(string $slug): ?Event
     {
         return $this->findOneBy(['slug' => $slug]);

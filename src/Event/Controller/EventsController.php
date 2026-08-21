@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Event\Controller;
 
 use App\Event\Entity\Group;
+use App\Event\Presenter\CalendarPresenter;
 use App\Event\Presenter\EventPresenter;
 use App\Event\Presenter\GroupPresenter;
 use App\Event\Repository\EventRepository;
@@ -12,6 +13,7 @@ use App\Event\Repository\GroupAlbumRepository;
 use App\Event\Repository\GroupRepository;
 use App\Event\StaticEvents;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -30,6 +32,7 @@ final class EventsController extends AbstractController
         private readonly GroupRepository $groups,
         private readonly GroupAlbumRepository $albums,
         private readonly GroupPresenter $groupPresenter,
+        private readonly CalendarPresenter $calendarPresenter,
     ) {
     }
 
@@ -111,13 +114,56 @@ final class EventsController extends AbstractController
     }
 
     #[Route('/evenements/calendrier', name: 'app_events_calendar')]
-    public function calendar(): Response
+    public function calendar(Request $request): Response
     {
         return $this->render('event/nav/calendrier.html.twig', [
-            'calendar' => StaticEvents::calendar(),
+            ...$this->calendarData($this->readMonth($request)),
             'selections' => StaticEvents::selections(),
             'cities' => StaticEvents::cities(),
         ]);
+    }
+
+    /**
+     * Les variables du calendrier mensuel, communes a l'ecran Calendrier et a
+     * l'onglet « Evenements » d'un groupe, qui affichent le meme composant.
+     *
+     * @return array<string, mixed>
+     */
+    private function calendarData(?\DateTimeImmutable $mois = null): array
+    {
+        $mois ??= $this->events->findDefaultCalendarMonth();
+        $debut = $mois->modify('first day of this month')->setTime(0, 0);
+        $fin = $debut->modify('+1 month');
+
+        return [
+            'calendar' => $this->calendarPresenter->grid($debut, $this->events->findBetween($debut, $fin)),
+            'monthLabel' => $this->calendarPresenter->monthLabel($debut),
+            'prevMonth' => $debut->modify('-1 month')->format('Y-m'),
+            'nextMonth' => $fin->format('Y-m'),
+        ];
+    }
+
+    /**
+     * Mois demande par l'URL (« ?mois=2026-05 »).
+     *
+     * Sans parametre, on ouvre sur le mois du prochain evenement : ouvrir sur
+     * un mois vide alors que le site en propose donnerait l'impression qu'il
+     * n'y en a aucun. Un parametre illisible retombe sur ce meme defaut plutot
+     * que de provoquer une erreur.
+     */
+    private function readMonth(Request $request): \DateTimeImmutable
+    {
+        $demande = (string) $request->query->get('mois', '');
+
+        if (1 === preg_match('/^\d{4}-\d{2}$/', $demande)) {
+            $mois = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $demande.'-01 00:00:00');
+
+            if (false !== $mois) {
+                return $mois;
+            }
+        }
+
+        return $this->events->findDefaultCalendarMonth();
     }
 
     #[Route('/evenements/prives', name: 'app_events_private')]
@@ -193,7 +239,11 @@ final class EventsController extends AbstractController
             // un groupe n'existe pas.
             'members' => StaticEvents::members(),
             'albums' => $this->groupPresenter->albums($this->albums->findForGroup($this->firstGroup())),
-            'calendar' => StaticEvents::calendar(),
+            // L'onglet « Evenements » du groupe affiche le meme calendrier :
+            // il lui faut donc les memes variables. Il montre pour l'instant
+            // TOUS les evenements, faute de lien entre un evenement et un
+            // groupe — ce rattachement reste a concevoir.
+            ...$this->calendarData(),
             'avatars' => StaticEvents::avatars(),
         ]);
     }
