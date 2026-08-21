@@ -7,6 +7,7 @@ namespace App\Catalog\Repository;
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\Destination;
 use App\Catalog\Entity\Service;
+use App\Catalog\Entity\ServicePackage;
 use App\Catalog\Enum\ServiceStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -36,14 +37,23 @@ class ServiceRepository extends ServiceEntityRepository
      * `getResult()` renvoie ici des entités distinctes malgré les jointures :
      * Doctrine reconstruit les collections et ne duplique pas les racines.
      *
-     * Les deux filtres sont ceux du formulaire de recherche de la maquette :
-     * des mots-clés et un lieu. Sans eux, la barre de recherche renvoyait la
-     * page identique — elle était affichée mais n'était branchée sur rien.
+     * Les filtres sont ceux de la maquette : la barre de recherche du haut
+     * (mots-clés, lieu) et le panneau latéral (catégories, budget, note).
+     * Aucun n'était branché — ils s'affichaient sans rien filtrer.
+     *
+     * @param list<string> $categorySlugs
      *
      * @return list<Service>
      */
-    public function findPublishedForListing(?int $limit = null, ?string $keywords = null, ?string $place = null, ?string $categorySlug = null): array
-    {
+    public function findPublishedForListing(
+        ?int $limit = null,
+        ?string $keywords = null,
+        ?string $place = null,
+        array $categorySlugs = [],
+        ?int $priceMin = null,
+        ?int $priceMax = null,
+        ?float $minRating = null,
+    ): array {
         $qb = $this->createQueryBuilder('s')
             ->addSelect('p', 'm', 'c')
             ->leftJoin('s.packages', 'p')
@@ -75,14 +85,42 @@ class ServiceRepository extends ServiceEntityRepository
                 ->setParameter('lieu', '%'.Service::normalizeForSearch($place).'%');
         }
 
-        $categorySlug = null !== $categorySlug ? trim($categorySlug) : '';
+        $categorySlugs = array_values(array_filter(array_map('trim', $categorySlugs)));
 
-        if ('' !== $categorySlug) {
+        if ([] !== $categorySlugs) {
             // Sur le slug et non sur le libelle : le libelle est du texte
             // d'affichage, il peut etre corrige sans casser les liens deja
             // partages.
-            $qb->andWhere('c.slug = :categorie')
-                ->setParameter('categorie', $categorySlug);
+            $qb->andWhere('c.slug IN (:categories)')
+                ->setParameter('categories', $categorySlugs);
+        }
+
+        if (null !== $minRating) {
+            $qb->andWhere('s.ratingAverage >= :note')
+                ->setParameter('note', $minRating);
+        }
+
+        // Le prix vit sur les formules, pas sur l'activite : on passe par une
+        // sous-requete plutot que par la jointure d'affichage `p`. Filtrer sur
+        // `p` restreindrait AUSSI les formules chargees pour l'affichage, et
+        // le prix montre sur la carte deviendrait le plus bas DANS la
+        // fourchette au lieu du plus bas tout court.
+        if (null !== $priceMin || null !== $priceMax) {
+            $sous = $this->getEntityManager()->createQueryBuilder()
+                ->select('IDENTITY(pf.service)')
+                ->from(ServicePackage::class, 'pf');
+
+            if (null !== $priceMin) {
+                $sous->andWhere('pf.price >= :prixMin');
+                $qb->setParameter('prixMin', (string) $priceMin);
+            }
+
+            if (null !== $priceMax) {
+                $sous->andWhere('pf.price <= :prixMax');
+                $qb->setParameter('prixMax', (string) $priceMax);
+            }
+
+            $qb->andWhere($qb->expr()->in('s.id', $sous->getDQL()));
         }
 
         if (null !== $limit) {

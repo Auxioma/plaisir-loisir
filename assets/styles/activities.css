@@ -406,7 +406,11 @@
 .act-filters[hidden] { display: none; }
 .act-filters__head { display: flex; align-items: center; justify-content: space-between; }
 .act-filters__title { font-size: var(--pl-fs-body); font-weight: var(--pl-fw-bold); color: var(--pl-text); }
-.act-filters__reset { background: 0; border: 0; padding: 0; font-size: var(--pl-fs-body-sm); color: var(--pl-action); font-weight: var(--pl-fw-semibold); cursor: pointer; }
+/* « Reinitialiser » est devenu un lien (il ne fait que renvoyer sur l'adresse
+   sans parametres) : sans cette neutralisation, le Reboot de Bootstrap le
+   soulignerait en permanence, alors que la maquette ne le souligne qu'au
+   survol. Sans effet sur un <button>. */
+.act-filters__reset { background: 0; border: 0; padding: 0; font-size: var(--pl-fs-body-sm); color: var(--pl-action); font-weight: var(--pl-fw-semibold); cursor: pointer; text-decoration: none; }
 .act-filters__reset:hover { text-decoration: underline; }
 .act-filters__applied { display: flex; flex-wrap: wrap; gap: var(--pl-sp-8); }
 .act-filters__applied:empty { display: none; }
@@ -429,6 +433,10 @@
 .act-filters__input input { width: 100%; border: 0; outline: 0; font-size: var(--pl-fs-body-sm); color: var(--pl-text); background: transparent; }
 .act-filters__input input::placeholder { color: var(--pl-text-secondary); }
 
+/* Le formulaire du panneau ne doit creer AUCUNE boite : `.act-filters` est un
+   conteneur flex en colonne, un <form> ordinaire ramasserait tous ses blocs
+   dans un seul element flex et ecraserait l'agencement. */
+.act-filters__form { display: contents; }
 .act-filters__group { border: 0; margin: 0; padding: var(--pl-sp-12) 0 0; border-top: 1px solid var(--pl-border); display: flex; flex-direction: column; gap: var(--pl-sp-8); }
 .act-filters__group > legend { margin-bottom: var(--pl-sp-8); }
 

@@ -35,6 +35,9 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class ActivityController extends AbstractController
 {
+    /** Valeur haute du curseur de budget, marquee « et + » sur la maquette. */
+    private const PRICE_SLIDER_MAX = 1050;
+
     public function __construct(
         private readonly ServiceRepository $services,
         private readonly ActivityPresenter $presenter,
@@ -51,15 +54,36 @@ final class ActivityController extends AbstractController
         $keywords = trim((string) $request->query->get('q', ''));
         $place = trim((string) $request->query->get('lieu', ''));
         // Les pastilles de categorie posent « categorie » dans l'URL : le
-        // filtre se partage et survit au bouton Precedent.
+        // filtre se partage et survit au bouton Precedent. Le panneau lateral,
+        // lui, coche plusieurs cases et envoie « categories[] ». Les deux
+        // sources sont fondues en une seule liste.
         $categorie = trim((string) $request->query->get('categorie', ''));
-        $searching = '' !== $keywords || '' !== $place || '' !== $categorie;
+        $categories = array_map('strval', $request->query->all('categories'));
+
+        if ('' !== $categorie) {
+            $categories[] = $categorie;
+        }
+
+        $categories = array_values(array_unique(array_filter($categories)));
+
+        [$priceMin, $priceMax] = $this->readPriceRange($request);
+        $minRating = $this->readMinRating($request);
+
+        $searching = '' !== $keywords
+            || '' !== $place
+            || [] !== $categories
+            || null !== $priceMin
+            || null !== $priceMax
+            || null !== $minRating;
 
         $activities = $this->presenter->cards(
             $this->services->findPublishedForListing(
                 keywords: $keywords,
                 place: $place,
-                categorySlug: $categorie,
+                categorySlugs: $categories,
+                priceMin: $priceMin,
+                priceMax: $priceMax,
+                minRating: $minRating,
             ),
             favoriteSlugs: $this->favorites->activitySlugs(),
         );
@@ -71,7 +95,16 @@ final class ActivityController extends AbstractController
             'q' => $keywords,
             'lieu' => $place,
             'categorie' => $categorie,
+            'categories' => $categories,
+            'prixMin' => $priceMin,
+            'prixMax' => $priceMax,
+            'note' => $minRating,
             'searching' => $searching,
+            // Le panneau reste ouvert apres un envoi, sinon la personne perd
+            // de vue les filtres qui ont produit la liste. Le marqueur est
+            // explicite : une recherche depuis la barre du haut ne doit pas
+            // ouvrir le panneau.
+            'panneauOuvert' => $request->query->getBoolean('panneau'),
             // Rangée 3 de la maquette = répétition des cartes 5 à 8. Cette
             // répétition est un remplissage de maquette : sur un résultat de
             // recherche elle afficherait deux fois les mêmes activités, ce qui
@@ -85,6 +118,47 @@ final class ActivityController extends AbstractController
             'filterChips' => StaticCatalog::filterChips(),
             'clusters' => StaticCatalog::mapClusters(),
         ]);
+    }
+
+    /**
+     * Fourchette de prix du panneau lateral.
+     *
+     * Le curseur haut est a 1050 dans la maquette, avec la mention
+     * « 1050 EUR et + » : a cette valeur il n'exprime aucune limite, on ne
+     * filtre donc pas par le haut. Sans cela, une activite a 1200 EUR serait
+     * exclue alors que l'ecran annonce l'inverse.
+     *
+     * @return array{0: int|null, 1: int|null}
+     */
+    private function readPriceRange(Request $request): array
+    {
+        $min = $request->query->has('prix_min') ? $request->query->getInt('prix_min') : null;
+        $max = $request->query->has('prix_max') ? $request->query->getInt('prix_max') : null;
+
+        if (null !== $min && $min <= 0) {
+            $min = null;
+        }
+
+        if (null !== $max && $max >= self::PRICE_SLIDER_MAX) {
+            $max = null;
+        }
+
+        return [$min, $max];
+    }
+
+    /**
+     * Note minimale demandee.
+     *
+     * Les cases sont « n etoiles et plus » : en cocher plusieurs revient a
+     * demander la plus permissive. On retient donc la PLUS BASSE, sinon
+     * cocher « 3 et plus » puis « 4 et plus » retirerait des resultats que la
+     * premiere case venait d'autoriser.
+     */
+    private function readMinRating(Request $request): ?float
+    {
+        $valeurs = array_filter(array_map('intval', $request->query->all('note')));
+
+        return [] !== $valeurs ? (float) min($valeurs) : null;
     }
 
     #[Route('/activites/{slug}', name: 'app_activity_show')]
