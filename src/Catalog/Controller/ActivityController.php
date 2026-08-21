@@ -9,6 +9,7 @@ use App\Catalog\Repository\ServiceRepository;
 use App\Catalog\StaticCatalog;
 use App\Favorite\Service\CurrentUserFavorites;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -42,17 +43,34 @@ final class ActivityController extends AbstractController
     }
 
     #[Route('/activites', name: 'app_activities')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        // La barre de recherche de la maquette poste « q » et « lieu » en GET.
+        // Jusqu'au 21/08 le contrôleur ne les lisait pas : on tapait un
+        // mot-clé, on validait, et la page revenait identique.
+        $keywords = trim((string) $request->query->get('q', ''));
+        $place = trim((string) $request->query->get('lieu', ''));
+        $searching = '' !== $keywords || '' !== $place;
+
         $activities = $this->presenter->cards(
-            $this->services->findPublishedForListing(),
+            $this->services->findPublishedForListing(keywords: $keywords, place: $place),
             favoriteSlugs: $this->favorites->activitySlugs(),
         );
 
         return $this->render('activity/index.html.twig', [
             'activities' => $activities,
-            // Rangée 3 de la maquette = répétition des cartes 5 à 8.
-            'gridActivities' => array_merge($activities, \array_slice($activities, 4, 4)),
+            // Les champs doivent afficher ce qui a été cherché : sinon la barre
+            // se réinitialise et l'on ne sait plus ce qui a produit la liste.
+            'q' => $keywords,
+            'lieu' => $place,
+            'searching' => $searching,
+            // Rangée 3 de la maquette = répétition des cartes 5 à 8. Cette
+            // répétition est un remplissage de maquette : sur un résultat de
+            // recherche elle afficherait deux fois les mêmes activités, ce qui
+            // ferait croire à un doublon. On ne la garde que hors recherche.
+            'gridActivities' => $searching
+                ? $activities
+                : array_merge($activities, \array_slice($activities, 4, 4)),
             'offers' => StaticCatalog::offers(),
             'selections' => StaticCatalog::selections(),
             'cities' => StaticCatalog::cities(),

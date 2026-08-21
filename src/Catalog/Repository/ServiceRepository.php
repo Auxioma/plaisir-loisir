@@ -36,9 +36,13 @@ class ServiceRepository extends ServiceEntityRepository
      * `getResult()` renvoie ici des entités distinctes malgré les jointures :
      * Doctrine reconstruit les collections et ne duplique pas les racines.
      *
+     * Les deux filtres sont ceux du formulaire de recherche de la maquette :
+     * des mots-clés et un lieu. Sans eux, la barre de recherche renvoyait la
+     * page identique — elle était affichée mais n'était branchée sur rien.
+     *
      * @return list<Service>
      */
-    public function findPublishedForListing(?int $limit = null): array
+    public function findPublishedForListing(?int $limit = null, ?string $keywords = null, ?string $place = null): array
     {
         $qb = $this->createQueryBuilder('s')
             ->addSelect('p', 'm', 'c')
@@ -50,6 +54,26 @@ class ServiceRepository extends ServiceEntityRepository
             ->setParameter('published', ServiceStatus::Published)
             ->orderBy('s.position', 'ASC')
             ->addOrderBy('s.createdAt', 'ASC');
+
+        $keywords = null !== $keywords ? trim($keywords) : '';
+
+        if ('' !== $keywords) {
+            // On compare deux textes passes par la MEME normalisation : sans
+            // cela « canoe » ne trouverait jamais « Descente en Canoe » ecrit
+            // avec un trema.
+            $qb->andWhere('s.searchText LIKE :mots')
+                ->setParameter('mots', '%'.Service::normalizeForSearch($keywords).'%');
+        }
+
+        $place = null !== $place ? trim($place) : '';
+
+        if ('' !== $place) {
+            // searchPlace rassemble le libelle affiche, la ville et la
+            // destination : « ardeche » trouve « Gorges de L'Ardeche », que la
+            // colonne `city` ne contient pas.
+            $qb->andWhere('s.searchPlace LIKE :lieu')
+                ->setParameter('lieu', '%'.Service::normalizeForSearch($place).'%');
+        }
 
         if (null !== $limit) {
             $qb->setMaxResults($limit);

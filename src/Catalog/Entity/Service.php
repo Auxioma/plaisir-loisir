@@ -108,6 +108,24 @@ class Service
     private ?ServiceDetail $detail = null;
 
     /**
+     * Texte de recherche normalisé : minuscules, sans accents.
+     *
+     * POURQUOI UNE COLONNE PLUTÔT QUE L'EXTENSION unaccent DE POSTGRESQL
+     * « canoe » doit trouver « Descente en Canoë », sinon la recherche est
+     * inutilisable sur un site en français. PostgreSQL sait le faire avec
+     * l'extension unaccent, mais son installation réclame des droits que le
+     * compte applicatif n'a pas forcément en production : le déploiement
+     * échouerait. Une colonne calculée marche partout, à l'identique, sans rien
+     * demander à l'hébergeur.
+     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $searchText = null;
+
+    /** Même normalisation, pour le champ « lieu » du formulaire. */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $searchPlace = null;
+
+    /**
      * Rang d'affichage dans les listes.
      *
      * La maquette fixe l'ordre des huit cartes du listing. Sans ce champ, il
@@ -387,6 +405,64 @@ class Service
         $this->badge = $badge;
 
         return $this;
+    }
+
+    /**
+     * Recalcule les deux index de recherche avant chaque écriture.
+     *
+     * PreFlush et non PreUpdate : dans PreUpdate, modifier un champ
+     * directement n'est pas enregistré — Doctrine a déjà calculé ce qui
+     * change. PreFlush s'exécute avant ce calcul, on peut donc écrire
+     * librement.
+     */
+    /**
+     * Les index sont interroges en DQL, mais restent lisibles depuis PHP :
+     * c'est ce qui permet de verifier ce qui a reellement ete indexe quand une
+     * recherche ne rend pas ce qu'on attendait.
+     */
+    public function getSearchText(): ?string
+    {
+        return $this->searchText;
+    }
+
+    public function getSearchPlace(): ?string
+    {
+        return $this->searchPlace;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreFlush]
+    public function refreshSearchIndex(): void
+    {
+        $this->searchText = self::normalizeForSearch(implode(' ', array_filter([
+            $this->title,
+            $this->shortDescription,
+            $this->category?->getName(),
+        ])));
+
+        $this->searchPlace = self::normalizeForSearch(implode(' ', array_filter([
+            $this->placeLabel,
+            $this->city,
+            $this->destination?->getName(),
+        ])));
+    }
+
+    /**
+     * Minuscules, accents retirés, espaces resserrés.
+     *
+     * La même fonction prépare la colonne ET la saisie de l'utilisateur : les
+     * deux côtés de la comparaison subissent exactement le même traitement,
+     * seule façon de garantir qu'ils se rencontrent.
+     */
+    public static function normalizeForSearch(string $value): string
+    {
+        $lower = mb_strtolower(trim($value));
+
+        // Transliterator vient de l'extension intl, active sur le projet.
+        $transliterator = \Transliterator::create('Any-Latin; Latin-ASCII');
+        $ascii = null !== $transliterator ? ($transliterator->transliterate($lower) ?: $lower) : $lower;
+
+        return (string) preg_replace('/\s+/', ' ', $ascii);
     }
 
     public function getPosition(): int

@@ -119,12 +119,17 @@
                 <div class="act-search__bar">
                     <label class="act-search__field">
                         {{ icon.map_pin(18) }}
-                        <input type="text" name="lieu" value="Paris" aria-label="{{ 'Lieu'|trans }}">
+                        {# « Paris » est la valeur ecrite en dur dans la maquette. Elle
+                           reste la valeur par defaut du premier affichage, mais une
+                           recherche reprend ce que la personne a saisi : sinon le
+                           champ se reinitialise et on ne sait plus ce qui a produit
+                           la liste affichee. #}
+                        <input type="text" name="lieu" value="{{ searching|default(false) ? lieu|default('') : 'Paris' }}" aria-label="{{ 'Lieu'|trans }}">
                     </label>
                     <span class="act-search__sep" aria-hidden="true"></span>
                     <label class="act-search__field">
                         {{ icon.search(18) }}
-                        <input type="text" name="q" placeholder="{{ 'Recherches par mots-clés'|trans }}" aria-label="{{ 'Mots-clés'|trans }}">
+                        <input type="text" name="q" value="{{ q|default('') }}" placeholder="{{ 'Recherches par mots-clés'|trans }}" aria-label="{{ 'Mots-clés'|trans }}">
                     </label>
                 </div>
                 <button type="submit" class="act-search__submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(20) }}</button>
@@ -167,7 +172,15 @@
             </div>
 
             <div class="act-results">
-                <p class="act-results__count"><strong>400+</strong> {{ 'de résultats trouvés'|trans }}</p>
+                {# « 400+ » est le chiffre ecrit dans la maquette : il est conserve
+                   sur la page d'accueil du listing. Des qu'une recherche est en
+                   cours, on affiche le vrai nombre — annoncer « 400+ » au-dessus
+                   de trois cartes serait faux. #}
+                {% if searching|default(false) %}
+                    <p class="act-results__count"><strong>{{ gridActivities|length }}</strong> {{ (gridActivities|length > 1 ? 'résultats trouvés' : 'résultat trouvé')|trans }}</p>
+                {% else %}
+                    <p class="act-results__count"><strong>400+</strong> {{ 'de résultats trouvés'|trans }}</p>
+                {% endif %}
                 <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ 'Les plus populaires'|trans }}</strong></button>
             </div>
         </div>
@@ -186,11 +199,22 @@
        ================================================================ #}
     <section class="act-section">
         <div class="container">
-            <div class="card-grid act-grid">
-                {% for a in gridActivities %}
-                    {% include 'activity/_card.html.twig' with { a: a } %}
-                {% endfor %}
-            </div>
+            {# Une recherche sans resultat laissait une zone vide, sans un mot :
+               le testeur ne pouvait pas savoir si la page avait cherche. La
+               maquette ne prevoit pas cet ecran ; on reutilise le style du
+               compteur de resultats plutot que d'inventer une mise en forme. #}
+            {% if searching|default(false) and gridActivities is empty %}
+                <p class="act-results__count">
+                    {{ "Aucune activité ne correspond à votre recherche."|trans }}
+                    <a class="auth-inline-link" href="{{ path('app_activities') }}">{{ 'Voir toutes les activités'|trans }}</a>
+                </p>
+            {% else %}
+                <div class="card-grid act-grid">
+                    {% for a in gridActivities %}
+                        {% include 'activity/_card.html.twig' with { a: a } %}
+                    {% endfor %}
+                </div>
+            {% endif %}
             <div class="act-more">
                 <button type="button" class="pl-btn pl-btn--outline-action">{{ "Voir plus d'activités"|trans }} {{ icon.chevron_down(16) }}</button>
             </div>

@@ -23,11 +23,20 @@ class DestinationRepository extends ServiceEntityRepository
      *
      * @return list<Destination>
      */
-    public function findForListing(?int $limit = null): array
+    public function findForListing(?int $limit = null, ?string $keywords = null): array
     {
         $qb = $this->createQueryBuilder('d')
             ->orderBy('d.position', 'ASC')
             ->addOrderBy('d.createdAt', 'ASC');
+
+        $keywords = null !== $keywords ? trim($keywords) : '';
+
+        if ('' !== $keywords) {
+            // Le nom et l'accroche sont normalises a l'ecriture, comme pour
+            // les activites : « egypte » doit trouver « Egypte » accentue.
+            $qb->andWhere('d.searchText LIKE :mots')
+                ->setParameter('mots', '%'.Destination::normalizeForSearch($keywords).'%');
+        }
 
         if (null !== $limit) {
             $qb->setMaxResults($limit);

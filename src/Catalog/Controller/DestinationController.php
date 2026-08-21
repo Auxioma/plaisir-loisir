@@ -12,6 +12,7 @@ use App\Catalog\StaticCatalog;
 use App\Catalog\StaticDestinations;
 use App\Favorite\Service\CurrentUserFavorites;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -58,13 +59,26 @@ final class DestinationController extends AbstractController
     }
 
     #[Route('/destinations/populaires', name: 'app_destinations_popular')]
-    public function popular(): Response
+    public function popular(Request $request): Response
     {
+        // Meme barre de recherche que le listing des activites, et meme
+        // defaut jusqu'au 21/08 : les parametres partaient, personne ne les
+        // lisait.
+        $keywords = trim((string) $request->query->get('q', ''));
+        $place = trim((string) $request->query->get('lieu', ''));
+        // Les deux champs cherchent la meme chose ici : une destination EST un
+        // lieu. Les separer n'aurait aucun sens.
+        $search = '' !== $keywords ? $keywords : $place;
+        $searching = '' !== $search;
+
         return $this->render('destination/populaires.html.twig', [
             'destinations' => $this->destinationPresenter->cards(
-                $this->destinations->findForListing(),
+                $this->destinations->findForListing(keywords: $search),
                 $this->favorites->destinationSlugs(),
             ),
+            'q' => $keywords,
+            'lieu' => $place,
+            'searching' => $searching,
             'gastronomy' => StaticDestinations::gastronomy(),
             'selections' => StaticCatalog::selections(),
             'cities' => StaticCatalog::cities(),

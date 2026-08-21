@@ -81,6 +81,13 @@ class Destination
     #[ORM\Column(length: 40, nullable: true)]
     private ?string $badge = null;
 
+    /**
+     * Nom, accroche et pays normalisés : minuscules, sans accents.
+     * Même dispositif que sur Service, et pour la même raison.
+     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $searchText = null;
+
     /** Rang d'affichage : l'ordre des seize cartes est fixé par la maquette. */
     #[ORM\Column(options: ['default' => 0])]
     private int $position = 0;
@@ -153,6 +160,31 @@ class Destination
         $this->badge = $badge;
 
         return $this;
+    }
+
+    public function getSearchText(): ?string
+    {
+        return $this->searchText;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreFlush]
+    public function refreshSearchIndex(): void
+    {
+        $this->searchText = self::normalizeForSearch(implode(' ', array_filter([
+            $this->name,
+            $this->tagline,
+            $this->region,
+        ])));
+    }
+
+    /**
+     * Voir Service::normalizeForSearch : la même normalisation des deux côtés
+     * de la comparaison est la seule façon de garantir qu'ils se rencontrent.
+     */
+    public static function normalizeForSearch(string $value): string
+    {
+        return Service::normalizeForSearch($value);
     }
 
     public function getPosition(): int
