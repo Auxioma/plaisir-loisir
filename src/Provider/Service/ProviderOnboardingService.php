@@ -13,8 +13,12 @@ use Symfony\Component\Workflow\Registry;
 
 /**
  * Logique métier de l'accès au statut prestataire.
+ *
+ * NON `final`, à dessein : ce service est injecté dans RegistrationService,
+ * dont les tests le remplacent par une doublure — PHPUnit ne sait pas doubler
+ * une classe finale. C'est la seule raison ; rien n'invite à en hériter.
  */
-final class ProviderOnboardingService
+class ProviderOnboardingService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,

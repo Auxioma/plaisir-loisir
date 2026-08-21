@@ -16,8 +16,12 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Recueil et vérification du consentement aux textes juridiques.
+ *
+ * NON `final`, à dessein : ce service est injecté dans RegistrationService,
+ * dont les tests le remplacent par une doublure — PHPUnit ne sait pas doubler
+ * une classe finale. C'est la seule raison ; rien n'invite à en hériter.
  */
-final class ConsentService
+class ConsentService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,

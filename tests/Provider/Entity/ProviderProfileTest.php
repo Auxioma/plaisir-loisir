@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Provider\Entity;
 
+use App\Legal\Entity\CompanyIdentity;
 use App\Provider\Entity\ProviderProfile;
-use App\Provider\Enum\FiscalStatus;
 use App\Provider\Enum\ProviderStatus;
 use PHPUnit\Framework\TestCase;
 
@@ -42,7 +42,7 @@ final class ProviderProfileTest extends TestCase
         (new ProviderProfile())->setMarking('not-a-real-place');
     }
 
-    public function testSocialAndFiscalFieldsDefaultToNull(): void
+    public function testSocialFieldsDefaultToNull(): void
     {
         $profile = new ProviderProfile();
 
@@ -50,15 +50,25 @@ final class ProviderProfileTest extends TestCase
         self::assertNull($profile->getInstagramUrl());
         self::assertNull($profile->getLinkedinUrl());
         self::assertNull($profile->getWebsiteUrl());
-        self::assertNull($profile->getFiscalStatus());
-        self::assertNull($profile->getFiscalAddress());
-        self::assertNull($profile->getFiscalCountry());
     }
 
-    public function testFiscalStatusIsAssignable(): void
+    /**
+     * Les informations fiscales ne vivent plus ici.
+     *
+     * Elles portaient trois champs que personne ne lisait et qui ne
+     * suffisaient a aucun dossier reel ; elles ont ete remplacees par
+     * App\Legal\Entity\CompanyIdentity, bien plus complete (forme juridique,
+     * SIRET, TVA, siege, representant legal, assurance). Ce test constate le
+     * deplacement : si ces accesseurs reapparaissaient sur le profil, ce serait
+     * une duplication.
+     */
+    public function testFiscalDataMovedToCompanyIdentity(): void
     {
-        $profile = (new ProviderProfile())->setFiscalStatus(FiscalStatus::AutoEntrepreneur);
+        self::assertFalse(method_exists(ProviderProfile::class, 'getFiscalStatus'));
+        self::assertFalse(method_exists(ProviderProfile::class, 'getFiscalAddress'));
+        self::assertFalse(method_exists(ProviderProfile::class, 'getFiscalCountry'));
 
-        self::assertSame(FiscalStatus::AutoEntrepreneur, $profile->getFiscalStatus());
+        self::assertTrue(method_exists(CompanyIdentity::class, 'getLegalForm'));
+        self::assertTrue(method_exists(CompanyIdentity::class, 'getSiret'));
     }
 }
