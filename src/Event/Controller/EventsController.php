@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Event\Controller;
 
+use App\Event\Presenter\EventPresenter;
+use App\Event\Repository\EventRepository;
 use App\Event\StaticEvents;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,12 +20,49 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class EventsController extends AbstractController
 {
+    public function __construct(
+        private readonly EventRepository $events,
+        private readonly EventPresenter $presenter,
+    ) {
+    }
+
+    /**
+     * La rangee « filtree » de l'ecran « Tous les evenements ».
+     *
+     * La maquette y remet quatre cartes deja presentes plus haut, dans un
+     * autre ordre : randonnee, foot, barbecue, yoga. C'est un effet de
+     * presentation, pas un filtre — d'ou sa place ici.
+     *
+     * @param list<array<string, mixed>> $events
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function filteredRow(array $events): array
+    {
+        // Neuf cartes, dans l'ordre exact de la maquette : elle reprend celles
+        // du dessus dans un autre ordre et repete le barbecue en dernier.
+        $rangs = [4, 1, 2, 3, 8, 9, 10, 11, 2];
+        $rangee = [];
+
+        foreach ($rangs as $rang) {
+            if (isset($events[$rang])) {
+                $rangee[] = $events[$rang];
+            }
+        }
+
+        return $rangee;
+    }
+
     #[Route('/evenements', name: 'app_events')]
     public function index(): Response
     {
         return $this->render('event/nav/index.html.twig', [
-            'events' => StaticEvents::events(),
+            'events' => $this->presenter->cards($this->events->findForListing()),
+            // Pastilles de navigation : une liste editoriale avec ses icones,
+            // sans equivalent en base et sans compteur. Distincte des
+            // categories qui colorent le badge des cartes.
             'categories' => StaticEvents::categories(),
+            // Vignettes de visages decoratives, sans utilisateur derriere.
             'avatars' => StaticEvents::avatars(),
         ]);
     }
@@ -31,9 +70,14 @@ final class EventsController extends AbstractController
     #[Route('/evenements/tous', name: 'app_events_all')]
     public function all(): Response
     {
+        $events = $this->presenter->cards($this->events->findForListing());
+
         return $this->render('event/nav/tous.html.twig', [
-            'events' => StaticEvents::eventsListing(),
-            'events_filtered' => StaticEvents::eventsFiltered(),
+            'events' => $events,
+            // La rangee « filtree » de la maquette est une SELECTION d'ordre
+            // (randonnee, foot, barbecue...) et non un filtre reel : c'est une
+            // mise en page, elle reste ici et non en base.
+            'events_filtered' => $this->filteredRow($events),
             'avatars' => StaticEvents::avatars(),
             'selections' => StaticEvents::selections(),
             'cities' => StaticEvents::cities(),
@@ -54,7 +98,11 @@ final class EventsController extends AbstractController
     public function private(): Response
     {
         return $this->render('event/nav/prives.html.twig', [
-            'events' => StaticEvents::eventsListing(),
+            // Aucun evenement n'est marque prive : la maquette montre le meme
+            // listing sur cet onglet. On le conserve tel quel plutot que
+            // d'afficher une page vide, le temps que la creation d'evenements
+            // prives existe.
+            'events' => $this->presenter->cards($this->events->findForListing()),
             'avatars' => StaticEvents::avatars(),
             'selections' => StaticEvents::selections(),
             'cities' => StaticEvents::cities(),
