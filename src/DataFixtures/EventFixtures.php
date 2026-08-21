@@ -44,6 +44,27 @@ class EventFixtures extends Fixture
         'culture' => ['name' => 'Culture', 'color' => 'orange'],
         'jeu' => ['name' => 'Jeu', 'color' => 'navy'],
         'loisirs' => ['name' => 'Loisirs', 'color' => 'violet'],
+
+        // Les onze categories que propose l'assistant de creation. Elles ne
+        // recoupent AUCUNE des huit precedentes : la maquette entretient trois
+        // listes de categories distinctes dans le meme parcours (badges des
+        // cartes, pastilles de navigation, choix de l'assistant). Elles sont
+        // reunies dans la meme table, seul modele coherent — a defaut de quoi
+        // un evenement cree par l'assistant n'aurait pas de badge.
+        //
+        // La couleur n'est pas precisee par la maquette pour celles-ci : elles
+        // prennent le bleu, couleur par defaut du badge. A faire trancher.
+        'plein-air' => ['name' => 'Activités de plein air', 'color' => 'green'],
+        'sorties-loisir' => ['name' => 'Sorties & Loisir', 'color' => 'blue'],
+        'repas-gastronomie' => ['name' => 'Repas & Gastronomie', 'color' => 'orange'],
+        'bien-etre-sante' => ['name' => 'Bien-être & Santé', 'color' => 'violet'],
+        'ateliers-apprentissage' => ['name' => 'Ateliers & Apprentissage', 'color' => 'blue'],
+        'soirees-fetes' => ['name' => 'Soirées & Fêtes', 'color' => 'violet'],
+        'rencontres-echanges' => ['name' => 'Rencontres & Échanges', 'color' => 'blue'],
+        'culture-arts' => ['name' => 'Culture & Arts', 'color' => 'orange'],
+        'voyages-evasion' => ['name' => 'Voyages & Évasion', 'color' => 'blue'],
+        'actions-solidaires' => ['name' => 'Actions solidaires', 'color' => 'green'],
+        'autre' => ['name' => 'Autre', 'color' => 'navy'],
     ];
 
     /**

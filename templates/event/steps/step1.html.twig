@@ -11,12 +11,12 @@
 <div class="ev-row">
     <div class="ev-field">
         <label class="ev-field__label" for="evTitle">{{ "Titre de l'événement *"|trans }}</label>
-        <input id="evTitle" class="ev-input" type="text" placeholder="{{ 'Ex : Pique-nique au bord du lac'|trans }}">
+        <input id="evTitle" name="titre" value="{{ draft.titre|default('') }}" class="ev-input" type="text" placeholder="{{ 'Ex : Pique-nique au bord du lac'|trans }}">
     </div>
     <div class="ev-field">
         <label class="ev-field__label" for="evCatType">{{ "Catégorie d'événement *"|trans }}</label>
         <div class="ev-select">
-            <select id="evCatType">
+            <select id="evCatType" name="type">
                 <option value="" selected disabled>{{ 'Sélectionnez le type'|trans }}</option>
                 <option>{{ 'Activités de plein air'|trans }}</option>
                 <option>{{ 'Soirées & Fêtes'|trans }}</option>
@@ -30,7 +30,7 @@
 <div class="ev-field">
     <label class="ev-field__label" for="evShortDesc">{{ 'Courte description *'|trans }}</label>
     <div class="ev-textarea">
-        <textarea id="evShortDesc" rows="4" maxlength="120" placeholder="{{ 'Décrivez votre événement en quelques mots...'|trans }}" data-ev-counter="evShortCount"></textarea>
+        <textarea id="evShortDesc" name="resume" rows="4" maxlength="120" placeholder="{{ 'Décrivez votre événement en quelques mots...'|trans }}" data-ev-counter="evShortCount"></textarea>
         <span class="ev-textarea__count"><span id="evShortCount">0</span>/120</span>
     </div>
 </div>
@@ -52,7 +52,7 @@
             <button type="button" aria-label="{{ 'Insérer une image'|trans }}">{{ icon.image(17) }}</button>
         </div>
         <div class="ev-textarea ev-textarea--borderless">
-            <textarea id="evFullDesc" rows="7" maxlength="3000" placeholder="{{ 'Décrivez votre événement en quelques mots...'|trans }}" data-ev-counter="evFullCount"></textarea>
+            <textarea id="evFullDesc" name="description" rows="7" maxlength="3000" placeholder="{{ 'Décrivez votre événement en quelques mots...'|trans }}" data-ev-counter="evFullCount"></textarea>
             <span class="ev-textarea__count"><span id="evFullCount">0</span>/3000</span>
         </div>
     </div>

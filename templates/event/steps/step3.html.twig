@@ -29,7 +29,7 @@
 <div class="ev-field">
     <label class="ev-field__label" for="evPlace">{{ 'Lieu exact*'|trans }}</label>
     <div class="ev-input-icon">
-        <input id="evPlace" class="ev-input" type="text" placeholder="{{ 'Rechercher une adresse ou un lieu...'|trans }}">
+        <input id="evPlace" name="lieu" value="{{ draft.lieu|default('') }}" class="ev-input" type="text" placeholder="{{ 'Rechercher une adresse ou un lieu...'|trans }}">
         <span>{{ icon.search(18) }}</span>
     </div>
 </div>
@@ -49,7 +49,7 @@
     <label class="ev-field__label" for="evAccess">{{ 'Informations complémentaires *'|trans }}</label>
     <p class="ev-field__hint">{{ "Instructions ou précisions pour s'y rendre"|trans }}</p>
     <div class="ev-textarea">
-        <textarea id="evAccess" rows="4" maxlength="200" placeholder="{{ 'Ex : Entrée principale côté boulevard des Belges...'|trans }}" data-ev-counter="evAccessCount"></textarea>
+        <textarea id="evAccess" name="acces" rows="4" maxlength="200" placeholder="{{ 'Ex : Entrée principale côté boulevard des Belges...'|trans }}" data-ev-counter="evAccessCount"></textarea>
         <span class="ev-textarea__count"><span id="evAccessCount">0</span>/200</span>
     </div>
 </div>
@@ -57,7 +57,7 @@
 <div class="ev-field">
     <label class="ev-field__label" for="evMeeting">{{ 'Point de rendez-vous (optionnel)'|trans }}</label>
     <div class="ev-textarea">
-        <textarea id="evMeeting" rows="4" maxlength="200" placeholder="{{ 'Ex : Devant la fontaine principale à 14h45...'|trans }}" data-ev-counter="evMeetingCount"></textarea>
+        <textarea id="evMeeting" name="rdv" rows="4" maxlength="200" placeholder="{{ 'Ex : Devant la fontaine principale à 14h45...'|trans }}" data-ev-counter="evMeetingCount"></textarea>
         <span class="ev-textarea__count"><span id="evMeetingCount">0</span>/200</span>
     </div>
 </div>

@@ -28,6 +28,10 @@
 
 /* Grille wizard : 300px / 1fr / 360px, colonnes latérales sticky. */
 /* Colonnes mesurées sur la maquette : 295 / 606 / 295, gouttières 19px. */
+/* Le formulaire de l'assistant enveloppe l'en-tete ET la grille en trois
+   colonnes : il ne doit creer aucune boite, sous peine de s'interposer dans
+   leur agencement. Meme dispositif que le panneau de filtres du catalogue. */
+.ev-wizard__form { display: contents; }
 .ev-grid { display: grid; grid-template-columns: 295px 1fr 295px; gap: 19px; align-items: start; }
 .ev-col { display: grid; gap: 20px; position: sticky; top: 20px; }
 .ev-card { background: var(--pl-white); border: 1px solid var(--ev-line); border-radius: 16px; padding: 20px; }
