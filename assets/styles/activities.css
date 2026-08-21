@@ -200,6 +200,10 @@
     color: var(--pl-text);
     white-space: nowrap;
     cursor: pointer;
+    /* Les chips sont devenus des liens (filtrage par categorie) : sans cette
+       ligne, le Reboot de Bootstrap les soulignerait. Sans effet sur un
+       <button>, qui n'a jamais de decoration. */
+    text-decoration: none;
     transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 }
 .act-chip:hover { border-color: var(--pl-action); color: var(--pl-action); }

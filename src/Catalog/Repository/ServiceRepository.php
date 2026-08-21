@@ -42,7 +42,7 @@ class ServiceRepository extends ServiceEntityRepository
      *
      * @return list<Service>
      */
-    public function findPublishedForListing(?int $limit = null, ?string $keywords = null, ?string $place = null): array
+    public function findPublishedForListing(?int $limit = null, ?string $keywords = null, ?string $place = null, ?string $categorySlug = null): array
     {
         $qb = $this->createQueryBuilder('s')
             ->addSelect('p', 'm', 'c')
@@ -73,6 +73,16 @@ class ServiceRepository extends ServiceEntityRepository
             // colonne `city` ne contient pas.
             $qb->andWhere('s.searchPlace LIKE :lieu')
                 ->setParameter('lieu', '%'.Service::normalizeForSearch($place).'%');
+        }
+
+        $categorySlug = null !== $categorySlug ? trim($categorySlug) : '';
+
+        if ('' !== $categorySlug) {
+            // Sur le slug et non sur le libelle : le libelle est du texte
+            // d'affichage, il peut etre corrige sans casser les liens deja
+            // partages.
+            $qb->andWhere('c.slug = :categorie')
+                ->setParameter('categorie', $categorySlug);
         }
 
         if (null !== $limit) {

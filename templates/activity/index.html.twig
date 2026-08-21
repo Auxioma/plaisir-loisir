@@ -155,17 +155,32 @@
                 <button type="button" class="act-chip act-chip--filter" id="act-filter-toggle">{{ icon.sliders(16) }} {{ 'Filtre'|trans }}</button>
                 <span class="act-chipbar__sep" aria-hidden="true"></span>
                 <div class="act-chipbar__scroll">
+                    {# Les pastilles etaient des <button> inertes. Elles deviennent des
+                       liens : le filtre tient dans l'URL, donc il se partage, se met en
+                       favori et survit au bouton Precedent — ce qu'un filtre en
+                       JavaScript ne sait pas faire sans travail supplementaire.
+
+                       `.act-chip` a recu `text-decoration: none` : sans cela le Reboot
+                       de Bootstrap aurait souligne le libelle. Le reste de la classe
+                       decrit deja toute la boite, un lien et un bouton s'y rendent donc
+                       a l'identique — verifie par mesure.
+
+                       Etat actif : la maquette peint la PREMIERE pastille quand aucun
+                       filtre n'est pose. Des qu'une categorie est choisie, c'est elle
+                       qui s'allume. #}
                     {% for chip in filterChips %}
-                        <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">
-                            {%- if chip == 'Toutes' %}{{ icon.grid(16) }}
-                            {%- elseif chip starts with 'Natures' %}{{ icon.tree(16) }}
-                            {%- elseif chip starts with 'Cultures' %}{{ icon.cat_culture(16) }}
-                            {%- elseif chip starts with 'Ateliers' %}{{ icon.cat_crafts(16) }}
-                            {%- elseif chip starts with 'Soirées' %}{{ icon.flame(16) }}
-                            {%- elseif chip starts with 'Bien' %}{{ icon.cat_wellness(16) }}
+                        {% set chip_active = categorie|default('') is empty ? loop.first : categorie|default('') == chip.slug %}
+                        <a class="act-chip {{ chip_active ? 'is-active' }}"
+                           href="{{ chip.slug ? path('app_activities', { categorie: chip.slug }) : path('app_activities') }}">
+                            {%- if chip.label == 'Toutes' %}{{ icon.grid(16) }}
+                            {%- elseif chip.label starts with 'Natures' %}{{ icon.tree(16) }}
+                            {%- elseif chip.label starts with 'Cultures' %}{{ icon.cat_culture(16) }}
+                            {%- elseif chip.label starts with 'Ateliers' %}{{ icon.cat_crafts(16) }}
+                            {%- elseif chip.label starts with 'Soirées' %}{{ icon.flame(16) }}
+                            {%- elseif chip.label starts with 'Bien' %}{{ icon.cat_wellness(16) }}
                             {%- else %}{{ icon.cat_canoe(16) }}
-                            {%- endif %} {{ chip }}
-                        </button>
+                            {%- endif %} {{ chip.label }}
+                        </a>
                     {% endfor %}
                 </div>
                 <button type="button" class="act-chipbar__more" aria-label="{{ 'Faire défiler les filtres'|trans }}">{{ icon.chevron_right(16) }}</button>

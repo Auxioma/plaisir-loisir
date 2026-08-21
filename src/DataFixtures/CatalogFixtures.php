@@ -258,6 +258,11 @@ class CatalogFixtures extends Fixture
         'cultures-decouvertes' => 'Cultures & Découverte',
         'ateliers-creations' => 'Ateliers & Créations',
         'bien-etre' => 'Bien-être',
+        // Presente sur la barre de filtres de la maquette, mais aucune
+        // activite ne s'y rattache aujourd'hui : la pastille menera a un
+        // resultat vide, ce qui est honnete — la categorie existe, rien n'y
+        // est encore publie.
+        'natures-plein-air' => 'Natures & Plein-air',
         'soirees-evenements' => 'Soirées & Évènements',
         'en-famille' => 'En famille',
         'gastronomies' => 'Gastronomies',

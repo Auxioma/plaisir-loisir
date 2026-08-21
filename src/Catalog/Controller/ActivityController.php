@@ -50,10 +50,17 @@ final class ActivityController extends AbstractController
         // mot-clé, on validait, et la page revenait identique.
         $keywords = trim((string) $request->query->get('q', ''));
         $place = trim((string) $request->query->get('lieu', ''));
-        $searching = '' !== $keywords || '' !== $place;
+        // Les pastilles de categorie posent « categorie » dans l'URL : le
+        // filtre se partage et survit au bouton Precedent.
+        $categorie = trim((string) $request->query->get('categorie', ''));
+        $searching = '' !== $keywords || '' !== $place || '' !== $categorie;
 
         $activities = $this->presenter->cards(
-            $this->services->findPublishedForListing(keywords: $keywords, place: $place),
+            $this->services->findPublishedForListing(
+                keywords: $keywords,
+                place: $place,
+                categorySlug: $categorie,
+            ),
             favoriteSlugs: $this->favorites->activitySlugs(),
         );
 
@@ -63,6 +70,7 @@ final class ActivityController extends AbstractController
             // se réinitialise et l'on ne sait plus ce qui a produit la liste.
             'q' => $keywords,
             'lieu' => $place,
+            'categorie' => $categorie,
             'searching' => $searching,
             // Rangée 3 de la maquette = répétition des cartes 5 à 8. Cette
             // répétition est un remplissage de maquette : sur un résultat de

@@ -241,11 +241,25 @@ final class StaticCatalog
     /**
      * Chips de catégories de la barre de filtres du listing.
      *
-     * @return list<string>
+     * @return list<array{label: string, slug: string|null}>
      */
     public static function filterChips(): array
     {
-        return ['Sports & Aventures', 'Toutes', 'Natures & Plein-air', 'Cultures & Découverte', 'Ateliers & Créations', 'Bien-être'];
+        // Libelles et ORDRE repris de la maquette — « Toutes » y est en
+        // deuxieme position, ce n'est pas une erreur.
+        //
+        // Le slug relie chaque pastille a une categorie du catalogue. Il est
+        // ecrit ici plutot que devine a partir du libelle : « Cultures &
+        // Decouverte » au singulier ne produirait pas « cultures-decouvertes ».
+        // « Toutes » n'a pas de slug : elle retire le filtre.
+        return [
+            ['label' => 'Sports & Aventures', 'slug' => 'sports-aventures'],
+            ['label' => 'Toutes', 'slug' => null],
+            ['label' => 'Natures & Plein-air', 'slug' => 'natures-plein-air'],
+            ['label' => 'Cultures & Découverte', 'slug' => 'cultures-decouvertes'],
+            ['label' => 'Ateliers & Créations', 'slug' => 'ateliers-creations'],
+            ['label' => 'Bien-être', 'slug' => 'bien-etre'],
+        ];
     }
 
     /**
