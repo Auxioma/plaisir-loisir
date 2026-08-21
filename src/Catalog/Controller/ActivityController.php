@@ -182,7 +182,14 @@ final class ActivityController extends AbstractController
             'activity' => $this->presenter->card($service, favoriteSlugs: $this->favorites->activitySlugs()),
             'detail' => $detail,
             'reviews' => StaticCatalog::reviews(),
-            'suggestions' => StaticCatalog::suggestions(),
+            // « Activites similaires » : la maquette y montrait deux activites
+            // qui n'existent pas au catalogue, et surtout une premiere carte
+            // qui renvoyait vers la page en cours de lecture. Ce sont
+            // desormais de vraies activites, de la meme categorie en priorite.
+            'suggestions' => $this->presenter->cards(
+                $this->services->findSimilar($service),
+                favoriteSlugs: $this->favorites->activitySlugs(),
+            ),
         ]);
     }
 }

@@ -10,6 +10,7 @@ use App\Catalog\Entity\Service;
 use App\Catalog\Entity\ServicePackage;
 use App\Catalog\Enum\ServiceStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -124,6 +125,10 @@ class ServiceRepository extends ServiceEntityRepository
         }
 
         if (null !== $limit) {
+            // ATTENTION : avec les collections jointes ci-dessus, setMaxResults
+            // limite les lignes SQL et non les entites. Aucun appel ne passe de
+            // limite aujourd'hui ; le jour ou l'un le fera, il faudra passer
+            // par Paginator, comme findSimilar().
             $qb->setMaxResults($limit);
         }
 
@@ -159,6 +164,54 @@ class ServiceRepository extends ServiceEntityRepository
             ->getResult();
 
         return $results;
+    }
+
+    /**
+     * Activites proches de celle qu'on consulte, pour le bloc de fin de fiche.
+     *
+     * Meme categorie d'abord, le reste du catalogue ensuite pour completer :
+     * la maquette montre quatre cartes, et une categorie n'en contient pas
+     * toujours quatre. Le tri se fait en une seule requete, par un CASE, plutot
+     * qu'en deux appels suivis d'une fusion en PHP.
+     *
+     * L'activite courante est TOUJOURS exclue : la maquette proposait en
+     * premiere suggestion un lien vers la page qu'on etait deja en train de
+     * lire.
+     *
+     * @return list<Service>
+     */
+    public function findSimilar(Service $service, int $limit = 4): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->addSelect('p', 'm', 'c')
+            ->leftJoin('s.packages', 'p')
+            ->leftJoin('s.media', 'm')
+            ->leftJoin('s.category', 'c')
+            ->andWhere('s.status = :published')
+            ->andWhere('s.deletedAt IS NULL')
+            ->andWhere('s.id != :courante')
+            ->setParameter('published', ServiceStatus::Published)
+            ->setParameter('courante', $service->getId(), 'ulid')
+            ->addOrderBy('s.position', 'ASC')
+            ->setMaxResults($limit);
+
+        $category = $service->getCategory();
+
+        if (null !== $category) {
+            $qb->addSelect('CASE WHEN c.id = :categorie THEN 0 ELSE 1 END AS HIDDEN memeCategorie')
+                ->setParameter('categorie', $category->getId(), 'ulid')
+                ->orderBy('memeCategorie', 'ASC')
+                ->addOrderBy('s.position', 'ASC');
+        }
+
+        // Paginator est indispensable ici. Avec des collections jointes
+        // (formules, medias), setMaxResults limite les LIGNES SQL et non les
+        // entites : une activite qui porte six medias occupe six lignes, et
+        // « quatre resultats » n'en ramenait qu'UNE SEULE. Paginator fait
+        // d'abord une requete d'identifiants, puis charge ces entites-la.
+        $paginator = new Paginator($qb->getQuery(), fetchJoinCollection: true);
+
+        return array_values(iterator_to_array($paginator));
     }
 
     /**
