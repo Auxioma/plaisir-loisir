@@ -134,6 +134,34 @@ class ServiceRepository extends ServiceEntityRepository
     }
 
     /**
+     * Les activites publiees rattachees a une destination.
+     *
+     * @return list<Service>
+     */
+    public function findPublishedForDestination(Destination $destination): array
+    {
+        /** @var list<Service> $results */
+        $results = $this->createQueryBuilder('s')
+            ->addSelect('p', 'm', 'c')
+            ->leftJoin('s.packages', 'p')
+            ->leftJoin('s.media', 'm')
+            ->leftJoin('s.category', 'c')
+            ->andWhere('s.destination = :destination')
+            ->andWhere('s.status = :published')
+            ->andWhere('s.deletedAt IS NULL')
+            // Type precise explicitement : passer l'entite fait lier son
+            // identifiant ULID en base32 (« 01M0HEZJ... ») alors que
+            // PostgreSQL attend un UUID. Piege recurrent sur ce projet.
+            ->setParameter('destination', $destination->getId(), 'ulid')
+            ->setParameter('published', ServiceStatus::Published)
+            ->orderBy('s.position', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $results;
+    }
+
+    /**
      * Une activité publiée avec tout ce qu'il faut pour l'afficher.
      */
     public function findPublishedBySlug(string $slug): ?Service

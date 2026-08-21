@@ -89,13 +89,42 @@ final class DestinationController extends AbstractController
     #[Route('/destinations/{ville}', name: 'app_destination_city', requirements: ['ville' => '(?!populaires$)[a-z0-9\-]+'])]
     public function city(string $ville): Response
     {
-        if ('lille' !== $ville) {
+        // « lille » est la ville de la maquette : elle n'existe pas au
+        // catalogue, mais c'est l'ecran qui a ete valide, avec ses douze
+        // activites de demonstration. On le conserve tel quel.
+        if ('lille' === $ville) {
+            return $this->render('destination/ville.html.twig', [
+                'city' => 'Lille',
+                'citySlug' => 'lille',
+                'activities' => $this->cityActivities(),
+                'selections' => StaticCatalog::selections(),
+                'cities' => StaticCatalog::cities(),
+                'reviews' => StaticDestinations::travelerReviews(),
+            ]);
+        }
+
+        $destination = $this->destinations->findOneBySlug($ville);
+
+        if (null === $destination) {
             throw $this->createNotFoundException(sprintf('Destination « %s » inconnue.', $ville));
         }
 
+        // Les activites rattachees a cette destination. AUCUNE ne l'est
+        // aujourd'hui : le lien entre une activite et une destination n'a
+        // jamais ete renseigne. La page s'affiche donc vide, ce qui est la
+        // verite — et rend le manque visible, au lieu de montrer les activites
+        // d'une autre ville comme le faisait le lien casse.
         return $this->render('destination/ville.html.twig', [
-            'city' => 'Lille',
-            'activities' => $this->cityActivities(),
+            'city' => $destination->getName(),
+            // Le slug, et non le nom mis en minuscules : « Paris, France »
+            // n'est pas une adresse valide, et le gabarit s'en servait pour
+            // construire l'action de son formulaire de recherche.
+            'citySlug' => $destination->getSlug(),
+            'activities' => $this->activityPresenter->cards(
+                $this->services->findPublishedForDestination($destination),
+                withCategory: true,
+                favoriteSlugs: $this->favorites->activitySlugs(),
+            ),
             'selections' => StaticCatalog::selections(),
             'cities' => StaticCatalog::cities(),
             'reviews' => StaticDestinations::travelerReviews(),

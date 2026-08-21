@@ -7,7 +7,11 @@
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<a href="{{ href|default(path('app_destination_city', { ville: 'lille' })) }}" class="pl-card dest-card">
+{# Toutes les cartes menaient a « /destinations/lille », quelle que soit la
+   destination affichee : cliquer sur Bali ouvrait Lille. Chaque carte pointe
+   desormais sur SA destination. Les cartes sans slug (blocs editoriaux)
+   gardent l'ancien lien par defaut. #}
+<a href="{{ href|default(d.slug is defined and d.slug ? path('app_destination_city', { ville: d.slug }) : path('app_destination_city', { ville: 'lille' })) }}" class="pl-card dest-card">
     <div class="pl-card__media">
         <img src="{{ asset(d.image) }}" alt="{{ d.name }}">
         {% if d.badge %}

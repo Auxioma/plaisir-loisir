@@ -31,7 +31,7 @@
             <h1 class="act-head__title dest-title">{{ 'Activités à %ville%'|trans({'%ville%': city}) }}</h1>
             <p class="act-head__subtitle">{{ "Découvrez les meilleures activités à faire à %ville%. Choisissez parmi un choix varié d'expériences pour créer des souvenirs inoubliables, en famille ou entre amis. Meilleur prix garanti - Annulation gratuite"|trans({'%ville%': city}) }}</p>
 
-            <form class="act-search" role="search" action="{{ path('app_destination_city', { ville: city|lower }) }}" method="get">
+            <form class="act-search" role="search" action="{{ path('app_destination_city', { ville: citySlug|default('lille') }) }}" method="get">
                 <div class="act-search__bar">
                     <label class="act-search__field dest-locfield">
                         {{ icon.map_pin(18) }}
@@ -101,14 +101,25 @@
        ================================================================ #}
     <section class="act-section">
         <div class="container">
-            <div class="card-grid">
-                {% for a in activities %}
-                    {% include 'activity/_card.html.twig' with { a: a } %}
-                {% endfor %}
-            </div>
-            <div class="act-more">
-                <button type="button" class="pl-btn pl-btn--outline-action">{{ "Voir plus d'activités"|trans }} {{ icon.chevron_down(16) }}</button>
-            </div>
+            {# Aucune activite n'est encore rattachee a une destination : la
+               page se remplirait d'un vide muet. On le dit, et on renvoie vers
+               le catalogue. Le bouton « Voir plus » n'a plus de sens non plus
+               dans ce cas. #}
+            {% if activities is empty %}
+                <p class="act-results__count">
+                    {{ "Aucune activité n'est encore proposée dans cette destination."|trans }}
+                    <a class="auth-inline-link" href="{{ path('app_activities') }}">{{ 'Voir toutes les activités'|trans }}</a>
+                </p>
+            {% else %}
+                <div class="card-grid">
+                    {% for a in activities %}
+                        {% include 'activity/_card.html.twig' with { a: a } %}
+                    {% endfor %}
+                </div>
+                <div class="act-more">
+                    <button type="button" class="pl-btn pl-btn--outline-action">{{ "Voir plus d'activités"|trans }} {{ icon.chevron_down(16) }}</button>
+                </div>
+            {% endif %}
         </div>
     </section>
 
