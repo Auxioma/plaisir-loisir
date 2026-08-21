@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Event\Controller;
 
+use App\Event\Entity\Group;
 use App\Event\Presenter\EventPresenter;
+use App\Event\Presenter\GroupPresenter;
 use App\Event\Repository\EventRepository;
+use App\Event\Repository\GroupAlbumRepository;
+use App\Event\Repository\GroupRepository;
 use App\Event\StaticEvents;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +27,29 @@ final class EventsController extends AbstractController
     public function __construct(
         private readonly EventRepository $events,
         private readonly EventPresenter $presenter,
+        private readonly GroupRepository $groups,
+        private readonly GroupAlbumRepository $albums,
+        private readonly GroupPresenter $groupPresenter,
     ) {
+    }
+
+    /**
+     * Le groupe dont la maquette montre la page de detail.
+     *
+     * Il n'y a qu'un seul ecran de detail de groupe, et l'adresse n'en designe
+     * aucun : « /evenements/groupes/detail/{onglet} » ne porte pas de slug. On
+     * sert donc le premier groupe, celui qui porte les albums. Le jour ou
+     * l'adresse designera un groupe, cette methode disparaitra.
+     */
+    private function firstGroup(): Group
+    {
+        $group = $this->groups->findForListing(1)[0] ?? null;
+
+        if (null === $group) {
+            throw $this->createNotFoundException('Aucun groupe en base.');
+        }
+
+        return $group;
     }
 
     /**
@@ -131,7 +157,7 @@ final class EventsController extends AbstractController
     public function groups(): Response
     {
         return $this->render('event/nav/groupes.html.twig', [
-            'groups' => StaticEvents::groups(),
+            'groups' => $this->groupPresenter->cards($this->groups->findForListing()),
             'avatars' => StaticEvents::avatars(),
         ]);
     }
@@ -157,9 +183,16 @@ final class EventsController extends AbstractController
         return $this->render('event/nav/groupe.html.twig', [
             'tab' => $onglet,
             'similar' => StaticEvents::similar(),
+            // « Evenements » et « Groupes similaires » affichent des EVENEMENTS
+            // avec la mise en page des cartes de groupe, et un texte de
+            // remplissage. Ils restent statiques : les recomposer supposerait
+            // de stocker du lorem ipsum en base.
             'group_events' => StaticEvents::groupEvents(),
+            // Les membres sont des prenoms et des photos de la maquette, sans
+            // compte derriere : il n'y a rien a brancher tant que l'adhesion a
+            // un groupe n'existe pas.
             'members' => StaticEvents::members(),
-            'albums' => StaticEvents::albums(),
+            'albums' => $this->groupPresenter->albums($this->albums->findForGroup($this->firstGroup())),
             'calendar' => StaticEvents::calendar(),
             'avatars' => StaticEvents::avatars(),
         ]);
