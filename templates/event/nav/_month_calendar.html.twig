@@ -1,18 +1,26 @@
 {#
-    <MonthCalendar> (spec §E3) : grille 7 colonnes, en-tête « ‹ Juillet
-    2026 › », jour courant en carré violet, pastilles « Nom événement… /
-    Heure » colorées (fond teinté + barre latérale) cliquables vers le
-    détail. La numérotation reproduit la maquette telle quelle.
-    Variable : calendar (lignes de cellules [numéro, hors-mois, courant,
-    couleur|null]).
+    <MonthCalendar> (spec §E3) : grille 7 colonnes, en-tete « ‹ Juillet 2026 › »,
+    jour courant en carre violet, pastilles colorees cliquables vers le detail.
+
+    Cablage du 21/08. La grille etait ecrite A LA MAIN dans le code et sautait
+    le 19 : la quatrieme rangee passait de 18 a 20. Elle est desormais calculee,
+    et les pastilles portent le VRAI titre et la VRAIE heure des evenements, la
+    ou la maquette affichait litteralement « Nom evenement… / Heure ».
+
+    Variables : calendar (rangees de cellules), monthLabel, prevMonth, nextMonth.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
 <div class="evn-cal">
     <div class="evn-cal__nav">
-        <button type="button" aria-label="{{ 'Mois précédent'|trans }}">{{ icon.chevron_left(18) }}</button>
-        <strong>{{ 'Juillet 2026'|trans }}</strong>
-        <button type="button" aria-label="{{ 'Mois suivant'|trans }}">{{ icon.chevron_right(18) }}</button>
+        {# `rel="nofollow"` sur les deux fleches : la navigation par mois est un
+           espace de liens INFINI. Sans cette consigne, un robot d'indexation
+           avance de mois en mois sans jamais s'arreter — verifie, notre propre
+           robot de recette s'y est perdu. Le lien reste parfaitement
+           utilisable par un visiteur. #}
+        <a href="{{ path('app_events_calendar', { mois: prevMonth }) }}" rel="nofollow" aria-label="{{ 'Mois précédent'|trans }}">{{ icon.chevron_left(18) }}</a>
+        <strong>{{ monthLabel }}</strong>
+        <a href="{{ path('app_events_calendar', { mois: nextMonth }) }}" rel="nofollow" aria-label="{{ 'Mois suivant'|trans }}">{{ icon.chevron_right(18) }}</a>
     </div>
     <div class="evn-cal__days" aria-hidden="true">
         <span>{{ 'Lundi'|trans }}</span><span>{{ 'Mardi'|trans }}</span><span>{{ 'Mercredi'|trans }}</span><span>{{ 'Jeudi'|trans }}</span><span>{{ 'Vendredi'|trans }}</span><span>{{ 'Samedi'|trans }}</span><span>{{ 'Dimanche'|trans }}</span>
@@ -20,14 +28,14 @@
     {% for row in calendar %}
         <div class="evn-cal__row">
             {% for cell in row %}
-                <div class="evn-cal__cell {{ cell[1] ? 'is-out' }}">
-                    <span class="evn-cal__num {{ cell[2] ? 'is-today' }}">{{ cell[0] }}</span>
-                    {% if cell[3] %}
-                        <a href="{{ path('app_events_detail') }}" class="evn-cal__event evn-cal__event--{{ cell[3] }}">
-                            <strong>{{ 'Nom événement…'|trans }}</strong>
-                            <span>{{ 'Heure'|trans }}</span>
+                <div class="evn-cal__cell {{ cell.out ? 'is-out' }}">
+                    <span class="evn-cal__num {{ cell.today ? 'is-today' }}">{{ cell.day }}</span>
+                    {% for event in cell.events %}
+                        <a href="{{ path('app_events_detail') }}" class="evn-cal__event evn-cal__event--{{ event.color }}">
+                            <strong>{{ event.title }}</strong>
+                            <span>{{ event.hours }}</span>
                         </a>
-                    {% endif %}
+                    {% endfor %}
                 </div>
             {% endfor %}
         </div>

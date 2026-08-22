@@ -1,18 +1,24 @@
 {#
     En-tête commun à TOUTES les pages (maquette : le même header partout).
 
-    Variables optionnelles :
-      - connected (bool, défaut false) : à droite, icônes + avatar au lieu
-        du bouton « S'inscrire ».
+    Variable optionnelle :
       - nav_active : la maquette peint « Activités » en violet sur tous les
         écrans, SAUF sur le flow Offres où « Offres du moments » passe en
         orange et « Activités » redevient foncé (export Offres du moment1).
+
+    L'état connecté (icônes + avatar à droite, au lieu du bouton « S'inscrire »)
+    n'est PLUS un paramètre : il est lu dans la session. Avant le câblage, une
+    vingtaine de templates écrivaient « connected: true » en dur, si bien qu'un
+    visiteur non connecté voyait un avatar menant à un espace compte auquel il
+    n'a pas accès. Une seule source de vérité : app.user.
 
     Icônes connectées câblées sur l'espace compte : cœur → Mes favoris,
     cloche → Notifications, avatar → espace compte (messagerie à venir).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
-{% set connected = connected|default(false) %}
+{# En dev seulement, « ?connecte=1 » prévisualise l'état connecté sans compte
+   (utile pour comparer un écran à la maquette). Inopérant en production. #}
+{% set connected = app.user is not null or (app.debug and app.request.query.getBoolean('connecte')) %}
 {% set nav_active = nav_active|default('') %}
 
 <header class="pl-navbar pl-navbar--connected">

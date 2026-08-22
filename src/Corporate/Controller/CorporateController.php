@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Corporate\Controller;
 
+use App\Corporate\Entity\ContactMessage;
+use App\Corporate\Entity\PartnerApplication;
+use App\Corporate\Service\CorporateInboxService;
 use App\Corporate\StaticCorporate;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,9 +48,53 @@ final class CorporateController extends AbstractController
      * Le traitement (validation, envoi, écran de succès) reste à câbler : la
      * maquette ne fournit que l'écran vierge.
      */
+    /**
+     * Formulaire « Devenir partenaire ».
+     *
+     * Avant le 20/08, la route acceptait POST et le contrôleur se contentait de
+     * réafficher la page : la candidature partait dans le vide, sans erreur ni
+     * confirmation. Le prospect croyait avoir postulé.
+     */
     #[Route('/devenir-partenaire/formulaire', name: 'app_corporate_partner_form', methods: ['GET', 'POST'])]
-    public function partnerForm(): Response
+    public function partnerForm(Request $request, CorporateInboxService $inbox): Response
     {
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Votre session a expiré, merci de renvoyer le formulaire.');
+
+                return $this->redirectToRoute('app_corporate_partner_form');
+            }
+
+            $application = new PartnerApplication();
+            $application
+                ->setSiteName((string) $request->request->get('nom_site'))
+                ->setSiteUrl((string) $request->request->get('url_site'))
+                ->setSector((string) $request->request->get('secteur'))
+                ->setTraffic((string) $request->request->get('trafic'))
+                ->setCompanyName($request->request->getString('entreprise'))
+                ->setContactName($request->request->getString('responsable'))
+                ->setPhone($request->request->getString('telephone'))
+                ->setCity($request->request->getString('ville'))
+                ->setAddress((string) $request->request->get('adresse'))
+                ->setPostalCode((string) $request->request->get('code_postal'))
+                ->setEmail((string) $request->request->get('email'))
+                ->setDescription($request->request->getString('description'))
+                ->setTermsAccepted($request->request->getBoolean('cgu'))
+                ->setIpAddress($request->getClientIp());
+
+            $errors = $inbox->submitPartnerApplication($application);
+
+            if ([] === $errors) {
+                $this->addFlash('success', 'Votre candidature a bien été enregistrée. Notre équipe vous répondra rapidement.');
+
+                return $this->redirectToRoute('app_corporate_partner_form');
+            }
+
+            foreach ($errors as $error) {
+                $this->addFlash('error', $error);
+            }
+        }
+
         return $this->render('corporate/partenaire_formulaire.html.twig');
     }
 
@@ -76,9 +123,44 @@ final class CorporateController extends AbstractController
         ]);
     }
 
+    /**
+     * Formulaire « Contactez-nous ».
+     *
+     * Même défaut que le formulaire partenaire jusqu'au 20/08 : la route
+     * acceptait POST, le contrôleur ne lisait même pas la requête. Le message
+     * était perdu et l'expéditeur n'en savait rien.
+     */
     #[Route('/contactez-nous', name: 'app_corporate_contact', methods: ['GET', 'POST'])]
-    public function contact(): Response
+    public function contact(Request $request, CorporateInboxService $inbox): Response
     {
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Votre session a expiré, merci de renvoyer le formulaire.');
+
+                return $this->redirectToRoute('app_corporate_contact');
+            }
+
+            $message = new ContactMessage();
+            $message
+                ->setName((string) $request->request->get('nom'))
+                ->setEmail((string) $request->request->get('email'))
+                ->setSubject((string) $request->request->get('sujet'))
+                ->setMessage((string) $request->request->get('message'))
+                ->setIpAddress($request->getClientIp());
+
+            $errors = $inbox->submitContact($message);
+
+            if ([] === $errors) {
+                $this->addFlash('success', 'Votre message a bien été envoyé. Nous vous répondrons au plus vite.');
+
+                return $this->redirectToRoute('app_corporate_contact');
+            }
+
+            foreach ($errors as $error) {
+                $this->addFlash('error', $error);
+            }
+        }
+
         return $this->render('corporate/contact.html.twig', [
             'methods' => StaticCorporate::contactMethods(),
             'arguments' => StaticCorporate::contactArguments(),

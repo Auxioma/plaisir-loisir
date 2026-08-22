@@ -51,3 +51,6 @@ import './events.js';
 
 // Espace compte (bouton Annuler de la déconnexion).
 import './account.js';
+
+// Coeur « Ajouter aux favoris » des cartes (cablage du 21/08).
+import './favorites.js';

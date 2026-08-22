@@ -20,6 +20,12 @@
             <span aria-current="page">{{ steps[step - 1].title }}</span>
         </nav>
 
+        {# Le formulaire enveloppe l'en-tete ET la grille : le bouton « Suivant »
+           est en haut, les champs en dessous. `display: contents` fait qu'il ne
+           cree aucune boite et ne s'interpose dans aucun agencement. #}
+        <form class="ev-wizard__form" method="post" action="{{ path('app_event_create', { etape: step }) }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+
         {# En-tête : H1 + sous-titre + actions contextuelles (spec layout). #}
         <div class="ev-head">
             <div>
@@ -28,11 +34,14 @@
             </div>
             <div class="ev-head__actions">
                 <button type="button" class="pl-btn ev-btn-ghost">{{ 'Enregistrer en brouillon'|trans }}</button>
+                {# « Suivant » envoie l'etape : sans cela les huit ecrans se
+                   suivaient sans rien enregistrer. « Precedent » reste un lien,
+                   la saisie etant conservee d'une etape a l'autre. #}
                 {% if step == 1 %}
-                    <a href="{{ path('app_event_create', { etape: 2 }) }}" class="pl-btn pl-btn--primary">{{ "Publier l'événement"|trans }}</a>
+                    <button type="submit" class="pl-btn pl-btn--primary">{{ "Publier l'événement"|trans }}</button>
                 {% else %}
                     <a href="{{ path('app_event_create', { etape: step - 1 }) }}" class="pl-btn ev-btn-ghost">{{ 'Précédent'|trans }}</a>
-                    <a href="{{ step < 8 ? path('app_event_create', { etape: step + 1 }) : path('app_event_create_success') }}" class="pl-btn pl-btn--primary">{{ 'Suivant'|trans }}</a>
+                    <button type="submit" class="pl-btn pl-btn--primary">{{ 'Suivant'|trans }}</button>
                 {% endif %}
             </div>
         </div>
@@ -74,6 +83,7 @@
             </div>
 
         </div>
+        </form>
     </div>
 </div>
 {% endblock %}

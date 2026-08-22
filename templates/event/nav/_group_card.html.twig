@@ -7,7 +7,9 @@
 
 <a href="{{ href|default(path('app_group_detail')) }}" class="evn-card evn-gcard">
     <div class="evn-card__media">
-        <img src="{{ asset(g.image) }}" alt="{{ g.name }}">
+        {# Meme garde-fou que la carte d'evenement : un groupe cree par
+           l'assistant n'a pas de photo, et `asset(null)` fait tomber la page. #}
+        <img src="{{ asset(g.image ?? 'images/events/grp-nature.jpg') }}" alt="{{ g.name }}">
         {% if g.badge %}<span class="evn-badge evn-badge--new">{{ g.badge }}</span>{% endif %}
         <span class="evn-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</span>
     </div>

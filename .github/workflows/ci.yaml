@@ -55,5 +55,15 @@ jobs:
       - name: Jetons CSS (aucune variable --pl-* non déclarée)
         run: php bin/check-css-tokens.php
 
+      # Les tests fonctionnels parcourent le site pour de vrai : il leur faut la
+      # base et son schema. Doctrine y ajoute le suffixe « _test »
+      # (config/packages/doctrine.yaml), les donnees de developpement ne sont
+      # donc jamais touchees.
+      - name: Preparer la base de test
+        run: |
+          php bin/console --env=test doctrine:database:create --if-not-exists -n
+          php bin/console --env=test doctrine:schema:create -n
+          php bin/console --env=test doctrine:fixtures:load -n
+
       - name: PHPUnit
         run: php bin/phpunit

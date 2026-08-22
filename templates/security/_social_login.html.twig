@@ -1,18 +1,35 @@
 {#
     Séparateur « Ou » + boutons de connexion sociale.
-    Les boutons sont VOLONTAIREMENT inactifs (disabled) pour l'instant :
-    l'authentification OAuth (Google / Facebook / Apple) sera branchée plus tard.
+
+    Câblé le 18/08. Chaque bouton devient un lien vers /connexion/{service} DÈS
+    LORS que le fournisseur est configuré. Tant que .env porte les identifiants
+    de démonstration (préfixe « test- »), il reste inactif, exactement comme
+    avant le câblage : le rendu ne change donc pas d'un pixel tant que le CTO
+    n'a pas fourni les vraies clés.
+
+    Les trois libellés sont écrits en toutes lettres et non composés à partir du
+    nom du service : ce sont les clés du catalogue de traduction, qui reprend
+    les textes français. Une clé fabriquée à la volée perdrait sa version
+    anglaise.
 #}
+{% set social_buttons = [
+    { service: 'google',   alt: 'Continuer avec Google' },
+    { service: 'facebook', alt: 'Continuer avec Facebook' },
+    { service: 'apple',    alt: 'Continuer avec Apple' }
+] %}
+
 <div class="auth-separator">{{ 'Ou'|trans }}</div>
 
 <div class="auth-socials">
-    <button type="button" class="auth-social is-disabled" disabled title="{{ 'Bientôt disponible'|trans }}">
-        <img src="{{ asset('images/social-google.svg') }}" alt="{{ 'Continuer avec Google'|trans }}">
-    </button>
-    <button type="button" class="auth-social is-disabled" disabled title="{{ 'Bientôt disponible'|trans }}">
-        <img src="{{ asset('images/social-facebook.svg') }}" alt="{{ 'Continuer avec Facebook'|trans }}">
-    </button>
-    <button type="button" class="auth-social is-disabled" disabled title="{{ 'Bientôt disponible'|trans }}">
-        <img src="{{ asset('images/social-apple.svg') }}" alt="{{ 'Continuer avec Apple'|trans }}">
-    </button>
+    {% for button in social_buttons %}
+        {% if social_login_enabled(button.service) %}
+            <a class="auth-social" href="{{ path('app_social_start', { service: button.service }) }}">
+                <img src="{{ asset('images/social-' ~ button.service ~ '.svg') }}" alt="{{ button.alt|trans }}">
+            </a>
+        {% else %}
+            <button type="button" class="auth-social is-disabled" disabled title="{{ 'Bientôt disponible'|trans }}">
+                <img src="{{ asset('images/social-' ~ button.service ~ '.svg') }}" alt="{{ button.alt|trans }}">
+            </button>
+        {% endif %}
+    {% endfor %}
 </div>

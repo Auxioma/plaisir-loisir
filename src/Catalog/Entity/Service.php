@@ -63,6 +63,91 @@ class Service
     #[ORM\Column(nullable: true)]
     private ?int $durationMinutes = null;
 
+    /*
+     * ------------------------------------------------------------------------
+     *  Champs d'AFFICHAGE de la carte d'activité (câblage du lot 2).
+     *
+     *  Ils existent parce que la maquette montre des valeurs qu'aucun champ
+     *  existant ne pouvait produire — et non pour dupliquer des données.
+     * ------------------------------------------------------------------------
+     */
+
+    /**
+     * Libellé de lieu affiché sous le titre : « Gorges de L'Ardèche »,
+     * « Muséum d'Histoire Naturelle ».
+     *
+     * Ce n'est ni la ville ni la destination : ce sont des lieux-dits, des
+     * massifs ou des établissements. Les ranger dans `city` aurait rendu la
+     * colonne inexploitable pour filtrer par ville.
+     */
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $placeLabel = null;
+
+    /**
+     * Durée telle qu'elle est écrite sur la carte : « 2h-3h », « Journée »,
+     * « 1h30 ».
+     *
+     * `durationMinutes` reste la donnée exploitable (tri, filtres, créneaux) ;
+     * mais aucun formatage ne produit « Journée » à partir d'un nombre de
+     * minutes, et la maquette affiche aussi des fourchettes.
+     */
+    #[ORM\Column(length: 40, nullable: true)]
+    private ?string $durationLabel = null;
+
+    /** Pastille de mise en avant : « Bestseller », « Nouveau »… */
+    #[ORM\Column(length: 40, nullable: true)]
+    private ?string $badge = null;
+
+    /**
+     * Contenu editorial de la fiche detaillee.
+     *
+     * Table separee : une quinzaine de champs qui ne servent qu'a un seul
+     * ecran n'ont pas a alourdir chaque requete de listing.
+     */
+    #[ORM\OneToOne(mappedBy: 'service', cascade: ['persist', 'remove'])]
+    private ?ServiceDetail $detail = null;
+
+    /**
+     * Texte de recherche normalisé : minuscules, sans accents.
+     *
+     * POURQUOI UNE COLONNE PLUTÔT QUE L'EXTENSION unaccent DE POSTGRESQL
+     * « canoe » doit trouver « Descente en Canoë », sinon la recherche est
+     * inutilisable sur un site en français. PostgreSQL sait le faire avec
+     * l'extension unaccent, mais son installation réclame des droits que le
+     * compte applicatif n'a pas forcément en production : le déploiement
+     * échouerait. Une colonne calculée marche partout, à l'identique, sans rien
+     * demander à l'hébergeur.
+     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $searchText = null;
+
+    /** Même normalisation, pour le champ « lieu » du formulaire. */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $searchPlace = null;
+
+    /**
+     * Rang d'affichage dans les listes.
+     *
+     * La maquette fixe l'ordre des huit cartes du listing. Sans ce champ, il
+     * faudrait s'en remettre à l'ordre d'insertion — que rien ne garantit — ou
+     * trier par titre, ce qui bousculerait la grille validée.
+     */
+    #[ORM\Column(options: ['default' => 0])]
+    private int $position = 0;
+
+    /**
+     * Note moyenne et nombre d'avis, RECOPIÉS ici depuis la table des avis.
+     *
+     * Dénormalisation assumée : une grille de douze cartes déclencherait
+     * autrement douze agrégations sur `review` à chaque affichage. La valeur
+     * est recalculée quand un avis est publié, modéré ou supprimé.
+     */
+    #[ORM\Column(type: 'decimal', precision: 3, scale: 2, nullable: true)]
+    private ?string $ratingAverage = null;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $reviewsCount = 0;
+
     #[ORM\Column(nullable: true)]
     private ?int $capacity = null;
 
@@ -266,6 +351,152 @@ class Service
     public function setDurationMinutes(?int $durationMinutes): static
     {
         $this->durationMinutes = $durationMinutes;
+
+        return $this;
+    }
+
+    public function getPlaceLabel(): ?string
+    {
+        return $this->placeLabel;
+    }
+
+    public function setPlaceLabel(?string $placeLabel): static
+    {
+        $this->placeLabel = $placeLabel;
+
+        return $this;
+    }
+
+    public function getDurationLabel(): ?string
+    {
+        return $this->durationLabel;
+    }
+
+    public function setDurationLabel(?string $durationLabel): static
+    {
+        $this->durationLabel = $durationLabel;
+
+        return $this;
+    }
+
+    public function getBadge(): ?string
+    {
+        return $this->badge;
+    }
+
+    public function getDetail(): ?ServiceDetail
+    {
+        return $this->detail;
+    }
+
+    public function setDetail(?ServiceDetail $detail): static
+    {
+        $this->detail = $detail;
+
+        if (null !== $detail && $detail->getService() !== $this) {
+            $detail->setService($this);
+        }
+
+        return $this;
+    }
+
+    public function setBadge(?string $badge): static
+    {
+        $this->badge = $badge;
+
+        return $this;
+    }
+
+    /**
+     * Recalcule les deux index de recherche avant chaque écriture.
+     *
+     * PreFlush et non PreUpdate : dans PreUpdate, modifier un champ
+     * directement n'est pas enregistré — Doctrine a déjà calculé ce qui
+     * change. PreFlush s'exécute avant ce calcul, on peut donc écrire
+     * librement.
+     */
+    /**
+     * Les index sont interroges en DQL, mais restent lisibles depuis PHP :
+     * c'est ce qui permet de verifier ce qui a reellement ete indexe quand une
+     * recherche ne rend pas ce qu'on attendait.
+     */
+    public function getSearchText(): ?string
+    {
+        return $this->searchText;
+    }
+
+    public function getSearchPlace(): ?string
+    {
+        return $this->searchPlace;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreFlush]
+    public function refreshSearchIndex(): void
+    {
+        $this->searchText = self::normalizeForSearch(implode(' ', array_filter([
+            $this->title,
+            $this->shortDescription,
+            $this->category?->getName(),
+        ])));
+
+        $this->searchPlace = self::normalizeForSearch(implode(' ', array_filter([
+            $this->placeLabel,
+            $this->city,
+            $this->destination?->getName(),
+        ])));
+    }
+
+    /**
+     * Minuscules, accents retirés, espaces resserrés.
+     *
+     * La même fonction prépare la colonne ET la saisie de l'utilisateur : les
+     * deux côtés de la comparaison subissent exactement le même traitement,
+     * seule façon de garantir qu'ils se rencontrent.
+     */
+    public static function normalizeForSearch(string $value): string
+    {
+        $lower = mb_strtolower(trim($value));
+
+        // Transliterator vient de l'extension intl, active sur le projet.
+        $transliterator = \Transliterator::create('Any-Latin; Latin-ASCII');
+        $ascii = null !== $transliterator ? ($transliterator->transliterate($lower) ?: $lower) : $lower;
+
+        return (string) preg_replace('/\s+/', ' ', $ascii);
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): static
+    {
+        $this->position = $position;
+
+        return $this;
+    }
+
+    public function getRatingAverage(): ?string
+    {
+        return $this->ratingAverage;
+    }
+
+    public function getReviewsCount(): int
+    {
+        return $this->reviewsCount;
+    }
+
+    /**
+     * Recopie les valeurs agrégées de la table des avis.
+     *
+     * Les deux vont toujours ensemble : une note sans son nombre d'avis n'a
+     * aucun sens à l'écran, et les laisser diverger produirait « 4.8 (0 avis) ».
+     */
+    public function setRatingSummary(?string $average, int $count): static
+    {
+        $this->ratingAverage = $average;
+        $this->reviewsCount = $count;
 
         return $this;
     }

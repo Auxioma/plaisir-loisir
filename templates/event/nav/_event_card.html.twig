@@ -8,7 +8,11 @@
 
 <a href="{{ path('app_events_detail') }}" class="evn-card">
     <div class="evn-card__media">
-        <img src="{{ asset(e.image) }}" alt="{{ e.title }}">
+        {# Un evenement cree par l'assistant n'a PAS de photo : l'etape de
+           televersement n'est pas branchee. Sans ce garde-fou, `asset(null)`
+           faisait tomber en erreur 500 les trois ecrans de listing des qu'un
+           evenement etait cree — defaut trouve par les tests fonctionnels. #}
+        <img src="{{ asset(e.image ?? 'images/events/ev-raft-clean.jpg') }}" alt="{{ e.title }}">
         <span class="evn-badge evn-badge--{{ e.color }}">{{ e.category }}</span>
         <span class="evn-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</span>
         <span class="evn-card__date">{{ e.date }}</span>

@@ -53,6 +53,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(enumType: UserStatus::class)]
     private UserStatus $status = UserStatus::Pending;
 
+    /*
+     * ------------------------------------------------------------------------
+     *  Réinitialisation du mot de passe (parcours en 3 écrans de la maquette).
+     *
+     *  Le code envoyé par e-mail n'est JAMAIS stocké en clair : seule son
+     *  empreinte l'est, comme pour un mot de passe. Si la base fuite, les codes
+     *  en cours ne sont pas exploitables.
+     *
+     *  Ces trois colonnes sont portées par l'utilisateur, et non par la session,
+     *  pour que la limite de tentatives soit réellement contraignante : sinon il
+     *  suffirait de vider ses cookies pour rejouer le compteur.
+     * ------------------------------------------------------------------------
+     */
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $resetCodeHash = null;
+
+    #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
+    private ?\DateTimeImmutable $resetCodeExpiresAt = null;
+
+    #[ORM\Column(type: 'smallint', options: ['default' => 0])]
+    private int $resetCodeAttempts = 0;
+
     /**
      * @var Collection<int, Address>
      */
@@ -161,6 +184,54 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setStatus(UserStatus $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getResetCodeHash(): ?string
+    {
+        return $this->resetCodeHash;
+    }
+
+    public function getResetCodeExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->resetCodeExpiresAt;
+    }
+
+    public function getResetCodeAttempts(): int
+    {
+        return $this->resetCodeAttempts;
+    }
+
+    /**
+     * Arme un nouveau code de réinitialisation (empreinte + échéance) et
+     * remet le compteur de tentatives à zéro.
+     */
+    public function startPasswordReset(string $codeHash, \DateTimeImmutable $expiresAt): static
+    {
+        $this->resetCodeHash = $codeHash;
+        $this->resetCodeExpiresAt = $expiresAt;
+        $this->resetCodeAttempts = 0;
+
+        return $this;
+    }
+
+    public function registerFailedResetAttempt(): static
+    {
+        ++$this->resetCodeAttempts;
+
+        return $this;
+    }
+
+    /**
+     * Efface le code en cours : après un mot de passe changé, après trop de
+     * tentatives, ou quand une nouvelle demande remplace l'ancienne.
+     */
+    public function clearPasswordReset(): static
+    {
+        $this->resetCodeHash = null;
+        $this->resetCodeExpiresAt = null;
+        $this->resetCodeAttempts = 0;
 
         return $this;
     }

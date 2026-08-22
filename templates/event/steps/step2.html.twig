@@ -7,12 +7,12 @@
 <div class="ev-row">
     <div class="ev-field">
         <label class="ev-field__label" for="evTitle2">{{ "Titre de l'événement *"|trans }}</label>
-        <input id="evTitle2" class="ev-input" type="text" placeholder="{{ 'Ex : Pique-nique au bord du lac'|trans }}">
+        <input id="evTitle2" name="titre" value="{{ draft.titre|default('') }}" class="ev-input" type="text" placeholder="{{ 'Ex : Pique-nique au bord du lac'|trans }}">
     </div>
     <div class="ev-field">
         <label class="ev-field__label" for="evCatType2">{{ "Catégorie d'événement *"|trans }}</label>
         <div class="ev-select">
-            <select id="evCatType2">
+            <select id="evCatType2" name="type">
                 <option value="" selected disabled>{{ 'Sélectionnez le type'|trans }}</option>
                 <option>{{ 'Activités de plein air'|trans }}</option>
                 <option>{{ 'Soirées & Fêtes'|trans }}</option>
@@ -45,28 +45,28 @@
     <div class="ev-field">
         <label class="ev-field__label" for="evDateStart">{{ 'Date de début *'|trans }}</label>
         <div class="ev-input-icon">
-            <input id="evDateStart" class="ev-input" type="text" value="24 / 05 / 2026">
+            <input id="evDateStart" name="date_debut" class="ev-input" type="text" value="{{ draft.date_debut|default('24 / 05 / 2026') }}">
             <span>{{ icon.calendar(18) }}</span>
         </div>
     </div>
     <div class="ev-field">
         <label class="ev-field__label" for="evTimeStart">{{ 'heure de début *'|trans }}</label>
         <div class="ev-input-icon">
-            <input id="evTimeStart" class="ev-input" type="text" value="18:00">
+            <input id="evTimeStart" name="heure_debut" class="ev-input" type="text" value="{{ draft.heure_debut|default('18:00') }}">
             <span>{{ icon.clock(18) }}</span>
         </div>
     </div>
     <div class="ev-field">
         <label class="ev-field__label" for="evDateEnd">{{ 'Date de fin (Optionnel)'|trans }}</label>
         <div class="ev-input-icon">
-            <input id="evDateEnd" class="ev-input" type="text" value="24 / 05 / 2026">
+            <input id="evDateEnd" name="date_fin" class="ev-input" type="text" value="{{ draft.date_fin|default('24 / 05 / 2026') }}">
             <span>{{ icon.calendar(18) }}</span>
         </div>
     </div>
     <div class="ev-field">
         <label class="ev-field__label" for="evTimeEnd">{{ 'heure de fin *'|trans }}</label>
         <div class="ev-input-icon">
-            <input id="evTimeEnd" class="ev-input" type="text" value="18:00">
+            <input id="evTimeEnd" name="heure_fin" class="ev-input" type="text" value="{{ draft.heure_fin|default('18:00') }}">
             <span>{{ icon.clock(18) }}</span>
         </div>
     </div>

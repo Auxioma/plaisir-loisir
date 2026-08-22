@@ -12,7 +12,11 @@
 {% block body %}
 {# « ?demo=filtres » ouvre le panneau latéral sans JavaScript : indispensable
    pour comparer cet état aux maquettes en capture automatisée. #}
-{% set demoFilters = app.request.query.get('demo') == 'filtres' %}
+{# Le panneau s'ouvre par la previsualisation « ?demo=filtres », ou parce qu'on
+   vient d'envoyer ses filtres : le refermer ferait perdre de vue ce qui a
+   produit la liste. Le marqueur « panneau » est explicite — une recherche
+   depuis la barre du haut ne doit pas l'ouvrir. #}
+{% set demoFilters = app.request.query.get('demo') == 'filtres' or panneauOuvert|default(false) %}
 <div class="act-page{{ demoFilters ? ' has-filters' }}">
 
     {# La sidebar de filtres est un enfant direct de .act-page : sur l'ecran D
@@ -20,19 +24,41 @@
        titre, et non sous l'en-tete. #}
     {# --- Sidebar de filtres (écran D), repliée par défaut. --- #}
     <aside class="act-filters" id="act-filters" aria-label="{{ 'Filtres'|trans }}" {{ demoFilters ? '' : 'hidden' }}>
+        {# `.act-filters` est un conteneur flex en colonne : un <form> ordinaire
+           autour de son contenu ramasserait tous les blocs dans UN SEUL element
+           flex et ecraserait la mise en page. `display: contents` fait que le
+           formulaire ne cree aucune boite — ses enfants restent enfants directs
+           du panneau. Verifie par mesure. #}
+        <form class="act-filters__form" method="get" action="{{ path('app_activities') }}">
+            <input type="hidden" name="panneau" value="1">
+
         <div class="act-filters__head">
             <span class="act-filters__title">{{ 'Filtres'|trans }}</span>
-            <button type="button" class="act-filters__reset" id="act-filters-reset">{{ 'Réinitialiser'|trans }}</button>
+            {# Reinitialiser = repartir de la page sans aucun parametre. Un lien
+               plutot qu'un bouton : rien a envoyer, juste une adresse. #}
+            <a class="act-filters__reset" id="act-filters-reset" href="{{ path('app_activities', { demo: app.request.query.get('demo'), panneau: 1 }) }}">{{ 'Réinitialiser'|trans }}</a>
         </div>
 
         <span class="act-filters__appliedlabel">{{ 'Filtres appliqués'|trans }}</span>
         <div class="act-filters__applied" id="act-filters-applied">
-            <button type="button" class="act-chip is-active" data-applied-chip>{{ 'Sports & Aventures'|trans }} {{ icon.x(14) }}</button>
+            {# La pastille affichait « Sports & Aventures » EN DUR, quel que soit
+               le filtre reel. Elle liste maintenant ce qui est reellement
+               applique ; a defaut, elle garde le libelle de la maquette. #}
+            {# `|filter` et `|map` plutot qu'une boucle : en Twig, un `set` place
+               dans un `for` ne survit pas a la boucle. `|values` remet les cles
+               a plat avant la fusion. #}
+            {% set appliques = filterChips|filter(c => c.slug and c.slug in categories|default([]))|map(c => c.label)|reduce((liste, label) => liste|merge([label]), []) %}
+            {% if lieu|default('') is not empty %}{% set appliques = appliques|merge([lieu]) %}{% endif %}
+            {% if note|default(null) %}{% set appliques = appliques|merge([note|round ~ ' ' ~ 'étoiles et plus'|trans]) %}{% endif %}
+
+            {% for applique in (appliques is empty ? ['Sports & Aventures'|trans] : appliques) %}
+                <button type="button" class="act-chip is-active" data-applied-chip>{{ applique }} {{ icon.x(14) }}</button>
+            {% endfor %}
         </div>
 
         <label class="act-filters__field">
             <span>{{ 'Où voulez-vous partir ?'|trans }}</span>
-            <span class="act-filters__input">{{ icon.map_pin(16) }}<input type="text" placeholder="{{ 'Destination, ville, lieu…'|trans }}"></span>
+            <span class="act-filters__input">{{ icon.map_pin(16) }}<input type="text" name="lieu" value="{{ lieu|default('') }}" placeholder="{{ 'Destination, ville, lieu…'|trans }}"></span>
         </label>
         <label class="act-filters__field">
             <span>{{ 'Date'|trans }}</span>
@@ -60,9 +86,21 @@
 
         <fieldset class="act-filters__group">
             <legend>{{ 'Activités populaires'|trans }}</legend>
-            {% for c in ['Sport & Aventure'|trans, 'Nature & Plein air'|trans, 'Bien-être'|trans, 'En famille'|trans, 'Ateliers & Créations'|trans, 'Soirées & Evénements'|trans] %}
+            {# Les libelles restent ceux de la maquette — ils different de ceux
+               de la barre de pastilles, c'est ainsi qu'elle est dessinee. La
+               VALEUR envoyee est le slug de la categorie : elle ne depend donc
+               ni de l'orthographe ni de la langue affichee. #}
+            {% for c in [
+                { label: 'Sport & Aventure'|trans, slug: 'sports-aventures' },
+                { label: 'Nature & Plein air'|trans, slug: 'natures-plein-air' },
+                { label: 'Bien-être'|trans, slug: 'bien-etre' },
+                { label: 'En famille'|trans, slug: 'en-famille' },
+                { label: 'Ateliers & Créations'|trans, slug: 'ateliers-creations' },
+                { label: 'Soirées & Evénements'|trans, slug: 'soirees-evenements' }
+            ] %}
                 <label class="act-filters__check">
-                    <input type="checkbox" data-filter-check {{ loop.first ? 'checked' }}> {{ c }}
+                    <input type="checkbox" name="categories[]" value="{{ c.slug }}" data-filter-check
+                           {{ (categories|default([]) is empty ? loop.first : c.slug in categories|default([])) ? 'checked' }}> {{ c.label }}
                 </label>
             {% endfor %}
         </fieldset>
@@ -72,13 +110,19 @@
             <div class="act-budget__slider">
                 <div class="act-budget__track" aria-hidden="true"></div>
                 <div class="act-budget__range" data-budget-range aria-hidden="true"></div>
-                <input type="range" min="0" max="1050" step="1" value="154" data-budget-min aria-label="{{ 'Budget minimum'|trans }}">
-                <input type="range" min="0" max="1050" step="1" value="1050" data-budget-max aria-label="{{ 'Budget maximum'|trans }}">
+                {# Ce sont les CURSEURS qui portent la valeur envoyee : ils
+                   transmettent un nombre propre, la ou les champs texte
+                   contiennent « 154€ » ou « 1050+€ ». Le JS existant garde les
+                   deux en accord. #}
+                <input type="range" min="0" max="1050" step="1" name="prix_min" value="{{ prixMin|default(null) is null ? 154 : prixMin }}" data-budget-min aria-label="{{ 'Budget minimum'|trans }}">
+                <input type="range" min="0" max="1050" step="1" name="prix_max" value="{{ prixMax|default(null) is null ? 1050 : prixMax }}" data-budget-max aria-label="{{ 'Budget maximum'|trans }}">
             </div>
             <div class="act-budget__bounds"><span>0€</span><span>1050€ et +</span></div>
             <div class="act-budget__inputs">
-                <input type="text" inputmode="numeric" value="154€" data-budget-input-min aria-label="{{ 'Budget minimum en euros'|trans }}">
-                <input type="text" inputmode="numeric" value="1050+€" data-budget-input-max aria-label="{{ 'Budget maximum en euros'|trans }}">
+                {# Ces deux champs sont des miroirs pilotes par le JS : ils ne
+                   sont pas envoyes, sans quoi « 1050+€ » arriverait tel quel. #}
+                <input type="text" inputmode="numeric" value="{{ prixMin|default(null) is null ? '154€' : prixMin ~ '€' }}" data-budget-input-min aria-label="{{ 'Budget minimum en euros'|trans }}">
+                <input type="text" inputmode="numeric" value="{{ prixMax|default(null) is null ? '1050+€' : prixMax ~ '€' }}" data-budget-input-max aria-label="{{ 'Budget maximum en euros'|trans }}">
             </div>
         </fieldset>
 
@@ -86,7 +130,7 @@
             <legend>{{ 'Note des utilisateurs'|trans }}</legend>
             {% for n in [5, 4, 3, 2, 1] %}
                 <label class="act-filters__check act-filters__check--stars">
-                    <input type="checkbox" data-filter-check>
+                    <input type="checkbox" name="note[]" value="{{ n }}" data-filter-check {{ note|default(null) is not null and n >= note ? 'checked' }}>
                     <span class="act-filters__stars" aria-label="{{ n }} {{ (n > 1 ? 'étoiles et plus' : 'étoile et plus')|trans }}">
                         {% for i in 1..5 %}<span class="{{ i <= n ? 'is-on' : 'is-off' }}">{{ icon.star(16) }}</span>{% endfor %}
                     </span>
@@ -94,8 +138,11 @@
             {% endfor %}
         </fieldset>
 
-        <button type="button" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Affichez les résultats'|trans }}</button>
-        <p class="act-filters__count"><strong id="act-found-count">412</strong> {{ 'activités trouvées'|trans }}</p>
+        <button type="submit" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Affichez les résultats'|trans }}</button>
+        {# « 412 » etait ecrit en dur. On affiche le vrai nombre des qu'un filtre
+           est pose ; sinon le chiffre de la maquette est conserve. #}
+        <p class="act-filters__count"><strong id="act-found-count">{{ searching|default(false) ? activities|length : 412 }}</strong> {{ 'activités trouvées'|trans }}</p>
+        </form>
     </aside>
 
     {# ==================================================================
@@ -119,12 +166,17 @@
                 <div class="act-search__bar">
                     <label class="act-search__field">
                         {{ icon.map_pin(18) }}
-                        <input type="text" name="lieu" value="Paris" aria-label="{{ 'Lieu'|trans }}">
+                        {# « Paris » est la valeur ecrite en dur dans la maquette. Elle
+                           reste la valeur par defaut du premier affichage, mais une
+                           recherche reprend ce que la personne a saisi : sinon le
+                           champ se reinitialise et on ne sait plus ce qui a produit
+                           la liste affichee. #}
+                        <input type="text" name="lieu" value="{{ searching|default(false) ? lieu|default('') : 'Paris' }}" aria-label="{{ 'Lieu'|trans }}">
                     </label>
                     <span class="act-search__sep" aria-hidden="true"></span>
                     <label class="act-search__field">
                         {{ icon.search(18) }}
-                        <input type="text" name="q" placeholder="{{ 'Recherches par mots-clés'|trans }}" aria-label="{{ 'Mots-clés'|trans }}">
+                        <input type="text" name="q" value="{{ q|default('') }}" placeholder="{{ 'Recherches par mots-clés'|trans }}" aria-label="{{ 'Mots-clés'|trans }}">
                     </label>
                 </div>
                 <button type="submit" class="act-search__submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(20) }}</button>
@@ -150,24 +202,47 @@
                 <button type="button" class="act-chip act-chip--filter" id="act-filter-toggle">{{ icon.sliders(16) }} {{ 'Filtre'|trans }}</button>
                 <span class="act-chipbar__sep" aria-hidden="true"></span>
                 <div class="act-chipbar__scroll">
+                    {# Les pastilles etaient des <button> inertes. Elles deviennent des
+                       liens : le filtre tient dans l'URL, donc il se partage, se met en
+                       favori et survit au bouton Precedent — ce qu'un filtre en
+                       JavaScript ne sait pas faire sans travail supplementaire.
+
+                       `.act-chip` a recu `text-decoration: none` : sans cela le Reboot
+                       de Bootstrap aurait souligne le libelle. Le reste de la classe
+                       decrit deja toute la boite, un lien et un bouton s'y rendent donc
+                       a l'identique — verifie par mesure.
+
+                       Etat actif : la maquette peint la PREMIERE pastille quand aucun
+                       filtre n'est pose. Des qu'une categorie est choisie, c'est elle
+                       qui s'allume. #}
                     {% for chip in filterChips %}
-                        <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">
-                            {%- if chip == 'Toutes' %}{{ icon.grid(16) }}
-                            {%- elseif chip starts with 'Natures' %}{{ icon.tree(16) }}
-                            {%- elseif chip starts with 'Cultures' %}{{ icon.cat_culture(16) }}
-                            {%- elseif chip starts with 'Ateliers' %}{{ icon.cat_crafts(16) }}
-                            {%- elseif chip starts with 'Soirées' %}{{ icon.flame(16) }}
-                            {%- elseif chip starts with 'Bien' %}{{ icon.cat_wellness(16) }}
+                        {% set chip_active = categorie|default('') is empty ? loop.first : categorie|default('') == chip.slug %}
+                        <a class="act-chip {{ chip_active ? 'is-active' }}"
+                           href="{{ chip.slug ? path('app_activities', { categorie: chip.slug }) : path('app_activities') }}">
+                            {%- if chip.label == 'Toutes' %}{{ icon.grid(16) }}
+                            {%- elseif chip.label starts with 'Natures' %}{{ icon.tree(16) }}
+                            {%- elseif chip.label starts with 'Cultures' %}{{ icon.cat_culture(16) }}
+                            {%- elseif chip.label starts with 'Ateliers' %}{{ icon.cat_crafts(16) }}
+                            {%- elseif chip.label starts with 'Soirées' %}{{ icon.flame(16) }}
+                            {%- elseif chip.label starts with 'Bien' %}{{ icon.cat_wellness(16) }}
                             {%- else %}{{ icon.cat_canoe(16) }}
-                            {%- endif %} {{ chip }}
-                        </button>
+                            {%- endif %} {{ chip.label }}
+                        </a>
                     {% endfor %}
                 </div>
                 <button type="button" class="act-chipbar__more" aria-label="{{ 'Faire défiler les filtres'|trans }}">{{ icon.chevron_right(16) }}</button>
             </div>
 
             <div class="act-results">
-                <p class="act-results__count"><strong>400+</strong> {{ 'de résultats trouvés'|trans }}</p>
+                {# « 400+ » est le chiffre ecrit dans la maquette : il est conserve
+                   sur la page d'accueil du listing. Des qu'une recherche est en
+                   cours, on affiche le vrai nombre — annoncer « 400+ » au-dessus
+                   de trois cartes serait faux. #}
+                {% if searching|default(false) %}
+                    <p class="act-results__count"><strong>{{ gridActivities|length }}</strong> {{ (gridActivities|length > 1 ? 'résultats trouvés' : 'résultat trouvé')|trans }}</p>
+                {% else %}
+                    <p class="act-results__count"><strong>400+</strong> {{ 'de résultats trouvés'|trans }}</p>
+                {% endif %}
                 <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ 'Les plus populaires'|trans }}</strong></button>
             </div>
         </div>
@@ -186,11 +261,22 @@
        ================================================================ #}
     <section class="act-section">
         <div class="container">
-            <div class="card-grid act-grid">
-                {% for a in gridActivities %}
-                    {% include 'activity/_card.html.twig' with { a: a } %}
-                {% endfor %}
-            </div>
+            {# Une recherche sans resultat laissait une zone vide, sans un mot :
+               le testeur ne pouvait pas savoir si la page avait cherche. La
+               maquette ne prevoit pas cet ecran ; on reutilise le style du
+               compteur de resultats plutot que d'inventer une mise en forme. #}
+            {% if searching|default(false) and gridActivities is empty %}
+                <p class="act-results__count">
+                    {{ "Aucune activité ne correspond à votre recherche."|trans }}
+                    <a class="auth-inline-link" href="{{ path('app_activities') }}">{{ 'Voir toutes les activités'|trans }}</a>
+                </p>
+            {% else %}
+                <div class="card-grid act-grid">
+                    {% for a in gridActivities %}
+                        {% include 'activity/_card.html.twig' with { a: a } %}
+                    {% endfor %}
+                </div>
+            {% endif %}
             <div class="act-more">
                 <button type="button" class="pl-btn pl-btn--outline-action">{{ "Voir plus d'activités"|trans }} {{ icon.chevron_down(16) }}</button>
             </div>

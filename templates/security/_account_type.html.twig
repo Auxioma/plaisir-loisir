@@ -1,7 +1,17 @@
 {#
     Sélecteur « type de compte » (demande client du 2026-07-27) :
     la connexion et l'inscription distinguent Client et Professionnel.
-    Front-end pur : la valeur (accountType) sera traitée au câblage back.
+
+    ⚠️ CE PARTIAL N'EST INCLUS NULLE PART depuis le 2026-08-10 : la maquette ne
+    montre ni bascule Client/Professionnel ni statut juridique, et la consigne
+    était « fais la maquette exactement ». Il est conservé parce que le statut
+    juridique devra bien être collecté quelque part — vraisemblablement dans le
+    formulaire du futur espace professionnel, dont les écrans restent à
+    maquetter. Contradiction Figma / demande client à arbitrer avec Guillaume.
+
+    Depuis le câblage du 18/08, le type de compte ne passe plus par ce
+    sélecteur : il voyage dans un champ caché de RegistrationFormType, alimenté
+    par « /register?type=pro » (voir App\User\Enum\AccountType).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 {# Présélection via l'écran de choix (« /authentification?type=pro »). #}

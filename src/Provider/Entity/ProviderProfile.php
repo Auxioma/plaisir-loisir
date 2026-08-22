@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Provider\Entity;
 
-use App\Provider\Enum\FiscalStatus;
 use App\Provider\Enum\ProviderStatus;
 use App\Provider\Repository\ProviderProfileRepository;
 use App\Shared\Doctrine\SoftDeletableTrait;
@@ -57,16 +56,10 @@ class ProviderProfile
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $websiteUrl = null;
 
-    // --- Informations fiscales (maquette, nullables) ---
-
-    #[ORM\Column(enumType: FiscalStatus::class, nullable: true)]
-    private ?FiscalStatus $fiscalStatus = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $fiscalAddress = null;
-
-    #[ORM\Column(length: 2, nullable: true)]
-    private ?string $fiscalCountry = null;
+    // Les informations fiscales et légales (forme juridique, SIRET, TVA, siège,
+    // représentant légal, assurance) vivent dans App\Legal\Entity\CompanyIdentity,
+    // reliée à ce profil. Trois colonnes « fiscal* » traînaient ici, que
+    // personne ne lisait et qui ne suffisaient à aucun dossier réel.
 
     public function getUser(): ?User
     {
@@ -172,42 +165,6 @@ class ProviderProfile
     public function setWebsiteUrl(?string $websiteUrl): static
     {
         $this->websiteUrl = $websiteUrl;
-
-        return $this;
-    }
-
-    public function getFiscalStatus(): ?FiscalStatus
-    {
-        return $this->fiscalStatus;
-    }
-
-    public function setFiscalStatus(?FiscalStatus $fiscalStatus): static
-    {
-        $this->fiscalStatus = $fiscalStatus;
-
-        return $this;
-    }
-
-    public function getFiscalAddress(): ?string
-    {
-        return $this->fiscalAddress;
-    }
-
-    public function setFiscalAddress(?string $fiscalAddress): static
-    {
-        $this->fiscalAddress = $fiscalAddress;
-
-        return $this;
-    }
-
-    public function getFiscalCountry(): ?string
-    {
-        return $this->fiscalCountry;
-    }
-
-    public function setFiscalCountry(?string $fiscalCountry): static
-    {
-        $this->fiscalCountry = $fiscalCountry;
 
         return $this;
     }
