@@ -34,14 +34,15 @@
                             </div>
                         </details>
 
-                        {# Sélecteur de langue : bascule réelle via /langue/{fr|en} (session). #}
+                        {# Sélecteur de langue : la langue vit dans l'URL, chaque lien mène donc
+                           à la MÊME page dans l'autre langue (/activites ↔ /en/activities). #}
                         <details class="pl-dropdown pl-dropdown--lang">
                             <summary class="pl-dropdown__toggle">
                                 {#- Maquette : le sélecteur de langue ne porte PAS de chevron. -#}
                                 {%- if app.request.locale == 'en' %}{{ icon.flag_gb(16) }} Engl.{% else %}{{ icon.flag_fr(16) }} Fran.{% endif %}</summary>
                             <div class="pl-dropdown__menu">
-                                <a href="{{ path('app_locale_switch', { locale: 'fr' }) }}" class="pl-dropdown__item{{ app.request.locale != 'en' ? ' is-active' }}">{{ icon.flag_fr(16) }} {{ 'Français'|trans }}</a>
-                                <a href="{{ path('app_locale_switch', { locale: 'en' }) }}" class="pl-dropdown__item{{ app.request.locale == 'en' ? ' is-active' }}">{{ icon.flag_gb(16) }} {{ 'Anglais'|trans }}</a>
+                                <a href="{{ locale_switch_path('fr') }}" class="pl-dropdown__item{{ app.request.locale != 'en' ? ' is-active' }}">{{ icon.flag_fr(16) }} {{ 'Français'|trans }}</a>
+                                <a href="{{ locale_switch_path('en') }}" class="pl-dropdown__item{{ app.request.locale == 'en' ? ' is-active' }}">{{ icon.flag_gb(16) }} {{ 'Anglais'|trans }}</a>
                             </div>
                         </details>
                     </nav>

@@ -74,8 +74,8 @@
                 <details class="pl-dropdown pl-dropdown--footer">
                     <summary class="pl-footer__chip">{{ icon.translate() }} {{ app.request.locale == 'en' ? 'English' : 'Français' }} {{ icon.chevron_down(16) }}</summary>
                     <div class="pl-dropdown__menu pl-dropdown__menu--up">
-                        <a href="{{ path('app_locale_switch', { locale: 'fr' }) }}" class="pl-dropdown__item{{ app.request.locale != 'en' ? ' is-active' }}">{{ icon.flag_fr(20) }} {{ 'Français'|trans }}</a>
-                        <a href="{{ path('app_locale_switch', { locale: 'en' }) }}" class="pl-dropdown__item{{ app.request.locale == 'en' ? ' is-active' }}">{{ icon.flag_gb(20) }} {{ 'Anglais'|trans }}</a>
+                        <a href="{{ locale_switch_path('fr') }}" class="pl-dropdown__item{{ app.request.locale != 'en' ? ' is-active' }}">{{ icon.flag_fr(20) }} {{ 'Français'|trans }}</a>
+                        <a href="{{ locale_switch_path('en') }}" class="pl-dropdown__item{{ app.request.locale == 'en' ? ' is-active' }}">{{ icon.flag_gb(20) }} {{ 'Anglais'|trans }}</a>
                     </div>
                 </details>
             </div>

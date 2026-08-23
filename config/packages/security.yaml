@@ -46,16 +46,20 @@ security:
     access_control:
         # Écrans d'authentification : accessibles justement quand on n'est pas
         # connecté. Ils sont listés explicitement pour rester lisibles.
+        #
+        # Ces règles portent sur des CHEMINS, pas sur des noms de route : chaque
+        # page traduite doit donc y figurer dans ses deux langues. Oublier la
+        # variante anglaise d'une règle ROLE_USER ouvrirait la page au public.
         - { path: ^/login$, roles: PUBLIC_ACCESS }
-        - { path: ^/register$, roles: PUBLIC_ACCESS }
-        - { path: ^/authentification, roles: PUBLIC_ACCESS }
-        - { path: ^/mot-de-passe-oublie, roles: PUBLIC_ACCESS }
+        - { path: ^/(inscription|en/signup)$, roles: PUBLIC_ACCESS }
+        - { path: ^/(authentification|en/authentication), roles: PUBLIC_ACCESS }
+        - { path: ^/(mot-de-passe-oublie|en/forgot-password), roles: PUBLIC_ACCESS }
 
         # Espace compte. Les règles précédentes visaient « ^/account » et
         # « ^/provider », deux préfixes qui ne correspondent à AUCUNE route :
         # /compte/favoris, /compte/notifications et /compte/parrainage étaient
         # donc consultables par n'importe quel visiteur. Corrigé au câblage.
-        - { path: ^/compte, roles: ROLE_USER }
+        - { path: ^/(compte|en/account), roles: ROLE_USER }
 
         # Réservé à l'administration ; aucune route n'existe encore, la règle
         # est posée pour que le préfixe ne puisse pas s'ouvrir par inadvertance.

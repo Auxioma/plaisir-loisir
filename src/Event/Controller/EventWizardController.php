@@ -35,13 +35,13 @@ final class EventWizardController extends AbstractController
     ) {
     }
 
-    #[Route('/evenements/creer/succes', name: 'app_event_create_success')]
+    #[Route(path: ['fr' => '/evenements/creer/succes', 'en' => '/en/events/create/success'], name: 'app_event_create_success')]
     public function success(): Response
     {
         return $this->render('event/succes.html.twig');
     }
 
-    #[Route('/evenements/creer/{etape}', name: 'app_event_create', requirements: ['etape' => '[1-8]'], defaults: ['etape' => 1], methods: ['GET', 'POST'])]
+    #[Route(path: ['fr' => '/evenements/creer/{etape}', 'en' => '/en/events/create/{etape}'], name: 'app_event_create', requirements: ['etape' => '[1-8]'], defaults: ['etape' => 1], methods: ['GET', 'POST'])]
     public function create(Request $request, int $etape): Response
     {
         if ($request->isMethod('POST')) {

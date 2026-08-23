@@ -24,6 +24,9 @@ final class SecurityController extends AbstractController
     /**
      * Affiche le formulaire de connexion et transmet les erreurs éventuelles.
      */
+    // Cible du formulaire de connexion, referencee par le pare-feu
+    // (config/packages/security.yaml) et interdite d'indexation : elle reste
+    // unique. La page visible, elle, est /authentification et est traduite.
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
@@ -41,6 +44,7 @@ final class SecurityController extends AbstractController
     /**
      * Route interceptée par le firewall ; le corps n'est jamais exécuté.
      */
+    // Interceptee par le pare-feu avant d'arriver ici : chemin unique impose.
     #[Route('/logout', name: 'app_logout')]
     public function logout(): never
     {
@@ -53,7 +57,7 @@ final class SecurityController extends AbstractController
      * Front navigable en attendant le back : chaque tuile mène à l'inscription
      * avec le type présélectionné.
      */
-    #[Route('/authentification', name: 'app_auth_choice')]
+    #[Route(path: ['fr' => '/authentification', 'en' => '/en/authentication'], name: 'app_auth_choice')]
     public function authChoice(): Response
     {
         return $this->render('security/choice.html.twig');
@@ -82,7 +86,7 @@ final class SecurityController extends AbstractController
     /**
      * Étape 1/3 — saisie de l'adresse e-mail.
      */
-    #[Route('/mot-de-passe-oublie', name: 'app_forgot_password_request', methods: ['GET', 'POST'])]
+    #[Route(path: ['fr' => '/mot-de-passe-oublie', 'en' => '/en/forgot-password'], name: 'app_forgot_password_request', methods: ['GET', 'POST'])]
     public function forgotPasswordRequest(Request $request, PasswordResetService $passwordReset): Response
     {
         $session = $request->getSession();
@@ -121,7 +125,7 @@ final class SecurityController extends AbstractController
     /**
      * Étape 2/3 — vérification du code reçu par e-mail.
      */
-    #[Route('/mot-de-passe-oublie/verification', name: 'app_forgot_password_code', methods: ['GET', 'POST'])]
+    #[Route(path: ['fr' => '/mot-de-passe-oublie/verification', 'en' => '/en/forgot-password/verification'], name: 'app_forgot_password_code', methods: ['GET', 'POST'])]
     public function forgotPasswordCode(Request $request, PasswordResetService $passwordReset): Response
     {
         $session = $request->getSession();
@@ -157,7 +161,7 @@ final class SecurityController extends AbstractController
     /**
      * Étape 3/3 — définition du nouveau mot de passe.
      */
-    #[Route('/mot-de-passe-oublie/nouveau', name: 'app_forgot_password_reset', methods: ['GET', 'POST'])]
+    #[Route(path: ['fr' => '/mot-de-passe-oublie/nouveau', 'en' => '/en/forgot-password/new'], name: 'app_forgot_password_reset', methods: ['GET', 'POST'])]
     public function forgotPasswordReset(Request $request, PasswordResetService $passwordReset): Response
     {
         $session = $request->getSession();
@@ -216,7 +220,11 @@ final class SecurityController extends AbstractController
      * Les champs sont ceux de la maquette (nom & prénom, e-mail, téléphone,
      * mot de passe, conditions générales) : voir RegistrationFormType.
      */
-    #[Route('/register', name: 'app_register')]
+    // /register etait un chemin anglais servant une page francaise. Il
+    // devient /inscription ; l'ancienne adresse survit ci-dessous en
+    // redirection permanente, le temps que les liens deja partages et
+    // l'index des moteurs de recherche suivent.
+    #[Route(path: ['fr' => '/inscription', 'en' => '/en/signup'], name: 'app_register')]
     public function register(Request $request, RegistrationService $registrationService): Response
     {
         // Si l'utilisateur est déjà connecté, on le redirige vers l'accueil.

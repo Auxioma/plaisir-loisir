@@ -44,7 +44,7 @@ final class DestinationController extends AbstractController
     ) {
     }
 
-    #[Route('/destinations', name: 'app_destinations')]
+    #[Route(path: ['fr' => '/destinations', 'en' => '/en/destinations'], name: 'app_destinations')]
     public function index(): Response
     {
         return $this->render('destination/index.html.twig', [
@@ -58,7 +58,7 @@ final class DestinationController extends AbstractController
         ]);
     }
 
-    #[Route('/destinations/populaires', name: 'app_destinations_popular')]
+    #[Route(path: ['fr' => '/destinations/populaires', 'en' => '/en/destinations/popular'], name: 'app_destinations_popular')]
     public function popular(Request $request): Response
     {
         // Meme barre de recherche que le listing des activites, et meme
@@ -86,7 +86,7 @@ final class DestinationController extends AbstractController
         ]);
     }
 
-    #[Route('/destinations/{ville}', name: 'app_destination_city', requirements: ['ville' => '(?!populaires$)[a-z0-9\-]+'])]
+    #[Route(path: ['fr' => '/destinations/{ville}', 'en' => '/en/destinations/{ville}'], name: 'app_destination_city', requirements: ['ville' => '(?!populaires$)[a-z0-9\-]+'])]
     public function city(string $ville): Response
     {
         // « lille » est la ville de la maquette : elle n'existe pas au

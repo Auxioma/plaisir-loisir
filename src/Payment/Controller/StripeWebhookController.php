@@ -29,6 +29,8 @@ final class StripeWebhookController extends AbstractController
     ) {
     }
 
+    // URL appelee par Stripe, enregistree telle quelle dans son tableau de
+    // bord : la localiser casserait les notifications de paiement.
     #[Route('/webhook/stripe', name: 'stripe_webhook', methods: ['POST'])]
     public function __invoke(Request $request): Response
     {

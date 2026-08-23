@@ -49,6 +49,9 @@ final class SocialAuthController extends AbstractController
     /**
      * Départ : redirige vers le fournisseur.
      */
+    // Les deux routes sociales gardent un chemin unique : leur adresse de
+    // retour est enregistree chez Google, Facebook et Apple. La traduire
+    // invaliderait les connexions sociales du jour au lendemain.
     #[Route('/connexion/{service}', name: 'app_social_start', requirements: ['service' => 'google|facebook|apple'], methods: ['GET'])]
     public function start(Request $request, string $service): Response
     {

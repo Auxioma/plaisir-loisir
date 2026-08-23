@@ -19,7 +19,7 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class OfferController extends AbstractController
 {
-    #[Route('/offres', name: 'app_offers')]
+    #[Route(path: ['fr' => '/offres', 'en' => '/en/deals'], name: 'app_offers')]
     public function index(): Response
     {
         return $this->render('offer/index.html.twig', [
@@ -29,7 +29,7 @@ final class OfferController extends AbstractController
         ]);
     }
 
-    #[Route('/offres/toutes', name: 'app_offers_all')]
+    #[Route(path: ['fr' => '/offres/toutes', 'en' => '/en/deals/all'], name: 'app_offers_all')]
     public function all(): Response
     {
         return $this->render('offer/toutes.html.twig', [

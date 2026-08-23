@@ -34,7 +34,7 @@ final class HomeController extends AbstractController
     ) {
     }
 
-    #[Route('/', name: 'app_home')]
+    #[Route(path: ['fr' => '/', 'en' => '/en'], name: 'app_home')]
     public function index(Request $request): Response
     {
         $connected = null !== $this->getUser()
