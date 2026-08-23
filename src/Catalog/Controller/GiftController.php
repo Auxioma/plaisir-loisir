@@ -21,7 +21,7 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class GiftController extends AbstractController
 {
-    #[Route('/cadeaux', name: 'app_gifts')]
+    #[Route(path: ['fr' => '/cadeaux', 'en' => '/en/gift-cards'], name: 'app_gifts')]
     public function index(): Response
     {
         return $this->render('gift/index.html.twig', [
@@ -34,7 +34,7 @@ final class GiftController extends AbstractController
         ]);
     }
 
-    #[Route('/cadeaux/ateliers-creations', name: 'app_gifts_category')]
+    #[Route(path: ['fr' => '/cadeaux/ateliers-creations', 'en' => '/en/gift-cards/workshops-and-crafts'], name: 'app_gifts_category')]
     public function category(): Response
     {
         return $this->render('gift/categorie.html.twig', [
@@ -48,13 +48,13 @@ final class GiftController extends AbstractController
         ]);
     }
 
-    #[Route('/cadeaux/offrir', name: 'app_gifts_offer')]
+    #[Route(path: ['fr' => '/cadeaux/offrir', 'en' => '/en/gift-cards/buy'], name: 'app_gifts_offer')]
     public function offer(): Response
     {
         return $this->render('gift/offrir.html.twig');
     }
 
-    #[Route('/cadeaux/offrir/paiement', name: 'app_gifts_offer_payment')]
+    #[Route(path: ['fr' => '/cadeaux/offrir/paiement', 'en' => '/en/gift-cards/buy/payment'], name: 'app_gifts_offer_payment')]
     public function payment(): Response
     {
         return $this->render('gift/paiement.html.twig');

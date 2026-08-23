@@ -46,8 +46,8 @@ final class PublicPagesTest extends WebTestCase
             '/destinations/paris-france',
             // Authentification
             '/login',
-            '/register',
-            '/register?type=pro',
+            '/inscription',
+            '/inscription?type=pro',
             '/authentification',
             '/mot-de-passe-oublie',
             // Événements

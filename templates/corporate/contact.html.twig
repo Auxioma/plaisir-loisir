@@ -99,13 +99,13 @@
                                 {%- endif -%}
                             </span>
                             <div class="ct-method__body">
-                                <h3 class="ct-method__title">{{ m.title }}</h3>
-                                {% if m.text %}<p class="ct-method__text">{{ m.text }}</p>{% endif %}
+                                <h3 class="ct-method__title">{{ m.title|trans }}</h3>
+                                {% if m.text %}<p class="ct-method__text">{{ m.text|trans }}</p>{% endif %}
                                 {% if m.strong %}
-                                    <p class="ct-method__strong">{{ m.strong }}</p>
-                                    <p class="ct-method__sub">{{ m.sub }}</p>
+                                    <p class="ct-method__strong">{{ m.strong|trans }}</p>
+                                    <p class="ct-method__sub">{{ m.sub|trans }}</p>
                                 {% endif %}
-                                {% if m.link %}<a href="#" class="ct-method__link">{{ m.link }} {{ icon.chevron_right(14) }}</a>{% endif %}
+                                {% if m.link %}<a href="#" class="ct-method__link">{{ m.link|trans }} {{ icon.chevron_right(14) }}</a>{% endif %}
                             </div>
                         </article>
                     {% endfor %}
@@ -143,8 +143,8 @@
                             {%- else %}{{ icon.thumbs_up(22) }}
                             {%- endif -%}
                         </span>
-                        <strong class="ct-arg__title">{{ a.title }}</strong>
-                        <span class="ct-arg__text">{{ a.text }}</span>
+                        <strong class="ct-arg__title">{{ a.title|trans }}</strong>
+                        <span class="ct-arg__text">{{ a.text|trans }}</span>
                     </li>
                 {% endfor %}
             </ul>

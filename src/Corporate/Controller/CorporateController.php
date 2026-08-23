@@ -21,7 +21,7 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class CorporateController extends AbstractController
 {
-    #[Route('/a-propos', name: 'app_corporate_about')]
+    #[Route(path: ['fr' => '/a-propos', 'en' => '/en/about-us'], name: 'app_corporate_about')]
     public function about(): Response
     {
         return $this->render('corporate/apropos.html.twig', [
@@ -31,7 +31,7 @@ final class CorporateController extends AbstractController
         ]);
     }
 
-    #[Route('/devenir-partenaire', name: 'app_corporate_partner')]
+    #[Route(path: ['fr' => '/devenir-partenaire', 'en' => '/en/become-a-partner'], name: 'app_corporate_partner')]
     public function partner(): Response
     {
         return $this->render('corporate/partenaire.html.twig', [
@@ -55,7 +55,7 @@ final class CorporateController extends AbstractController
      * réafficher la page : la candidature partait dans le vide, sans erreur ni
      * confirmation. Le prospect croyait avoir postulé.
      */
-    #[Route('/devenir-partenaire/formulaire', name: 'app_corporate_partner_form', methods: ['GET', 'POST'])]
+    #[Route(path: ['fr' => '/devenir-partenaire/formulaire', 'en' => '/en/become-a-partner/form'], name: 'app_corporate_partner_form', methods: ['GET', 'POST'])]
     public function partnerForm(Request $request, CorporateInboxService $inbox): Response
     {
         if ($request->isMethod('POST')) {
@@ -98,7 +98,7 @@ final class CorporateController extends AbstractController
         return $this->render('corporate/partenaire_formulaire.html.twig');
     }
 
-    #[Route('/carrieres', name: 'app_corporate_careers')]
+    #[Route(path: ['fr' => '/carrieres', 'en' => '/en/careers'], name: 'app_corporate_careers')]
     public function careers(): Response
     {
         return $this->render('corporate/carrieres.html.twig', [
@@ -114,7 +114,7 @@ final class CorporateController extends AbstractController
      * recouvert de la fiche de l'offre : elle s'ouvre par ?offre=1, sans
      * JavaScript.
      */
-    #[Route('/carrieres/offres', name: 'app_corporate_jobs')]
+    #[Route(path: ['fr' => '/carrieres/offres', 'en' => '/en/careers/jobs'], name: 'app_corporate_jobs')]
     public function jobs(Request $request): Response
     {
         return $this->render('corporate/offres.html.twig', [
@@ -130,7 +130,7 @@ final class CorporateController extends AbstractController
      * acceptait POST, le contrôleur ne lisait même pas la requête. Le message
      * était perdu et l'expéditeur n'en savait rien.
      */
-    #[Route('/contactez-nous', name: 'app_corporate_contact', methods: ['GET', 'POST'])]
+    #[Route(path: ['fr' => '/contactez-nous', 'en' => '/en/contact-us'], name: 'app_corporate_contact', methods: ['GET', 'POST'])]
     public function contact(Request $request, CorporateInboxService $inbox): Response
     {
         if ($request->isMethod('POST')) {
@@ -167,7 +167,7 @@ final class CorporateController extends AbstractController
         ]);
     }
 
-    #[Route('/paiement-securise', name: 'app_corporate_payment')]
+    #[Route(path: ['fr' => '/paiement-securise', 'en' => '/en/secure-payment'], name: 'app_corporate_payment')]
     public function payment(): Response
     {
         return $this->render('corporate/paiement.html.twig', [
@@ -175,7 +175,7 @@ final class CorporateController extends AbstractController
         ]);
     }
 
-    #[Route('/mentions-legales', name: 'app_corporate_legal')]
+    #[Route(path: ['fr' => '/mentions-legales', 'en' => '/en/legal-notice'], name: 'app_corporate_legal')]
     public function legal(): Response
     {
         return $this->render('corporate/legal.html.twig', [
@@ -185,7 +185,7 @@ final class CorporateController extends AbstractController
         ]);
     }
 
-    #[Route('/conditions-generales', name: 'app_corporate_terms')]
+    #[Route(path: ['fr' => '/conditions-generales', 'en' => '/en/terms-and-conditions'], name: 'app_corporate_terms')]
     public function terms(): Response
     {
         return $this->render('corporate/legal.html.twig', [

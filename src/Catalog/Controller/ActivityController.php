@@ -45,7 +45,7 @@ final class ActivityController extends AbstractController
     ) {
     }
 
-    #[Route('/activites', name: 'app_activities')]
+    #[Route(path: ['fr' => '/activites', 'en' => '/en/activities'], name: 'app_activities')]
     public function index(Request $request): Response
     {
         // La barre de recherche de la maquette poste « q » et « lieu » en GET.
@@ -161,7 +161,7 @@ final class ActivityController extends AbstractController
         return [] !== $valeurs ? (float) min($valeurs) : null;
     }
 
-    #[Route('/activites/{slug}', name: 'app_activity_show')]
+    #[Route(path: ['fr' => '/activites/{slug}', 'en' => '/en/activities/{slug}'], name: 'app_activity_show')]
     public function show(string $slug): Response
     {
         $service = $this->services->findPublishedBySlug($slug);

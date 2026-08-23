@@ -11,7 +11,7 @@
     <div class="pl-card__media">
         <img src="{{ asset(g.image) }}" alt="{{ g.title }}">
         {% if g.badge %}
-            <span class="pl-card__tag {{ { 'Bestseller': 'pl-card__tag--bestseller', 'Nouveau': 'pl-card__tag--new', 'Tendance': 'pl-card__tag--hot' }[g.badge]|default('pl-card__tag--bestseller') }}">{{ g.badge }}</span>
+            <span class="pl-card__tag {{ { 'Bestseller': 'pl-card__tag--bestseller', 'Nouveau': 'pl-card__tag--new', 'Tendance': 'pl-card__tag--hot' }[g.badge]|default('pl-card__tag--bestseller') }}">{{ g.badge|trans }}</span>
         {% endif %}
         <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</button>
     </div>

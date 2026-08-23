@@ -1,10 +1,24 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app.request.locale }}">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %}Plaisir & Loisir{% endblock %} — Plaisir & Loisir</title>
         <meta name="description" content="{% block meta_description %}Trouvez et réservez les meilleurs prestataires de loisirs près de chez vous.{% endblock %}">
+        {# Referencement multilingue. Chaque page existe a une adresse par
+           langue : la canonique designe celle de la page affichee, les balises
+           alternate declarent les autres. Sans elles, un moteur de recherche
+           traite les deux versions comme du contenu duplique et n'en garde
+           qu'une. x-default pointe vers le francais, langue de reference. #}
+        {% set alternates = locale_alternates() %}
+        {% if alternates is not empty %}
+            <link rel="canonical" href="{{ alternates[app.request.locale] ?? app.request.uri }}">
+            {% for hreflang, href in alternates %}
+                <link rel="alternate" hreflang="{{ hreflang }}" href="{{ href }}">
+            {% endfor %}
+            <link rel="alternate" hreflang="x-default" href="{{ alternates.fr }}">
+        {% endif %}
+
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🎯</text></svg>">
 
         {# Inter est désormais hébergée par le projet (assets/styles/fonts.css) :

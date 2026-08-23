@@ -117,7 +117,7 @@
                 <input type="range" min="0" max="1050" step="1" name="prix_min" value="{{ prixMin|default(null) is null ? 154 : prixMin }}" data-budget-min aria-label="{{ 'Budget minimum'|trans }}">
                 <input type="range" min="0" max="1050" step="1" name="prix_max" value="{{ prixMax|default(null) is null ? 1050 : prixMax }}" data-budget-max aria-label="{{ 'Budget maximum'|trans }}">
             </div>
-            <div class="act-budget__bounds"><span>0€</span><span>1050€ et +</span></div>
+            <div class="act-budget__bounds"><span>0€</span>{{ '1050€ et +'|trans }}</div>
             <div class="act-budget__inputs">
                 {# Ces deux champs sont des miroirs pilotes par le JS : ils ne
                    sont pas envoyes, sans quoi « 1050+€ » arriverait tel quel. #}
@@ -226,7 +226,7 @@
                             {%- elseif chip.label starts with 'Soirées' %}{{ icon.flame(16) }}
                             {%- elseif chip.label starts with 'Bien' %}{{ icon.cat_wellness(16) }}
                             {%- else %}{{ icon.cat_canoe(16) }}
-                            {%- endif %} {{ chip.label }}
+                            {%- endif %} {{ chip.label|trans }}
                         </a>
                     {% endfor %}
                 </div>

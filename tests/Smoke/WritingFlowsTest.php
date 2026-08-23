@@ -28,7 +28,7 @@ final class WritingFlowsTest extends WebTestCase
         $client = static::createClient();
         $email = sprintf('test-%s@example.com', uniqid());
 
-        $this->submit($client, '/register', ['registration_form' => $this->registrationFields($email)]);
+        $this->submit($client, '/inscription', ['registration_form' => $this->registrationFields($email)]);
 
         $users = static::getContainer()->get(UserRepository::class);
         $user = $users->findOneBy(['email' => $email]);
@@ -45,7 +45,7 @@ final class WritingFlowsTest extends WebTestCase
         $client = static::createClient();
         $email = sprintf('pro-%s@example.com', uniqid());
 
-        $this->submit($client, '/register', [
+        $this->submit($client, '/inscription', [
             'registration_form' => ['accountType' => 'pro'] + $this->registrationFields($email, 'Riviere Paul'),
         ]);
 
@@ -66,8 +66,8 @@ final class WritingFlowsTest extends WebTestCase
 
         $champs = ['registration_form' => $this->registrationFields($email, 'Martin Luc')];
 
-        $this->submit($client, '/register', $champs);
-        $this->submit($client, '/register', $champs);
+        $this->submit($client, '/inscription', $champs);
+        $this->submit($client, '/inscription', $champs);
 
         self::assertLessThan(500, $client->getResponse()->getStatusCode());
     }

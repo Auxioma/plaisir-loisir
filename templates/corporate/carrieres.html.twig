@@ -75,8 +75,8 @@
                 {% for v in values %}
                     <article class="cor-card cr-value{{ v.featured ? ' cr-value--featured' }}">
                         <span class="cor-card__num cr-value__num--{{ v.tone }}">{{ v.num }}</span>
-                        <h3 class="cor-card__title cr-value__title">{{ v.title }}</h3>
-                        <p class="cor-card__text cr-value__text">{{ v.text }}</p>
+                        <h3 class="cor-card__title cr-value__title">{{ v.title|trans }}</h3>
+                        <p class="cor-card__text cr-value__text">{{ v.text|trans }}</p>
                     </article>
                 {% endfor %}
             </div>
@@ -96,8 +96,8 @@
                 {% for r in reasons %}
                     <article class="cor-card cr-reason{{ r.featured ? ' cr-reason--featured' }}">
                         <span class="cor-card__num cr-reason__num">{{ r.num }}</span>
-                        <h3 class="cr-reason__title">{{ r.title }}</h3>
-                        <p class="cr-reason__text">{{ r.text }}</p>
+                        <h3 class="cr-reason__title">{{ r.title|trans }}</h3>
+                        <p class="cr-reason__text">{{ r.text|trans }}</p>
                     </article>
                 {% endfor %}
             </div>

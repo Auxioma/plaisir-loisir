@@ -28,6 +28,8 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class FavoriteController extends AbstractController
 {
+    // Point d'entree technique appele en POST par le JavaScript : il ne
+    // s'affiche jamais, n'est jamais indexe, donc pas de variante anglaise.
     #[Route('/favoris/basculer', name: 'app_favorite_toggle', methods: ['POST'])]
     public function toggle(
         Request $request,

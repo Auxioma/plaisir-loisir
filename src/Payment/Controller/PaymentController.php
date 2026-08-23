@@ -21,13 +21,13 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class PaymentController extends AbstractController
 {
-    #[Route('/paiement/succes', name: 'payment_success', methods: ['GET'])]
+    #[Route(path: ['fr' => '/paiement/succes', 'en' => '/en/payment/success'], name: 'payment_success', methods: ['GET'])]
     public function success(): Response
     {
         return new Response('Merci, votre paiement est en cours de confirmation.');
     }
 
-    #[Route('/paiement/annule', name: 'payment_cancel', methods: ['GET'])]
+    #[Route(path: ['fr' => '/paiement/annule', 'en' => '/en/payment/canceled'], name: 'payment_cancel', methods: ['GET'])]
     public function cancel(): Response
     {
         return new Response('Paiement annulé.');

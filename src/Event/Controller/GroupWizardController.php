@@ -28,13 +28,13 @@ final class GroupWizardController extends AbstractController
     ) {
     }
 
-    #[Route('/evenements/groupes/creer/succes', name: 'app_group_create_success')]
+    #[Route(path: ['fr' => '/evenements/groupes/creer/succes', 'en' => '/en/events/groups/create/success'], name: 'app_group_create_success')]
     public function success(): Response
     {
         return $this->render('event/group/succes.html.twig');
     }
 
-    #[Route('/evenements/groupes/creer/{etape}', name: 'app_group_create', requirements: ['etape' => '[1-4]'], defaults: ['etape' => 1], methods: ['GET', 'POST'])]
+    #[Route(path: ['fr' => '/evenements/groupes/creer/{etape}', 'en' => '/en/events/groups/create/{etape}'], name: 'app_group_create', requirements: ['etape' => '[1-4]'], defaults: ['etape' => 1], methods: ['GET', 'POST'])]
     public function create(Request $request, int $etape): Response
     {
         if ($request->isMethod('POST')) {

@@ -9,3 +9,18 @@
 
 controllers:
     resource: routing.controllers
+
+# Ancienne adresse d'inscription. /register etait un chemin anglais servant une
+# page francaise ; elle vaut desormais /inscription. La redirection est
+# permanente (301) pour que les moteurs de recherche transferent l'anciennete
+# de la page au lieu de la perdre.
+legacy_register:
+    path: /register
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController::redirectAction
+    defaults:
+        route: app_register
+        permanent: true
+        # /register?type=pro menait au formulaire professionnel : sans cette
+        # option, la redirection perdrait le type et renverrait le visiteur
+        # sur le formulaire particulier.
+        keepQueryParams: true

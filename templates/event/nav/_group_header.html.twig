@@ -38,7 +38,7 @@
             { key: 'photos', label: 'Photos'|trans },
             { key: 'discussions', label: 'Discussions'|trans },
         ] %}
-            <a href="{{ path('app_group_detail', { onglet: t.key }) }}" class="evn-gtab {{ tab == t.key ? 'is-active' }}" {{ tab == t.key ? 'aria-current="page"' }}>
+            <a href="{{ path('app_group_detail', { onglet: group_tab(t.key) }) }}" class="evn-gtab {{ tab == t.key ? 'is-active' }}" {{ tab == t.key ? 'aria-current="page"' }}>
                 {%- if t.key == 'apropos' %}{{ icon.check_badge(22) }}
                 {%- elseif t.key == 'evenements' %}{{ icon.calendar_check(22) }}
                 {%- elseif t.key == 'membres' %}{{ icon.users(22) }}

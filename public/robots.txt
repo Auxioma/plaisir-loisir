@@ -1,0 +1,16 @@
+# Les pages publiques sont ouvertes a l'indexation, dans les deux langues.
+User-agent: *
+
+# Adresses techniques ou privees : rien a indexer, et surtout rien qui doive
+# apparaitre dans les resultats de recherche.
+Disallow: /login
+Disallow: /logout
+Disallow: /connexion/
+Disallow: /compte/
+Disallow: /en/account/
+Disallow: /paiement/
+Disallow: /en/payment/
+Disallow: /webhook/
+Disallow: /favoris/basculer
+
+Sitemap: https://trouvemoi.eu/sitemap.xml

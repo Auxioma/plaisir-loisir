@@ -33,7 +33,7 @@
             </div>
         </div>
         <div class="evn-side-card">
-            <p class="evn-side-card__title">{{ 'Membres'|trans }} <span>(152)</span> <a href="{{ path('app_group_detail', { onglet: 'membres' }) }}" class="evn-side-card__more">{{ 'Voir plus'|trans }}</a></p>
+            <p class="evn-side-card__title">{{ 'Membres'|trans }} <span>(152)</span> <a href="{{ path('app_group_detail', { onglet: group_tab('membres') }) }}" class="evn-side-card__more">{{ 'Voir plus'|trans }}</a></p>
             <div class="evn-side-card__avatars">
                 {% for i in 0..14 %}
                     <img src="{{ asset(avatars[i % 5]) }}" alt="">
@@ -46,7 +46,7 @@
 <section class="evn-gsection">
     <div class="evn-section__head">
         <h2 class="evn-gh2">{{ 'Événements à venir'|trans }} <span class="evn-gh2__count">(25)</span></h2>
-        <a href="{{ path('app_group_detail', { onglet: 'evenements' }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
+        <a href="{{ path('app_group_detail', { onglet: group_tab('evenements') }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
     </div>
     <div class="card-grid evn-gcards3">
         {% for g in [
@@ -62,7 +62,7 @@
 <section class="evn-gsection">
     <div class="evn-section__head">
         <h2 class="evn-gh2">{{ 'Événements passés'|trans }} <span class="evn-gh2__count">(25)</span></h2>
-        <a href="{{ path('app_group_detail', { onglet: 'evenements' }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
+        <a href="{{ path('app_group_detail', { onglet: group_tab('evenements') }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
     </div>
     <div class="card-grid evn-gcards3">
         {% for g in [
@@ -78,13 +78,13 @@
 <section class="evn-gsection">
     <div class="evn-section__head">
         <h2 class="evn-gh2">{{ 'Photos'|trans }} <span class="evn-gh2__count">(250)</span></h2>
-        <a href="{{ path('app_group_detail', { onglet: 'photos' }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
+        <a href="{{ path('app_group_detail', { onglet: group_tab('photos') }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
     </div>
     <div class="evn-gphotos">
         <button type="button" class="evn-gphotos__nav" aria-label="{{ 'Photos précédentes'|trans }}">{{ icon.chevron_left(16) }}</button>
         <img src="{{ asset('images/events/ph-kayak1.jpg') }}" alt="Photo du groupe">
         <img src="{{ asset('images/events/ph-kayak2.jpg') }}" alt="Photo du groupe">
-        <a href="{{ path('app_group_detail', { onglet: 'photos' }) }}" class="evn-gphotos__more">
+        <a href="{{ path('app_group_detail', { onglet: group_tab('photos') }) }}" class="evn-gphotos__more">
             <img src="{{ asset('images/events/ph-kayak3.jpg') }}" alt="Photo du groupe">
         </a>
     </div>
@@ -93,7 +93,7 @@
 <section class="evn-gsection">
     <div class="evn-section__head">
         <h2 class="evn-gh2">{{ 'Discussions'|trans }} <span class="evn-gh2__count">(5)</span></h2>
-        <a href="{{ path('app_group_detail', { onglet: 'discussions' }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
+        <a href="{{ path('app_group_detail', { onglet: group_tab('discussions') }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
     </div>
     {% include 'event/nav/_empty.html.twig' with {
         image: 'images/events/empty-chat.jpg',

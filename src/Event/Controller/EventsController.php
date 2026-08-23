@@ -12,6 +12,7 @@ use App\Event\Repository\EventRepository;
 use App\Event\Repository\GroupAlbumRepository;
 use App\Event\Repository\GroupRepository;
 use App\Event\StaticEvents;
+use App\I18n\Routing\LocaleUrlGenerator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -82,7 +83,7 @@ final class EventsController extends AbstractController
         return $rangee;
     }
 
-    #[Route('/evenements', name: 'app_events')]
+    #[Route(path: ['fr' => '/evenements', 'en' => '/en/events'], name: 'app_events')]
     public function index(): Response
     {
         return $this->render('event/nav/index.html.twig', [
@@ -96,7 +97,7 @@ final class EventsController extends AbstractController
         ]);
     }
 
-    #[Route('/evenements/tous', name: 'app_events_all')]
+    #[Route(path: ['fr' => '/evenements/tous', 'en' => '/en/events/all'], name: 'app_events_all')]
     public function all(): Response
     {
         $events = $this->presenter->cards($this->events->findForListing());
@@ -113,7 +114,7 @@ final class EventsController extends AbstractController
         ]);
     }
 
-    #[Route('/evenements/calendrier', name: 'app_events_calendar')]
+    #[Route(path: ['fr' => '/evenements/calendrier', 'en' => '/en/events/calendar'], name: 'app_events_calendar')]
     public function calendar(Request $request): Response
     {
         return $this->render('event/nav/calendrier.html.twig', [
@@ -166,7 +167,7 @@ final class EventsController extends AbstractController
         return $this->events->findDefaultCalendarMonth();
     }
 
-    #[Route('/evenements/prives', name: 'app_events_private')]
+    #[Route(path: ['fr' => '/evenements/prives', 'en' => '/en/events/private'], name: 'app_events_private')]
     public function private(): Response
     {
         return $this->render('event/nav/prives.html.twig', [
@@ -181,7 +182,7 @@ final class EventsController extends AbstractController
         ]);
     }
 
-    #[Route('/evenements/detail', name: 'app_events_detail')]
+    #[Route(path: ['fr' => '/evenements/detail', 'en' => '/en/events/detail'], name: 'app_events_detail')]
     public function detail(): Response
     {
         return $this->render('event/nav/detail.html.twig', [
@@ -191,7 +192,7 @@ final class EventsController extends AbstractController
         ]);
     }
 
-    #[Route('/evenements/detail/participants', name: 'app_events_participants')]
+    #[Route(path: ['fr' => '/evenements/detail/participants', 'en' => '/en/events/detail/participants'], name: 'app_events_participants')]
     public function participants(): Response
     {
         return $this->render('event/nav/participants.html.twig', [
@@ -199,7 +200,7 @@ final class EventsController extends AbstractController
         ]);
     }
 
-    #[Route('/evenements/groupes', name: 'app_groups')]
+    #[Route(path: ['fr' => '/evenements/groupes', 'en' => '/en/events/groups'], name: 'app_groups')]
     public function groups(): Response
     {
         return $this->render('event/nav/groupes.html.twig', [
@@ -208,7 +209,7 @@ final class EventsController extends AbstractController
         ]);
     }
 
-    #[Route('/evenements/groupes/detail/photos/album', name: 'app_group_album')]
+    #[Route(path: ['fr' => '/evenements/groupes/detail/photos/album', 'en' => '/en/events/groups/detail/photos/album'], name: 'app_group_album')]
     public function album(): Response
     {
         return $this->render('event/nav/album.html.twig', [
@@ -217,15 +218,20 @@ final class EventsController extends AbstractController
         ]);
     }
 
-    #[Route('/evenements/groupes/detail/demande-envoyee', name: 'app_group_join_sent')]
+    #[Route(path: ['fr' => '/evenements/groupes/detail/demande-envoyee', 'en' => '/en/events/groups/detail/request-sent'], name: 'app_group_join_sent')]
     public function joinSent(): Response
     {
         return $this->render('event/nav/demande.html.twig');
     }
 
-    #[Route('/evenements/groupes/detail/{onglet}', name: 'app_group_detail', requirements: ['onglet' => 'apropos|evenements|membres|photos|discussions'], defaults: ['onglet' => 'apropos'])]
+    // L'onglet apparait dans l'URL : il accepte donc les deux langues
+    // (/detail/membres et /en/detail/members). tabKey() ramene ensuite la
+    // valeur a l'identifiant interne attendu par les gabarits.
+    #[Route(path: ['fr' => '/evenements/groupes/detail/{onglet}', 'en' => '/en/events/groups/detail/{onglet}'], name: 'app_group_detail', requirements: ['onglet' => 'apropos|evenements|membres|photos|discussions|about|events|members'], defaults: ['onglet' => 'apropos'])]
     public function groupDetail(string $onglet): Response
     {
+        $onglet = LocaleUrlGenerator::tabKey($onglet);
+
         return $this->render('event/nav/groupe.html.twig', [
             'tab' => $onglet,
             'similar' => StaticEvents::similar(),

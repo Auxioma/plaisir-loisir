@@ -78,7 +78,7 @@ final class AccountController extends AbstractController
         return $this->destinationPresenter->cards($destinations, $slugs);
     }
 
-    #[Route('/compte/favoris', name: 'app_account_favorites')]
+    #[Route(path: ['fr' => '/compte/favoris', 'en' => '/en/account/favorites'], name: 'app_account_favorites')]
     public function favorites(Request $request): Response
     {
         $tab = $request->query->get('onglet', 'activites');
@@ -115,7 +115,7 @@ final class AccountController extends AbstractController
         ]);
     }
 
-    #[Route('/compte/favoris/listes/{slug}', name: 'app_account_favorites_list', defaults: ['slug' => 'alsace-2026'])]
+    #[Route(path: ['fr' => '/compte/favoris/listes/{slug}', 'en' => '/en/account/favorites/lists/{slug}'], name: 'app_account_favorites_list', defaults: ['slug' => 'alsace-2026'])]
     public function favoritesList(string $slug): Response
     {
         return $this->render('account/liste.html.twig', [
@@ -127,7 +127,7 @@ final class AccountController extends AbstractController
         ]);
     }
 
-    #[Route('/compte/notifications', name: 'app_account_notifications')]
+    #[Route(path: ['fr' => '/compte/notifications', 'en' => '/en/account/notifications'], name: 'app_account_notifications')]
     public function notifications(Request $request): Response
     {
         return $this->render('account/notifications.html.twig', [
@@ -139,7 +139,7 @@ final class AccountController extends AbstractController
         ]);
     }
 
-    #[Route('/compte/parrainage', name: 'app_account_referral')]
+    #[Route(path: ['fr' => '/compte/parrainage', 'en' => '/en/account/referral'], name: 'app_account_referral')]
     public function referral(): Response
     {
         return $this->render('account/parrainage.html.twig', [
@@ -149,7 +149,7 @@ final class AccountController extends AbstractController
         ]);
     }
 
-    #[Route('/compte/deconnexion', name: 'app_account_logout_confirm')]
+    #[Route(path: ['fr' => '/compte/deconnexion', 'en' => '/en/account/sign-out'], name: 'app_account_logout_confirm')]
     public function logoutConfirm(): Response
     {
         return $this->render('account/deconnexion.html.twig', [
