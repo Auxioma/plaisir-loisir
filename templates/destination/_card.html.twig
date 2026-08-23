@@ -15,7 +15,7 @@
     <div class="pl-card__media">
         <img src="{{ asset(d.image) }}" alt="{{ d.name }}">
         {% if d.badge %}
-            <span class="pl-card__tag {{ { 'Populaire': 'pl-card__tag--popular', 'Bestseller': 'pl-card__tag--bestseller', 'Tendance': 'pl-card__tag--trend' }[d.badge] }}">{{ d.badge }}</span>
+            <span class="pl-card__tag {{ { 'Populaire': 'pl-card__tag--popular', 'Bestseller': 'pl-card__tag--bestseller', 'Tendance': 'pl-card__tag--trend' }[d.badge] }}">{{ d.badge|trans }}</span>
         {% endif %}
         <button type="button" class="pl-card__fav {{ d.favorite ? 'is-active' }}"
                 aria-label="{{ (d.favorite ? 'Retirer des favoris' : 'Ajouter aux favoris')|trans }}"

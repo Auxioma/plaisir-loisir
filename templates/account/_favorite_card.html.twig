@@ -17,7 +17,7 @@
         {% else %}
             <img src="{{ asset(f.image) }}" alt="">
             {% if f.badge %}
-                <span class="pl-card__tag pl-card__tag--bestseller">{{ f.badge }}</span>
+                <span class="pl-card__tag pl-card__tag--bestseller">{{ f.badge|trans }}</span>
             {% endif %}
         {% endif %}
         {% if hearts|default('red') == 'red' %}

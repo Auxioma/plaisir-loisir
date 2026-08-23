@@ -48,8 +48,8 @@
                         {%- endif -%}
                     </span>
                     <span class="cor-stat__body">
-                        <strong class="cor-stat__value">{{ s.value }}</strong>
-                        <span class="cor-stat__label">{{ s.label }}</span>
+                        <strong class="cor-stat__value">{{ s.value|trans }}</strong>
+                        <span class="cor-stat__label">{{ s.label|trans }}</span>
                     </span>
                 </div>
             {% endfor %}
@@ -69,8 +69,8 @@
             {% for v in values %}
                 <article class="cor-card{{ v.featured ? ' cor-card--featured' }}">
                     <span class="cor-card__num">{{ v.num }}</span>
-                    <h3 class="cor-card__title">{{ v.title }}</h3>
-                    <p class="cor-card__text">{{ v.text }}</p>
+                    <h3 class="cor-card__title">{{ v.title|trans }}</h3>
+                    <p class="cor-card__text">{{ v.text|trans }}</p>
                 </article>
             {% endfor %}
         </div>
@@ -104,7 +104,7 @@
                     <article class="cor-member">
                         <img class="cor-member__photo" src="{{ asset(m.photo) }}" alt="">
                         <h3 class="cor-member__name">{{ m.name }}</h3>
-                        <p class="cor-member__role">{{ m.role }}</p>
+                        <p class="cor-member__role">{{ m.role|trans }}</p>
                         <div class="cor-member__socials">
                             <a href="#" aria-label="LinkedIn">{{ icon.social_linkedin(22) }}</a>
                             <a href="#" aria-label="Facebook">{{ icon.social_facebook(22) }}</a>

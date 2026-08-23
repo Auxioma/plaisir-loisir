@@ -58,8 +58,8 @@
                                 {%- else %}{{ icon.handshake_solid(28) }}
                                 {%- endif -%}
                             </span>
-                            <h3 class="pw-card__title">{{ b.title }}</h3>
-                            <p class="pw-card__text">{{ b.text }}</p>
+                            <h3 class="pw-card__title">{{ b.title|trans }}</h3>
+                            <p class="pw-card__text">{{ b.text|trans }}</p>
                         </article>
                     {% endif %}
                 {% endfor %}
@@ -95,8 +95,8 @@
                                 {%- endif -%}
                             </span>
                             <span class="pw-step__body">
-                                <span class="pw-step__title">{{ s.title }}</span>
-                                <span class="pw-step__text">{{ s.text }}</span>
+                                <span class="pw-step__title">{{ s.title|trans }}</span>
+                                <span class="pw-step__text">{{ s.text|trans }}</span>
                             </span>
                         </li>
                     {% endfor %}
@@ -126,7 +126,7 @@
                             <img class="pw-review__avatar" src="{{ asset('images/account/avatar-thomas.jpg') }}" alt="">
                             <span>
                                 <strong class="pw-review__name">{{ t.author }}</strong>
-                                <span class="pw-review__role">{{ t.role }}</span>
+                                <span class="pw-review__role">{{ t.role|trans }}</span>
                             </span>
                         </div>
                     </article>
@@ -182,8 +182,8 @@
                             {%- endif -%}
                         </span>
                         <span class="pw-arg__body">
-                            <strong class="pw-arg__title">{{ a.title }}</strong>
-                            <span class="pw-arg__text">{{ a.text }}</span>
+                            <strong class="pw-arg__title">{{ a.title|trans }}</strong>
+                            <span class="pw-arg__text">{{ a.text|trans }}</span>
                         </span>
                     </li>
                 {% endfor %}

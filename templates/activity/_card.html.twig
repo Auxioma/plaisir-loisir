@@ -19,7 +19,7 @@
         {% if a.badge %}
             {# « Nouvelle activité » est bleu, les autres badges (Bestseller,
                Bientôt complet) restent rouges — spec Destinations §1.10. #}
-            <span class="pl-card__tag {{ a.badge == 'Nouvelle activité' ? 'pl-card__tag--popular' : 'pl-card__tag--bestseller' }}">{{ a.badge }}</span>
+            <span class="pl-card__tag {{ a.badge == 'Nouvelle activité' ? 'pl-card__tag--popular' : 'pl-card__tag--bestseller' }}">{{ a.badge|trans }}</span>
         {% endif %}
         {# Coeur des favoris. Le balisage visible ne change pas : seuls des
            attributs `data-` s'ajoutent, que le script lit pour appeler la

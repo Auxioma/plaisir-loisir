@@ -56,8 +56,8 @@
                             {%- else %}{{ icon.eye_off(26) }}
                             {%- endif -%}
                         </span>
-                        <h3 class="py-card__title">{{ c.title }}</h3>
-                        <p class="py-card__text">{{ c.text }}</p>
+                        <h3 class="py-card__title">{{ c.title|trans }}</h3>
+                        <p class="py-card__text">{{ c.text|trans }}</p>
                     </article>
                 {% endfor %}
             </div>
