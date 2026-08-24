@@ -113,7 +113,12 @@ class ServiceCrudController extends AbstractCrudController
         // Signale d'un coup d'œil les activités dont la page publique tomberait
         // en erreur : sans fiche détaillée, le clic depuis le catalogue renvoie
         // un 404. Constaté en production sur « kayak-lac-rose ».
-        yield TextField::new('detail', 'Fiche détaillée')
+        //
+        // AssociationField et non TextField : `detail` porte un OBJET, et
+        // EasyAdmin refuse un objet dans un champ texte AVANT d'appliquer
+        // formatValue — « can't be converted into a string ». Le défaut ne se
+        // voyait que sur une activité ayant réellement une fiche.
+        yield AssociationField::new('detail', 'Fiche détaillée')
             ->formatValue(static fn (mixed $v, Service $s): string => null !== $s->getDetail() ? 'Oui' : 'MANQUANTE')
             ->onlyOnIndex();
         yield IntegerField::new('position', 'Ordre d\'affichage')
