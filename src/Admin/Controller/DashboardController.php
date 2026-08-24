@@ -89,6 +89,9 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(ServiceCrudController::class, 'Activités', 'fa fa-compass');
         yield MenuItem::linkTo(ServicePackageCrudController::class, 'Tarifs', 'fa fa-euro-sign');
         yield MenuItem::linkTo(MediaCrudController::class, 'Photos', 'fa fa-image');
+        // Sans fiche detaillee, la page publique d'une activite renvoie une
+        // erreur 404 : l'ecran est aussi indispensable que l'activite elle-meme.
+        yield MenuItem::linkTo(ServiceDetailCrudController::class, 'Fiches détaillées', 'fa fa-file-lines');
 
         yield MenuItem::section('Classement');
         yield MenuItem::linkTo(DestinationCrudController::class, 'Destinations', 'fa fa-map-location-dot');

@@ -53,7 +53,8 @@ class ServiceCrudController extends AbstractCrudController
             ->setHelp(
                 Crud::PAGE_NEW,
                 'Une activité n\'apparaît en ligne que si son statut est « publiée ». '
-                .'Pensez ensuite à lui ajouter une photo de couverture et un tarif.',
+                .'Pensez ensuite à lui ajouter une photo de couverture, un tarif, et surtout '
+                .'une fiche détaillée : sans elle, sa page publique renvoie une erreur.',
             )
             // La maquette ordonne les cartes à la main : le classement suit
             // donc « position », et non la date de création.
@@ -109,6 +110,12 @@ class ServiceCrudController extends AbstractCrudController
         yield TextField::new('badge', 'Badge')
             ->setHelp('Pastille affichée sur la carte : Bestseller, Populaire, Nouvelle activité… Laissez vide s\'il n\'y en a pas.')
             ->hideOnIndex();
+        // Signale d'un coup d'œil les activités dont la page publique tomberait
+        // en erreur : sans fiche détaillée, le clic depuis le catalogue renvoie
+        // un 404. Constaté en production sur « kayak-lac-rose ».
+        yield TextField::new('detail', 'Fiche détaillée')
+            ->formatValue(static fn (mixed $v, Service $s): string => null !== $s->getDetail() ? 'Oui' : 'MANQUANTE')
+            ->onlyOnIndex();
         yield IntegerField::new('position', 'Ordre d\'affichage')
             ->setHelp('Le plus petit nombre passe en premier.');
 

@@ -29,6 +29,16 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  * La commande promeut un compte existant, ou le crée s'il n'existe pas. Elle
  * est volontairement le SEUL moyen d'obtenir ce rôle : il faut un accès au
  * serveur, ce qu'un visiteur n'a pas.
+ *
+ * ELLE SERT AUSSI À REDONNER UN MOT DE PASSE
+ * Le site n'offre aucun écran « changer mon mot de passe » : le seul chemin est
+ * « mot de passe oublié », qui envoie un code PAR E-MAIL. Or les e-mails
+ * partent par la file asynchrone (config/packages/messenger.yaml) : sans un
+ * worker `messenger:consume async`, personne ne peut récupérer son accès.
+ *
+ * Donner `--mot-de-passe` sur un compte qui existe déjà remplace donc le sien.
+ * C'est le filet tant que le worker ne tourne pas. Le remplacement est annoncé
+ * dans la sortie : on ne change pas le mot de passe de quelqu'un en silence.
  */
 #[AsCommand(
     name: 'app:admin:grant',
@@ -48,7 +58,7 @@ final class GrantAdminCommand extends Command
     {
         $this
             ->addArgument('email', InputArgument::REQUIRED, 'Adresse e-mail du compte')
-            ->addOption('mot-de-passe', null, InputOption::VALUE_REQUIRED, 'Mot de passe, si le compte doit être créé')
+            ->addOption('mot-de-passe', null, InputOption::VALUE_REQUIRED, 'Mot de passe. Obligatoire pour créer un compte ; sur un compte existant, remplace le sien')
             ->addOption('prenom', null, InputOption::VALUE_REQUIRED, 'Prénom, si le compte doit être créé', 'Admin')
             ->addOption('nom', null, InputOption::VALUE_REQUIRED, 'Nom, si le compte doit être créé', 'TrouveMoi');
     }
@@ -59,6 +69,7 @@ final class GrantAdminCommand extends Command
         $email = (string) $input->getArgument('email');
 
         $user = $this->users->findOneBy(['email' => $email]);
+        $existant = null !== $user;
 
         if (null === $user) {
             $password = $input->getOption('mot-de-passe');
@@ -84,8 +95,20 @@ final class GrantAdminCommand extends Command
             $io->text(sprintf('Compte « %s » créé.', $email));
         }
 
+        // Compte DÉJÀ EXISTANT et mot de passe fourni : on le remplace. C'est le
+        // seul moyen de rendre l'accès à quelqu'un tant que les e-mails ne
+        // partent pas. Le test porte sur $existant, et non sur ce que Doctrine
+        // gère : un compte qu'on vient de créer est lui aussi « géré », le
+        // message annoncerait alors un remplacement qui n'a pas eu lieu.
+        $nouveauMotDePasse = $input->getOption('mot-de-passe');
+        if ($existant && \is_string($nouveauMotDePasse) && '' !== $nouveauMotDePasse) {
+            $user->setPassword($this->hasher->hashPassword($user, $nouveauMotDePasse));
+            $io->warning(sprintf('Le mot de passe de « %s » a été remplacé.', $email));
+        }
+
         $roles = $user->getRoles();
         if (\in_array('ROLE_ADMIN', $roles, true)) {
+            $this->entityManager->flush();
             $io->success(sprintf('« %s » avait déjà accès au back-office.', $email));
 
             return Command::SUCCESS;
