@@ -69,7 +69,12 @@ class MediaCrudController extends AbstractCrudController
             // (images/...) s'afficheraient cassees. Sans lui, asset() rend
             // /assets/images/...-EMPREINTE.jpg pour les unes et
             // /uploads/... pour les autres.
-            ->setUploadDir('public/uploads')
+            // Le motif de nom porte deja « uploads/ » : le dossier de
+            // destination est donc « public », pas « public/uploads », sinon
+            // le fichier atterrit dans public/uploads/uploads/ alors que le
+            // chemin enregistre, lui, vise public/uploads/. La valeur stockee
+            // reste relative a public/, exactement comme « images/... ».
+            ->setUploadDir('public')
             ->setUploadedFileNamePattern('uploads/[slug]-[timestamp].[extension]')
             ->setHelp('Format paysage conseillé. Le fichier est renommé automatiquement pour éviter d\'écraser une photo existante.');
         yield IntegerField::new('position', 'Ordre dans la galerie')

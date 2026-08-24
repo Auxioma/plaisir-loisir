@@ -81,11 +81,25 @@ class ServiceCrudController extends AbstractCrudController
             // formulaire de dire quel champ afficher, plutôt qu'au métier
             // de porter une méthode d'affichage.
             ->setFormTypeOption('choice_label', 'name')
+            // Obligatoire en base, comme le prestataire : meme garde-fou,
+            // sinon la premiere categorie de la liste est retenue sans que
+            // personne l'ait choisie.
+            ->setFormTypeOption('placeholder', 'Choisir une categorie')
             // Sans cela, la liste affiche « Category #01M0K3ZP... » : EasyAdmin
             // se rabat sur l'identifiant faute de __toString sur l'entite.
             ->formatValue(static fn (mixed $v, Service $s): ?string => $s->getCategory()?->getName());
         yield AssociationField::new('destination', 'Destination')
             ->setFormTypeOption('choice_label', 'name')->hideOnIndex();
+        yield AssociationField::new('provider', 'Prestataire')
+            ->setFormTypeOption('choice_label', 'displayName')
+            // La colonne est NON NULLE en base. Sans ce « placeholder »,
+            // le formulaire pre-selectionne le premier prestataire de la
+            // liste : une activite oubliee se retrouvait attribuee a
+            // quelqu'un d'autre, en silence. Le champ est aussi remonte
+            // sur cet onglet — il etait relegue au dernier, ou personne
+            // ne va.
+            ->setFormTypeOption('placeholder', 'Choisir un prestataire')
+            ->formatValue(static fn (mixed $v, Service $s): ?string => $s->getProvider()?->getDisplayName());
         yield ChoiceField::new('status', 'Statut')
             ->setChoices(self::choices(ServiceStatus::cases()))
             // La liste affichait « Published » : le libelle des choix ne sert
@@ -134,8 +148,6 @@ class ServiceCrudController extends AbstractCrudController
         yield ChoiceField::new('cancellationPolicy', 'Conditions d\'annulation')
             ->setChoices(self::choices(CancellationPolicy::cases()))->hideOnIndex();
         yield TextField::new('currency', 'Devise')->hideOnIndex();
-        yield AssociationField::new('provider', 'Prestataire')
-            ->setFormTypeOption('choice_label', 'displayName')->hideOnIndex();
     }
 
     /**
