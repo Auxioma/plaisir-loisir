@@ -16,6 +16,12 @@ use App\Catalog\Entity\Destination;
 final class DestinationPresenter
 {
     /**
+     * Même repli que pour les activités : une destination sans photo ne doit
+     * pas faire tomber la page, `asset(null)` lève une exception.
+     */
+    private const FALLBACK_IMAGE = 'images/destinations/banniere-monde.jpg';
+
+    /**
      * @param list<string> $favoriteSlugs destinations mises en favori par le
      *                                    visiteur en cours
      *
@@ -35,7 +41,7 @@ final class DestinationPresenter
             // Le slug ne s'affiche pas : il sert au coeur des favoris a dire
             // au serveur de quelle destination il parle.
             'slug' => $destination->getSlug(),
-            'image' => $destination->getHeroImage(),
+            'image' => $destination->getHeroImage() ?? self::FALLBACK_IMAGE,
         ];
     }
 

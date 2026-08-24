@@ -16,6 +16,9 @@ use App\Event\Entity\GroupAlbum;
  */
 final class GroupPresenter
 {
+    /** Meme repli que les listings : un album sans photo ne doit pas faire tomber l'onglet. */
+    private const FALLBACK_ALBUM_IMAGE = 'images/events/alb-canoerouge.jpg';
+
     /**
      * Abréviations de mois telles que la maquette les écrit.
      *
@@ -78,7 +81,7 @@ final class GroupPresenter
             $cards[] = [
                 'title' => $album->getTitle(),
                 'location' => $album->getLocation(),
-                'image' => $album->getImagePath(),
+                'image' => $album->getImagePath() ?? self::FALLBACK_ALBUM_IMAGE,
                 // « 05 photos » : la maquette complète à deux chiffres.
                 'photos' => sprintf('%02d photos', $album->getPhotosCount()),
                 'updated' => $this->updatedLabel($album),

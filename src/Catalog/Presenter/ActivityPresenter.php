@@ -22,6 +22,18 @@ use App\Catalog\Entity\Service;
  */
 final class ActivityPresenter
 {
+    /**
+     * Photo affichée quand la fiche n'en a aucune.
+     *
+     * Une fiche sans photo faisait tomber les listings en erreur 500 :
+     * `asset(null)` lève une exception. Le défaut ne se voyait pas en local,
+     * où les données de démonstration ont toutes une image ; il est apparu en
+     * production. Le repli est posé ICI, à la source du null, et non dans
+     * chaque gabarit : le même champ alimente la carte, la grille du bas de
+     * page et la liste des favoris.
+     */
+    private const FALLBACK_IMAGE = 'images/activities/canoe-riviere.jpg';
+
     /** Vignette de la carte. */
     public const MEDIA_COVER = 'cover';
 
@@ -51,7 +63,7 @@ final class ActivityPresenter
             'duration' => $service->getDurationLabel(),
             'price' => $this->price($service),
             'badge' => $service->getBadge(),
-            'image' => $this->coverImage($service),
+            'image' => $this->coverImage($service) ?? self::FALLBACK_IMAGE,
             'lat' => null !== $service->getLatitude() ? (float) $service->getLatitude() : null,
             'lng' => null !== $service->getLongitude() ? (float) $service->getLongitude() : null,
             'favorite' => \in_array($service->getSlug(), $favoriteSlugs, true),
