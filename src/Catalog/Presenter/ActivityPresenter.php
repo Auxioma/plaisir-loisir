@@ -34,6 +34,9 @@ final class ActivityPresenter
      */
     private const FALLBACK_IMAGE = 'images/activities/canoe-riviere.jpg';
 
+    /** Plan generique du bloc « rendez-vous ». */
+    private const FALLBACK_MAP = 'images/activities/map.jpg';
+
     /** Vignette de la carte. */
     public const MEDIA_COVER = 'cover';
 
@@ -152,7 +155,12 @@ final class ActivityPresenter
             'cannotParticipate' => $detail->getCannotParticipate(),
             'toBring' => $detail->getToBring(),
             'logistics' => [
-                'map' => $detail->getMapImage(),
+                // CINQUIEME occurrence du meme defaut : asset(null) fait
+                // tomber la page. Ici c'est le plan du point de depart, absent
+                // tant que personne ne l'a televerse. Le repli n'invente rien :
+                // map.jpg est une image DECORATIVE, la meme pour toutes les
+                // activites dans les fixtures comme dans le catalogue statique.
+                'map' => $detail->getMapImage() ?? self::FALLBACK_MAP,
                 'meeting' => $detail->getMeetingPoints(),
                 'guarantees' => $detail->getGuarantees(),
             ],
