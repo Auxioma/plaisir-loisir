@@ -7,6 +7,7 @@ namespace App\Admin\Controller;
 use App\Catalog\Entity\Destination;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
@@ -47,7 +48,12 @@ class DestinationCrudController extends AbstractCrudController
             ->setTargetFieldName('name')
             ->setHelp('Ce texte apparaît dans l\'adresse : /destinations/mon-nom.')
             ->hideOnIndex();
-        yield TextField::new('country', 'Pays');
+        // La colonne stocke un code ISO sur DEUX caracteres (FR, IT, SN).
+        // Avec un champ texte, taper « France » depassait la longueur de la
+        // colonne et rendait une erreur 500 a l'enregistrement — c'est
+        // pourtant ce que n'importe qui ecrirait. Le champ dedie propose la
+        // liste des pays, affiche leur nom et enregistre le code.
+        yield CountryField::new('country', 'Pays');
         yield TextField::new('region', 'Région')->hideOnIndex();
         yield TextField::new('tagline', 'Accroche')
             ->setHelp('Une phrase courte affichée sous le nom, par exemple « Entre lac et montagnes ».');
