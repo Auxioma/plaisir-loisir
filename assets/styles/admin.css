@@ -6,7 +6,7 @@
  *  site, et s'arrête là : un outil de saisie doit rester lisible et prévisible,
  *  pas ressembler à une page vitrine.
  *
- *  DEUX CHOSES À SAVOIR AVANT D'Y TOUCHER
+ *  TROIS CHOSES À SAVOIR AVANT D'Y TOUCHER
  *
  *  1. EasyAdmin dérive TOUTE sa palette d'un seul jeton, `--ea-primary`, par
  *     `color-mix()` : les états survolé, actif, discret et contrasté en
@@ -16,7 +16,14 @@
  *
  *  2. EasyAdmin range son CSS dans des couches (`@layer ea-overrides, vendor,
  *     ea`). Une règle SANS couche l'emporte sur toutes les couches : ce fichier
- *     n'en déclare donc aucune, et n'a besoin d'aucun `!important`.
+ *     n'en déclare aucune, et n'a besoin d'aucun `!important`.
+ *
+ *  3. Les noms de classes d'EasyAdmin 5 ne sont PAS ceux de la version 4.
+ *     `.ea-content`, `.menu-item`, `.menu-link` et `.card` n'existent plus —
+ *     une première version de ce fichier les visait, et ces règles ne
+ *     s'appliquaient à rien. Vérifier dans le HTML rendu avant d'ajouter un
+ *     sélecteur : ici les structures sont `.wrapper`, `.main-content`,
+ *     `.content-body`, `.ea-sidebar-item` et `.datagrid`.
  *
  *  Les valeurs viennent de design-system.css : aucune couleur n'est inventée
  *  ici. --pl-action est la couleur d'interaction de l'espace compte (entrée de
@@ -26,9 +33,7 @@
  * ============================================================================
  */
 
-:root,
-:root .ea-dark-scheme,
-:root .ea-light-scheme {
+:root {
     --ea-primary: var(--pl-action);
     --ea-radius: 8px;
 }
@@ -37,68 +42,63 @@
    Inter est hébergée par le projet (fonts.css). Les champs de formulaire
    n'héritent pas de la police du document : il faut le leur dire. */
 
-body,
-.ea-content,
-.ea-sidebar,
-button,
-input,
-select,
-textarea {
+body.ea,
+body.ea button,
+body.ea input,
+body.ea select,
+body.ea textarea {
     font-family: var(--pl-font-family);
 }
 
 /* --- Titres --------------------------------------------------------------
    Le bleu nuit de la marque, comme les titres du site. */
 
-.ea-content .content-header-title,
-.ea-content h1,
-.ea-content h2 {
+body.ea .content-header-title,
+body.ea .content-header-title h1 {
     color: var(--pl-text-display);
     letter-spacing: -0.01em;
 }
 
 /* --- Colonne de navigation -----------------------------------------------
-   Reprise exacte de l'espace compte (account.css) : fond blanc, entrée active
-   sur --pl-action-light, texte et icône en --pl-action, coins à 10px. */
+   Reprise de l'espace compte (account.css) : fond blanc, entrée active sur
+   --pl-action-light, texte et icône en --pl-action, coins à 10px. */
 
-.ea-sidebar {
+body.ea .ea-sidebar {
     background: var(--pl-white);
     border-right: 1px solid var(--pl-border);
 }
 
-.ea-sidebar .menu-item .menu-link {
+body.ea .ea-sidebar-item-link {
     border-radius: 10px;
     color: var(--pl-text-strong);
 }
 
-.ea-sidebar .menu-item .menu-link:hover {
+body.ea .ea-sidebar-item-link:hover {
     background: var(--pl-surface-dashboard);
 }
 
-.ea-sidebar .menu-item.active .menu-link,
-.ea-sidebar .menu-item .menu-link.active {
+body.ea .ea-sidebar-item.is-active > .ea-sidebar-item-link {
     background: var(--pl-action-light);
     color: var(--pl-action);
 }
 
-.ea-sidebar .menu-header {
+body.ea .ea-sidebar-group-label-text {
     color: var(--pl-text-muted);
     letter-spacing: 0.08em;
 }
 
 /* Le logo remplace le titre textuel : il est fourni en SVG par le site, on lui
-   donne seulement une hauteur et de l'air. */
-.ea-sidebar .main-header .logo img,
-.ea-sidebar .logo-custom img {
+   donne seulement une hauteur. */
+body.ea .ea-sidebar img {
     height: 28px;
     width: auto;
 }
 
 /* --- Fond de page --------------------------------------------------------
-   La même nuance que les écrans du compte, plutôt que le gris d'origine. */
+   La même nuance que les écrans du compte. */
 
-.ea-content,
-body.ea {
+body.ea,
+body.ea .wrapper {
     background: var(--pl-surface-dashboard);
 }
 
@@ -106,15 +106,76 @@ body.ea {
    Les chiffres d'une colonne doivent s'aligner : sans `tabular-nums`, un
    « 1 » est plus étroit qu'un « 8 » et la colonne se déforme. */
 
-.ea-content table td,
-.ea-content table th {
+body.ea .datagrid td,
+body.ea .datagrid th {
     font-variant-numeric: tabular-nums;
 }
 
-/* --- Bordures ------------------------------------------------------------ */
+/* --- Tablette en paysage -------------------------------------------------
+   MESURÉ, pas supposé : la liste des activités débordait de 5 px à 1024 px de
+   large, soit un iPad en paysage — la page défilait latéralement.
 
-.ea-content .card,
-.ea-content .form-widget,
-.ea-content table {
-    border-color: var(--pl-border);
+   La cause n'est pas la largeur des données mais celle des EN-TÊTES :
+   EasyAdmin leur interdit le retour à la ligne, si bien que « Ordre
+   d'affichage » et « Lieu affiché » imposent une largeur minimale que l'écran
+   n'a pas. À cette taille la colonne de navigation occupe encore sa largeur
+   fixe, d'où les pixels qui manquent.
+
+   On lève l'interdiction sous 1200 px seulement : sur grand écran les en-têtes
+   restent sur une ligne, comme prévu. Le remède est volontairement CE
+   point-là — poser un `overflow-x` sur le conteneur aurait rogné le menu
+   d'actions « … » de chaque ligne, qui est une liste déroulante positionnée
+   par-dessus. On ne casse pas une fonction pour cinq pixels.
+
+   Le seuil suit ceux du site (Bootstrap) : 1399.98 / 1199.98 / 991.98 / 767.98. */
+
+@media (max-width: 1199.98px) {
+    body.ea .datagrid thead a,
+    body.ea .datagrid thead span:not(.icon) {
+        white-space: normal;
+    }
+}
+
+/* --- Téléphone : libellés de colonnes complets ---------------------------
+   Sous 767 px, EasyAdmin retourne le tableau en fiches empilées et écrit le
+   nom de la colonne dans un pseudo-élément large de 35 %, sur une ligne, avec
+   les débordements coupés. « Ordre d'affichage » y devenait « Ordre
+   d'affich… », et « Ordre dans la galerie » subissait le même sort.
+
+   Deux remèdes ont été essayés. Laisser le libellé revenir à la ligne coupe sa
+   seconde ligne : le pseudo-élément est en position absolue et la hauteur de
+   la cellule est fixée par la VALEUR, pas par lui — vérifié par capture.
+   Imposer une hauteur minimale à toutes les cellules aurait alourdi chaque
+   fiche pour deux libellés.
+
+   On élargit donc la seule colonne des libellés. À 393 px, 45 % laissent
+   environ 165 px : « Ordre dans la galerie », le plus long, en occupe 145.
+   Le libellé reste sur une ligne, et s'il devait un jour déborder il serait
+   tronqué proprement plutôt que coupé au milieu d'un mot. */
+
+@media (max-width: 767.98px) {
+    /* `[data-label]` n'est pas decoratif : la case a cocher et le menu « … »
+       sont des cellules SANS libelle. Les inclure decalait leur contenu vers
+       le milieu de la fiche — verifie par capture. */
+    body.ea table.datagrid td[data-label]:before {
+        inline-size: 45%;
+    }
+
+    body.ea table.datagrid td[data-label] {
+        padding-inline-start: calc(45% + 0.5rem);
+    }
+}
+
+/* --- Tres petits ecrans ---------------------------------------------------
+   A 320 px — iPhone SE de premiere generation, plus vendu depuis 2018 — la
+   barre de recherche d'EasyAdmin depassait de 14 px et faisait defiler la page
+   lateralement. Ce n'est pas notre mise en page : le meme debordement se
+   produit sur les trois ecrans, formulaire compris, ou il n'y a aucun tableau.
+   Une largeur maximale suffit a la contenir. Aucun telephone actuel n'est
+   sous 375 px, mais le correctif ne coute rien. */
+
+@media (max-width: 359.98px) {
+    body.ea .content-search {
+        max-inline-size: 100%;
+    }
 }
