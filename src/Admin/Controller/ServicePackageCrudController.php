@@ -26,6 +26,13 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
  */
 class ServicePackageCrudController extends AbstractCrudController
 {
+    /** @var array<string, PricingUnit> */
+    private const UNITS = [
+        'Une personne' => PricingUnit::PerPerson,
+        'Un groupe' => PricingUnit::PerGroup,
+        'Un forfait' => PricingUnit::FlatRate,
+    ];
+
     public static function getEntityFqcn(): string
     {
         return ServicePackage::class;
@@ -47,7 +54,7 @@ class ServicePackageCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        yield AssociationField::new('service', 'Activite')
+        yield AssociationField::new('service', 'Activité')
             ->setFormTypeOption('choice_label', 'title')
             ->formatValue(static fn (mixed $v, ServicePackage $p): ?string => $p->getService()?->getTitle());
         yield TextField::new('name', 'Nom de la formule')
@@ -55,11 +62,12 @@ class ServicePackageCrudController extends AbstractCrudController
         yield TextareaField::new('description', 'Description')->hideOnIndex();
         yield TextField::new('price', 'Prix');
         yield TextField::new('currency', 'Devise')->hideOnIndex();
-        yield ChoiceField::new('pricingUnit', 'Le prix vaut pour')->setChoices([
-            'Une personne' => PricingUnit::PerPerson,
-            'Un groupe' => PricingUnit::PerGroup,
-            'Un forfait' => PricingUnit::FlatRate,
-        ]);
+        yield ChoiceField::new('pricingUnit', 'Le prix vaut pour')
+            ->setChoices(self::UNITS)
+            // Comme pour le statut d'une activite : les libelles passes a
+            // setChoices ne servent qu'au formulaire ; la liste affichait
+            // « PerPerson ».
+            ->formatValue(static fn (mixed $v, ServicePackage $p): string => (string) array_search($p->getPricingUnit(), self::UNITS, true));
         yield IntegerField::new('deliveryDays', 'Delai en jours')->hideOnIndex();
     }
 }

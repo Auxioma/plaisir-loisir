@@ -13,11 +13,11 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
 /**
- * Categories du catalogue.
+ * Catégories du catalogue.
  *
- * Le slug n'est pas cosmetique : les pastilles de filtre du catalogue
+ * Le slug n'est pas cosmétique : les pastilles de filtre du catalogue
  * fabriquent leur lien avec (/activites?categorie=mon-slug). Le changer
- * casserait les liens deja partages.
+ * casserait les liens déjà partagés.
  *
  * @extends AbstractCrudController<Category>
  */
@@ -31,9 +31,9 @@ class CategoryCrudController extends AbstractCrudController
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
-            ->setEntityLabelInSingular('categorie')
-            ->setEntityLabelInPlural('categories')
-            ->setPageTitle(Crud::PAGE_INDEX, 'Categories')
+            ->setEntityLabelInSingular('catégorie')
+            ->setEntityLabelInPlural('catégories')
+            ->setPageTitle(Crud::PAGE_INDEX, 'Catégories')
             ->setDefaultSort(['position' => 'ASC', 'name' => 'ASC'])
             ->setSearchFields(['name']);
     }
@@ -43,11 +43,11 @@ class CategoryCrudController extends AbstractCrudController
         yield TextField::new('name', 'Nom');
         yield SlugField::new('slug', 'Identifiant dans les filtres')
             ->setTargetFieldName('name')
-            ->setHelp('Employe par les pastilles de filtre : /activites?categorie=mon-slug.');
-        yield AssociationField::new('parent', 'Categorie parente')
+            ->setHelp('Employé par les pastilles de filtre : /activites?categorie=mon-slug.');
+        yield AssociationField::new('parent', 'Catégorie parente')
             ->setFormTypeOption('choice_label', 'name')
             ->formatValue(static fn (mixed $v, Category $c): ?string => $c->getParent()?->getName())
-            ->setHelp('Laissez vide pour une categorie de premier niveau.')
+            ->setHelp('Laissez vide pour une catégorie de premier niveau.')
             ->hideOnIndex();
         yield IntegerField::new('position', "Ordre d'affichage");
     }
