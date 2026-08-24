@@ -54,13 +54,21 @@ class MediaCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         yield AssociationField::new('service', 'Activité')
-            ->setFormTypeOption('choice_label', 'title');
+            ->setFormTypeOption('choice_label', 'title')
+            // Sans cela, la liste affiche « Service #01M0K3ZP... » : EasyAdmin
+            // se rabat sur l'identifiant faute de __toString sur l'entite.
+            ->formatValue(static fn (mixed $v, Media $media): ?string => $media->getService()?->getTitle());
         yield ChoiceField::new('type', 'Rôle de la photo')->setChoices([
             'Couverture (carte du catalogue)' => ActivityPresenter::MEDIA_COVER,
             'Galerie (carrousel de la fiche)' => ActivityPresenter::MEDIA_GALLERY,
         ]);
         yield ImageField::new('path', 'Fichier')
-            ->setBasePath('/')
+            // Pas de setBasePath : le gabarit d'EasyAdmin passe deja par
+            // asset(). Lui donner un chemin absolu court-circuiterait
+            // l'AssetMapper, et les photos livrees avec le site
+            // (images/...) s'afficheraient cassees. Sans lui, asset() rend
+            // /assets/images/...-EMPREINTE.jpg pour les unes et
+            // /uploads/... pour les autres.
             ->setUploadDir('public/uploads')
             ->setUploadedFileNamePattern('uploads/[slug]-[timestamp].[extension]')
             ->setHelp('Format paysage conseillé. Le fichier est renommé automatiquement pour éviter d\'écraser une photo existante.');

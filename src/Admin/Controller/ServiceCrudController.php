@@ -48,6 +48,8 @@ class ServiceCrudController extends AbstractCrudController
             ->setEntityLabelInSingular('activité')
             ->setEntityLabelInPlural('activités')
             ->setPageTitle(Crud::PAGE_INDEX, 'Activités du catalogue')
+            ->setPageTitle(Crud::PAGE_NEW, 'Nouvelle activité')
+            ->setPageTitle(Crud::PAGE_EDIT, "Modifier l'activité")
             ->setHelp(
                 Crud::PAGE_NEW,
                 'Une activité n\'apparaît en ligne que si son statut est « publiée ». '
@@ -78,11 +80,17 @@ class ServiceCrudController extends AbstractCrudController
             // Les entités du domaine n'ont pas de __toString : c'est au
             // formulaire de dire quel champ afficher, plutôt qu'au métier
             // de porter une méthode d'affichage.
-            ->setFormTypeOption('choice_label', 'name');
+            ->setFormTypeOption('choice_label', 'name')
+            // Sans cela, la liste affiche « Category #01M0K3ZP... » : EasyAdmin
+            // se rabat sur l'identifiant faute de __toString sur l'entite.
+            ->formatValue(static fn (mixed $v, Service $s): ?string => $s->getCategory()?->getName());
         yield AssociationField::new('destination', 'Destination')
             ->setFormTypeOption('choice_label', 'name')->hideOnIndex();
         yield ChoiceField::new('status', 'Statut')
             ->setChoices(self::choices(ServiceStatus::cases()))
+            // La liste affichait « Published » : le libelle des choix ne sert
+            // qu'au formulaire, l'affichage se fait a part.
+            ->formatValue(static fn (mixed $v, Service $s): string => self::LABELS[$s->getStatus()->value])
             ->renderAsBadges();
         yield TextField::new('badge', 'Badge')
             ->setHelp('Pastille affichée sur la carte : Bestseller, Populaire, Nouvelle activité… Laissez vide s\'il n\'y en a pas.')

@@ -53,7 +53,12 @@ class DestinationCrudController extends AbstractCrudController
             ->setHelp('Une phrase courte affichée sous le nom, par exemple « Entre lac et montagnes ».');
         yield TextareaField::new('description', 'Description')->hideOnIndex();
         yield ImageField::new('heroImage', 'Photo')
-            ->setBasePath('/')
+            // Pas de setBasePath : le gabarit d'EasyAdmin passe deja par
+            // asset(). Lui donner un chemin absolu court-circuiterait
+            // l'AssetMapper, et les photos livrees avec le site
+            // (images/...) s'afficheraient cassees. Sans lui, asset() rend
+            // /assets/images/...-EMPREINTE.jpg pour les unes et
+            // /uploads/... pour les autres.
             ->setUploadDir('public/uploads')
             ->setUploadedFileNamePattern('uploads/[slug]-[timestamp].[extension]')
             ->setHelp('Sans photo, la carte affiche une image de remplacement.');

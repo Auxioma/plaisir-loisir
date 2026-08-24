@@ -48,7 +48,8 @@ class ServicePackageCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         yield AssociationField::new('service', 'Activite')
-            ->setFormTypeOption('choice_label', 'title');
+            ->setFormTypeOption('choice_label', 'title')
+            ->formatValue(static fn (mixed $v, ServicePackage $p): ?string => $p->getService()?->getTitle());
         yield TextField::new('name', 'Nom de la formule')
             ->setHelp('Par exemple « Tarif adulte » ou « Formule famille ».');
         yield TextareaField::new('description', 'Description')->hideOnIndex();

@@ -46,6 +46,7 @@ class CategoryCrudController extends AbstractCrudController
             ->setHelp('Employe par les pastilles de filtre : /activites?categorie=mon-slug.');
         yield AssociationField::new('parent', 'Categorie parente')
             ->setFormTypeOption('choice_label', 'name')
+            ->formatValue(static fn (mixed $v, Category $c): ?string => $c->getParent()?->getName())
             ->setHelp('Laissez vide pour une categorie de premier niveau.')
             ->hideOnIndex();
         yield IntegerField::new('position', "Ordre d'affichage");
