@@ -1,0 +1,120 @@
+/*
+ * ============================================================================
+ *  BACK-OFFICE — habillage aux couleurs de la plateforme
+ *
+ *  Ce fichier ne redessine PAS l'administration. Il la raccorde au thème du
+ *  site, et s'arrête là : un outil de saisie doit rester lisible et prévisible,
+ *  pas ressembler à une page vitrine.
+ *
+ *  DEUX CHOSES À SAVOIR AVANT D'Y TOUCHER
+ *
+ *  1. EasyAdmin dérive TOUTE sa palette d'un seul jeton, `--ea-primary`, par
+ *     `color-mix()` : les états survolé, actif, discret et contrasté en
+ *     découlent. Redéfinir ce jeton suffit donc à reteinter l'ensemble de
+ *     façon cohérente. Repeindre les composants un par un produirait les mêmes
+ *     couleurs, en beaucoup plus fragile.
+ *
+ *  2. EasyAdmin range son CSS dans des couches (`@layer ea-overrides, vendor,
+ *     ea`). Une règle SANS couche l'emporte sur toutes les couches : ce fichier
+ *     n'en déclare donc aucune, et n'a besoin d'aucun `!important`.
+ *
+ *  Les valeurs viennent de design-system.css : aucune couleur n'est inventée
+ *  ici. --pl-action est la couleur d'interaction de l'espace compte (entrée de
+ *  menu active, onglet courant) ; c'est l'écran du site dont l'administration
+ *  est le plus proche. Le orange --pl-cta reste réservé aux appels à l'action
+ *  commerciaux, il serait criard dans un outil.
+ * ============================================================================
+ */
+
+:root,
+:root .ea-dark-scheme,
+:root .ea-light-scheme {
+    --ea-primary: var(--pl-action);
+    --ea-radius: 8px;
+}
+
+/* --- Typographie ---------------------------------------------------------
+   Inter est hébergée par le projet (fonts.css). Les champs de formulaire
+   n'héritent pas de la police du document : il faut le leur dire. */
+
+body,
+.ea-content,
+.ea-sidebar,
+button,
+input,
+select,
+textarea {
+    font-family: var(--pl-font-family);
+}
+
+/* --- Titres --------------------------------------------------------------
+   Le bleu nuit de la marque, comme les titres du site. */
+
+.ea-content .content-header-title,
+.ea-content h1,
+.ea-content h2 {
+    color: var(--pl-text-display);
+    letter-spacing: -0.01em;
+}
+
+/* --- Colonne de navigation -----------------------------------------------
+   Reprise exacte de l'espace compte (account.css) : fond blanc, entrée active
+   sur --pl-action-light, texte et icône en --pl-action, coins à 10px. */
+
+.ea-sidebar {
+    background: var(--pl-white);
+    border-right: 1px solid var(--pl-border);
+}
+
+.ea-sidebar .menu-item .menu-link {
+    border-radius: 10px;
+    color: var(--pl-text-strong);
+}
+
+.ea-sidebar .menu-item .menu-link:hover {
+    background: var(--pl-surface-dashboard);
+}
+
+.ea-sidebar .menu-item.active .menu-link,
+.ea-sidebar .menu-item .menu-link.active {
+    background: var(--pl-action-light);
+    color: var(--pl-action);
+}
+
+.ea-sidebar .menu-header {
+    color: var(--pl-text-muted);
+    letter-spacing: 0.08em;
+}
+
+/* Le logo remplace le titre textuel : il est fourni en SVG par le site, on lui
+   donne seulement une hauteur et de l'air. */
+.ea-sidebar .main-header .logo img,
+.ea-sidebar .logo-custom img {
+    height: 28px;
+    width: auto;
+}
+
+/* --- Fond de page --------------------------------------------------------
+   La même nuance que les écrans du compte, plutôt que le gris d'origine. */
+
+.ea-content,
+body.ea {
+    background: var(--pl-surface-dashboard);
+}
+
+/* --- Tableaux ------------------------------------------------------------
+   Les chiffres d'une colonne doivent s'aligner : sans `tabular-nums`, un
+   « 1 » est plus étroit qu'un « 8 » et la colonne se déforme. */
+
+.ea-content table td,
+.ea-content table th {
+    font-variant-numeric: tabular-nums;
+}
+
+/* --- Bordures ------------------------------------------------------------ */
+
+.ea-content .card,
+.ea-content .form-widget,
+.ea-content table {
+    border-color: var(--pl-border);
+}

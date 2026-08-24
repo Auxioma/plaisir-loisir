@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Admin\Controller;
 
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\Asset\Packages;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -34,8 +36,10 @@ use Symfony\Component\HttpFoundation\Response;
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
 class DashboardController extends AbstractDashboardController
 {
-    public function __construct(private readonly AdminUrlGenerator $urls)
-    {
+    public function __construct(
+        private readonly AdminUrlGenerator $urls,
+        private readonly Packages $assets,
+    ) {
     }
 
     public function index(): Response
@@ -51,9 +55,30 @@ class DashboardController extends AbstractDashboardController
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
-            ->setTitle('TrouveMoi — Administration')
+            // Le logo du site plutot qu'un titre ecrit : c'est le meme
+            // fichier que celui de la barre de navigation publique, pas une
+            // variante faite pour l'occasion.
+            ->setTitle(sprintf(
+                '<img src="%s" alt="TrouveMoi Plaisirs &amp; Loisirs">',
+                $this->assets->getUrl('images/logo.svg'),
+            ))
             ->setFaviconPath('images/logo.svg')
             ->setLocales(['fr']);
+    }
+
+    /**
+     * Habillage aux couleurs de la plateforme.
+     *
+     * Les jetons et la police sont ceux du site, repris tels quels : le
+     * back-office n'a pas son propre theme a maintenir. admin.css se
+     * contente de les brancher sur ceux d'EasyAdmin.
+     */
+    public function configureAssets(): Assets
+    {
+        return Assets::new()
+            ->addCssFile('styles/design-system.css')
+            ->addCssFile('styles/fonts.css')
+            ->addCssFile('styles/admin.css');
     }
 
     public function configureMenuItems(): iterable
