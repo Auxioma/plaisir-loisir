@@ -1,0 +1,53 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Admin\Controller;
+
+use App\Catalog\Entity\Category;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+
+/**
+ * Categories du catalogue.
+ *
+ * Le slug n'est pas cosmetique : les pastilles de filtre du catalogue
+ * fabriquent leur lien avec (/activites?categorie=mon-slug). Le changer
+ * casserait les liens deja partages.
+ *
+ * @extends AbstractCrudController<Category>
+ */
+class CategoryCrudController extends AbstractCrudController
+{
+    public static function getEntityFqcn(): string
+    {
+        return Category::class;
+    }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setEntityLabelInSingular('categorie')
+            ->setEntityLabelInPlural('categories')
+            ->setPageTitle(Crud::PAGE_INDEX, 'Categories')
+            ->setDefaultSort(['position' => 'ASC', 'name' => 'ASC'])
+            ->setSearchFields(['name']);
+    }
+
+    public function configureFields(string $pageName): iterable
+    {
+        yield TextField::new('name', 'Nom');
+        yield SlugField::new('slug', 'Identifiant dans les filtres')
+            ->setTargetFieldName('name')
+            ->setHelp('Employe par les pastilles de filtre : /activites?categorie=mon-slug.');
+        yield AssociationField::new('parent', 'Categorie parente')
+            ->setFormTypeOption('choice_label', 'name')
+            ->setHelp('Laissez vide pour une categorie de premier niveau.')
+            ->hideOnIndex();
+        yield IntegerField::new('position', "Ordre d'affichage");
+    }
+}

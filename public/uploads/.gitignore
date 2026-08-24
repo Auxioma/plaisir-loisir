@@ -1,0 +1,4 @@
+# Photos televersees depuis le back-office : elles appartiennent au serveur,
+# pas au depot. Le dossier lui-meme est suivi pour exister au deploiement.
+*
+!.gitignore
