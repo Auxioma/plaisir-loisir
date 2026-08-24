@@ -59,9 +59,9 @@ final class MinimalContentTest extends WebTestCase
             '/activites?q='.rawurlencode($titre) => 200,
             '/destinations' => 200,
             '/destinations/populaires' => 200,
-            // Sans fiche detaillee, la page doit repondre 404 — franchement,
-            // pas par une erreur serveur.
-            '/activites/'.$slug => 404,
+            // Sans fiche detaillee non plus : une activite publiee a une page,
+            // construite a partir de ce qu'elle sait d'elle-meme.
+            '/activites/'.$slug => 200,
         ]);
 
         // 2. Sa fiche détaillée, elle aussi au minimum.

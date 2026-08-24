@@ -170,13 +170,17 @@ final class ActivityController extends AbstractController
             throw $this->createNotFoundException(sprintf('Activité « %s » introuvable.', $slug));
         }
 
+        // Ce 404 pour « pas de fiche detaillee » est retire. Le raisonnement
+        // etait : mieux vaut une absence franche qu'une page a moitie vide. Il
+        // se tenait tant que les donnees venaient des fixtures, ou tout est
+        // rempli. Confronte aux vraies donnees, il donnait ceci : le 24/08, les
+        // QUATRE activites du catalogue en production menaient a une erreur. Un
+        // visiteur voyait une carte, cliquait, tombait sur une page d'erreur.
+        //
+        // Une activite publiee doit avoir une page. Le presentateur la
+        // construit desormais a partir de ce que l'activite sait d'elle-meme,
+        // et le gabarit masque les blocs restes vides.
         $detail = $this->presenter->detail($service);
-
-        if (null === $detail) {
-            // Une activite publiee sans contenu editorial afficherait une page
-            // a moitie vide. Mieux vaut un 404 franc, qui se voit.
-            throw $this->createNotFoundException(sprintf("L'activite « %s » n'a pas de fiche detaillee.", $slug));
-        }
 
         return $this->render('activity/show.html.twig', [
             'activity' => $this->presenter->card($service, favoriteSlugs: $this->favorites->activitySlugs()),

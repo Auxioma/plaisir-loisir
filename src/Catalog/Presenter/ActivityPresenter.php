@@ -118,59 +118,121 @@ final class ActivityPresenter
     }
 
     /**
-     * Fiche détaillée, dans la forme que StaticCatalog::detail() produisait.
+     * Fiche détaillée de la page publique.
      *
-     * Renvoie null si l'activité n'a pas de contenu éditorial : c'est à
-     * l'appelant de décider quoi faire, plutôt que de laisser l'écran se
-     * rendre à moitié vide.
+     * NE RENVOIE PLUS NULL, ET C'EST LE POINT IMPORTANT.
      *
-     * @return array<string, mixed>|null
+     * Auparavant, une activité sans contenu éditorial renvoyait null et le
+     * contrôleur rendait une erreur 404. Le raisonnement se tenait tant que
+     * les données venaient des fixtures, où tout est rempli. Confronté aux
+     * vraies données, il donnait ceci : le 24/08, les QUATRE activités du
+     * catalogue en production menaient à une page d'erreur. Le visiteur voyait
+     * une carte, cliquait, et tombait sur une erreur.
+     *
+     * Une activité publiée doit avoir une page. Quand la fiche éditoriale
+     * manque, on la construit à partir de ce que l'activité sait d'elle-même —
+     * son titre, son lieu, sa durée, ses photos, le prix de ses formules, son
+     * prestataire. Rien n'est inventé : ce sont des champs que le back-office
+     * propose déjà à la saisie. Les blocs qui restent vides sont masqués par le
+     * gabarit plutôt que rendus à moitié.
+     *
+     * @return array<string, mixed>
      */
-    public function detail(Service $service): ?array
+    public function detail(Service $service): array
     {
         $detail = $service->getDetail();
 
-        if (null === $detail) {
-            return null;
-        }
-
         return [
-            'breadcrumb' => $detail->getBreadcrumb(),
+            'breadcrumb' => $detail?->getBreadcrumb() ?? [],
             'title' => $service->getTitle(),
             'rating' => $this->rating($service),
             'reviewsCount' => $service->getReviewsCount(),
-            'organizer' => $detail->getOrganizer(),
+            // À défaut de texte saisi, le nom du prestataire : c'est bien lui
+            // qui organise.
+            'organizer' => $detail?->getOrganizer() ?? $service->getProvider()?->getDisplayName(),
             'gallery' => $this->gallery($service),
             'place' => $service->getPlaceLabel(),
-            'keyFacts' => $detail->getKeyFacts(),
-            'price' => $detail->getPrice(),
+            'keyFacts' => $detail?->getKeyFacts() ?: $this->keyFactsFromService($service),
+            'price' => $detail?->getPrice() ?? $this->price($service),
             'presentation' => [
-                'subtitle' => $detail->getPresentationSubtitle(),
-                'text' => $detail->getPresentationText(),
-                'bulletsTitle' => $detail->getHighlightsTitle(),
-                'bullets' => $detail->getHighlights(),
+                'subtitle' => $detail?->getPresentationSubtitle() ?? $service->getSubtitle() ?? $service->getShortDescription(),
+                'text' => $detail?->getPresentationText() ?? $service->getDescription(),
+                'bulletsTitle' => $detail?->getHighlightsTitle(),
+                'bullets' => $detail?->getHighlights() ?? [],
             ],
-            'included' => $detail->getIncluded(),
-            'excluded' => $detail->getExcluded(),
-            'cannotParticipate' => $detail->getCannotParticipate(),
-            'toBring' => $detail->getToBring(),
+            'included' => $detail?->getIncluded() ?? [],
+            'excluded' => $detail?->getExcluded() ?? [],
+            'cannotParticipate' => $detail?->getCannotParticipate() ?? [],
+            'toBring' => $detail?->getToBring() ?? [],
             'logistics' => [
                 // CINQUIEME occurrence du meme defaut : asset(null) fait
                 // tomber la page. Ici c'est le plan du point de depart, absent
                 // tant que personne ne l'a televerse. Le repli n'invente rien :
                 // map.jpg est une image DECORATIVE, la meme pour toutes les
                 // activites dans les fixtures comme dans le catalogue statique.
-                'map' => $detail->getMapImage() ?? self::FALLBACK_MAP,
-                'meeting' => $detail->getMeetingPoints(),
-                'guarantees' => $detail->getGuarantees(),
+                'map' => $detail?->getMapImage() ?? self::FALLBACK_MAP,
+                'meeting' => $detail?->getMeetingPoints() ?: $this->meetingFromService($service),
+                'guarantees' => $detail?->getGuarantees() ?? [],
             ],
             'reviewsSummary' => [
-                'score' => $detail->getReviewsScore(),
-                'outOf' => $detail->getReviewsOutOf(),
-                'total' => $detail->getReviewsTotal(),
+                'score' => $detail?->getReviewsScore() ?? $this->rating($service),
+                'outOf' => $detail?->getReviewsOutOf() ?? 5,
+                'total' => $detail?->getReviewsTotal() ?? $service->getReviewsCount(),
             ],
-            'modalTitle' => $detail->getModalTitle(),
+            'modalTitle' => $detail?->getModalTitle() ?? $service->getTitle(),
         ];
+    }
+
+    /**
+     * Le bandeau « en bref », reconstitué depuis l'activité.
+     *
+     * Les intitulés sont ceux de la maquette. Seules les informations
+     * réellement saisies apparaissent : mieux vaut trois lignes justes que
+     * cinq dont deux vides.
+     *
+     * @return list<array{label: string, value: string}>
+     */
+    private function keyFactsFromService(Service $service): array
+    {
+        $facts = [];
+
+        if (null !== $service->getDurationLabel()) {
+            $facts[] = ['label' => 'Durée', 'value' => $service->getDurationLabel()];
+        }
+
+        if (null !== $service->getCapacity()) {
+            $facts[] = ['label' => 'Maximum de personnes', 'value' => sprintf('%d personnes', $service->getCapacity())];
+        }
+
+        if (null !== $service->getMinimumAge()) {
+            $facts[] = ['label' => "Moyenne d'âge", 'value' => sprintf('%d ans +', $service->getMinimumAge())];
+        }
+
+        if (null !== $service->getCategory()) {
+            $facts[] = ['label' => "Type d'activités", 'value' => $service->getCategory()->getName()];
+        }
+
+        return $facts;
+    }
+
+    /**
+     * Le bloc « rendez-vous », reconstitué depuis l'activité.
+     *
+     * @return list<array{label: string, value: string}>
+     */
+    private function meetingFromService(Service $service): array
+    {
+        $lignes = [];
+
+        if (null !== $service->getMeetingPoint()) {
+            $lignes[] = ['label' => 'Point de départ', 'value' => $service->getMeetingPoint()];
+        }
+
+        if (null !== $service->getAddress()) {
+            $lignes[] = ['label' => 'Adresse', 'value' => $service->getAddress()];
+        }
+
+        return $lignes;
     }
 
     /**

@@ -17,21 +17,18 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
  * Une activité publiée doit avoir une page qui s'ouvre.
  *
  * POURQUOI CE TEST EXISTE
- * `ActivityController::show()` renvoie une erreur 404 quand l'activité n'a pas
- * de fiche détaillée. C'est volontaire — une page à moitié vide serait pire —
- * mais le résultat est brutal : l'activité reste visible dans le catalogue et
- * le clic ne mène nulle part.
+ * Le 24/08, les QUATRE activités du catalogue en production menaient à une
+ * erreur 404 : `ActivityController::show()` refusait d'afficher une activité
+ * sans fiche détaillée. Un visiteur voyait une carte, cliquait, et tombait sur
+ * une page d'erreur. Aucune activité du site n'était consultable.
  *
- * Constaté en production sur « kayak-lac-rose ». Et la première version du
- * back-office n'exposait PAS la fiche détaillée : toute activité que Loïc
- * aurait créée aurait eu ce défaut.
- *
- * Le test tient les deux bouts : sans fiche la page renvoie 404 (le garde-fou
- * fonctionne), avec une fiche saisie dans le back-office elle s'ouvre.
+ * Une activité publiée doit avoir une page. Ce test l'exige dans les deux cas :
+ * sans fiche éditoriale, la page s'ouvre avec ce que l'activité sait
+ * d'elle-même ; avec une fiche, elle affiche ce qui a été saisi.
  */
 final class ActivityPageIsReachableTest extends WebTestCase
 {
-    public function testWithoutADetailSheetThePageAnswers404(): void
+    public function testWithoutADetailSheetThePageStillOpens(): void
     {
         $client = static::createClient();
         $service = $this->makeActivity();
@@ -39,10 +36,17 @@ final class ActivityPageIsReachableTest extends WebTestCase
         $client->request('GET', '/activites/'.$service->getSlug());
 
         self::assertSame(
-            404,
+            200,
             $client->getResponse()->getStatusCode(),
-            'Le garde-fou a saute : une activite sans fiche detaillee doit repondre 404, pas une page a moitie vide.',
+            'Une activite publiee sans fiche editoriale doit avoir une page, pas une erreur.',
         );
+
+        $html = $client->getResponse()->getContent() ?: '';
+        // Elle affiche ce qu'elle sait d'elle-meme.
+        self::assertStringContainsString($service->getTitle(), $html);
+        // Et pas les encadres restes vides.
+        self::assertStringNotContainsString("Inclus dans l'offre", $html, 'Un encadre vide est affiche.');
+        self::assertStringNotContainsString('Informations pratiques', $html, 'Un encadre vide est affiche.');
     }
 
     public function testAnActivityGetsItsPageOnceTheDetailSheetIsFilledIn(): void

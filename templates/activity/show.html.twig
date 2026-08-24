@@ -67,7 +67,9 @@
             </div>
 
             {# --- Bandeau des 5 informations clés. --- #}
-            <div class="act-facts">
+            {# Masque si vide : une activite peut etre publiee avant que sa fiche editoriale ne soit ecrite. Un encadre vide se verrait plus qu'une section absente. #}
+            {% if detail.keyFacts %}
+<div class="act-facts">
                 {% for fact in detail.keyFacts %}
                     <div class="act-fact">
                         <span class="act-fact__label">{{ fact.label }}</span>
@@ -78,6 +80,7 @@
                     </div>
                 {% endfor %}
             </div>
+            {% endif %}
 
             {# --- Présentation générale. --- #}
             <section class="act-block">
@@ -93,7 +96,9 @@
                 </ul>
             </section>
 
-            {# --- Inclus / Exclus (encadré 2 colonnes). --- #}
+            {# Masque si vide : une activite peut etre publiee avant que sa fiche editoriale ne soit ecrite. Un encadre vide se verrait plus qu'une section absente. #}
+            {% if detail.included or detail.excluded %}
+{# --- Inclus / Exclus (encadré 2 colonnes). --- #}
             <section class="act-block act-block--boxed">
                 <h2 class="act-block__title">{{ "Inclus dans l'offre / Exclus de l'offre"|trans }}</h2>
                 <hr class="act-block__sep">
@@ -110,8 +115,11 @@
                     </ul>
                 </div>
             </section>
+            {% endif %}
 
-            {# --- Informations pratiques. --- #}
+            {# Masque si vide : une activite peut etre publiee avant que sa fiche editoriale ne soit ecrite. Un encadre vide se verrait plus qu'une section absente. #}
+            {% if detail.cannotParticipate or detail.toBring %}
+{# --- Informations pratiques. --- #}
             <section class="act-block">
                 <h2 class="act-block__title">{{ 'Informations pratiques'|trans }}</h2>
                 <hr class="act-block__sep">
@@ -128,8 +136,11 @@
                     {% endfor %}
                 </ul>
             </section>
+            {% endif %}
 
-            {# --- Bloc logistique : carte + rendez-vous + garanties. --- #}
+            {# Masque si vide : une activite peut etre publiee avant que sa fiche editoriale ne soit ecrite. Un encadre vide se verrait plus qu'une section absente. #}
+            {% if detail.logistics.meeting or detail.logistics.guarantees %}
+{# --- Bloc logistique : carte + rendez-vous + garanties. --- #}
             <section class="act-block" id="logistique">
                 <div class="act-logistics">
                     <div class="act-logistics__map">
@@ -157,6 +168,7 @@
                     </div>
                 </div>
             </section>
+            {% endif %}
         </div>
 
         {# --- Panneau de réservation sticky (spec §F). --- #}
