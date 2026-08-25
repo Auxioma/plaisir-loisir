@@ -275,6 +275,9 @@
     border: 1.5px solid var(--pl-error); border-radius: 10px;
     color: var(--pl-error); background: var(--pl-white); text-decoration: none;
     font-size: 15px; font-weight: 600; width: 238px; height: 40px; padding: 0;
+    /* Devenu un <button> le 25/08 (déconnexion en POST) : un bouton n'a pas
+       la main du curseur par défaut, contrairement à un lien. */
+    cursor: pointer;
 }
 .acc-logout__yes:hover { background: #fdeaea; color: var(--pl-error); }
 .acc-logout__cancel {

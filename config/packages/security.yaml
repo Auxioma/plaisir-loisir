@@ -31,6 +31,11 @@ security:
             logout:
                 path: app_logout
                 target: app_home
+                # Sans ce jeton, la déconnexion s'obtenait par un simple GET :
+                # un site tiers affichant <img src="…/logout"> déconnectait le
+                # visiteur à son insu. L'écran de confirmation poste désormais
+                # un formulaire portant « _csrf_token ».
+                enable_csrf: true
 
             remember_me:
                 secret: '%kernel.secret%'

@@ -21,7 +21,24 @@
         </nav>
 
         <div class="gift-tunnel">
-            <form class="gift-steps" id="gift-form" method="get" action="{{ path('app_gifts_offer_payment') }}" novalidate>
+            {# POST, ET NON GET — corrigé le 25/08.
+
+               Ce formulaire recueille des données personnelles : nom, adresse
+               e-mail, téléphone, nom du destinataire et message privé. En GET,
+               elles partaient dans l'adresse de la page suivante :
+
+                   /cadeaux/offrir/paiement?fullName=…&email=…&message=…
+
+               Une URL n'est pas un endroit discret. Elle est conservée dans
+               l'historique du navigateur, écrite en clair dans les journaux
+               d'accès du serveur, et transmise dans l'en-tête « Referer » à
+               tout service tiers que la page de paiement viendrait à charger.
+
+               Le jeton accompagne le reste du site (contact, partenaire,
+               assistants) : le contrôleur le vérifie avant d'afficher l'écran
+               de paiement. #}
+            <form class="gift-steps" id="gift-form" method="post" action="{{ path('app_gifts_offer_payment') }}" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
 
                 {# ==========================================================
                    CARTE 1 : VOS INFORMATIONS (états vide / erreur / rempli

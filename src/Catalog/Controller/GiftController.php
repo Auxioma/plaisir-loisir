@@ -8,6 +8,7 @@ use App\Catalog\StaticCatalog;
 use App\Catalog\StaticDestinations;
 use App\Catalog\StaticGifts;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -54,9 +55,28 @@ final class GiftController extends AbstractController
         return $this->render('gift/offrir.html.twig');
     }
 
-    #[Route(path: ['fr' => '/cadeaux/offrir/paiement', 'en' => '/en/gift-cards/buy/payment'], name: 'app_gifts_offer_payment')]
-    public function payment(): Response
+    /**
+     * Écran 8 : le paiement.
+     *
+     * L'écran précédent postait ses champs en GET jusqu'au 25/08 : nom,
+     * e-mail, téléphone, destinataire et message se retrouvaient dans
+     * l'adresse de cette page. Il poste désormais, et le jeton est vérifié
+     * ici comme sur les autres formulaires du site.
+     *
+     * La méthode GET reste acceptée : la page ne fait qu'afficher un écran
+     * et l'interdire casserait l'actualisation et le bouton Précédent, sans
+     * rien protéger — c'est le formulaire d'en face qui portait le défaut,
+     * pas cette route.
+     */
+    #[Route(path: ['fr' => '/cadeaux/offrir/paiement', 'en' => '/en/gift-cards/buy/payment'], name: 'app_gifts_offer_payment', methods: ['GET', 'POST'])]
+    public function payment(Request $request): Response
     {
+        if ($request->isMethod('POST') && !$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de recommencer la saisie.');
+
+            return $this->redirectToRoute('app_gifts_offer');
+        }
+
         return $this->render('gift/paiement.html.twig');
     }
 }

@@ -43,7 +43,26 @@
 
             <p class="acc-logout__confirm">{{ 'Êtes-vous sûr de vouloir vous déconnecter ?'|trans }}</p>
             <div class="acc-logout__actions">
-                <a href="{{ path('app_logout') }}" class="acc-logout__yes">{{ icon.logout(17) }} {{ 'Oui, me déconnecter'|trans }}</a>
+                {# UN FORMULAIRE, ET NON UN LIEN — corrigé le 25/08.
+
+                   La déconnexion par simple lien s'exécute sur un GET, sans
+                   preuve que le visiteur l'ait demandée. N'importe quel site
+                   tiers pouvait donc afficher
+
+                       <img src="https://trouvemoi.eu/logout">
+
+                   et déconnecter la personne à son insu. Aucune donnée n'est
+                   perdue au passage, mais c'est le manuel de Symfony : un
+                   envoi POST accompagné d'un jeton, activé côté pare-feu par
+                   « enable_csrf: true ».
+
+                   « display: contents » sur le formulaire : le bouton reste
+                   l'élément direct de la rangée flex, la mise en page ne
+                   bouge pas d'un pixel. #}
+                <form method="post" action="{{ path('app_logout') }}" style="display: contents;">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                    <button type="submit" class="acc-logout__yes">{{ icon.logout(17) }} {{ 'Oui, me déconnecter'|trans }}</button>
+                </form>
                 <button type="button" class="acc-logout__cancel" data-acc-back>{{ 'Annuler'|trans }}</button>
             </div>
         </div>
