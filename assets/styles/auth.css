@@ -7,12 +7,33 @@
  * ============================================================================
  */
 
-/* Zone « héros » : porte l'illustration de fond, sur toute la largeur du contenu. */
+/* Zone « héros » : porte l'illustration de fond, sur toute la largeur de la page.
+ *
+ * LA LARGEUR MAXIMALE A ÉTÉ RETIRÉE LE 25/08.
+ *
+ * Elle enfermait le bloc dans 1440px centrés. Sur la maquette, qui est dessinée
+ * à 1440, l'illustration touche le bord gauche : à cette largeur exacte les deux
+ * coïncidaient, et la mesure le confirmait à 0px près. Mais sur un écran plus
+ * large — 1920, le cas courant — l'illustration s'arrêtait à x=240 et laissait
+ * une bande blanche de 240px de chaque côté, tandis que l'en-tête et le pied de
+ * page, eux, allaient d'un bord à l'autre. D'où l'impression de marge signalée
+ * par le client, à gauche surtout, du côté de l'image.
+ *
+ * Le retrait latéral suit désormais celui de la barre de navigation (padding
+ * sans largeur maximale, components.css) : même comportement d'un bout à
+ * l'autre de la page. À 1440 le rendu ne bouge pas d'un pixel — vérifié par
+ * mesure avant/après sur les cinq écrans du parcours.
+ */
 .auth-hero {
     position: relative;
-    max-width: var(--pl-container-desktop);   /* 1440px */
-    margin: 0 auto;
-    min-height: 913px;
+    /* L'illustration mesure exactement 1440x913, la taille du bloc à la largeur
+       de la maquette : à 1440 elle s'affiche donc au 1:1, sans recadrage.
+       Au-delà, `object-fit: cover` l'agrandit pour couvrir la largeur et rogne
+       le haut — le ciel disparaît et les personnages remontent DANS le texte
+       « Profitez ». Le bloc conserve donc le rapport de l'image : elle reste
+       entière, d'un bord à l'autre, et le texte garde son ciel derrière lui.
+       913 / 1440 = 0,634. */
+    min-height: max(913px, calc(100vw * 913 / 1440));
     padding: 82px 141px 103px 164px;
     overflow: hidden;
 }

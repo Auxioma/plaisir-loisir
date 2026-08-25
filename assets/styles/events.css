@@ -24,7 +24,8 @@
     border: 1px solid var(--ev-line); background: var(--pl-white);
     color: var(--pl-text-muted); border-radius: 10px;
 }
-.ev-btn-ghost:hover { border-color: var(--pl-action); color: var(--pl-action); }
+/* Survol uniforme (25/08) : la boite entiere se teinte, pas seulement le trait. */
+.ev-btn-ghost:hover { border-color: var(--pl-action); color: var(--pl-action); background: var(--pl-action-light); }
 
 /* Grille wizard : 300px / 1fr / 360px, colonnes latérales sticky. */
 /* Colonnes mesurées sur la maquette : 295 / 606 / 295, gouttières 19px. */

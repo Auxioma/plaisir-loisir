@@ -119,7 +119,14 @@
    le bouton liste n'a ni fond ni bordure, seulement son pictogramme gris. */
 .acc-view__btn--fill { background: var(--pl-surface-dashboard); border-color: transparent; color: #757b86; }
 .acc-view__btn--bare { background: transparent; border-color: transparent; color: #c2cbdc; }
-.acc-view__btn:hover, .acc-view__map:hover { border-color: var(--pl-action); color: var(--pl-action); }
+/* Survol uniforme (25/08) : toute la boite se teinte, comme .acc-logout__cancel
+   juste en dessous et comme le reste du site.
+
+   « Afficher la carte » est TENU A PART, et volontairement : son fond porte la
+   texture de carte relevee sur la maquette. Lui poser une couleur l'effacerait.
+   Il garde donc son liseré et son libellé teintés, sans remplissage. */
+.acc-view__btn:hover { border-color: var(--pl-action); color: var(--pl-action); background: var(--pl-action-light); }
+.acc-view__map:hover { border-color: var(--pl-action); color: var(--pl-action); }
 
 .acc-count-row { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 12px; }
 .acc-count { font-size: 14.5px; color: var(--pl-text-muted); }

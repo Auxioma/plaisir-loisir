@@ -720,7 +720,8 @@
     color: var(--pl-text);
     cursor: pointer;
 }
-.home-cats__nav:hover { color: var(--pl-action); border-color: var(--pl-action); }
+/* Survol uniforme (25/08) : meme remplissage que les autres fleches du site. */
+.home-cats__nav:hover { color: var(--pl-action); border-color: var(--pl-action); background: var(--pl-action-light); }
 .home-cats__scroll { display: flex; gap: var(--pl-sp-16); overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; }
 .home-cats__scroll::-webkit-scrollbar { display: none; }
 .home-cat {

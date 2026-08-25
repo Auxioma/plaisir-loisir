@@ -146,9 +146,15 @@
     color: var(--pl-text);
     cursor: pointer;
     white-space: nowrap;
-    transition: border-color .15s ease, color .15s ease;
+    transition: border-color .15s ease, color .15s ease, background-color .15s ease;
 }
-.act-tool:hover { border-color: var(--pl-action); color: var(--pl-action); }
+/* SURVOL UNIFORME — 25/08.
+   Ces boutons ne teintaient que leur bordure et leur libellé : la surface
+   restait blanche, si bien qu'on ne voyait pas ce qu'on allait cliquer. Le
+   reste du site remplit déjà toute la boîte (.pl-nav__link, .act-viewbtn,
+   .pl-iconbtn, les grilles de calendrier…). C'est cette convention qui est
+   reprise ici, pas une nouvelle : même jeton --pl-action-light. */
+.act-tool:hover { border-color: var(--pl-action); color: var(--pl-action); background: var(--pl-action-light); }
 .act-tool--plain { border: 0; background: transparent; }
 .act-tool--plain strong { font-weight: var(--pl-fw-semibold); }
 
@@ -187,7 +193,7 @@
     color: var(--pl-text);
     cursor: pointer;
 }
-.act-chipbar__more:hover { color: var(--pl-action); border-color: var(--pl-action); }
+.act-chipbar__more:hover { color: var(--pl-action); border-color: var(--pl-action); background: var(--pl-action-light); }
 
 .act-chip {
     display: inline-flex; align-items: center; gap: var(--pl-sp-8);
@@ -206,7 +212,7 @@
     text-decoration: none;
     transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 }
-.act-chip:hover { border-color: var(--pl-action); color: var(--pl-action); }
+.act-chip:hover { border-color: var(--pl-action); color: var(--pl-action); background: var(--pl-action-light); }
 .act-chip.is-active {
     background: var(--pl-action);
     border-color: var(--pl-action);
@@ -220,7 +226,7 @@
     border-color: #eceef1;
     color: var(--pl-text-secondary);
 }
-.act-chip--filter:hover { border-color: var(--pl-action); color: var(--pl-action); }
+.act-chip--filter:hover { border-color: var(--pl-action); color: var(--pl-action); background: var(--pl-action-light); }
 
 /* --- Ligne de résultats. --- */
 .act-results {
@@ -330,7 +336,7 @@
     color: var(--pl-text);
     cursor: pointer;
 }
-.act-citybar__nav:hover { color: var(--pl-action); border-color: var(--pl-action); }
+.act-citybar__nav:hover { color: var(--pl-action); border-color: var(--pl-action); background: var(--pl-action-light); }
 
 /* --- Pagination ‹ 1 2 3 4 ›. --- */
 .act-pagination {
@@ -350,7 +356,7 @@
     cursor: pointer;
     transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 }
-.act-page-btn:hover { border-color: var(--pl-action); color: var(--pl-action); }
+.act-page-btn:hover { border-color: var(--pl-action); color: var(--pl-action); background: var(--pl-action-light); }
 .act-page-btn.is-active { background: var(--pl-action); border-color: var(--pl-action); color: var(--pl-white); }
 
 /* ===========================================================================
@@ -809,7 +815,7 @@ a.act-popup__title:hover { color: var(--pl-action); }
     color: var(--pl-text);
     cursor: pointer;
 }
-.act-stepper__controls button:hover { border-color: var(--pl-action); color: var(--pl-action); }
+.act-stepper__controls button:hover { border-color: var(--pl-action); color: var(--pl-action); background: var(--pl-action-light); }
 .act-stepper__controls button:disabled { opacity: .4; cursor: not-allowed; }
 .act-stepper__controls output { min-width: 20px; text-align: center; font-weight: var(--pl-fw-semibold); }
 /* Maquette : le total est posé sur fond blanc, séparé par un filet — pas dans
