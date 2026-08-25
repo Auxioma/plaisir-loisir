@@ -175,6 +175,11 @@
 
 /* « Afficher la carte » : liseré bleuté et fond très clair (maquette). */
 #act-map-toggle { border-color: #b9c9e8; background: #f6f9ff; }
+/* Le survol de .act-tool ne l'atteignait pas : un sélecteur d'identifiant
+   l'emporte sur n'importe quelle classe, son fond restait donc figé alors que
+   ses voisins immédiats se teintaient. C'est le bouton que le client cite
+   nommément. Même convention que les autres, écrite avec la même force. */
+#act-map-toggle:hover { border-color: var(--pl-action); color: var(--pl-action); background: var(--pl-action-light); }
 
 /* --- Chips de filtres / villes. --- */
 .act-chipbar {
