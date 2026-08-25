@@ -173,7 +173,6 @@
     grid-template-columns: repeat(8, 1fr);
     grid-auto-rows: 306px;
     gap: var(--pl-sp-16);
-    margin-inline: -6px;
 }
 .dest-tile {
     position: relative;

@@ -55,16 +55,28 @@
    chargé en dernier. Ne pas la redéclarer ici : deux sources de vérité pour la
    même marge, c'est la garantie qu'elles divergeront. */
 
-/* Bootstrap : la rangée déborde d'une demi-gouttière de chaque côté et chaque
-   colonne la compense en padding. Avec 16px, quatre .col-3 dans un conteneur
-   de 1220px donnent des cartes de 293px — il manque 3px par carte. La classe
-   .row--bleed ajoute le débordement de 6px de la maquette et rétablit les
-   296px exacts, comme le fait déjà .card-grid. */
+/* DÉBORDEMENT DE 6px : RETIRÉ LE 24/08, SUR DEMANDE DU CTO
+ *
+ * La maquette pose les blocs de texte à x110 sur 1220, mais les rangées de
+ * cartes à x104 sur 1232 : Agnès a dessiné des cartes de 296px, et quatre
+ * cartes de 296 avec 16 de gouttière réclament 1232, pas 1220. Elle a donc
+ * élargi les rangées de 6px de chaque côté.
+ *
+ * Reproduit fidèlement, cela donnait trois sections empilées dont les bords
+ * gauches sautaient de 110 à 104 — mesuré sur la page Offres. Un œil de
+ * développeur l'attrape immédiatement, et c'est ce que le CTO a signalé.
+ *
+ * Le site s'aligne désormais sur UN conteneur : tout part de x110. Les cartes
+ * mesurent 293px au lieu de 296 — 3px de moins, invisibles, là où les 6px de
+ * décalage se voyaient. Le débordement a été retiré de 18 endroits
+ * (corporate, destinations, gifts, home) ; .row--bleed disparaît avec eux.
+ *
+ * À NE PAS RÉINTRODUIRE en croyant corriger un écart à la maquette : c'est un
+ * écart assumé, arbitré, et il concerne tout le site. */
 .row {
     --bs-gutter-x: var(--pl-sp-16);
     --bs-gutter-y: var(--pl-sp-16);
 }
-.row--bleed { margin-inline: calc(-.5 * var(--bs-gutter-x) - 6px); }
 
 /* La carte de recherche de l'accueil ne suit PAS la grille 110/1220 : Figma
    (« Container - Renseignement » 700:78360) la place à x=68 sur 1304, soit

@@ -348,7 +348,6 @@
     /* Maquette : pas vertical de 426px d'une rangée à l'autre (soit 40px entre
        les cartes), gouttière horizontale de 16px. */
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px 16px;
-    margin-inline: -6px;
 }
 
 .pl-card {

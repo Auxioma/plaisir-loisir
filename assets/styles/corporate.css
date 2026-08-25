@@ -247,7 +247,6 @@
 .cor-team__grid {
     display: grid; grid-template-columns: repeat(4, 1fr);
     gap: 48px 16px;
-    margin-inline: -6px;
 }
 .cor-member { text-align: center; }
 .cor-member__photo {
@@ -402,7 +401,6 @@
     gap: 30px 16px;
     /* La grille déborde le conteneur de texte de 6px de chaque côté pour
        retomber sur la grille d'images (x104 -> x1336). */
-    margin-inline: -6px;
 }
 /* Maquette : cartes de 296 x 298, bordure #eff1f3, rayon 12. */
 .pw-card {
@@ -457,7 +455,6 @@
     display: grid;
     grid-template-columns: 602px 1fr;
     gap: 139px;
-    margin-inline: -6px;
 }
 .pw-how__media { position: relative; }
 /* Le cadre découpe la photo ; la source, plus large que haute, est posée en
@@ -559,7 +556,6 @@
     display: grid;
     grid-template-columns: repeat(2, 607px);
     gap: 14px;
-    margin-inline: -6px;
 }
 .pw-review {
     background: var(--pl-white);
@@ -750,7 +746,7 @@
 
 /* Maquette : « C'est le moment de se lancer ! » démarre à y224, encre 685. */
 .pf-title {
-    margin: 55px 0 0 -6px;
+    margin: 55px 0 0;
     font-size: 48px;
     font-weight: var(--pl-fw-medium);
     line-height: 1.1;
@@ -758,7 +754,7 @@
 }
 /* Maquette : une seule ligne de 1196 d'encre (x105 -> x1300). */
 .pf-lead {
-    margin: 17px 0 0 -6px;
+    margin: 17px 0 0;
     font-size: 16px;
     line-height: 24px;
     color: #64748b;
@@ -1096,7 +1092,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 28px 23px;
-    margin: 31px -6px 0;
+    margin: 31px 0 0;
 }
 /* Maquette : 33 entre la dernière rangée et le pied de page. */
 .cr-jobs--all { padding-bottom: 34px; }
@@ -1151,7 +1147,6 @@
     position: relative;
     display: flex; align-items: center; justify-content: space-between;
     min-height: 398px;
-    margin-inline: -6px;
     padding: 0 40px 0 58px;
     background: #e9effd;
     border-radius: 16px;
@@ -1187,13 +1182,17 @@
 
 /* ---- Nos valeurs -------------------------------------------------------- */
 .cr-values { padding-block: 69px 33px; }
-/* Le titre de cette section est aligné sur la grille d'images (x104). */
-.cr-values .pw-section__title { margin-left: -6px; margin-bottom: 48px; }
+/* Le débordement de 6px qui alignait ce titre sur la grille d'images a été
+   retiré le 25/08, comme les dix-huit autres du site : il sortait de la colonne
+   Bootstrap et c'est précisément l'écart que le CTO a relevé. Dernier survivant
+   de la passe du 24 — il s'écrivait « margin-left » et non « margin-inline »,
+   et le balayage l'avait manqué. Repéré par mesure : sur /carrieres, ce titre
+   était le seul élément à commencer à x104 au lieu de x110. */
+.cr-values .pw-section__title { margin-bottom: 48px; }
 .cr-values__grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px 16px;
-    margin-inline: -6px;
 }
 .cr-value { min-height: auto; background: transparent; padding: 34px 40px 30px; }
 .cr-value--featured { background: #f8fafc; }
@@ -1342,7 +1341,6 @@
     grid-template-columns: 728px 1fr;
     gap: 105px;
     align-items: start;
-    margin-inline: -6px;
 }
 .ct-card {
     background: var(--pl-white);
@@ -1399,7 +1397,7 @@
 
 /* ---- Carte ------------------------------------------------------------- */
 .ct-map { padding-top: 1px; }
-.ct-map__frame { position: relative; margin-inline: -6px; }
+.ct-map__frame { position: relative; }
 .ct-map__img { display: block; width: 1232px; height: 398px; object-fit: cover; }
 /* Maquette : encart blanc posé en bas à gauche de la carte. */
 .ct-map__card {
@@ -1434,7 +1432,7 @@
 }
 .ct-args__grid {
     list-style: none;
-    margin: 0 -6px;
+    margin: 0;
     padding: 0;
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
 }
@@ -1484,7 +1482,6 @@
 .py-protect { padding-block: 48px 0; }
 .py-grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
-    margin-inline: -6px;
 }
 .py-card { min-height: 260px; text-align: center; padding: 31px 22px 24px; }
 .py-card__icon { margin: 0 auto 18px; }
@@ -1494,7 +1491,6 @@
 /* ---- Moyens de paiement -------------------------------------------------- */
 .py-means { padding-top: 62px; }
 .py-means__panel {
-    margin-inline: -6px;
     padding: 67px 98px 72px;
     background: #f8fafc;
     border-radius: 16px;
@@ -1528,7 +1524,6 @@
    à droite, dessinés en dégradés radiaux répétés. */
 .py-help__panel {
     position: relative;
-    margin-inline: -6px;
     padding: 66px 40px 66px;
     background: #efe6ff;
     border-radius: 16px;
@@ -1581,7 +1576,6 @@
     grid-template-columns: 296px 1fr;
     gap: 17px;
     align-items: start;
-    margin-inline: -6px;
 }
 /* Maquette : l'encadré démarre 10px au-dessus du fil d'Ariane de la colonne
    de contenu. */
@@ -1634,7 +1628,7 @@
 
 /* Bannière « Notre engagement » des pages légales : même gabarit que
    « Besoin d'aide ? » de l'écran Paiement sécurisé. */
-.lg-engage { margin: 40px -6px 0; padding-block: 44px 44px; }
+.lg-engage { margin: 40px 0 0; padding-block: 44px 44px; }
 .lg-engage__title { font-size: 26px; }
 
 /* Sur Carrières, la bande des avis est en #f8fafc et non en #fafafb. */
