@@ -17,13 +17,14 @@
     <section class="act-head">
         <div class="container">
             <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+                {# Chaque maillon porte sa propre route (ActivityPresenter) :
+                   le gabarit ne devine plus la destination d'après la place du
+                   libellé dans la liste. #}
                 {% for crumb in detail.breadcrumb %}
-                    {% if loop.first %}
-                        <a href="{{ path('app_home') }}">{{ crumb }}</a>
-                    {% elseif loop.last %}
-                        <span aria-current="page">{{ crumb }}</span>
+                    {% if crumb.route %}
+                        <a href="{{ path(crumb.route, crumb.params) }}">{{ crumb.label|trans }}</a>
                     {% else %}
-                        <a href="{{ path('app_activities') }}">{{ crumb }}</a>
+                        <span aria-current="page">{{ crumb.label }}</span>
                     {% endif %}
                     {% if not loop.last %}<span aria-hidden="true">|</span>{% endif %}
                 {% endfor %}

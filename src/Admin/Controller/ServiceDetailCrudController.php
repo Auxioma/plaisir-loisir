@@ -73,9 +73,17 @@ class ServiceDetailCrudController extends AbstractCrudController
         yield TextareaField::new('presentationText', 'Texte de présentation')
             ->setNumOfRows(6)
             ->hideOnIndex();
-        yield ArrayField::new('breadcrumb', 'Fil d\'Ariane')
-            ->setHelp('Une entrée par niveau, par exemple : Accueil, Activités, Kayak.')
-            ->hideOnIndex();
+        // LE FIL D'ARIANE N'EST PLUS PROPOSÉ À LA SAISIE — 26/08.
+        //
+        // C'était un champ de texte libre dont le gabarit devinait les liens
+        // d'après la position des mots : le premier vers l'accueil, tous ceux
+        // du milieu vers le listing. Sur la fiche du canoë, il annonçait
+        // « Toutes les destinations | Paris, France » et menait aux activités.
+        //
+        // Le fil est désormais déduit de l'activité — accueil, listing,
+        // catégorie, titre — avec les vraies adresses. Laisser le champ
+        // reviendrait à faire saisir à Loïc un contenu qui ne s'affiche plus
+        // nulle part. La colonne reste en base, rien n'est perdu.
 
         yield FormField::addTab('Points forts');
         yield TextField::new('highlightsTitle', 'Titre du bloc')->hideOnIndex();

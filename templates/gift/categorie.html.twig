@@ -108,7 +108,10 @@
             <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
                 <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
                 <span aria-hidden="true">|</span>
-                <a href="{{ path('app_gifts') }}">{{ 'Destinations'|trans }}</a>
+                {# Le libellé disait « Destinations » alors que le lien menait
+                   déjà aux cadeaux : même report de maquette que sur les
+                   mentions légales. Corrigé le 26/08, écart validé. #}
+                <a href="{{ path('app_gifts') }}">{{ 'Cadeaux'|trans }}</a>
                 <span aria-hidden="true">|</span>
                 <span aria-current="page">{{ 'Cadeaux par activités'|trans }}</span>
             </nav>

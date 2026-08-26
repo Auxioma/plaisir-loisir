@@ -41,12 +41,22 @@
 
             {# ---- Contenu ---- #}
             <div class="lg-main">
+                {# FIL D'ARIANE CORRIGÉ LE 26/08, EN S'ÉCARTANT DE LA MAQUETTE.
+
+                   Il annonçait « Accueil | Destinations | Destination
+                   populaires » — sur la page des mentions légales. La maquette
+                   d'Agnès porte exactement ce texte, coquille « Acceuil »
+                   comprise : c'est un report du parcours Destinations resté
+                   dans cet écran. Reproduit fidèlement, il envoyait le lecteur
+                   vers une page sans rapport avec celle qu'il lisait.
+
+                   L'écart est assumé et validé par le client le 26/08 : le fil
+                   d'Ariane décrit désormais le vrai chemin. Ce gabarit sert
+                   aussi aux conditions générales, d'où le titre variable. #}
                 <nav class="act-breadcrumb lg-crumb" aria-label="{{ "Fil d'Ariane"|trans }}">
                     <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
                     <span aria-hidden="true">|</span>
-                    <a href="{{ path('app_destinations') }}">{{ 'Destinations'|trans }}</a>
-                    <span aria-hidden="true">|</span>
-                    <span aria-current="page">{{ 'Destination populaires'|trans }}</span>
+                    <span aria-current="page">{{ page_title|trans }}</span>
                 </nav>
 
                 <h1 class="lg-title">{{ page_title|trans }}</h1>

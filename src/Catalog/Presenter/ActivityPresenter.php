@@ -143,7 +143,7 @@ final class ActivityPresenter
         $detail = $service->getDetail();
 
         return [
-            'breadcrumb' => $detail?->getBreadcrumb() ?? [],
+            'breadcrumb' => $this->breadcrumb($service),
             'title' => $service->getTitle(),
             'rating' => $this->rating($service),
             'reviewsCount' => $service->getReviewsCount(),
@@ -181,6 +181,50 @@ final class ActivityPresenter
             ],
             'modalTitle' => $detail?->getModalTitle() ?? $service->getTitle(),
         ];
+    }
+
+    /**
+     * Fil d'Ariane de la fiche, construit depuis l'activité elle-même.
+     *
+     * IL VENAIT D'UN CHAMP DE TEXTE LIBRE, ET C'ÉTAIT LE DÉFAUT.
+     *
+     * `ServiceDetail::breadcrumb` est une liste de mots saisis à la main. Le
+     * gabarit en faisait des liens en devinant : le premier vers l'accueil, le
+     * dernier sans lien, et TOUS ceux du milieu vers le listing des activités,
+     * quel que soit leur libellé. Sur la fiche du canoë, cela donnait
+     * « Accueil | Toutes les destinations | Paris, France | Sports & aventures »
+     * — trois libellés du parcours Destinations, dont deux pointaient vers les
+     * activités. Le lecteur ne pouvait pas savoir où il allait.
+     *
+     * Un fil d'Ariane est une position dans le site, pas une phrase : il se
+     * déduit. Chaque maillon porte donc sa route et ses paramètres, et le
+     * gabarit se contente de les rendre. Le libellé de la catégorie n'apparaît
+     * que si l'activité en a une, et il mène au listing filtré sur cette
+     * catégorie — l'adresse existe déjà, c'est celle des pastilles.
+     *
+     * @return list<array{label: string, route: string|null, params: array<string, string>}>
+     */
+    private function breadcrumb(Service $service): array
+    {
+        $fil = [
+            ['label' => 'Accueil', 'route' => 'app_home', 'params' => []],
+            ['label' => 'Toutes les activités', 'route' => 'app_activities', 'params' => []],
+        ];
+
+        $category = $service->getCategory();
+
+        if (null !== $category) {
+            $fil[] = [
+                'label' => $category->getName(),
+                'route' => 'app_activities',
+                'params' => ['categorie' => $category->getSlug()],
+            ];
+        }
+
+        // Page en cours : pas de lien, c'est là qu'on se trouve.
+        $fil[] = ['label' => $service->getTitle(), 'route' => null, 'params' => []];
+
+        return $fil;
     }
 
     /**
