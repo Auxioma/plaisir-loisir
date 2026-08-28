@@ -100,13 +100,25 @@
 /* Maquette : « Afficher la carte » fait 158x40 et s'arrête à x1222, puis 23px
    d'écart, le bouton des filtres (40x40) et 12px d'écart, le bouton liste. */
 .acc-view { display: flex; gap: 12px; align-items: center; padding-bottom: 10px; }
+/* MESURÉ SUR LA MAQUETTE LE 26/08 (assets/profil/Mes favoris.png, bouton
+   relevé à x1065-1223, y312-352, soit 158x40) :
+     - bordure  rgb(157,171,199) = #9dabc7, un gris BLEUTÉ, et non le gris
+       neutre --pl-border (#e5e7eb) que portait le bouton ;
+     - libellé  rgb(100,116,139) = #64748b, ce qui est déjà --pl-text-secondary,
+       inchangé donc ;
+     - fond     moyenne (218,221,220) sur une bande sans texte.
+
+   Le voile blanc à 55 % remontait cette moyenne à (246,245,242) : le plan
+   devenait presque invisible, alors que la maquette le montre lisible. Il est
+   retiré. Sans lui le site tombe à (239,238,234) : il reste plus pâle que la
+   maquette, mais l'écart qui subsiste vient de la TEXTURE elle-même —
+   map-button.jpg est un recadrage délavé et symétrisé, dont on voit les
+   raccords. Le remplacer demande un export propre du plan. */
 .acc-view__map {
     width: 158px; height: 40px; margin-right: 11px;
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    border: 1px solid var(--pl-border); border-radius: 10px; cursor: pointer;
-    /* Texture de carte relevée sur la maquette (bandes sans libellé). */
-    background: linear-gradient(rgba(255, 255, 255, .55), rgba(255, 255, 255, .55)),
-        url('../images/account/map-button.jpg') center / cover;
+    border: 1px solid #9dabc7; border-radius: 10px; cursor: pointer;
+    background: url('../images/account/map-button.jpg') center / cover;
     color: var(--pl-text-secondary);
     font-size: 14px; font-weight: 600; padding: 0;
 }
