@@ -254,3 +254,50 @@
     cursor: pointer;
 }
 .pl-footer__chip:hover { background: rgba(255, 255, 255, .08); }
+
+/* ===========================================================================
+ *  SUGGESTIONS DE RECHERCHE (autocomplete.js)
+ *
+ *  Liste déroulante posée sous un champ de recherche. Elle n'existe sur aucune
+ *  maquette : Agnès n'a pas dessiné cet état, la fonction ayant été demandée
+ *  après. La mise en forme reprend donc strictement des composants existants —
+ *  le fond, la bordure, le rayon et l'ombre des panneaux du site, et le survol
+ *  plein de --pl-action-light employé partout ailleurs. Rien n'est inventé
+ *  au-delà de ce que la charte contient déjà.
+ * ======================================================================== */
+.pl-suggest-anchor { position: relative; }
+
+.pl-suggest {
+    position: absolute;
+    z-index: 1200;                 /* au-dessus des panneaux de filtres */
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 100%;
+    max-height: 280px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: var(--pl-white);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, .12);
+}
+.pl-suggest[hidden] { display: none; }
+
+.pl-suggest__item {
+    padding: 9px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: var(--pl-fs-body-sm);
+    color: var(--pl-text);
+    /* Un lieu long — « Annecy, Haute-Savoie » — ne doit pas élargir la liste
+       au-delà du champ ni passer à la ligne. */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* Survol ET parcours au clavier donnent le même repère visuel : sinon la
+   flèche du bas déplace une sélection qu'on ne voit pas. */
+.pl-suggest__item:hover,
+.pl-suggest__item.is-active { background: var(--pl-action-light); color: var(--pl-action); }

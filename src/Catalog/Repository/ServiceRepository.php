@@ -278,4 +278,83 @@ class ServiceRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Lieux proposés pendant la frappe : « pa » doit faire apparaître Paris.
+     *
+     * Deux colonnes sont interrogées, et c'est voulu. `placeLabel` est ce que
+     * la carte affiche — « Annecy, Haute-Savoie » — et c'est donc ce qu'on
+     * reconnaît ; `city` est la ville seule, saisie parfois quand l'autre ne
+     * l'est pas. Sans la seconde, une activité renseignée à moitié ne se
+     * proposerait jamais.
+     *
+     * Le résultat est une liste de chaînes DISTINCTES : vingt activités à
+     * Paris ne doivent pas donner vingt fois « Paris » dans la liste.
+     *
+     * @return list<string>
+     */
+    public function suggestPlaces(string $query, int $limit = 8): array
+    {
+        $query = mb_strtolower(trim($query));
+
+        if ('' === $query) {
+            return [];
+        }
+
+        $lignes = $this->createQueryBuilder('s')
+            ->select('DISTINCT s.placeLabel AS place, s.city AS city')
+            ->andWhere('s.status = :published')
+            ->andWhere('s.deletedAt IS NULL')
+            ->andWhere('LOWER(s.placeLabel) LIKE :q OR LOWER(s.city) LIKE :q')
+            ->setParameter('published', ServiceStatus::Published)
+            ->setParameter('q', '%'.$query.'%')
+            ->setMaxResults($limit * 3)
+            ->getQuery()
+            ->getArrayResult();
+
+        $libelles = [];
+
+        foreach ($lignes as $ligne) {
+            // On garde le libellé le plus parlant des deux, à condition qu'il
+            // corresponde vraiment : une activité peut sortir sur sa ville
+            // alors que son libellé de carte, lui, ne contient pas la saisie.
+            foreach ([$ligne['place'], $ligne['city']] as $valeur) {
+                if (\is_string($valeur) && '' !== $valeur && str_contains(mb_strtolower($valeur), $query)) {
+                    $libelles[$valeur] = true;
+                    break;
+                }
+            }
+        }
+
+        return \array_slice(array_keys($libelles), 0, $limit);
+    }
+
+    /**
+     * Titres d'activités proposés pendant la frappe.
+     *
+     * @return list<array{label: string, slug: string}>
+     */
+    public function suggestTitles(string $query, int $limit = 8): array
+    {
+        $query = mb_strtolower(trim($query));
+
+        if ('' === $query) {
+            return [];
+        }
+
+        /** @var list<array{label: string, slug: string}> $lignes */
+        $lignes = $this->createQueryBuilder('s')
+            ->select('s.title AS label', 's.slug AS slug')
+            ->andWhere('s.status = :published')
+            ->andWhere('s.deletedAt IS NULL')
+            ->andWhere('LOWER(s.title) LIKE :q')
+            ->setParameter('published', ServiceStatus::Published)
+            ->setParameter('q', '%'.$query.'%')
+            ->orderBy('s.position', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        return $lignes;
+    }
 }

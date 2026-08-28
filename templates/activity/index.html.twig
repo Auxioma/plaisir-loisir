@@ -58,7 +58,7 @@
 
         <label class="act-filters__field">
             <span>{{ 'Où voulez-vous partir ?'|trans }}</span>
-            <span class="act-filters__input">{{ icon.map_pin(16) }}<input type="text" name="lieu" value="{{ lieu|default('') }}" placeholder="{{ 'Destination, ville, lieu…'|trans }}"></span>
+            <span class="act-filters__input">{{ icon.map_pin(16) }}<input type="text" name="lieu" data-suggest="lieu" value="{{ lieu|default('') }}" placeholder="{{ 'Destination, ville, lieu…'|trans }}"></span>
         </label>
         <label class="act-filters__field">
             <span>{{ 'Date'|trans }}</span>
@@ -171,12 +171,12 @@
                            recherche reprend ce que la personne a saisi : sinon le
                            champ se reinitialise et on ne sait plus ce qui a produit
                            la liste affichee. #}
-                        <input type="text" name="lieu" value="{{ searching|default(false) ? lieu|default('') : 'Paris' }}" aria-label="{{ 'Lieu'|trans }}">
+                        <input type="text" name="lieu" data-suggest="lieu" value="{{ searching|default(false) ? lieu|default('') : 'Paris' }}" aria-label="{{ 'Lieu'|trans }}">
                     </label>
                     <span class="act-search__sep" aria-hidden="true"></span>
                     <label class="act-search__field">
                         {{ icon.search(18) }}
-                        <input type="text" name="q" value="{{ q|default('') }}" placeholder="{{ 'Recherches par mots-clés'|trans }}" aria-label="{{ 'Mots-clés'|trans }}">
+                        <input type="text" name="q" data-suggest="activite" value="{{ q|default('') }}" placeholder="{{ 'Recherches par mots-clés'|trans }}" aria-label="{{ 'Mots-clés'|trans }}">
                     </label>
                 </div>
                 <button type="submit" class="act-search__submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(20) }}</button>

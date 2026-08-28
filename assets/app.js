@@ -54,3 +54,6 @@ import './account.js';
 
 // Coeur « Ajouter aux favoris » des cartes (cablage du 21/08).
 import './favorites.js';
+
+// Suggestions pendant la frappe dans les champs de recherche (26/08).
+import './autocomplete.js';

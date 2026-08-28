@@ -35,14 +35,14 @@
                 <div class="act-search__bar">
                     <label class="act-search__field dest-locfield">
                         {{ icon.map_pin(18) }}
-                        <input type="text" name="lieu" value="{{ city }}" aria-label="{{ 'Lieu'|trans }}"
+                        <input type="text" name="lieu" data-suggest="lieu" value="{{ city }}" aria-label="{{ 'Lieu'|trans }}"
                                id="dest-loc-input" autocomplete="off"
                                role="combobox" aria-expanded="false" aria-controls="dest-locpanel">
                     </label>
                     <span class="act-search__sep" aria-hidden="true"></span>
                     <label class="act-search__field">
                         {{ icon.search(18) }}
-                        <input type="text" name="q" placeholder="{{ 'Recherches par mots-clés'|trans }}" aria-label="{{ 'Mots-clés'|trans }}">
+                        <input type="text" name="q" data-suggest="activite" placeholder="{{ 'Recherches par mots-clés'|trans }}" aria-label="{{ 'Mots-clés'|trans }}">
                     </label>
                 </div>
                 <button type="submit" class="act-search__submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(20) }}</button>

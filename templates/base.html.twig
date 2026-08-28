@@ -38,7 +38,11 @@
         <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
         {% endif %}
     </head>
-    <body>
+    {# L'adresse des suggestions est posée ICI, une seule fois, plutôt que
+       répétée sur la douzaine de champs de recherche du site. Elle passe par
+       `path()` parce qu'elle est traduite : /suggestions en français,
+       /en/suggestions en anglais. #}
+    <body data-suggest-url="{{ path('app_suggestions') }}">
         {% block header %}
             {% include '_partials/navbar.html.twig' %}
         {% endblock %}
