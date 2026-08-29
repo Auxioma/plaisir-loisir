@@ -62,7 +62,7 @@
                        site, plutot que d'inventer une mise en page. #}
                     {% include 'destination/_card.html.twig' with { d: f } %}
                 {% else %}
-                    {% include 'account/_favorite_card.html.twig' with { f: f, hearts: tab == 'prestataires' ? 'outline' : 'red' } %}
+                    {% include 'account/_favorite_card.html.twig' with { f: f, hearts: tab == 'prestataires' ? 'outline' : 'red', lien: f.slug is defined ? (tab == 'destinations' ? path('app_destination_city', { ville: f.slug }) : path('app_activity_show', { slug: f.slug })) : '#' } %}
                 {% endif %}
             {% endfor %}
         </div>

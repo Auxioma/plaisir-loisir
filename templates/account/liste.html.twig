@@ -22,7 +22,7 @@
 
     <div class="acc-grid acc-grid--list">
         {% for f in favorites %}
-            {% include 'account/_favorite_card.html.twig' with { f: f } %}
+            {% include 'account/_favorite_card.html.twig' with { f: f, lien: f.slug is defined ? path('app_activity_show', { slug: f.slug }) : '#' } %}
         {% endfor %}
     </div>
 

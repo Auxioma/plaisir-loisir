@@ -74,6 +74,6 @@
             <strong>{{ "Besoin d'aide ?"|trans }}</strong>
             <span>{{ 'Si vous rencontrez un problème ou avez des questions, notre équipe est là pour vous aider.'|trans }}</span>
         </div>
-        <a href="#" class="acc-help__btn">{{ icon.mail(16) }} {{ 'Nous contacter'|trans }}</a>
+        <a href="{{ path('app_corporate_contact') }}" class="acc-help__btn">{{ icon.mail(16) }} {{ 'Nous contacter'|trans }}</a>
     </div>
 {% endblock %}

@@ -7,7 +7,10 @@
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<a href="#" class="pl-card act-card acc-fav">
+{# `lien` est fourni par l'appelant, seul a savoir de quel onglet vient la
+   carte : une activite mene a sa fiche, une destination a sa ville, un
+   prestataire nulle part faute de page dediee. #}
+<a href="{{ lien|default('#') }}" class="pl-card act-card acc-fav">
     <div class="pl-card__media">
         {% if f.placeholder|default(false) %}
             <span class="acc-fav__placeholder">

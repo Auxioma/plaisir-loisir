@@ -42,4 +42,4 @@
 </div>
 
 <a href="{{ path('app_event_create_success') }}" class="pl-btn pl-btn--primary pl-btn--block ev-publish-btn">{{ icon.send(18) }} {{ "Publier l'événement"|trans }}</a>
-<p class="ev-publish-terms">{{ 'En publiant, vous acceptez nos'|trans }} <a href="#">{{ "Conditions d'utilisation"|trans }}</a>.</p>
+<p class="ev-publish-terms">{{ 'En publiant, vous acceptez nos'|trans }} <a href="{{ path('app_corporate_terms') }}">{{ "Conditions d'utilisation"|trans }}</a>.</p>

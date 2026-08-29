@@ -148,7 +148,7 @@
                         <img src="{{ asset(detail.logistics.map) }}" alt="Carte du lieu de rendez-vous">
                         <div class="act-logistics__map-actions">
                             <a href="#" class="pl-btn pl-btn--primary">{{ 'Itinéraires'|trans }}</a>
-                            <a href="#" class="pl-btn pl-btn--outline-action">{{ 'Nous contacter'|trans }}</a>
+                            <a href="{{ path('app_corporate_contact') }}" class="pl-btn pl-btn--outline-action">{{ 'Nous contacter'|trans }}</a>
                         </div>
                     </div>
                     <div class="act-logistics__info">
@@ -216,7 +216,7 @@
                 <h3>{{ "C'est pour offrir ?"|trans }}</h3>
                 <p>{{ 'Choisissez le bon cadeau Plaisirs & Loisirs et offrez cette expérience en quelques minutes !'|trans }}</p>
                 {# Maquette : bouton violet plein, pleine largeur (et non un contour). #}
-                <a href="#" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Offrir maintenant'|trans }}</a>
+                <a href="{{ path('app_gifts_offer') }}" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Offrir maintenant'|trans }}</a>
             </div>
         </aside>
     </div>

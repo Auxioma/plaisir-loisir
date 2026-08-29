@@ -28,7 +28,7 @@
             <p class="cor-hero__text">{{ 'TrouveMoi Plaisirs & Loisirs est la plateforme qui vous aide à trouver les meilleures activités et loisirs partout en France'|trans }}</p>
             <div class="cor-hero__actions">
                 <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--cta">{{ 'Découvrir nos activités'|trans }} {{ icon.chevron_right(16) }}</a>
-                <a href="#" class="pl-btn cor-hero__btn-ghost">{{ 'Nous contacter'|trans }} {{ icon.chevron_right(16) }}</a>
+                <a href="{{ path('app_corporate_contact') }}" class="pl-btn cor-hero__btn-ghost">{{ 'Nous contacter'|trans }} {{ icon.chevron_right(16) }}</a>
             </div>
         </div>
     </section>
@@ -83,7 +83,7 @@
                 <h2 class="cor-mission__title">{{ 'Notre mission'|trans }}</h2>
                 <p>{{ "Nous avons créé TrouveMoi Plaisirs & Loisirs avec une idée simple : rendre les loisirs et les expériences inoubliables accessibles à tous. Que vous soyez en quête d'aventure, de détente, de découvertes culturelles ou d'activités en famille, notre plateforme rassemble les meilleures offres près de chez vous."|trans }}</p>
                 <p class="cor-mission__claim">{{ 'Vivez plus. Explorez plus. Partagez plus.'|trans }} 🔥</p>
-                <a href="#" class="pl-btn cor-mission__cta">{{ "Contactez-nous aujourd'hui"|trans }}</a>
+                <a href="{{ path('app_corporate_contact') }}" class="pl-btn cor-mission__cta">{{ "Contactez-nous aujourd'hui"|trans }}</a>
             </div>
             {# Collage de deux photos qui se chevauchent (maquette). #}
             <div class="cor-mission__collage" aria-hidden="true">
@@ -124,8 +124,8 @@
                 <h2 class="cor-cta__title">{{ "Rejoignez l'aventure !"|trans }}</h2>
                 <p class="cor-cta__text">{{ 'Vous partagez notre passion pour les loisirs et les belles expériences ? Rejoignez-nous et participez à cette belle aventure.'|trans }}</p>
                 <div class="cor-cta__actions">
-                    <a href="#" class="pl-btn pl-btn--primary">{{ "Voir nos offres d'emploi"|trans }}</a>
-                    <a href="#" class="pl-btn pl-btn--primary">{{ 'Contactez-nous'|trans }}</a>
+                    <a href="{{ path('app_corporate_jobs') }}" class="pl-btn pl-btn--primary">{{ "Voir nos offres d'emploi"|trans }}</a>
+                    <a href="{{ path('app_corporate_contact') }}" class="pl-btn pl-btn--primary">{{ 'Contactez-nous'|trans }}</a>
                 </div>
             </div>
             <img class="cor-cta__photo" src="{{ asset('images/corporate/cta-homme.jpg') }}" alt="" aria-hidden="true">
