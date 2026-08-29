@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Catalog\Repository;
 
+use App\Availability\Entity\Availability;
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\Destination;
 use App\Catalog\Entity\Service;
@@ -54,6 +55,8 @@ class ServiceRepository extends ServiceEntityRepository
         ?int $priceMin = null,
         ?int $priceMax = null,
         ?float $minRating = null,
+        ?int $participants = null,
+        ?\DateTimeImmutable $date = null,
     ): array {
         $qb = $this->createQueryBuilder('s')
             ->addSelect('p', 'm', 'c')
@@ -122,6 +125,44 @@ class ServiceRepository extends ServiceEntityRepository
             }
 
             $qb->andWhere($qb->expr()->in('s.id', $sous->getDQL()));
+        }
+
+        // NOMBRE DE PARTICIPANTS.
+        // Une capacite NON RENSEIGNEE n'exclut pas : elle veut dire « on ne
+        // sait pas », pas « aucune place ». La traiter comme zero viderait le
+        // catalogue au premier filtre, et le visiteur conclurait a une panne.
+        // Le filtre se resserre a mesure que les prestataires renseignent le
+        // champ « Nombre de places » du back-office.
+        if (null !== $participants && $participants > 0) {
+            $qb->andWhere($qb->expr()->orX(
+                $qb->expr()->isNull('s.capacity'),
+                $qb->expr()->gte('s.capacity', ':participants'),
+            ))->setParameter('participants', $participants);
+        }
+
+        // DATE.
+        // Meme principe : une activite qui n'a declare AUCUN creneau reste
+        // proposee, faute de savoir si elle est ouverte ce jour-la. Des qu'elle
+        // en declare, le jour demande doit tomber dans l'un d'eux ET il doit y
+        // rester de la place (booked < capacity).
+        if (null !== $date) {
+            $declarees = $this->getEntityManager()->createQueryBuilder()
+                ->select('IDENTITY(a1.service)')
+                ->from(Availability::class, 'a1');
+
+            $ouvertes = $this->getEntityManager()->createQueryBuilder()
+                ->select('IDENTITY(a2.service)')
+                ->from(Availability::class, 'a2')
+                ->andWhere('a2.startsAt <= :finJour')
+                ->andWhere('a2.endsAt >= :debutJour')
+                ->andWhere('a2.booked < a2.capacity');
+
+            $qb->andWhere($qb->expr()->orX(
+                $qb->expr()->notIn('s.id', $declarees->getDQL()),
+                $qb->expr()->in('s.id', $ouvertes->getDQL()),
+            ))
+                ->setParameter('debutJour', $date->setTime(0, 0, 0))
+                ->setParameter('finJour', $date->setTime(23, 59, 59));
         }
 
         if (null !== $limit) {

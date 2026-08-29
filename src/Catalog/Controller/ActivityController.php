@@ -68,13 +68,20 @@ final class ActivityController extends AbstractController
 
         [$priceMin, $priceMax] = $this->readPriceRange($request);
         $minRating = $this->readMinRating($request);
+        // La barre de recherche de l'accueil pose « date » et « participants ».
+        // Jusqu'au 29/08 elle ne les posait pas du tout : on choisissait un jour
+        // et un nombre de personnes, et la liste ne bougeait pas.
+        $participants = $request->query->getInt('participants') ?: null;
+        $date = $this->readDate($request);
 
         $searching = '' !== $keywords
             || '' !== $place
             || [] !== $categories
             || null !== $priceMin
             || null !== $priceMax
-            || null !== $minRating;
+            || null !== $minRating
+            || null !== $participants
+            || null !== $date;
 
         $activities = $this->presenter->cards(
             $this->services->findPublishedForListing(
@@ -84,6 +91,8 @@ final class ActivityController extends AbstractController
                 priceMin: $priceMin,
                 priceMax: $priceMax,
                 minRating: $minRating,
+                participants: $participants,
+                date: $date,
             ),
             favoriteSlugs: $this->favorites->activitySlugs(),
         );
@@ -99,6 +108,8 @@ final class ActivityController extends AbstractController
             'prixMin' => $priceMin,
             'prixMax' => $priceMax,
             'note' => $minRating,
+            'participants' => $participants,
+            'date' => $date,
             'searching' => $searching,
             // Le panneau reste ouvert apres un envoi, sinon la personne perd
             // de vue les filtres qui ont produit la liste. Le marqueur est
@@ -154,6 +165,27 @@ final class ActivityController extends AbstractController
      * cocher « 3 et plus » puis « 4 et plus » retirerait des resultats que la
      * premiere case venait d'autoriser.
      */
+    /**
+     * Jour demande, au format AAAA-MM-JJ.
+     *
+     * Une saisie illisible est IGNOREE plutot que refusee : une adresse
+     * partagee, tronquee ou bricolee a la main doit rendre le catalogue, pas
+     * une erreur. Le format ISO est impose parce que c'est le seul qui ne se
+     * lise pas de deux facons selon le pays.
+     */
+    private function readDate(Request $request): ?\DateTimeImmutable
+    {
+        $brut = trim((string) $request->query->get('date', ''));
+
+        if ('' === $brut) {
+            return null;
+        }
+
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $brut);
+
+        return false !== $date ? $date : null;
+    }
+
     private function readMinRating(Request $request): ?float
     {
         $valeurs = array_filter(array_map('intval', $request->query->all('note')));

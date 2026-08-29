@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DataFixtures;
 
+use App\Availability\Entity\Availability;
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\Media;
 use App\Catalog\Entity\Service;
@@ -57,6 +58,7 @@ class CatalogFixtures extends Fixture
             'lat' => '44.405000',
             'lng' => '4.395000',
             'category' => 'sports-aventures',
+            'capacity' => 8,
         ],
         [
             'slug' => 'location-vtt-electrique',
@@ -72,6 +74,7 @@ class CatalogFixtures extends Fixture
             'lat' => '45.050000',
             'lng' => '5.400000',
             'category' => 'sports-aventures',
+            'capacity' => 12,
         ],
         [
             'slug' => 'visite-guidee-de-labyrinthe',
@@ -87,6 +90,7 @@ class CatalogFixtures extends Fixture
             'lat' => '43.830000',
             'lng' => '5.050000',
             'category' => 'cultures-decouvertes',
+            'capacity' => 25,
         ],
         [
             'slug' => 'visite-du-musee',
@@ -102,6 +106,7 @@ class CatalogFixtures extends Fixture
             'lat' => '48.842000',
             'lng' => '2.356000',
             'category' => 'cultures-decouvertes',
+            'capacity' => 40,
         ],
         [
             'slug' => 'atelier-cuisine-provencale',
@@ -117,6 +122,7 @@ class CatalogFixtures extends Fixture
             'lat' => '43.530000',
             'lng' => '5.450000',
             'category' => 'ateliers-creations',
+            'capacity' => 10,
         ],
         [
             'slug' => 'vol-en-montgolfiere',
@@ -132,6 +138,7 @@ class CatalogFixtures extends Fixture
             'lat' => '43.900000',
             'lng' => '6.000000',
             'category' => 'sports-aventures',
+            'capacity' => 6,
         ],
         [
             'slug' => 'seance-de-yoga-en-pleine-nature',
@@ -147,6 +154,7 @@ class CatalogFixtures extends Fixture
             'lat' => '45.360000',
             'lng' => '4.800000',
             'category' => 'bien-etre',
+            'capacity' => 20,
         ],
         [
             'slug' => 'concert-live-soiree-musique',
@@ -162,6 +170,7 @@ class CatalogFixtures extends Fixture
             'lat' => '45.760000',
             'lng' => '4.840000',
             'category' => 'soirees-evenements',
+            'capacity' => 150,
         ],
     ];
 
@@ -293,6 +302,9 @@ class CatalogFixtures extends Fixture
                 ->setPlaceLabel((string) $data['place'])
                 ->setDurationLabel((string) $data['duration'])
                 ->setDurationMinutes((int) $data['minutes'])
+                // Sans capacite, le filtre « Participant(s) » de la barre de
+                // recherche n'a rien sur quoi mordre : il laisse tout passer.
+                ->setCapacity((int) $data['capacity'])
                 ->setBadge($data['badge'] ?? null)
                 ->setRatingSummary((string) $data['rating'], (int) $data['reviews'])
                 ->setLatitude((string) $data['lat'])
@@ -335,9 +347,43 @@ class CatalogFixtures extends Fixture
             $service->setPosition($position);
 
             $manager->persist($service);
+            $this->openDays($manager, $service, $position);
         }
 
         $manager->flush();
+    }
+
+    /**
+     * Les jours ou l'activite est ouverte.
+     *
+     * POURQUOI CES CRENEAUX EXISTENT
+     * Le filtre « Date » de la barre de recherche s'appuie sur l'entite
+     * Availability. Le modele existait depuis longtemps mais la table etait
+     * VIDE : choisir un jour ne pouvait donc rien changer, et le filtre aurait
+     * eu l'air de ne pas fonctionner. Ces creneaux donnent au filtre de quoi
+     * mordre en developpement et dans les tests ; en production, ils viendront
+     * des prestataires.
+     *
+     * Les activites ne sont volontairement PAS toutes ouvertes les memes jours,
+     * sans quoi aucune date ne distinguerait quoi que ce soit et le test ne
+     * prouverait rien. Le pas est un jour sur deux, decale d'une activite a
+     * l'autre.
+     */
+    private function openDays(ObjectManager $manager, Service $service, int $position): void
+    {
+        $depart = new \DateTimeImmutable('2026-07-01 00:00:00');
+
+        for ($semaine = 0; $semaine < 12; ++$semaine) {
+            $jour = $depart->modify(sprintf('+%d days', $position + ($semaine * 2)));
+
+            $manager->persist(
+                (new Availability())
+                    ->setService($service)
+                    ->setStartsAt($jour->setTime(9, 0))
+                    ->setEndsAt($jour->setTime(18, 0))
+                    ->setCapacity((int) $service->getCapacity())
+            );
+        }
     }
 
     private function createProvider(ObjectManager $manager): ProviderProfile

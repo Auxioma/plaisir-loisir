@@ -89,6 +89,10 @@ function initHomeSearch(root = document) {
                     selected = { y: year, m: month, d };
                     const value = valueOf('date');
                     if (value) value.textContent = `${d} ${MONTHS_FR[month - 1].toLowerCase()} ${year}`;
+                    /* Le libelle affiche « 16 juillet 2026 » se lit bien mais ne
+                       se transporte pas : on garde a cote le format ISO, seul
+                       format qui ne se lise pas de deux facons selon le pays. */
+                    cal.dataset.chosen = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                     close();
                 });
                 grid.appendChild(btn);
@@ -133,6 +137,9 @@ function initHomeSearch(root = document) {
             if (kids > 0) parts.push(`${kids} enfant${kids > 1 ? 's' : ''}`);
             const value = valueOf('participants');
             if (value) value.textContent = parts.join(', ');
+            /* Ce qui compte pour la recherche est le TOTAL : le catalogue porte
+               un nombre de places, pas une repartition adultes/enfants. */
+            travellers.dataset.chosen = String(adults + kids);
             close();
         });
     }
@@ -143,14 +150,13 @@ function initHomeSearch(root = document) {
      * s'affichait sous le libellé… et le bouton menait au catalogue COMPLET.
      * Le choix ne quittait jamais la page d'accueil.
      *
-     * Ce qui part, et ce qui ne part pas :
-     *  - « destination » devient `lieu` et « activité » devient `q`. Ce sont
-     *    exactement les deux paramètres que /activites filtre déjà.
-     *  - la DATE et les PARTICIPANTS ne partent pas. Le catalogue ne porte ni
-     *    disponibilités ni capacité : les envoyer donnerait une adresse qui
-     *    promet un filtre inexistant, et des résultats identiques feraient
-     *    croire à une panne. Les deux panneaux restent utilisables, leur choix
-     *    s'affiche ; le jour où le filtre existera, deux lignes suffiront.
+     * Les quatre critères partent : « destination » devient `lieu`,
+     * « activité » devient `q`, le jour devient `date` au format ISO et le
+     * total de personnes devient `participants`.
+     *
+     * Seul ce qui a été CHOISI part. Envoyer « 1 participant » parce que c'est
+     * la valeur affichée par défaut collerait un critère à une recherche que
+     * personne n'a formulée, et salirait chaque adresse partagée.
      *
      * Le lien garde son href vers le catalogue complet : sans JavaScript, le
      * bouton mène quelque part plutôt que nulle part.
@@ -167,12 +173,16 @@ function initHomeSearch(root = document) {
             const url = new URL(base, window.location.origin);
             const lieu = chosen('destination');
             const activite = chosen('activite');
+            const jour = search.querySelector('[data-calendar]')?.dataset.chosen ?? '';
+            const monde = search.querySelector('[data-search-panel="participants"]')?.dataset.chosen ?? '';
 
             if (lieu) url.searchParams.set('lieu', lieu);
             if (activite) url.searchParams.set('q', activite);
+            if (jour) url.searchParams.set('date', jour);
+            if (monde) url.searchParams.set('participants', monde);
 
             /* Aucun critère choisi : on laisse le lien faire son travail. */
-            if (!lieu && !activite) return;
+            if (!lieu && !activite && !jour && !monde) return;
 
             e.preventDefault();
             window.location.assign(url.pathname + url.search);

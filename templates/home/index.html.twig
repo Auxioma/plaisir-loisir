@@ -131,10 +131,11 @@
                     {% endfor %}
                 </div>
 
-                {# Panneau 3 : calendrier. Il s'ouvre et se parcourt, mais la date
-                   NE FILTRE PAS : le catalogue ne porte pas encore de
-                   disponibilités. Écrit ici pour que personne ne croie le
-                   contraire en lisant le code. #}
+                {# Panneau 3 : calendrier. Le jour choisi part en critère « date »
+                   et s'appuie sur les créneaux déclarés (entité Availability).
+                   Une activité qui n'a déclaré AUCUN créneau reste proposée :
+                   on ne sait pas si elle est ouverte, ce n'est pas la même
+                   chose que fermée. #}
                 <div class="home-search__panel home-search__panel--calendar" data-search-panel="date" hidden>
                     <div class="home-cal" data-calendar data-year="2026" data-month="7" data-selected="16">
                         <div class="home-cal__head">
@@ -149,8 +150,10 @@
                     </div>
                 </div>
 
-                {# Panneau 4 : participants. Même réserve que la date — le nombre
-                   s'affiche, il ne filtre pas. #}
+                {# Panneau 4 : participants. Le total part en critère et se
+                   compare au « Nombre de places » de l'activité, celui que le
+                   back-office expose. Une capacité non renseignée n'exclut
+                   pas. #}
                 <div class="home-search__panel home-search__panel--travellers" data-search-panel="participants" hidden>
                     <div class="act-stepper" data-stepper data-min="1" data-count="1">
                         <span>{{ 'Adulte'|trans }} <small>{{ '(18 et +)'|trans }}</small></span>
