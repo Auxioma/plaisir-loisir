@@ -357,4 +357,66 @@ class ServiceRepository extends ServiceEntityRepository
 
         return $lignes;
     }
+
+    /**
+     * Les lieux qui ont vraiment des activités, pour les panneaux de recherche.
+     *
+     * POURQUOI CETTE MÉTHODE EXISTE
+     * Le panneau « Où voulez-vous aller ? » de l'accueil proposait les libellés
+     * de la maquette — « Île-de-France », « La Côte d'Azur », « Toulouse ».
+     * Aucun ne correspond au lieu d'une activité en base : choisir une de ces
+     * réponses et lancer la recherche ne renvoyait donc rien. Un choix proposé
+     * doit ramener au moins un résultat, sinon la recherche paraît cassée alors
+     * qu'elle a parfaitement fonctionné.
+     *
+     * @return list<string>
+     */
+    public function distinctPlaces(int $limit = 9): array
+    {
+        /** @var list<array{place: string|null}> $lignes */
+        $lignes = $this->createQueryBuilder('s')
+            ->select('DISTINCT s.placeLabel AS place')
+            ->andWhere('s.status = :published')
+            ->andWhere('s.deletedAt IS NULL')
+            ->andWhere('s.placeLabel IS NOT NULL')
+            ->setParameter('published', ServiceStatus::Published)
+            ->orderBy('s.placeLabel', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        $lieux = [];
+
+        foreach ($lignes as $ligne) {
+            if (\is_string($ligne['place']) && '' !== $ligne['place']) {
+                $lieux[] = $ligne['place'];
+            }
+        }
+
+        return $lieux;
+    }
+
+    /**
+     * Les titres proposés dans le panneau « Activité ou loisir ? ».
+     *
+     * Même raison que distinctPlaces() : chaque proposition doit ramener au
+     * moins l'activité qui porte ce titre.
+     *
+     * @return list<string>
+     */
+    public function titlesForSearch(int $limit = 9): array
+    {
+        /** @var list<array{title: string}> $lignes */
+        $lignes = $this->createQueryBuilder('s')
+            ->select('s.title AS title')
+            ->andWhere('s.status = :published')
+            ->andWhere('s.deletedAt IS NULL')
+            ->setParameter('published', ServiceStatus::Published)
+            ->orderBy('s.position', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_column($lignes, 'title');
+    }
 }

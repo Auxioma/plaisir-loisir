@@ -1232,3 +1232,8 @@
 "Tendance": "Trending"
 "Bientôt complet": "Almost full"
 "Nouvelle activité": "New activity"
+
+# Accueil — messages des panneaux de recherche quand le catalogue est vide
+# (ajoutes le 29/08 avec la barre de recherche fonctionnelle).
+"Aucun lieu au catalogue pour le moment.": "No place in the catalogue yet."
+"Aucune activité publiée pour le moment.": "No activity published yet."

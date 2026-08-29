@@ -67,43 +67,108 @@
                     <a href="{{ path('app_activities') }}" class="home-search__tab">{{ icon.ferris_wheel(20) }} {{ 'Activités'|trans }}</a>
                     <a href="{{ path('app_events') }}" class="home-search__tab is-active">{{ icon.cat_culture(20) }} {{ 'Événements'|trans }}</a>
                 </div>
+                {# LES QUATRE CHAMPS SONT DES BOUTONS, PAS DES <div>.
+                   Ils étaient inertes : le fichier assets/home_search.js, chargé
+                   sur toutes les pages, ouvre pourtant leurs panneaux depuis le
+                   23/07 — il attend les attributs data-search-field et
+                   data-search-panel. L'accueil connecté les portait, celui-ci
+                   non. Même oubli que pour les liens, corrigé le 29/08. #}
                 <div class="home-search__fields">
-                    <div class="home-search__field">
+                    <button type="button" class="home-search__field" data-search-field="destination">
                         {{ icon.map_pin(20) }}
-                        <div>
-                            <div class="home-search__field-label">{{ 'Où voulez-vous aller ?'|trans }}</div>
-                            <div class="home-search__field-value">{{ 'Destination, ville, lieu…'|trans }} {{ icon.chevron_down(16) }}</div>
-                        </div>
-                    </div>
-                    <div class="home-search__field">
+                        <span>
+                            <span class="home-search__field-label">{{ 'Où voulez-vous aller ?'|trans }}</span>
+                            <span class="home-search__field-value" data-field-value>{{ 'Destination, ville, lieu…'|trans }} {{ icon.chevron_down(16) }}</span>
+                        </span>
+                    </button>
+                    <button type="button" class="home-search__field" data-search-field="activite">
                         {{ icon.ferris_wheel(20) }}
-                        <div>
-                            <div class="home-search__field-label">{{ 'Activité ou loisir ?'|trans }}</div>
-                            <div class="home-search__field-value">{{ 'Canoë, musée, VTT…'|trans }} {{ icon.chevron_down(16) }}</div>
-                        </div>
-                    </div>
-                    <div class="home-search__field">
+                        <span>
+                            <span class="home-search__field-label">{{ 'Activité ou loisir ?'|trans }}</span>
+                            <span class="home-search__field-value" data-field-value>{{ 'Canoë, musée, VTT…'|trans }} {{ icon.chevron_down(16) }}</span>
+                        </span>
+                    </button>
+                    <button type="button" class="home-search__field" data-search-field="date">
                         {{ icon.calendar_days(20) }}
-                        <div>
-                            <div class="home-search__field-label">{{ 'Date'|trans }}</div>
-                            <div class="home-search__field-value">{{ 'Choisissez une date'|trans }} {{ icon.chevron_down(16) }}</div>
-                        </div>
-                    </div>
-                    <div class="home-search__field">
+                        <span>
+                            <span class="home-search__field-label">{{ 'Date'|trans }}</span>
+                            <span class="home-search__field-value" data-field-value>{{ 'Choisissez une date'|trans }} {{ icon.chevron_down(16) }}</span>
+                        </span>
+                    </button>
+                    <button type="button" class="home-search__field" data-search-field="participants">
                         {{ icon.person(20) }}
-                        <div>
-                            <div class="home-search__field-label">{{ 'Participant(s)'|trans }}</div>
-                            <div class="home-search__field-value">{{ '1 participant'|trans }} {{ icon.chevron_down(16) }}</div>
-                        </div>
-                    </div>
+                        <span>
+                            <span class="home-search__field-label">{{ 'Participant(s)'|trans }}</span>
+                            <span class="home-search__field-value" data-field-value>{{ '1 participant'|trans }} {{ icon.chevron_down(16) }}</span>
+                        </span>
+                    </button>
                     {# Maquette : bouton VIOLET, loupe après le libellé (l'accueil
-                       connecté, lui, le porte en orange — ne pas uniformiser). #}
-                    {# Un <a> et non un <button> : il n'y a pas de formulaire à
-                       envoyer, les quatre champs au-dessus étant des panneaux
-                       déroulants inertes. L'accueil connecté fait déjà ainsi
-                       (connected.html.twig ligne 84). Le jour où les champs
-                       deviendront de vrais champs, ceci redeviendra un submit. #}
-                    <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--primary home-search__submit">{{ 'Recherche'|trans }} {{ icon.search(20) }}</a>
+                       connecté, lui, le porte en orange — ne pas uniformiser).
+                       Reste un <a> : sans JavaScript il mène au catalogue complet
+                       plutôt que nulle part. data-search-submit lui fait porter
+                       les critères choisis. #}
+                    <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--primary home-search__submit" data-search-submit>{{ 'Recherche'|trans }} {{ icon.search(20) }}</a>
+                </div>
+
+                {# Panneau 1 : les lieux QUI ONT des activités, pris en base.
+                   Les libellés de la maquette (« Île-de-France », « Toulouse »)
+                   ne correspondaient au lieu d'aucune activité : la recherche
+                   renvoyait zéro résultat et paraissait cassée. #}
+                <div class="home-search__panel" data-search-panel="destination" hidden>
+                    {% for lieu in searchPlaces %}
+                        <button type="button" class="home-search__option" data-option>{{ lieu }}</button>
+                    {% else %}
+                        <p class="home-search__option">{{ 'Aucun lieu au catalogue pour le moment.'|trans }}</p>
+                    {% endfor %}
+                </div>
+
+                {# Panneau 2 : les activités publiées, pour la même raison. #}
+                <div class="home-search__panel" data-search-panel="activite" hidden>
+                    {% for titre in searchActivities %}
+                        <button type="button" class="home-search__option" data-option>{{ titre }}</button>
+                    {% else %}
+                        <p class="home-search__option">{{ 'Aucune activité publiée pour le moment.'|trans }}</p>
+                    {% endfor %}
+                </div>
+
+                {# Panneau 3 : calendrier. Il s'ouvre et se parcourt, mais la date
+                   NE FILTRE PAS : le catalogue ne porte pas encore de
+                   disponibilités. Écrit ici pour que personne ne croie le
+                   contraire en lisant le code. #}
+                <div class="home-search__panel home-search__panel--calendar" data-search-panel="date" hidden>
+                    <div class="home-cal" data-calendar data-year="2026" data-month="7" data-selected="16">
+                        <div class="home-cal__head">
+                            <button type="button" data-cal-prev aria-label="{{ 'Mois précédent'|trans }}">{{ icon.chevron_left(18) }}</button>
+                            <strong data-cal-title>{{ 'Juillet'|trans }} 2026</strong>
+                            <button type="button" data-cal-next aria-label="{{ 'Mois suivant'|trans }}">{{ icon.chevron_right(18) }}</button>
+                        </div>
+                        <div class="home-cal__days" aria-hidden="true">
+                            <span>{{ 'lun'|trans }}</span><span>{{ 'mar'|trans }}</span><span>{{ 'mer'|trans }}</span><span>{{ 'jeu'|trans }}</span><span>{{ 'ven'|trans }}</span><span>{{ 'sam'|trans }}</span><span>{{ 'dim'|trans }}</span>
+                        </div>
+                        <div class="home-cal__grid" data-cal-grid></div>
+                    </div>
+                </div>
+
+                {# Panneau 4 : participants. Même réserve que la date — le nombre
+                   s'affiche, il ne filtre pas. #}
+                <div class="home-search__panel home-search__panel--travellers" data-search-panel="participants" hidden>
+                    <div class="act-stepper" data-stepper data-min="1" data-count="1">
+                        <span>{{ 'Adulte'|trans }} <small>{{ '(18 et +)'|trans }}</small></span>
+                        <span class="act-stepper__controls">
+                            <button type="button" data-step="-1" aria-label="{{ "Moins d'adultes"|trans }}">{{ icon.minus(14) }}</button>
+                            <output data-stepper-value>1</output>
+                            <button type="button" data-step="1" aria-label="{{ "Plus d'adultes"|trans }}">{{ icon.plus(14) }}</button>
+                        </span>
+                    </div>
+                    <div class="act-stepper" data-stepper data-min="0" data-count="0">
+                        <span>{{ 'Enfants'|trans }} <small>{{ '(0 à 17 ans)'|trans }}</small></span>
+                        <span class="act-stepper__controls">
+                            <button type="button" data-step="-1" aria-label="{{ "Moins d'enfants"|trans }}">{{ icon.minus(14) }}</button>
+                            <output data-stepper-value>0</output>
+                            <button type="button" data-step="1" aria-label="{{ "Plus d'enfants"|trans }}">{{ icon.plus(14) }}</button>
+                        </span>
+                    </div>
+                    <button type="button" class="pl-btn pl-btn--outline-action pl-btn--block" data-travellers-validate>{{ 'Valider'|trans }}</button>
                 </div>
             </div>
         </div>

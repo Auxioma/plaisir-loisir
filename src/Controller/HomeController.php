@@ -46,15 +46,28 @@ final class HomeController extends AbstractController
         // Ici, l'état de connexion sert à choisir la PAGE, pas seulement
         // l'en-tête : ce sont deux écrans distincts de la maquette. La navbar,
         // elle, détermine son propre état à partir de la session.
+        // Les deux panneaux de la barre de recherche sont alimentes par la
+        // BASE et non par les libelles de la maquette. Ceux-ci — « Ile-de-France
+        // », « La Cote d'Azur », « Toulouse » — ne correspondent au lieu
+        // d'aucune activite : choisir l'une de ces reponses puis lancer la
+        // recherche ne renvoyait aucun resultat, ce qui se lit comme une
+        // recherche cassee alors qu'elle a parfaitement fonctionne. Une
+        // proposition doit ramener au moins un resultat.
+        $recherche = [
+            'searchPlaces' => $this->services->distinctPlaces(),
+            'searchActivities' => $this->services->titlesForSearch(),
+        ];
+
         if ($connected) {
             return $this->render('home/connected.html.twig', [
                 'activities' => $this->presenter->cards(
                     $this->services->findPublishedForListing(),
                     favoriteSlugs: $this->favorites->activitySlugs(),
                 ),
+                ...$recherche,
             ]);
         }
 
-        return $this->render('home/index.html.twig');
+        return $this->render('home/index.html.twig', $recherche);
     }
 }

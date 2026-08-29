@@ -81,20 +81,23 @@
                         <span class="home-search__field-value" data-field-value>{{ '1 participant'|trans }} {{ icon.chevron_down(16) }}</span>
                     </span>
                 </button>
-                <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--cta home-search__submit">{{ 'Recherche'|trans }} {{ icon.search(18) }}</a>
+                <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--cta home-search__submit" data-search-submit>{{ 'Recherche'|trans }} {{ icon.search(18) }}</a>
             </div>
 
             {# --- Panneau 1 : destinations. --- #}
             <div class="home-search__panel" data-search-panel="destination" hidden>
-                {% for d in ['Île-de-France', 'Auvergne-Rhône-Alpes', 'Nouvelle-Aquitaine', "l'Auvergne", "La Côte d'Azur", 'Lyon', 'Toulouse', 'Lille', 'Paris'] %}
-                    <button type="button" class="home-search__option {{ loop.index == 5 ? 'is-active' }}" data-option>{{ d }}</button>
+                {# Les lieux QUI ONT des activites, pris en base. Les libelles de
+                   la maquette ne correspondaient au lieu d'aucune activite : la
+                   recherche renvoyait zero resultat. #}
+                {% for d in searchPlaces %}
+                    <button type="button" class="home-search__option" data-option>{{ d }}</button>
                 {% endfor %}
             </div>
 
             {# --- Panneau 2 : activités. --- #}
             <div class="home-search__panel" data-search-panel="activite" hidden>
-                {% for a in ['Descente en Canoë', 'Musée', 'Location VTT électrique', 'Visite de labyrinthe', 'Visite du Musée', 'Visite guidée', 'Randonnée', 'Atelier créatif', 'Sports & sensations'] %}
-                    <button type="button" class="home-search__option {{ loop.first ? 'is-active' }}" data-option>{{ a }}</button>
+                {% for a in searchActivities %}
+                    <button type="button" class="home-search__option" data-option>{{ a }}</button>
                 {% endfor %}
             </div>
 

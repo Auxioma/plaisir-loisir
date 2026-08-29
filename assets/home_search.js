@@ -137,6 +137,48 @@ function initHomeSearch(root = document) {
         });
     }
 
+    /* --- Le bouton « Recherche » emporte ce qui a été choisi. ---
+     *
+     * Sans ceci, les quatre panneaux s'ouvraient, on y choisissait, la valeur
+     * s'affichait sous le libellé… et le bouton menait au catalogue COMPLET.
+     * Le choix ne quittait jamais la page d'accueil.
+     *
+     * Ce qui part, et ce qui ne part pas :
+     *  - « destination » devient `lieu` et « activité » devient `q`. Ce sont
+     *    exactement les deux paramètres que /activites filtre déjà.
+     *  - la DATE et les PARTICIPANTS ne partent pas. Le catalogue ne porte ni
+     *    disponibilités ni capacité : les envoyer donnerait une adresse qui
+     *    promet un filtre inexistant, et des résultats identiques feraient
+     *    croire à une panne. Les deux panneaux restent utilisables, leur choix
+     *    s'affiche ; le jour où le filtre existera, deux lignes suffiront.
+     *
+     * Le lien garde son href vers le catalogue complet : sans JavaScript, le
+     * bouton mène quelque part plutôt que nulle part.
+     */
+    const chosen = (name) => {
+        const panel = panels.find((p) => p.dataset.searchPanel === name);
+        return panel?.querySelector('[data-option].is-active')?.textContent.trim() ?? '';
+    };
+
+    const submit = search.querySelector('[data-search-submit]');
+    if (submit) {
+        submit.addEventListener('click', (e) => {
+            const base = submit.getAttribute('href') || '/';
+            const url = new URL(base, window.location.origin);
+            const lieu = chosen('destination');
+            const activite = chosen('activite');
+
+            if (lieu) url.searchParams.set('lieu', lieu);
+            if (activite) url.searchParams.set('q', activite);
+
+            /* Aucun critère choisi : on laisse le lien faire son travail. */
+            if (!lieu && !activite) return;
+
+            e.preventDefault();
+            window.location.assign(url.pathname + url.search);
+        });
+    }
+
     /* --- Deep-link « #recherche-<champ> » : panneau ouvert au chargement. --- */
     const match = window.location.hash.match(/^#recherche-(destination|activite|date|participants)$/);
     if (match) open(match[1]);
