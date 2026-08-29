@@ -9,6 +9,7 @@ use App\Catalog\Entity\Service;
 use App\Shared\Doctrine\TimestampableTrait;
 use App\Shared\Doctrine\UlidIdentifierTrait;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Créneau horaire réservable d'une activité (modèle "calendar").
@@ -29,10 +30,17 @@ class Availability
     #[ORM\Column(type: 'datetimetz_immutable')]
     private \DateTimeImmutable $startsAt;
 
+    // Un creneau qui se ferme avant de s'ouvrir n'exclut rien et ne se voit
+    // pas : la contrainte le refuse a la saisie plutot que de laisser une
+    // ligne inerte en base. Elle vit sur l'entite et non sur le formulaire du
+    // back-office, pour valoir aussi le jour ou un prestataire saisira ses
+    // propres disponibilites.
     #[ORM\Column(type: 'datetimetz_immutable')]
+    #[Assert\GreaterThan(propertyPath: 'startsAt', message: 'La fermeture doit venir apres l\'ouverture.')]
     private \DateTimeImmutable $endsAt;
 
     #[ORM\Column]
+    #[Assert\Positive(message: 'Un creneau sans place ne sert a rien : indiquez au moins une place.')]
     private int $capacity;
 
     #[ORM\Column(options: ['default' => 0])]

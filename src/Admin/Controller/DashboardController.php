@@ -92,6 +92,9 @@ class DashboardController extends AbstractDashboardController
         // Sans fiche detaillee, la page publique d'une activite renvoie une
         // erreur 404 : l'ecran est aussi indispensable que l'activite elle-meme.
         yield MenuItem::linkTo(ServiceDetailCrudController::class, 'Fiches détaillées', 'fa fa-file-lines');
+        // Sans creneau, une activite reste proposee a toutes les dates : le
+        // filtre « Date » de la recherche n'a rien sur quoi mordre.
+        yield MenuItem::linkTo(AvailabilityCrudController::class, 'Disponibilités', 'fa fa-calendar-days');
 
         yield MenuItem::section('Classement');
         yield MenuItem::linkTo(DestinationCrudController::class, 'Destinations', 'fa fa-map-location-dot');
