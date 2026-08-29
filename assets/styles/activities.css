@@ -912,8 +912,18 @@ a.act-popup__title:hover { color: var(--pl-action); }
  * ======================================================================== */
 /* Positionnement, voile, z-index et fermeture : fournis par .modal de
    Bootstrap. Il ne reste que la mise en forme du panneau. */
+/* RELEVE SUR LA MAQUETTE LE 29/08 (Figma 553:21888 « Plus d'avis ») — ce sont
+   des coordonnees lues dans le fichier, pas des mesures sur une capture :
+     - modal          845 de large ;
+     - en-tete        retrait 32 en haut/bas, 48 a gauche/droite ;
+     - corps          idem, 32 / 48 ;
+     - chaque avis    retrait interne de 32 ;
+     - separateur     sur toute la largeur du contenu, 32 d'air de chaque cote.
+   Le client demandait « une petite marge de plus entre le bord du modal et le
+   contenu » : la vraie valeur est 48, la ou nous etions a 24. L'estimation de
+   32 faite le 26/08 avait ete ecartee faute de maquette ; elle etait fausse. */
 .reviews-modal .modal-dialog {
-    width: min(720px, calc(100vw - 48px));
+    width: min(845px, calc(100vw - 48px));
     max-width: none;
     margin: 48px auto;
 }
@@ -928,7 +938,7 @@ a.act-popup__title:hover { color: var(--pl-action); }
 }
 .reviews-modal__head {
     position: relative;
-    padding: var(--pl-sp-20) var(--pl-sp-24) var(--pl-sp-16);
+    padding: var(--pl-sp-32) var(--pl-sp-48);
     border-bottom: 1px solid var(--pl-border);
     background: var(--pl-white);
 }
@@ -989,8 +999,28 @@ a.act-popup__title:hover { color: var(--pl-action); }
 
 .reviews-modal__body {
     overflow-y: auto;
-    padding: var(--pl-sp-16) var(--pl-sp-24) var(--pl-sp-24);
-    display: flex; flex-direction: column; gap: var(--pl-sp-16);
+    padding: var(--pl-sp-32) var(--pl-sp-48);
+    /* Aucun ecart ici : l'air vient du retrait de chaque avis, comme sur la
+       maquette. Un gap s'ajouterait a ces retraits et doublerait l'espace. */
+    display: flex; flex-direction: column; gap: 0;
+}
+.reviews-modal__item { padding-block: var(--pl-sp-32); }
+/* Le trait separe deux avis et n'apparait donc jamais avant le premier. Les
+   32 de marge et les 64 de retrait haut recomposent l'air de la maquette :
+   64 au-dessus du trait (32 de retrait bas + 32 de marge) et 64 en dessous. */
+.reviews-modal__item + .reviews-modal__item {
+    border-top: 1px solid var(--pl-border);
+    margin-top: var(--pl-sp-32);
+    padding-top: var(--pl-sp-64);
+}
+
+/* Sur un telephone, 48 de retrait mangeraient la moitie de la largeur : la
+   maquette est dessinee pour 1440, elle ne dit rien des petits ecrans. */
+@media (max-width: 600px) {
+    .reviews-modal__head,
+    .reviews-modal__body { padding-inline: var(--pl-sp-20); }
+    .reviews-modal__item { padding-block: var(--pl-sp-20); }
+    .reviews-modal__item + .reviews-modal__item { margin-top: var(--pl-sp-20); padding-top: var(--pl-sp-32); }
 }
 /* Blocage du scroll de fond quand la modale est ouverte. */
 /* Le blocage du défilement de fond est assuré par Bootstrap (.modal-open). */
