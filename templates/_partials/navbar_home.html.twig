@@ -51,7 +51,9 @@
         </div>
 
         <div class="pl-navbar__actions">
-            <a href="#" class="pl-btn pl-btn--cta">{{ 'Déposer une annonce'|trans }}</a>
+            {# « Deposer une annonce » s'adresse a un prestataire : la seule
+               page existante pour cela est « Devenir partenaire ». #}
+            <a href="{{ path('app_corporate_partner') }}" class="pl-btn pl-btn--cta">{{ 'Déposer une annonce'|trans }}</a>
             <a href="{{ path('app_auth_choice') }}" class="pl-btn pl-btn--outline-dark">
                 {{ icon.person(20) }} {{ "S'inscrire"|trans }}
             </a>

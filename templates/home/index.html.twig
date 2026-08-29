@@ -28,9 +28,13 @@
             <p class="home-hero__subtitle">
                 {{ 'Découvrez des lieux, des événements exceptionnels, à des prix exclusifs et vivez des expériences inoubliables'|trans }}
             </p>
+            {# Destinations reprises de l'accueil CONNECTÉ, qui porte les mêmes
+               libellés déjà câblés (home/connected.html.twig, lignes 28-29) :
+               « Découvrez nos événements » y mène à app_events. Aucune cible
+               n'est inventée ici, la convention existait déjà. #}
             <div class="home-hero__actions">
-                <a href="#" class="pl-btn pl-btn--cta">{{ 'Explorez nos activités'|trans }} {{ icon.chevron_right(18) }}</a>
-                <a href="#" class="pl-btn pl-btn--hero-ghost">{{ 'Découvrez nos événements'|trans }} {{ icon.chevron_right(18) }}</a>
+                <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--cta">{{ 'Explorez nos activités'|trans }} {{ icon.chevron_right(18) }}</a>
+                <a href="{{ path('app_events') }}" class="pl-btn pl-btn--hero-ghost">{{ 'Découvrez nos événements'|trans }} {{ icon.chevron_right(18) }}</a>
             </div>
             {# Preuve sociale : 4 avatars empilés + compteur d'utilisateurs. #}
             <div class="home-hero__proof">
@@ -56,9 +60,12 @@
                    violet). Les libellés longs « Consulter Vos Plaisirs… »
                    venaient d'un commentaire de Loïc du 27/07 : ils ne sont pas
                    dans la maquette et sont donc retirés (note-revue-11-08 §4). #}
+                {# Des LIENS et non des boutons : ces deux onglets n'ouvrent
+                   aucun panneau, ils annoncent deux univers du site. En
+                   <button type="button"> ils ne faisaient rien du tout. #}
                 <div class="home-search__tabs">
-                    <button type="button" class="home-search__tab">{{ icon.ferris_wheel(20) }} {{ 'Activités'|trans }}</button>
-                    <button type="button" class="home-search__tab is-active">{{ icon.cat_culture(20) }} {{ 'Événements'|trans }}</button>
+                    <a href="{{ path('app_activities') }}" class="home-search__tab">{{ icon.ferris_wheel(20) }} {{ 'Activités'|trans }}</a>
+                    <a href="{{ path('app_events') }}" class="home-search__tab is-active">{{ icon.cat_culture(20) }} {{ 'Événements'|trans }}</a>
                 </div>
                 <div class="home-search__fields">
                     <div class="home-search__field">
@@ -91,7 +98,12 @@
                     </div>
                     {# Maquette : bouton VIOLET, loupe après le libellé (l'accueil
                        connecté, lui, le porte en orange — ne pas uniformiser). #}
-                    <button type="button" class="pl-btn pl-btn--primary home-search__submit">{{ 'Recherche'|trans }} {{ icon.search(20) }}</button>
+                    {# Un <a> et non un <button> : il n'y a pas de formulaire à
+                       envoyer, les quatre champs au-dessus étant des panneaux
+                       déroulants inertes. L'accueil connecté fait déjà ainsi
+                       (connected.html.twig ligne 84). Le jour où les champs
+                       deviendront de vrais champs, ceci redeviendra un submit. #}
+                    <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--primary home-search__submit">{{ 'Recherche'|trans }} {{ icon.search(20) }}</a>
                 </div>
             </div>
         </div>
@@ -99,10 +111,10 @@
 
     {# ===================== ACTIVITÉS COUP DE CŒUR ===================== #}
     {% set activities = [
-        {img: 'act-canoe.jpg',      title: 'Descente en Canoë',      place: 'Gorges de l\'Ardèche',         reviews: 256, extra: '2h-3h',   price: 25, tag: 'Bestseller'},
-        {img: 'act-vtt.jpg',        title: 'Location VTT électrique', place: 'Massif du Vercors',            reviews: 178, extra: 'Journée', price: 45, tag: null},
-        {img: 'act-labyrinthe.jpg', title: 'Visite de labyrinthe',    place: 'Labyrinthe en Provence',       reviews: 124, extra: '1h30',    price: 12, tag: null},
-        {img: 'act-musee.jpg',      title: 'Visite du Musée',         place: 'Muséum d\'Histoire Naturelle', reviews: 312, extra: '2h',      price: 16, tag: null},
+        {img: 'act-canoe.jpg', slug: 'descente-en-canoe',      title: 'Descente en Canoë',      place: 'Gorges de l\'Ardèche',         reviews: 256, extra: '2h-3h',   price: 25, tag: 'Bestseller'},
+        {img: 'act-vtt.jpg', slug: 'location-vtt-electrique',        title: 'Location VTT électrique', place: 'Massif du Vercors',            reviews: 178, extra: 'Journée', price: 45, tag: null},
+        {img: 'act-labyrinthe.jpg', slug: 'visite-guidee-de-labyrinthe', title: 'Visite de labyrinthe',    place: 'Labyrinthe en Provence',       reviews: 124, extra: '1h30',    price: 12, tag: null},
+        {img: 'act-musee.jpg', slug: 'visite-du-musee',      title: 'Visite du Musée',         place: 'Muséum d\'Histoire Naturelle', reviews: 312, extra: '2h',      price: 16, tag: null},
     ] %}
     <div class="container">
         <section class="home-section">
@@ -111,11 +123,16 @@
                     <h2 class="home-section__title">{{ 'Activités coup de coeur'|trans }}</h2>
                     <p class="home-section__subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.</p>
                 </div>
-                <a href="#" class="btn-see-all">{{ 'Voir toutes les activités'|trans }} {{ icon.arrow_up_right(16) }}</a>
+                <a href="{{ path('app_activities') }}" class="btn-see-all">{{ 'Voir toutes les activités'|trans }} {{ icon.arrow_up_right(16) }}</a>
             </div>
             <div class="card-grid">
+                {# Le champ `slug` relie chaque carte a SA fiche : les quatre
+                   activites existent en base sous ces noms, elles avaient ete
+                   recopiees ici a la main sans leur identifiant. Un test verifie
+                   que les adresses repondent, pour qu'un renommage en base ne
+                   les casse pas en silence. #}
                 {% for a in activities %}
-                    <a href="#" class="pl-card">
+                    <a href="{{ path('app_activity_show', {slug: a.slug}) }}" class="pl-card">
                         <div class="pl-card__media">
                             <img src="{{ asset('images/home/' ~ a.img) }}" alt="{{ a.title }}">
                             {% if a.tag %}<span class="pl-card__tag pl-card__tag--bestseller">{{ a.tag }}</span>{% endif %}
@@ -141,10 +158,10 @@
 
     {# ===================== DESTINATIONS POPULAIRES ===================== #}
     {% set destinations = [
-        {img: 'dest-paris.png',        title: 'Paris, France',   desc: 'Ville lumière et capitale de la culture', reviews: 256, count: '32 activités', price: 25, tag: 'Populaire'},
-        {img: 'dest-annecy.png',       title: 'Annecy, France',  desc: 'Entre lac et Montagnes',                  reviews: 178, count: '24 activités', price: 20, tag: 'Bestseller'},
-        {img: 'dest-cinqueterre.jpg',  title: 'Cinque, Italie',  desc: 'Vue à couper le souffle',                 reviews: 134, count: '18 activités', price: 30, tag: 'Tendance'},
-        {img: 'dest-bali.png',         title: 'Bali, Indonésie', desc: 'Détente, nature et spiritualité',         reviews: 312, count: '27 activités', price: 35, tag: null},
+        {img: 'dest-paris.png', slug: 'paris-france',        title: 'Paris, France',   desc: 'Ville lumière et capitale de la culture', reviews: 256, count: '32 activités', price: 25, tag: 'Populaire'},
+        {img: 'dest-annecy.png', slug: 'annecy-france',       title: 'Annecy, France',  desc: 'Entre lac et Montagnes',                  reviews: 178, count: '24 activités', price: 20, tag: 'Bestseller'},
+        {img: 'dest-cinqueterre.jpg', slug: 'cinque-italie',  title: 'Cinque, Italie',  desc: 'Vue à couper le souffle',                 reviews: 134, count: '18 activités', price: 30, tag: 'Tendance'},
+        {img: 'dest-bali.png', slug: 'bali-indonesie',         title: 'Bali, Indonésie', desc: 'Détente, nature et spiritualité',         reviews: 312, count: '27 activités', price: 35, tag: null},
     ] %}
     <div class="container">
         <section class="home-section">
@@ -157,7 +174,7 @@
             </div>
             <div class="card-grid">
                 {% for d in destinations %}
-                    <a href="#" class="pl-card">
+                    <a href="{{ path('app_destination_city', {ville: d.slug}) }}" class="pl-card">
                         <div class="pl-card__media">
                             <img src="{{ asset('images/home/' ~ d.img) }}" alt="{{ d.title }}">
                             {% if d.tag %}<span class="pl-card__tag {{ d.tag == 'Bestseller' ? 'pl-card__tag--bestseller' : 'pl-card__tag--popular' }}">{{ d.tag }}</span>{% endif %}
@@ -198,7 +215,11 @@
                         <div class="home-provider__arg">{{ icon.check_badge(22) }} {{ "Des milliers d'avis authentiques"|trans }}</div>
                         <div class="home-provider__arg">{{ icon.check_badge(22) }} {{ 'Notre équipe est à votre écoute 7j/7'|trans }}</div>
                     </div>
-                    <a href="#" class="pl-btn pl-btn--cta">{{ 'En savoir plus !'|trans }} {{ icon.arrow_up_right(16) }}</a>
+                    {# La section s'intitule « Pourquoi nous choisir ! » et
+                       s'adresse au visiteur : « en savoir plus » mene donc a la
+                       page qui presente la societe. A redire si vous visiez
+                       plutot l'espace prestataire. #}
+                    <a href="{{ path('app_corporate_about') }}" class="pl-btn pl-btn--cta">{{ 'En savoir plus !'|trans }} {{ icon.arrow_up_right(16) }}</a>
                 </div>
                 <div class="home-provider__media">
                     <div class="home-provider__circles"></div>

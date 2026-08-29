@@ -244,6 +244,9 @@
     font-weight: var(--pl-fw-semibold);
     border-radius: var(--pl-radius-sm) var(--pl-radius-sm) 0 0;
     cursor: pointer;
+    /* Les onglets sont des <a> depuis le 29/08 : sans cela le Reboot Bootstrap
+       les souligne. */
+    text-decoration: none;
 }
 .home-search__tab .pl-icon { color: var(--pl-white); }
 .home-search__tab.is-active { background: var(--pl-white); color: var(--pl-action); }
