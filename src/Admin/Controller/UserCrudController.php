@@ -125,6 +125,14 @@ class UserCrudController extends AbstractCrudController
             // rôle particulier n'a pas une case vide mais un mot juste.
             ->formatValue(static fn (mixed $v, User $membre): string => self::rolesLabel($membre->getRoles()))
             ->renderAsBadges()
+            // PAS DE TRI : les rôles sont une colonne `json`, et PostgreSQL
+            // refuse d'ordonner ce type — « could not identify an ordering
+            // operator for type json ». EasyAdmin rend toutes les colonnes
+            // triables sans savoir lesquelles SQL sait ordonner ; cliquer sur
+            // l'en-tête renvoyait donc une erreur. Trier des membres par un
+            // TABLEAU de rôles n'aurait de toute façon pas de sens : pour
+            // isoler les administrateurs, c'est un filtre qu'il faut.
+            ->setSortable(false)
             ->setHelp('Tout membre a déjà les droits de base. « Administrateur » ouvre le back-office en entier ; « Prestataire » permet de publier des activités.');
 
         yield DateTimeField::new('createdAt', 'Inscrit le')->hideOnForm();

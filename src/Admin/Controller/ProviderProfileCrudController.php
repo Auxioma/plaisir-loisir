@@ -6,6 +6,7 @@ namespace App\Admin\Controller;
 
 use App\Provider\Entity\ProviderProfile;
 use App\Provider\Enum\ProviderStatus;
+use App\User\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -79,7 +80,15 @@ class ProviderProfileCrudController extends AbstractCrudController
 
         // Le compte qui pilotera l'espace professionnel. Peut rester vide le
         // temps que le prestataire crée le sien.
+        //
+        // `choice_label` N'EST PAS FACULTATIF ICI : l'entité User n'a aucune
+        // représentation textuelle, et le formulaire tombait sur « Object of
+        // class User could not be converted to string ». Modifier un
+        // prestataire renvoyait donc une erreur 500 — défaut trouvé par le
+        // balayage du back-office, pas à l'œil.
         yield AssociationField::new('user', 'Compte rattaché')
+            ->setFormTypeOption('choice_label', static fn (User $membre): string => self::describe($membre))
+            ->formatValue(static fn (mixed $v, ProviderProfile $profil): string => null !== $profil->getUser() ? self::describe($profil->getUser()) : '—')
             ->setHelp('Le membre qui administrera ce prestataire. Peut être renseigné plus tard.')
             ->autocomplete();
 
@@ -89,6 +98,17 @@ class ProviderProfileCrudController extends AbstractCrudController
         yield UrlField::new('facebookUrl', 'Facebook')->hideOnIndex();
         yield UrlField::new('instagramUrl', 'Instagram')->hideOnIndex();
         yield UrlField::new('linkedinUrl', 'LinkedIn')->hideOnIndex();
+    }
+
+    /**
+     * Comment un compte se lit dans une liste déroulante.
+     *
+     * L'adresse e-mail est incluse : deux membres peuvent porter le même
+     * nom, et c'est l'adresse qui les distingue sans ambiguïté.
+     */
+    private static function describe(User $membre): string
+    {
+        return sprintf('%s %s (%s)', $membre->getFirstName(), $membre->getLastName(), $membre->getEmail());
     }
 
     private static function statusLabel(ProviderStatus $status): string

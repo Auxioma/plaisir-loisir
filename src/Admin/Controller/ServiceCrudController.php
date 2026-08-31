@@ -120,6 +120,12 @@ class ServiceCrudController extends AbstractCrudController
         // voyait que sur une activité ayant réellement une fiche.
         yield AssociationField::new('detail', 'Fiche détaillée')
             ->formatValue(static fn (mixed $v, Service $s): string => null !== $s->getDetail() ? 'Oui' : 'MANQUANTE')
+            // PAS DE TRI : la colonne affiche « Oui » ou « MANQUANTE », mais
+            // le tri porterait sur l'ASSOCIATION, qu'EasyAdmin ne sait pas
+            // ordonner sans jointure — cliquer sur l'en-tête renvoyait une
+            // erreur. Le défaut date de la création de cet écran (24/08) et
+            // n'avait jamais été relevé : rien ne testait les liens de tri.
+            ->setSortable(false)
             ->onlyOnIndex();
         yield IntegerField::new('position', 'Ordre d\'affichage')
             ->setHelp('Le plus petit nombre passe en premier.');
