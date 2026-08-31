@@ -166,6 +166,31 @@
 
 /* <FavoriteCard> : cœur rouge plein + variante placeholder. */
 .acc-fav__heart.is-on { color: var(--pl-error); }
+
+/* Bandeau « Retiré de vos favoris — Annuler », posé au-dessus de la grille
+   quand un cœur vient d'être vidé sur cette page. Rien de tel dans la
+   maquette : elle ne dessine pas ce qui se passe APRÈS un retrait, alors
+   qu'elle invite explicitement à retirer (« Vous pouvez la supprimer de vos
+   favoris à tout moment »). Sans recours, un clic de travers effacerait un
+   favori sans moyen de le retrouver depuis cette page.
+   Composé de jetons du socle uniquement, pour rester recalable. */
+.acc-fav-undo {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--pl-sp-16);
+    margin-bottom: var(--pl-sp-16);
+    padding: var(--pl-sp-14) var(--pl-sp-20);
+    border-radius: var(--pl-radius-sm);
+    background: var(--pl-action-light);
+    color: var(--pl-text);
+    font-size: var(--pl-fs-body-sm);
+}
+.acc-fav-undo__btn {
+    border: 0; background: none; padding: 0;
+    color: var(--pl-action);
+    font-weight: var(--pl-fw-semibold);
+    text-decoration: underline;
+    cursor: pointer;
+}
 .acc-fav__placeholder {
     position: absolute; inset: 0; background: #d5d7dc; color: #9aa1ad;
     display: flex; align-items: center; justify-content: center;

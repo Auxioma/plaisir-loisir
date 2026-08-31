@@ -24,18 +24,27 @@ use Symfony\Component\Console\Tester\CommandTester;
  * ELLE DOIT AUSSI ÊTRE REJOUABLE SANS DÉGÂT : un déploiement se relance, et
  * republier par-dessus des textes existants créerait des doublons ou écraserait
  * une version que des membres ont acceptée.
+ *
+ * POURQUOI CES TESTS NE VIDENT PAS LA TABLE
+ * La première version le faisait, et la base l'a refusé dès que la suite
+ * complète a tourné : les tests d'inscription enregistrent des acceptations,
+ * et la clé étrangère de `legal_acceptance` est en RESTRICT. C'est exactement
+ * la protection recherchée — un texte accepté ne s'efface pas — et elle vaut
+ * aussi pour nous. Chaque essai publie donc SA PROPRE version, ce qui est en
+ * outre le geste réel : on ne remet pas la base à zéro en production, on
+ * publie la suivante.
  */
 final class PublishLegalDocumentsCommandTest extends KernelTestCase
 {
     public function testItPublishesTheFiveLegalTexts(): void
     {
-        $this->emptyTable();
-        $sortie = $this->execute(['--doc-version' => '1.0']);
+        $version = self::freshVersion();
+        $sortie = $this->execute(['--doc-version' => $version]);
 
         self::assertStringContainsString('publié', $sortie);
 
         foreach (LegalDocumentType::cases() as $type) {
-            $document = $this->repository()->findOneBy(['type' => $type, 'locale' => 'fr']);
+            $document = $this->findVersion($type, $version);
 
             self::assertInstanceOf(
                 LegalDocument::class,
@@ -52,17 +61,23 @@ final class PublishLegalDocumentsCommandTest extends KernelTestCase
      */
     public function testRunningItTwiceChangesNothing(): void
     {
-        $this->emptyTable();
+        $version = self::freshVersion();
 
-        $this->execute(['--doc-version' => '1.0']);
-        $apresLePremier = \count($this->repository()->findAll());
+        $this->execute(['--doc-version' => $version]);
+        $apresLePremier = \count($this->repository()->findBy(['version' => $version]));
 
-        $sortie = $this->execute(['--doc-version' => '1.0']);
+        self::assertSame(
+            \count(LegalDocumentType::cases()),
+            $apresLePremier,
+            'Le premier passage n\'a pas publié les cinq documents.',
+        );
+
+        $sortie = $this->execute(['--doc-version' => $version]);
 
         self::assertStringContainsString('déjà en base', $sortie, 'La commande ne signale pas qu\'elle ne fait rien.');
         self::assertCount(
             $apresLePremier,
-            $this->repository()->findAll(),
+            $this->repository()->findBy(['version' => $version]),
             'Relancer la commande a créé des doublons : un déploiement rejoué abîmerait la base.',
         );
     }
@@ -73,11 +88,11 @@ final class PublishLegalDocumentsCommandTest extends KernelTestCase
      */
     public function testEveryTextIsSplitIntoArticles(): void
     {
-        $this->emptyTable();
-        $this->execute(['--doc-version' => '1.0']);
+        $version = self::freshVersion();
+        $this->execute(['--doc-version' => $version]);
 
         foreach (LegalDocumentType::cases() as $type) {
-            $document = $this->repository()->findOneBy(['type' => $type, 'locale' => 'fr']);
+            $document = $this->findVersion($type, $version);
             self::assertInstanceOf(LegalDocument::class, $document);
 
             self::assertGreaterThanOrEqual(
@@ -97,12 +112,25 @@ final class PublishLegalDocumentsCommandTest extends KernelTestCase
      */
     public function testItWarnsThatTheTextsStillNeedLegalReview(): void
     {
-        $this->emptyTable();
-        $sortie = $this->execute(['--doc-version' => '1.0']);
+        $sortie = $this->execute(['--doc-version' => self::freshVersion()]);
 
         self::assertStringContainsString('RÉDACTION', $sortie);
         self::assertStringContainsString('juridique', $sortie);
         self::assertStringContainsString('médiateur', $sortie);
+    }
+
+    /**
+     * La colonne « version » fait vingt caractères : un uniqid() entier la
+     * dépasserait et l'insertion serait rejetée.
+     */
+    private static function freshVersion(): string
+    {
+        return 't'.substr(uniqid(), -8);
+    }
+
+    private function findVersion(LegalDocumentType $type, string $version): ?LegalDocument
+    {
+        return $this->repository()->findOneBy(['type' => $type, 'version' => $version, 'locale' => 'fr']);
     }
 
     /**
@@ -128,20 +156,5 @@ final class PublishLegalDocumentsCommandTest extends KernelTestCase
         self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
 
         return $entityManager->getRepository(LegalDocument::class);
-    }
-
-    /**
-     * La base de test n'est pas remise à zéro entre deux exécutions : sans
-     * cela, les documents laissés par les autres tests fausseraient les
-     * comptages.
-     */
-    private function emptyTable(): void
-    {
-        self::bootKernel();
-        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
-        self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
-
-        $entityManager->createQuery('DELETE FROM '.LegalDocument::class.' d')->execute();
-        $entityManager->clear();
     }
 }

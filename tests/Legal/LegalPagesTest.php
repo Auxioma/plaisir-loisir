@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Legal;
 
+use App\Legal\Entity\LegalAcceptance;
 use App\Legal\Entity\LegalDocument;
 use App\Legal\Enum\LegalDocumentType;
 use App\Legal\Service\LegalDocumentService;
@@ -205,11 +206,34 @@ final class LegalPagesTest extends WebTestCase
         );
     }
 
+    /**
+     * Efface toutes les versions d'un document, pour observer l'état « aucun
+     * texte publié ».
+     *
+     * Les ACCEPTATIONS sont retirées d'abord, et c'est le point intéressant :
+     * la clé étrangère de legal_acceptance est en RESTRICT, si bien que la
+     * base refuse de supprimer un document que quelqu'un a accepté. C'est la
+     * protection voulue — un texte accepté ne s'efface pas — et elle s'applique
+     * aussi à nous. Les acceptations effacées ici sont celles fabriquées par
+     * les tests d'inscription, pas des donnees reelles.
+     */
     private function removeAllVersions(LegalDocumentType $type): void
     {
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $documents = $entityManager->getRepository(LegalDocument::class)->findBy(['type' => $type]);
 
-        foreach ($entityManager->getRepository(LegalDocument::class)->findBy(['type' => $type]) as $document) {
+        if ([] === $documents) {
+            return;
+        }
+
+        // Passage par le repository plutôt qu'un DELETE en DQL : l'identifiant
+        // est un ULID côté entité et un UUID côté colonne, et la conversion ne
+        // se fait correctement que par la couche objet.
+        foreach ($documents as $document) {
+            foreach ($entityManager->getRepository(LegalAcceptance::class)->findBy(['document' => $document]) as $acceptation) {
+                $entityManager->remove($acceptation);
+            }
+
             $entityManager->remove($document);
         }
 

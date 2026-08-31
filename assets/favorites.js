@@ -9,6 +9,17 @@
  * Un seul écouteur posé sur le document plutôt qu'un par bouton : les grilles
  * en comptent jusqu'à seize par page, et certaines sections sont réécrites par
  * d'autres scripts. La délégation survit à ces remplacements.
+ *
+ * CAS PARTICULIER DE LA PAGE « MES FAVORIS » (ajouté le 31/08)
+ * Partout ailleurs, retirer un favori ne fait que vider le cœur : la carte a
+ * toujours sa place dans une grille de catalogue. Sur /compte/favoris, non :
+ * cette page ne montre QUE des favoris, et laisser la carte y figurerait une
+ * liste qui se contredit elle-même. La grille y porte donc `data-favorite-list`
+ * et la carte disparaît.
+ *
+ * Elle disparaît AVEC UN RECOURS. Un clic de travers sur un cœur ne doit pas
+ * effacer un favori sans retour possible, et la page ne propose rien d'autre
+ * pour le retrouver : un bandeau « Annuler » remet la carte et le favori.
  */
 
 const SELECTEUR = '[data-favorite-slug]';
@@ -54,6 +65,7 @@ async function basculer(bouton) {
         }
 
         appliquerEtat(bouton, donnees.favori === true);
+        repercuterDansLaListe(bouton, donnees.favori === true);
     } catch (erreur) {
         // Réseau coupé : on ne change pas l'affichage, pour ne pas faire croire
         // que le favori est enregistré alors qu'il ne l'est pas.
@@ -70,6 +82,72 @@ function appliquerEtat(bouton, actif) {
         'aria-label',
         actif ? bouton.dataset.favoriteLabelOn : bouton.dataset.favoriteLabelOff,
     );
+}
+
+/**
+ * Sur la page des favoris seulement : fait disparaître ou réapparaître la carte.
+ */
+function repercuterDansLaListe(bouton, actif) {
+    const liste = bouton.closest('[data-favorite-list]');
+    const carte = bouton.closest('.pl-card');
+
+    if (!liste || !carte) {
+        return;
+    }
+
+    // `hidden` plutôt qu'un retrait du DOM : la carte doit pouvoir revenir
+    // telle quelle, à sa place, si la personne annule.
+    carte.hidden = !actif;
+
+    if (actif) {
+        retirerLeBandeau(liste);
+        return;
+    }
+
+    if (aucuneCarteVisible(liste)) {
+        // La grille est vide : on recharge, ce qui affiche l'état vide dessiné
+        // dans la maquette. Le reconstruire ici en dupliquerait le balisage,
+        // et les deux versions finiraient par diverger.
+        window.location.reload();
+        return;
+    }
+
+    afficherLeBandeau(liste, bouton);
+}
+
+function aucuneCarteVisible(liste) {
+    return [...liste.querySelectorAll('.pl-card')].every((carte) => carte.hidden);
+}
+
+function retirerLeBandeau(liste) {
+    liste.parentElement?.querySelector('[data-favorite-undo-bar]')?.remove();
+}
+
+function afficherLeBandeau(liste, bouton) {
+    retirerLeBandeau(liste);
+
+    const bandeau = document.createElement('div');
+    bandeau.className = 'acc-fav-undo';
+    bandeau.setAttribute('data-favorite-undo-bar', '');
+    // « polite » et non « assertive » : l'information est utile, elle n'a pas
+    // à couper la lecture en cours d'un lecteur d'écran.
+    bandeau.setAttribute('role', 'status');
+
+    const texte = document.createElement('span');
+    texte.textContent = liste.dataset.favoriteRemoved || '';
+
+    const annuler = document.createElement('button');
+    annuler.type = 'button';
+    annuler.className = 'acc-fav-undo__btn';
+    annuler.textContent = liste.dataset.favoriteUndo || 'Annuler';
+    annuler.addEventListener('click', () => {
+        // On rejoue la bascule : le serveur remet le favori, et
+        // `repercuterDansLaListe` fait revenir la carte.
+        basculer(bouton);
+    });
+
+    bandeau.append(texte, annuler);
+    liste.parentElement?.insertBefore(bandeau, liste);
 }
 
 document.addEventListener('click', (evenement) => {

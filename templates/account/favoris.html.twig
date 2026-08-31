@@ -50,7 +50,14 @@
             {% include 'account/_empty.html.twig' with { message: "Il semblerait que vous n'ayez pas d'activités dans vos<br>favoris pour le moment."|trans } %}
         {% endif %}
     {% else %}
-        <div class="acc-grid">
+        {# Sur CET écran, retirer un favori doit faire disparaître la carte :
+           la page ne montre que des favoris, et le bandeau du bas annonce
+           « Vous pouvez la supprimer de vos favoris à tout moment ». Le
+           script lit ces attributs pour savoir qu'il est dans une liste de
+           favoris, et pour disposer des libellés traduits. #}
+        <div class="acc-grid" data-favorite-list
+             data-favorite-removed="{{ 'Retiré de vos favoris.'|trans }}"
+             data-favorite-undo="{{ 'Annuler'|trans }}">
             {% for f in favorites %}
                 {% if tab == 'destinations' %}
                     {# La carte de l'espace compte attend la forme d'une
@@ -62,7 +69,9 @@
                        site, plutot que d'inventer une mise en page. #}
                     {% include 'destination/_card.html.twig' with { d: f } %}
                 {% else %}
-                    {% include 'account/_favorite_card.html.twig' with { f: f, hearts: tab == 'prestataires' ? 'outline' : 'red', lien: f.slug is defined ? (tab == 'destinations' ? path('app_destination_city', { ville: f.slug }) : path('app_activity_show', { slug: f.slug })) : '#' } %}
+                    {# `favorite_type` n'est transmis que pour les onglets dont l'entité
+                       Favorite connaît le type : sans lui, le cœur reste décoratif. #}
+                    {% include 'account/_favorite_card.html.twig' with { f: f, hearts: tab == 'prestataires' ? 'outline' : 'red', favorite_type: tab == 'prestataires' ? null : 'activite', lien: f.slug is defined ? (tab == 'destinations' ? path('app_destination_city', { ville: f.slug }) : path('app_activity_show', { slug: f.slug })) : '#' } %}
                 {% endif %}
             {% endfor %}
         </div>

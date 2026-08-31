@@ -3,7 +3,19 @@
     actif rouge plein (onglet Activités, listes) ou contour (Prestataires,
     maquette). Gère l'état <ImagePlaceholder> (chip « Badge » + icône image
     manquante). Le titre « Titre » est un placeholder maquette, reproduit.
-    Variables : f (carte), hearts ('red'|'outline', défaut red).
+
+    LE CŒUR ÉTAIT INERTE JUSQU'AU 31/08. La route de bascule existait depuis le
+    câblage du 22/08 et les cartes d'activités comme de destinations l'appelaient
+    déjà ; celle-ci, propre à l'espace compte, ne portait qu'un `<button>` nu.
+    Conséquence : on pouvait ajouter un favori partout sur le site, mais pas le
+    retirer depuis la page faite pour cela.
+
+    L'onglet Prestataires reste sans action : mettre un prestataire en favori
+    n'existe pas côté entité Favorite, qui ne connaît que les activités et les
+    destinations. Un cœur qui appellerait la route recevrait « introuvable ».
+
+    Variables : f (carte), hearts ('red'|'outline', défaut red),
+    favorite_type ('activite' par défaut ; absent = cœur décoratif).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
@@ -23,11 +35,21 @@
                 <span class="pl-card__tag pl-card__tag--bestseller">{{ f.badge|trans }}</span>
             {% endif %}
         {% endif %}
-        {% if hearts|default('red') == 'red' %}
-            <button type="button" class="pl-card__fav acc-fav__heart is-on" aria-label="{{ 'Retirer des favoris'|trans }}">{{ icon.heart_solid(16) }}</button>
-        {% else %}
-            <button type="button" class="pl-card__fav acc-fav__heart" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</button>
-        {% endif %}
+        {% set actionnable = favorite_type|default(null) and f.slug is defined and f.slug %}
+        {% set plein = hearts|default('red') == 'red' %}
+        <button type="button" class="pl-card__fav acc-fav__heart{{ plein ? ' is-on' }}{{ actionnable ? ' is-active' }}"
+                aria-label="{{ (plein ? 'Retirer des favoris' : 'Ajouter aux favoris')|trans }}"
+                {% if actionnable %}
+                    aria-pressed="{{ plein ? 'true' : 'false' }}"
+                    data-favorite-slug="{{ f.slug }}"
+                    data-favorite-type="{{ favorite_type }}"
+                    data-favorite-url="{{ path('app_favorite_toggle') }}"
+                    data-favorite-token="{{ csrf_token('submit') }}"
+                    data-favorite-label-on="{{ 'Retirer des favoris'|trans }}"
+                    data-favorite-label-off="{{ 'Ajouter aux favoris'|trans }}"
+                {% endif %}>
+            {{ plein ? icon.heart_solid(16) : icon.heart(16) }}
+        </button>
     </div>
     <div class="pl-card__body">
         <span class="pl-card__place">{{ icon.map_pin(14) }} {{ f.place }}</span>
