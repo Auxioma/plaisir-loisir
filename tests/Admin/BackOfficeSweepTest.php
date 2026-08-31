@@ -29,6 +29,13 @@ use Symfony\Component\DomCrawler\Crawler;
  *
  * Treize écrans, et autant de colonnes que chacun affiche : c'est le genre de
  * vérification qu'on ne fait pas à la main deux fois.
+ *
+ * IL NE DOIT RIEN EXIGER D'UNE BASE VIDE. Première version rejetée par
+ * l'intégration continue : elle réclamait au moins un lien de tri par écran,
+ * or EasyAdmin n'affiche pas d'en-tête triable quand la liste est vide. En
+ * local les tables étaient pleines, sur le serveur elles ne l'étaient pas. Un
+ * test de parcours ne doit rien supposer des données présentes — mais il doit
+ * rester exigeant DÈS QU'il y en a, sans quoi il passerait sans rien éprouver.
  */
 final class BackOfficeSweepTest extends WebTestCase
 {
@@ -68,9 +75,15 @@ final class BackOfficeSweepTest extends WebTestCase
         $crawler = $client->request('GET', $url);
         self::assertSame(200, $client->getResponse()->getStatusCode(), sprintf('%s ne s\'ouvre pas.', $url));
 
+        if (0 === $this->dataRows($crawler)->count()) {
+            self::assertTrue(true, 'Liste vide : EasyAdmin n\'affiche alors aucun en-tête triable.');
+
+            return;
+        }
+
         $liens = $this->sortLinks($crawler);
 
-        self::assertNotSame([], $liens, sprintf('%s ne propose aucun tri : le relevé est vide, le test ne prouverait rien.', $url));
+        self::assertNotSame([], $liens, sprintf('%s affiche des lignes mais aucun tri : le relevé est vide, le test ne prouverait rien.', $url));
 
         foreach ($liens as $intitule => $lien) {
             $client->request('GET', $lien);
@@ -121,7 +134,7 @@ final class BackOfficeSweepTest extends WebTestCase
         $client->loginUser($this->makeAdmin());
 
         $crawler = $client->request('GET', $url);
-        $lien = $crawler->filter('table.datagrid tbody a[href]')->first();
+        $lien = $this->dataRows($crawler)->filter('a[href]')->first();
 
         if (0 === $lien->count()) {
             self::assertTrue(true, 'Aucune ligne à ouvrir sur cet écran.');
@@ -185,7 +198,7 @@ final class BackOfficeSweepTest extends WebTestCase
         $client->loginUser($this->makeAdmin());
 
         $crawler = $client->request('GET', $url);
-        $lignes = $crawler->filter('table.datagrid tbody tr');
+        $lignes = $this->dataRows($crawler);
 
         if (0 === $lignes->count()) {
             self::assertTrue(true, 'Aucune ligne sur cet écran.');
@@ -213,6 +226,20 @@ final class BackOfficeSweepTest extends WebTestCase
                 sprintf('L\'action « %s » de %s renvoie une erreur serveur (%s).', $action, $url, $lien),
             );
         }
+    }
+
+    /**
+     * Les lignes qui portent VRAIMENT une donnée.
+     *
+     * Une liste vide n'est pas un tableau sans `<tr>` : EasyAdmin y place une
+     * ligne « aucun résultat ». On reconnaît une vraie ligne au fait qu'elle
+     * propose au moins une action.
+     */
+    private function dataRows(Crawler $crawler): Crawler
+    {
+        return $crawler->filter('table.datagrid tbody tr')->reduce(
+            static fn (Crawler $ligne): bool => $ligne->filter('a[href*="/admin"]')->count() > 0,
+        );
     }
 
     /**
