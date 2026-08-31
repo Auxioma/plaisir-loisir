@@ -19,6 +19,12 @@ security:
             lazy: true
             provider: app_user_provider
 
+            # Refuse la connexion aux comptes suspendus et supprimés. Sans
+            # cette ligne, le statut de l'entité User n'était vérifié NULLE
+            # PART : suspendre un compte depuis le back-office ne l'aurait
+            # pas empêché de se connecter.
+            user_checker: App\User\Security\AccountChecker
+
             # Authentification classique par formulaire HTML + sessions.
             form_login:
                 login_path: app_login

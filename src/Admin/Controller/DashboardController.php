@@ -100,6 +100,19 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(DestinationCrudController::class, 'Destinations', 'fa fa-map-location-dot');
         yield MenuItem::linkTo(CategoryCrudController::class, 'Catégories', 'fa fa-tags');
 
+        // Demande du CTO le 31/08 : Loïc doit avoir la main sur le site depuis
+        // le back-office. Donner le rôle administrateur passait jusqu'ici par
+        // une commande en console, donc par un accès SSH au serveur.
+        yield MenuItem::section('Personnes');
+        yield MenuItem::linkTo(UserCrudController::class, 'Membres', 'fa fa-users');
+        yield MenuItem::linkTo(ProviderProfileCrudController::class, 'Prestataires', 'fa fa-briefcase');
+
+        // Ces deux tables étaient ÉCRITES et jamais relues : le site recueillait
+        // des demandes et les jetait, en promettant une réponse.
+        yield MenuItem::section('Demandes reçues');
+        yield MenuItem::linkTo(PartnerApplicationCrudController::class, 'Candidatures partenaires', 'fa fa-handshake');
+        yield MenuItem::linkTo(ContactMessageCrudController::class, 'Messages de contact', 'fa fa-envelope');
+
         // Demande du CTO le 29/08 : les textes juridiques et l'aide se gèrent
         // en base, parce qu'ils évoluent dans le temps et qu'une évolution ne
         // peut pas exiger un déploiement.
