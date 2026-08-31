@@ -71,6 +71,10 @@ class ProviderProfileCrudController extends AbstractCrudController
                 array_map(static fn (ProviderStatus $s): string => self::statusLabel($s), ProviderStatus::cases()),
                 ProviderStatus::cases(),
             ))
+            // Même piège que partout : le libellé des choix ne sert qu'au
+            // formulaire, la liste afficherait « pending_verification ».
+            ->formatValue(static fn (mixed $v, ProviderProfile $profil): string => self::statusLabel($profil->getStatus()))
+            ->renderAsBadges()
             ->setHelp('« Vérifié » atteste que le dossier a été contrôlé. C\'est la bascule à actionner quand une candidature aboutit.');
 
         // Le compte qui pilotera l'espace professionnel. Peut rester vide le

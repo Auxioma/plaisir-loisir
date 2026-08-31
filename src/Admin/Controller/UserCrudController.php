@@ -105,18 +105,27 @@ class UserCrudController extends AbstractCrudController
                 array_map(static fn (UserStatus $s): string => self::statusLabel($s), UserStatus::cases()),
                 UserStatus::cases(),
             ))
+            // La liste affichait « Suspended » : le libellé des choix ne sert
+            // qu'au formulaire, l'affichage se fait à part. Même piège que sur
+            // l'écran des activités.
+            ->formatValue(static fn (mixed $v, User $membre): string => self::statusLabel($membre->getStatus()))
+            ->renderAsBadges()
             ->setHelp('« Suspendu » interdit la connexion. « En attente » ne bloque rien aujourd\'hui : l\'inscription active immédiatement.');
 
         // Les rôles sont un tableau en base ; ROLE_USER est ajouté
         // implicitement par l'entité et n'a donc pas à être proposé.
         yield ChoiceField::new('roles', 'Rôles')
             ->setChoices([
-                'Administrateur — accès complet au back-office' => 'ROLE_ADMIN',
-                'Prestataire — publie des activités' => 'ROLE_PROVIDER',
+                'Administrateur' => 'ROLE_ADMIN',
+                'Prestataire' => 'ROLE_PROVIDER',
             ])
             ->allowMultipleChoices()
             ->renderExpanded()
-            ->setHelp('Tout membre a déjà les droits de base : n\'ajoutez ici que ce qui va au-delà.');
+            // Sans cela, la colonne affiche « ROLE_ADMIN » ; et un membre sans
+            // rôle particulier n'a pas une case vide mais un mot juste.
+            ->formatValue(static fn (mixed $v, User $membre): string => self::rolesLabel($membre->getRoles()))
+            ->renderAsBadges()
+            ->setHelp('Tout membre a déjà les droits de base. « Administrateur » ouvre le back-office en entier ; « Prestataire » permet de publier des activités.');
 
         yield DateTimeField::new('createdAt', 'Inscrit le')->hideOnForm();
 
@@ -310,6 +319,24 @@ class UserCrudController extends AbstractCrudController
         return new RedirectResponse(
             $this->urls->setController(self::class)->setAction(Action::INDEX)->generateUrl(),
         );
+    }
+
+    /**
+     * @param list<string> $roles
+     */
+    private static function rolesLabel(array $roles): string
+    {
+        $lus = [];
+
+        if (\in_array('ROLE_ADMIN', $roles, true)) {
+            $lus[] = 'Administrateur';
+        }
+
+        if (\in_array('ROLE_PROVIDER', $roles, true)) {
+            $lus[] = 'Prestataire';
+        }
+
+        return [] === $lus ? 'Membre' : implode(', ', $lus);
     }
 
     private static function statusLabel(UserStatus $status): string
