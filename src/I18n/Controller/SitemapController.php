@@ -59,6 +59,11 @@ final class SitemapController extends AbstractController
         'app_corporate_payment',
         'app_corporate_legal',
         'app_corporate_terms',
+        'app_corporate_sales_terms',
+        'app_corporate_privacy',
+        'app_corporate_cookies',
+        'app_help_center',
+        'app_faq',
         'app_register',
     ];
 

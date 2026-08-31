@@ -1,0 +1,58 @@
+# Filtrage du HTML saisi dans le back-office pour les textes juridiques et la
+# FAQ.
+#
+# POURQUOI CE FICHIER EXISTE
+# Ces contenus sont écrits par un administrateur dans un éditeur de texte
+# riche : ils arrivent en base sous forme de HTML et doivent donc être affichés
+# tels quels, sans échappement, sinon le lecteur verrait « <p>Article 1</p> ».
+# Or afficher du HTML non filtré, c'est accepter d'exécuter ce qu'il contient.
+# Un compte d'administration compromis suffirait alors à injecter un script sur
+# une page vue par tous les visiteurs.
+#
+# La liste ci-dessous est donc volontairement COURTE : uniquement ce qu'un
+# texte juridique a besoin d'exprimer. Tout le reste — <script>, <style>,
+# <iframe>, les attributs « on... », les styles en ligne — est retiré
+# silencieusement à l'affichage. Le texte reste intact en base ; c'est le rendu
+# qui est nettoyé, à chaque affichage.
+framework:
+    html_sanitizer:
+        sanitizers:
+            legal_content:
+                # On n'hérite d'aucune liste large : on énumère.
+                allow_safe_elements: false
+                allow_elements:
+                    h2: []
+                    h3: []
+                    p: []
+                    br: []
+                    strong: []
+                    b: []
+                    em: []
+                    i: []
+                    u: []
+                    ul: []
+                    ol: []
+                    li: []
+                    blockquote: []
+                    # Pour nommer un cookie ou un en-tête dans un texte : la
+                    # politique de cookies cite « tm_consent ».
+                    code: []
+                    table: []
+                    thead: []
+                    tbody: []
+                    tr: []
+                    th: []
+                    td: []
+                    # Le seul élément à attributs : un lien juridique renvoie
+                    # régulièrement vers un autre texte ou vers la CNIL.
+                    a: ['href', 'title']
+                # Un lien « javascript: » est un script déguisé en lien.
+                allowed_link_schemes: ['https', 'http', 'mailto']
+                allow_relative_links: true
+                # « drop » et non « block » : bloquer un élément le retire mais
+                # GARDE ses enfants. Pour une balise <script>, cela laisserait
+                # le code s'afficher en texte ; ici on veut que le contenu
+                # disparaisse avec la balise. Une image sur une page légale
+                # serait par ailleurs un appel réseau vers l'extérieur, donc un
+                # traceur possible : on la retire aussi.
+                drop_elements: ['script', 'style', 'iframe', 'object', 'embed', 'img']

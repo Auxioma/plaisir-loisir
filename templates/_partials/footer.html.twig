@@ -44,10 +44,12 @@
             <div class="pl-footer__col">
                 <div class="pl-footer__col-title">{{ 'Aide & support'|trans }}</div>
                 <div class="pl-footer__links">
-                    <a href="#">{{ "Centre d'aide"|trans }}</a>
-                    <a href="#">FAQ</a>
-                    <a href="{{ path('app_corporate_terms') }}">{{ 'Conditions générales'|trans }}</a>
-                    <a href="#">{{ 'Politique de confidentialité'|trans }}</a>
+                    <a href="{{ path('app_help_center') }}">{{ "Centre d'aide"|trans }}</a>
+                    <a href="{{ path('app_faq') }}">FAQ</a>
+                    <a href="{{ path('app_corporate_terms') }}">{{ "Conditions générales d'utilisation"|trans }}</a>
+                    <a href="{{ path('app_corporate_sales_terms') }}">{{ 'Conditions générales de vente'|trans }}</a>
+                    <a href="{{ path('app_corporate_privacy') }}">{{ 'Politique de confidentialité'|trans }}</a>
+                    <a href="{{ path('app_corporate_cookies') }}">{{ 'Politique de cookies'|trans }}</a>
                     <a href="{{ path('app_corporate_legal') }}">{{ 'Mentions légales'|trans }}</a>
                 </div>
             </div>

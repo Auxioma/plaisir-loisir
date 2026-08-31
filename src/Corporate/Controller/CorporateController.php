@@ -8,6 +8,9 @@ use App\Corporate\Entity\ContactMessage;
 use App\Corporate\Entity\PartnerApplication;
 use App\Corporate\Service\CorporateInboxService;
 use App\Corporate\StaticCorporate;
+use App\Legal\Enum\LegalDocumentType;
+use App\Legal\Service\LegalContentRenderer;
+use App\Legal\Service\LegalDocumentService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -175,23 +178,117 @@ final class CorporateController extends AbstractController
         ]);
     }
 
+    /**
+     * LES PAGES JURIDIQUES LISENT DÉSORMAIS LA BASE (31/08).
+     *
+     * Elles affichaient jusqu'ici des tableaux écrits en PHP dans
+     * StaticCorporate. Le CTO a demandé que ces textes soient gérés depuis la
+     * base : les conditions générales évoluent dans le temps, et une évolution
+     * ne peut pas exiger un déploiement.
+     *
+     * Le modèle existait déjà entièrement (table legal_document, versionnée).
+     * Il manquait seulement le branchement, l'écran d'administration et deux
+     * routes : les conditions générales de VENTE, distinctes des conditions
+     * d'utilisation, et la politique de confidentialité, dont le lien du pied
+     * de page pointait dans le vide depuis l'origine.
+     */
     #[Route(path: ['fr' => '/mentions-legales', 'en' => '/en/legal-notice'], name: 'app_corporate_legal')]
-    public function legal(): Response
+    public function legal(Request $request, LegalDocumentService $documents, LegalContentRenderer $renderer): Response
     {
-        return $this->render('corporate/legal.html.twig', [
-            'page_title' => 'Mentions légales',
-            'intro' => "Les présentes mentions légales ont pour objectif d'informer les utilisateurs sur l'éditeur du site TrouveMoi Plaisirs & Loisirs et sur les conditions d'utilisation de la plateforme.",
-            'sections' => StaticCorporate::legalSections(),
-        ]);
+        return $this->renderLegalDocument(
+            LegalDocumentType::LegalNotice,
+            $request,
+            $documents,
+            $renderer,
+            "Les présentes mentions légales ont pour objectif d'informer les utilisateurs sur l'éditeur du site TrouveMoi Plaisirs & Loisirs et sur les conditions d'utilisation de la plateforme.",
+        );
     }
 
     #[Route(path: ['fr' => '/conditions-generales', 'en' => '/en/terms-and-conditions'], name: 'app_corporate_terms')]
-    public function terms(): Response
+    public function terms(Request $request, LegalDocumentService $documents, LegalContentRenderer $renderer): Response
     {
+        return $this->renderLegalDocument(
+            LegalDocumentType::TermsOfService,
+            $request,
+            $documents,
+            $renderer,
+            "Bienvenue sur TrouveMoi Plaisirs & Loisirs. Les présentes Conditions Générales d'Utilisation (CGU) régissent votre utilisation de notre plateforme et de nos services.",
+        );
+    }
+
+    #[Route(path: ['fr' => '/conditions-generales-de-vente', 'en' => '/en/terms-of-sale'], name: 'app_corporate_sales_terms')]
+    public function salesTerms(Request $request, LegalDocumentService $documents, LegalContentRenderer $renderer): Response
+    {
+        return $this->renderLegalDocument(
+            LegalDocumentType::TermsOfSale,
+            $request,
+            $documents,
+            $renderer,
+            'Les présentes Conditions Générales de Vente encadrent la réservation et le paiement des prestations proposées sur la plateforme.',
+        );
+    }
+
+    #[Route(path: ['fr' => '/politique-de-confidentialite', 'en' => '/en/privacy-policy'], name: 'app_corporate_privacy')]
+    public function privacy(Request $request, LegalDocumentService $documents, LegalContentRenderer $renderer): Response
+    {
+        return $this->renderLegalDocument(
+            LegalDocumentType::PrivacyPolicy,
+            $request,
+            $documents,
+            $renderer,
+            'Cette politique explique quelles données personnelles nous collectons, pourquoi, combien de temps nous les conservons et comment exercer vos droits.',
+        );
+    }
+
+    #[Route(path: ['fr' => '/politique-de-cookies', 'en' => '/en/cookie-policy'], name: 'app_corporate_cookies')]
+    public function cookies(Request $request, LegalDocumentService $documents, LegalContentRenderer $renderer): Response
+    {
+        return $this->renderLegalDocument(
+            LegalDocumentType::CookiePolicy,
+            $request,
+            $documents,
+            $renderer,
+            'Cette page détaille les traceurs déposés par le site, leur finalité et la manière de revenir sur votre choix.',
+        );
+    }
+
+    /**
+     * Rend une page juridique à partir de la version en vigueur.
+     *
+     * CE QUI SE PASSE QUAND AUCUNE VERSION N'EST PUBLIÉE
+     * La page ne renvoie PAS une erreur 404, et c'est un choix. Ces cinq
+     * adresses sont citées dans le pied de page de toutes les pages, dans les
+     * cases à cocher de l'inscription et dans les mentions envoyées aux
+     * partenaires : une 404 y remettrait exactement le lien mort qu'on vient
+     * de supprimer, et donnerait au visiteur l'impression d'un site cassé.
+     *
+     * La page affiche donc son titre, son fil d'Ariane et une phrase indiquant
+     * que le texte est en cours de rédaction, avec le lien de contact. C'est
+     * l'état réel : la rédaction d'un texte juridique relève du client, pas du
+     * code. Le jour où il fournit le texte, il suffit de le publier depuis le
+     * back-office pour que la page se remplisse, sans déploiement.
+     */
+    private function renderLegalDocument(
+        LegalDocumentType $type,
+        Request $request,
+        LegalDocumentService $documents,
+        LegalContentRenderer $renderer,
+        string $introDefaut,
+    ): Response {
+        $locale = $request->getLocale();
+        $document = $documents->current($type, $locale);
+
+        // Repli sur le français : mieux vaut un texte juridique lisible dans la
+        // mauvaise langue qu'une page vide dans la bonne.
+        if (null === $document && 'fr' !== $locale) {
+            $document = $documents->current($type, 'fr');
+        }
+
         return $this->render('corporate/legal.html.twig', [
-            'page_title' => "Conditions Générales d'Utilisation",
-            'intro' => "Bienvenue sur TrouveMoi Plaisirs & Loisirs. Les présentes Conditions Générales d'Utilisation (CGU) régissent votre utilisation de notre plateforme et de nos services.",
-            'sections' => StaticCorporate::cguSections(),
+            'page_title' => $type->label(),
+            'intro' => $introDefaut,
+            'sections' => null !== $document ? $renderer->sections($document->getContent()) : [],
+            'document' => $document,
         ]);
     }
 }

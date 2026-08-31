@@ -43,7 +43,7 @@
                         <a href="{{ path('app_corporate_about') }}" class="pl-nav__link {{ nav_active|default('') == 'apropos' ? 'is-active' }}">{{ 'À propos de nous'|trans }}</a>
                         <a href="{{ path('app_corporate_partner') }}" class="pl-nav__link {{ nav_active|default('') == 'partenaire' ? 'is-active' }}">{{ 'Devenir partenaire'|trans }}</a>
                         <a href="{{ path('app_corporate_careers') }}" class="pl-nav__link {{ nav_active|default('') == 'carrieres' ? 'is-active' }}">{{ 'Carrières'|trans }}</a>
-                        <a href="#" class="pl-nav__link {{ nav_active|default('') == 'faq' ? 'is-active' }}">{{ 'FAQ'|trans }}</a>
+                        <a href="{{ path('app_faq') }}" class="pl-nav__link {{ nav_active|default('') == 'faq' ? 'is-active' }}">{{ 'FAQ'|trans }}</a>
                         <a href="{{ path('app_corporate_contact') }}" class="pl-nav__link {{ nav_active|default('') == 'contact' ? 'is-active' }}">{{ 'Contactez-nous'|trans }}</a>
                     </nav>
                 </div>

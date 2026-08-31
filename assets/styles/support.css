@@ -1,0 +1,432 @@
+/*
+ * Centre d'aide et FAQ (préfixe sp-).
+ *
+ * AUCUNE MAQUETTE N'EXISTE POUR CES DEUX ÉCRANS : ni planche dans
+ * assets/corporate/, ni description dans la spec, qui se contente de citer
+ * « FAQ » dans la barre de navigation institutionnelle. Cette feuille ne
+ * décide donc d'aucune valeur nouvelle : elle n'emploie que des jetons du
+ * socle (--pl-*), déjà calés sur la charte d'Agnès. Le jour où la planche
+ * arrivera, il n'y aura qu'à recaler des espacements, pas à repenser l'écran.
+ *
+ * Rappel du projet : tout jeton --pl-* NON DÉCLARÉ dans design-system.css
+ * invalide la déclaration entière, silencieusement. Les jetons employés ici
+ * ont été relevés dans design-system.css, pas supposés.
+ */
+
+.sp-page {
+    background: var(--pl-surface);
+}
+
+/* ---------------------------------------------------------------- Héros -- */
+
+/* Les autres héros corporate portent une photo ; ces deux écrans n'en ont pas
+   qui leur soit destinée. Plutôt qu'en emprunter une sans rapport, on garde
+   l'aplat violet clair du socle, déjà employé par les bannières d'aide. */
+.cor-hero--faq {
+    background: var(--pl-action-light);
+    padding-block: var(--pl-sp-64);
+    text-align: center;
+}
+
+.sp-search {
+    display: flex;
+    gap: var(--pl-sp-12);
+    justify-content: center;
+    align-items: center;
+    margin-top: var(--pl-sp-32);
+    flex-wrap: wrap;
+}
+
+.sp-search__field {
+    width: min(520px, 100%);
+}
+
+.sp-search__btn {
+    height: 48px;
+    padding-inline: var(--pl-sp-28);
+}
+
+.sp-crumb {
+    margin-block: var(--pl-sp-24);
+}
+
+.sp-main {
+    padding-bottom: var(--pl-sp-64);
+}
+
+.sp-title {
+    margin-bottom: var(--pl-sp-24);
+}
+
+/* ----------------------------------------------- Rubriques (centre d'aide) */
+
+.sp-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--pl-sp-24);
+    margin-bottom: var(--pl-sp-64);
+}
+
+.sp-card {
+    display: block;
+    padding: var(--pl-sp-24);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    background: var(--pl-surface);
+    color: var(--pl-text);
+    /* Le Reboot de Bootstrap souligne tout <a> : sans cette ligne, la carte
+       entière apparaîtrait soulignée. Le piège est documenté dans le socle. */
+    text-decoration: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.sp-card:hover {
+    border-color: var(--pl-action);
+    box-shadow: var(--pl-shadow-soft);
+}
+
+/* Une rubrique sans question reste visible mais éteinte : la masquer ferait
+   une grille à trous et laisserait croire que la rubrique n'existe pas. */
+.sp-card--empty {
+    background: var(--pl-surface-disabled);
+    color: var(--pl-text-disabled);
+    cursor: default;
+}
+
+.sp-card--empty:hover {
+    border-color: var(--pl-border);
+    box-shadow: none;
+}
+
+.sp-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--pl-radius-sm);
+    background: var(--pl-action-light);
+    color: var(--pl-action);
+    margin-bottom: var(--pl-sp-16);
+}
+
+.sp-card--empty .sp-card__icon {
+    background: var(--pl-neutral-100);
+    color: var(--pl-text-disabled);
+}
+
+.sp-card__title {
+    margin: 0 0 var(--pl-sp-8);
+    font-size: var(--pl-fs-h4);
+    font-weight: var(--pl-fw-semibold);
+    color: inherit;
+}
+
+.sp-card__text {
+    margin: 0 0 var(--pl-sp-12);
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-base);
+    color: var(--pl-text-secondary);
+}
+
+.sp-card--empty .sp-card__text {
+    color: var(--pl-text-disabled);
+}
+
+.sp-card__count {
+    font-size: var(--pl-fs-caption);
+    font-weight: var(--pl-fw-medium);
+    color: var(--pl-action);
+}
+
+.sp-card--empty .sp-card__count {
+    color: var(--pl-text-disabled);
+}
+
+/* --------------------------------------------- Questions mises en avant -- */
+
+.sp-popular {
+    list-style: none;
+    margin: 0 0 var(--pl-sp-64);
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--pl-sp-12);
+}
+
+.sp-popular a {
+    display: flex;
+    align-items: center;
+    gap: var(--pl-sp-8);
+    padding: var(--pl-sp-14) var(--pl-sp-16);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    color: var(--pl-text);
+    text-decoration: none;
+    font-size: var(--pl-fs-body-sm);
+}
+
+.sp-popular a:hover {
+    border-color: var(--pl-action);
+    color: var(--pl-action);
+}
+
+/* ------------------------------------------------------------ Canaux ----- */
+
+.sp-channels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--pl-sp-24);
+}
+
+.sp-channel {
+    display: block;
+    padding: var(--pl-sp-24);
+    border-radius: var(--pl-radius-md);
+    background: var(--pl-surface-dashboard);
+    color: var(--pl-text);
+    text-decoration: none;
+}
+
+.sp-channel:hover {
+    background: var(--pl-action-light);
+}
+
+.sp-channel__icon {
+    display: inline-flex;
+    color: var(--pl-action);
+    margin-bottom: var(--pl-sp-12);
+}
+
+/* ---------------------------------------------------------------- FAQ ---- */
+
+.sp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--pl-sp-8);
+    margin-bottom: var(--pl-sp-32);
+}
+
+.sp-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 38px;
+    padding-inline: var(--pl-sp-16);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-pill);
+    background: var(--pl-surface);
+    color: var(--pl-text-secondary);
+    font-size: var(--pl-fs-body-sm);
+    text-decoration: none;
+}
+
+.sp-chip:hover {
+    border-color: var(--pl-action);
+    color: var(--pl-action);
+}
+
+.sp-chip.is-active {
+    background: var(--pl-action);
+    border-color: var(--pl-action);
+    color: var(--pl-text-on-action);
+}
+
+.sp-count {
+    margin-bottom: var(--pl-sp-24);
+    font-size: var(--pl-fs-body);
+    color: var(--pl-text-secondary);
+}
+
+.sp-count__reset {
+    margin-left: var(--pl-sp-12);
+    color: var(--pl-action);
+}
+
+.sp-group {
+    margin-bottom: var(--pl-sp-48);
+}
+
+.sp-group__title {
+    margin: 0 0 var(--pl-sp-16);
+    font-size: var(--pl-fs-h3);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text);
+}
+
+.sp-accordion {
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    overflow: hidden;
+}
+
+.sp-item + .sp-item {
+    border-top: 1px solid var(--pl-border);
+}
+
+/* <details> natif : le dépliage ne demande pas une ligne de JavaScript, reste
+   accessible au clavier et s'imprime ouvert. Le socle emploie déjà ce choix
+   pour les menus déroulants du pied de page. */
+.sp-item__q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--pl-sp-16);
+    padding: var(--pl-sp-20) var(--pl-sp-24);
+    cursor: pointer;
+    font-size: var(--pl-fs-body);
+    font-weight: var(--pl-fw-medium);
+    color: var(--pl-text);
+    list-style: none;
+}
+
+/* Le triangle par défaut de <summary>, que WebKit dessine à part. */
+.sp-item__q::-webkit-details-marker {
+    display: none;
+}
+
+.sp-item__q:hover {
+    color: var(--pl-action);
+}
+
+.sp-item__chevron {
+    display: inline-flex;
+    color: var(--pl-text-secondary);
+    transition: transform .15s ease;
+}
+
+.sp-item[open] .sp-item__chevron {
+    transform: rotate(180deg);
+}
+
+.sp-item__a {
+    padding: 0 var(--pl-sp-24) var(--pl-sp-24);
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-base);
+    color: var(--pl-text-secondary);
+}
+
+.sp-item__a p {
+    margin: 0 0 var(--pl-sp-12);
+}
+
+.sp-item__a p:last-child {
+    margin-bottom: 0;
+}
+
+.sp-item__a a {
+    color: var(--pl-action);
+}
+
+.sp-empty {
+    padding: var(--pl-sp-48);
+    border: 1px dashed var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    text-align: center;
+}
+
+.sp-empty__text {
+    margin: 0 0 var(--pl-sp-24);
+    color: var(--pl-text-secondary);
+}
+
+.sp-cta {
+    margin-bottom: var(--pl-sp-64);
+}
+
+/* ------------------------------------------------- Textes juridiques ----- */
+
+/* Le contenu des pages légales vient désormais de la base sous forme de HTML.
+   Ces règles habillent ce que l'éditeur produit ; elles reprennent exactement
+   l'apparence que les classes lg-p et lg-list donnaient au contenu écrit en
+   PHP, pour que le passage en base ne se voie pas à l'écran. */
+.lg-body p {
+    margin: 0 0 var(--pl-sp-16);
+    font-size: var(--pl-fs-body);
+    line-height: var(--pl-lh-base);
+    color: var(--pl-text-secondary);
+}
+
+.lg-body ul,
+.lg-body ol {
+    margin: 0 0 var(--pl-sp-16);
+    padding-left: var(--pl-sp-20);
+    color: var(--pl-text-secondary);
+}
+
+.lg-body li {
+    margin-bottom: var(--pl-sp-8);
+    line-height: var(--pl-lh-base);
+}
+
+.lg-body h3 {
+    margin: var(--pl-sp-24) 0 var(--pl-sp-12);
+    font-size: var(--pl-fs-h4);
+    font-weight: var(--pl-fw-semibold);
+    color: var(--pl-text);
+}
+
+.lg-body a {
+    color: var(--pl-action);
+}
+
+.lg-body table {
+    width: 100%;
+    margin-bottom: var(--pl-sp-16);
+    border-collapse: collapse;
+    font-size: var(--pl-fs-body-sm);
+}
+
+.lg-body th,
+.lg-body td {
+    padding: var(--pl-sp-12);
+    border: 1px solid var(--pl-border);
+    text-align: left;
+}
+
+.lg-date__version {
+    margin-left: var(--pl-sp-8);
+    padding: 2px var(--pl-sp-8);
+    border-radius: var(--pl-radius-pill);
+    background: var(--pl-action-light);
+    color: var(--pl-action);
+    font-size: var(--pl-fs-caption-xs);
+}
+
+.lg-pending {
+    padding: var(--pl-sp-48);
+    border: 1px dashed var(--pl-border);
+    border-radius: var(--pl-radius-md);
+}
+
+/* --------------------------------------------------------- Petits écrans - */
+
+@media (max-width: 1024px) {
+    .sp-cards,
+    .sp-channels {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .sp-popular {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .sp-cards,
+    .sp-channels {
+        grid-template-columns: 1fr;
+    }
+
+    .sp-search {
+        flex-direction: column;
+    }
+
+    .sp-search__btn {
+        width: 100%;
+    }
+
+    .sp-item__q,
+    .sp-item__a {
+        padding-inline: var(--pl-sp-16);
+    }
+}

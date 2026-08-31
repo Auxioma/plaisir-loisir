@@ -1,0 +1,137 @@
+{#
+    FAQ (/faq) — la liste complète des questions fréquentes, dépliables.
+
+    AUCUNE MAQUETTE N'EXISTE POUR CET ÉCRAN. Ni dans assets/corporate/, ni dans
+    la spec, qui se contente de citer « FAQ » dans la barre de navigation
+    institutionnelle et dans une carte de la page Contact (« Voir la FAQ › »).
+    L'écran est donc composé UNIQUEMENT de composants déjà calés au pixel sur
+    d'autres pages — héros corporate, fil d'Ariane, champ de recherche du
+    formulaire de contact, boutons du socle. Rien n'est inventé : le jour où
+    Agnès livrera la planche, il n'y aura qu'à recaler, pas à réécrire.
+
+    Le contenu vient de la table faq_entry, gérée depuis le back-office.
+
+    Préfixe des classes propres à cet écran : sp-.
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Questions fréquentes'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Réservation, paiement, annulation, bons cadeaux : les réponses aux questions les plus posées sur TrouveMoi Plaisirs & Loisirs.'|trans }}{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_corporate.html.twig' with { nav_active: 'faq' } %}
+{% endblock %}
+
+{% block body %}
+<div class="cor-page sp-page">
+
+    <section class="cor-hero cor-hero--faq">
+        <div class="container cor-hero__inner">
+            <h1 class="cor-hero__title">{{ 'Questions fréquentes'|trans }}</h1>
+            <p class="cor-hero__text">{{ "Trouvez en quelques secondes la réponse à votre question. Si elle n'y figure pas, notre équipe vous répond sous 24h."|trans }}</p>
+
+            <form class="sp-search" method="get" action="{{ path('app_faq') }}" role="search">
+                <span class="pf-input pf-input--soft sp-search__field">
+                    <span class="pf-input__icon">{{ icon.search(20) }}</span>
+                    <input class="pf-input__control" type="search" name="q" value="{{ terme }}"
+                           placeholder="{{ 'Rechercher une question…'|trans }}"
+                           aria-label="{{ 'Rechercher dans la FAQ'|trans }}">
+                </span>
+                <button type="submit" class="pl-btn pl-btn--primary sp-search__btn">{{ 'Rechercher'|trans }}</button>
+            </form>
+        </div>
+    </section>
+
+    <div class="container">
+        <nav class="act-breadcrumb sp-crumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
+            <span aria-hidden="true">|</span>
+            <a href="{{ path('app_help_center') }}">{{ "Centre d'aide"|trans }}</a>
+            <span aria-hidden="true">|</span>
+            <span aria-current="page">{{ 'FAQ'|trans }}</span>
+        </nav>
+    </div>
+
+    <section class="sp-main">
+        <div class="container">
+
+            {# ---- Filtres par rubrique ----
+               Des liens et non des boutons : chaque rubrique est une adresse à
+               part entière, partageable et indexable. Un bouton exigerait du
+               JavaScript pour un résultat identique. #}
+            {% if not terme %}
+                <div class="sp-chips" role="navigation" aria-label="{{ 'Filtrer par rubrique'|trans }}">
+                    <a class="sp-chip{{ filtre is null ? ' is-active' }}" href="{{ path('app_faq') }}">{{ 'Toutes les rubriques'|trans }}</a>
+                    {% for c in categories %}
+                        <a class="sp-chip{{ filtre == c.value ? ' is-active' }}" href="{{ path('app_faq', {rubrique: c.value}) }}">{{ c.label|trans }}</a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if terme %}
+                <p class="sp-count">
+                    {% if total > 0 %}
+                        <strong>{{ total }}</strong> {{ total > 1 ? 'réponses trouvées pour'|trans : 'réponse trouvée pour'|trans }} « {{ terme }} »
+                    {% else %}
+                        {{ 'Aucune réponse ne correspond à'|trans }} « {{ terme }} »
+                    {% endif %}
+                    <a class="sp-count__reset" href="{{ path('app_faq') }}">{{ 'Voir toutes les questions'|trans }}</a>
+                </p>
+            {% endif %}
+
+            {% if total == 0 %}
+                {# Une FAQ vide n'est pas une erreur : c'est l'état d'un site
+                   dont le contenu d'aide n'a pas encore été saisi. On le dit,
+                   et on propose la seule action utile. #}
+                <div class="sp-empty">
+                    <p class="sp-empty__text">
+                        {% if terme %}
+                            {{ "Reformulez votre question, ou écrivez-nous : nous répondons sous 24h."|trans }}
+                        {% else %}
+                            {{ "Les questions fréquentes seront publiées ici prochainement."|trans }}
+                        {% endif %}
+                    </p>
+                    <a class="pl-btn pl-btn--primary" href="{{ path('app_corporate_contact') }}">{{ 'Nous contacter'|trans }}</a>
+                </div>
+            {% endif %}
+
+            {% for cle, questions in groupes %}
+                {% if questions is not empty %}
+                    <div class="sp-group">
+                        {% if cle %}
+                            {% set rubrique = categories|filter(c => c.value == cle)|first %}
+                            <h2 class="sp-group__title" id="sp-{{ cle }}">{{ rubrique.label|trans }}</h2>
+                        {% endif %}
+
+                        <div class="sp-accordion">
+                            {% for q in questions %}
+                                {# <details> natif : dépliage sans JavaScript,
+                                   accessible au clavier et imprimable ouvert.
+                                   Le socle utilise déjà ce choix pour les menus
+                                   déroulants du pied de page. #}
+                                <details class="sp-item" id="{{ q.entry.anchor }}">
+                                    <summary class="sp-item__q">
+                                        <span>{{ q.entry.question }}</span>
+                                        <span class="sp-item__chevron" aria-hidden="true">{{ icon.chevron_down(18) }}</span>
+                                    </summary>
+                                    <div class="sp-item__a">{{ q.answer|raw }}</div>
+                                </details>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="py-help__panel sp-cta">
+            <h2 class="py-help__title">{{ 'Vous n’avez pas trouvé votre réponse ?'|trans }}</h2>
+            <p class="py-help__text">{{ "Notre équipe répond à toutes vos questions sur les réservations, les paiements et les activités."|trans }}</p>
+            <a href="{{ path('app_corporate_contact') }}" class="pl-btn pl-btn--primary py-help__btn">{{ 'Nous contacter'|trans }}</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

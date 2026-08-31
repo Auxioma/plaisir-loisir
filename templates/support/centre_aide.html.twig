@@ -1,0 +1,125 @@
+{#
+    Centre d'aide (/centre-d-aide) — la porte d'entrée du support.
+
+    AUCUNE MAQUETTE N'EXISTE POUR CET ÉCRAN non plus : le pied de page l'annonce
+    depuis l'origine, sans qu'aucune planche ne le dessine. Comme pour la FAQ,
+    l'écran n'emploie que des composants déjà calés ailleurs.
+
+    Ce que cette page fait et que la FAQ ne fait pas : orienter. Elle montre les
+    rubriques et leur volume, met en avant les questions les plus consultées, et
+    rappelle les autres canaux. La liste complète reste sur /faq — une seule
+    page affiche les réponses, pour n'avoir qu'un endroit à tenir.
+
+    Préfixe des classes propres à cet écran : sp-.
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ "Centre d'aide"|trans }}{% endblock %}
+{% block meta_description %}{{ "Toute l'aide TrouveMoi : réservations, paiement, compte, bons cadeaux. Trouvez une réponse ou contactez notre équipe."|trans }}{% endblock %}
+
+{% block header %}
+    {% include '_partials/navbar_corporate.html.twig' with { nav_active: 'faq' } %}
+{% endblock %}
+
+{% block body %}
+<div class="cor-page sp-page">
+
+    <section class="cor-hero cor-hero--faq">
+        <div class="container cor-hero__inner">
+            <h1 class="cor-hero__title">{{ "Comment pouvons-nous vous aider ?"|trans }}</h1>
+            <p class="cor-hero__text">{{ "Parcourez les rubriques ou cherchez directement votre question."|trans }}</p>
+
+            <form class="sp-search" method="get" action="{{ path('app_help_center') }}" role="search">
+                <span class="pf-input pf-input--soft sp-search__field">
+                    <span class="pf-input__icon">{{ icon.search(20) }}</span>
+                    <input class="pf-input__control" type="search" name="q"
+                           placeholder="{{ 'Rechercher une question…'|trans }}"
+                           aria-label="{{ "Rechercher dans le centre d'aide"|trans }}">
+                </span>
+                <button type="submit" class="pl-btn pl-btn--primary sp-search__btn">{{ 'Rechercher'|trans }}</button>
+            </form>
+        </div>
+    </section>
+
+    <div class="container">
+        <nav class="act-breadcrumb sp-crumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
+            <span aria-hidden="true">|</span>
+            <span aria-current="page">{{ "Centre d'aide"|trans }}</span>
+        </nav>
+    </div>
+
+    <section class="sp-main">
+        <div class="container">
+
+            <h2 class="pw-section__title sp-title">{{ 'Les rubriques'|trans }}</h2>
+
+            <div class="sp-cards">
+                {% for c in categories %}
+                    {# Une rubrique vide reste affichée, en retrait et non
+                       cliquable : la faire disparaître ferait une grille à
+                       trous, et laisserait croire que la rubrique n'existe
+                       pas alors qu'elle attend seulement son contenu. #}
+                    {% if c.count > 0 %}
+                        <a class="sp-card" href="{{ path('app_faq', {rubrique: c.value}) }}">
+                    {% else %}
+                        <div class="sp-card sp-card--empty">
+                    {% endif %}
+                        <span class="sp-card__icon">
+                            {%- if c.icon == 'calendar' %}{{ icon.calendar(26) }}
+                            {%- elseif c.icon == 'receipt' %}{{ icon.receipt(26) }}
+                            {%- elseif c.icon == 'gear' %}{{ icon.gear(26) }}
+                            {%- elseif c.icon == 'cat_hiking' %}{{ icon.cat_hiking(26) }}
+                            {%- elseif c.icon == 'gift' %}{{ icon.gift(26) }}
+                            {%- else %}{{ icon.badge_check(26) }}
+                            {%- endif -%}
+                        </span>
+                        <h3 class="sp-card__title">{{ c.label|trans }}</h3>
+                        <p class="sp-card__text">{{ c.description|trans }}</p>
+                        <span class="sp-card__count">
+                            {% if c.count > 0 %}
+                                {{ c.count }} {{ c.count > 1 ? 'questions'|trans : 'question'|trans }}
+                            {% else %}
+                                {{ 'Bientôt disponible'|trans }}
+                            {% endif %}
+                        </span>
+                    {% if c.count > 0 %}</a>{% else %}</div>{% endif %}
+                {% endfor %}
+            </div>
+
+            {% if featured is not empty %}
+                <h2 class="pw-section__title sp-title">{{ 'Les questions les plus consultées'|trans }}</h2>
+                <ul class="sp-popular">
+                    {% for q in featured %}
+                        <li>
+                            <a href="{{ path('app_faq', {rubrique: q.category.value}) }}#{{ q.anchor }}">
+                                {{ icon.chevron_right(16) }} {{ q.question }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <div class="sp-channels">
+                <a class="sp-channel" href="{{ path('app_faq') }}">
+                    <span class="sp-channel__icon">{{ icon.search(24) }}</span>
+                    <h3 class="sp-card__title">{{ 'Toutes les questions'|trans }}</h3>
+                    <p class="sp-card__text">{{ 'La liste complète, rubrique par rubrique.'|trans }}</p>
+                </a>
+                <a class="sp-channel" href="{{ path('app_corporate_contact') }}">
+                    <span class="sp-channel__icon">{{ icon.mail(24) }}</span>
+                    <h3 class="sp-card__title">{{ 'Nous écrire'|trans }}</h3>
+                    <p class="sp-card__text">{{ 'Une réponse de notre équipe sous 24h.'|trans }}</p>
+                </a>
+                <a class="sp-channel" href="{{ path('app_corporate_terms') }}">
+                    <span class="sp-channel__icon">{{ icon.badge_check(24) }}</span>
+                    <h3 class="sp-card__title">{{ 'Conditions et engagements'|trans }}</h3>
+                    <p class="sp-card__text">{{ 'Conditions générales, confidentialité, mentions légales.'|trans }}</p>
+                </a>
+            </div>
+
+        </div>
+    </section>
+</div>
+{% endblock %}

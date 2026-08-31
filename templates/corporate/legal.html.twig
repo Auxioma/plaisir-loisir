@@ -8,7 +8,16 @@
     Gabarit commun : sommaire « Sur cette page » en colonne de gauche, contenu
     numéroté à droite.
 
-    Variables : page_title, intro, sections, crumb.
+    DEPUIS LE 31/08, LE CONTENU VIENT DE LA BASE et non plus de PHP. Chaque
+    section est un titre de niveau 2 du texte saisi en back-office ; le
+    sommaire, la numérotation et les ancres en sont déduits. Personne n'a donc
+    de sommaire à tenir à jour, ni à renuméroter en insérant un article.
+
+    Le HTML des sections est affiché sans échappement, ce qui n'est acceptable
+    que parce qu'il a été filtré en amont par LegalContentRenderer : la liste
+    des balises autorisées est dans config/packages/html_sanitizer.yaml.
+
+    Variables : page_title, intro, sections (title|null + html), document|null.
     Préfixe des classes propres à ces écrans : lg-.
 #}
 {% extends 'base.html.twig' %}
@@ -29,8 +38,10 @@
             {# ---- Sommaire ---- #}
             <aside class="lg-toc">
                 <h2 class="lg-toc__title">{{ 'Sur cette page'|trans }}</h2>
+                {# Un préambule sans titre n'entre pas au sommaire : il n'a
+                   pas de numéro d'article et n'est donc pas citable. #}
                 <ol class="lg-toc__list">
-                    {% for s in sections %}
+                    {% for s in sections|filter(section => section.title) %}
                         <li>
                             <span class="lg-toc__num">{{ loop.index }}</span>
                             <a href="#lg-{{ loop.index }}">{{ s.title }}</a>
@@ -61,22 +72,52 @@
 
                 <h1 class="lg-title">{{ page_title|trans }}</h1>
                 <p class="lg-intro">{{ intro|trans }}</p>
-                <p class="lg-date">{{ 'Dernière mise à jour : 20 mai 2024'|trans }}</p>
+                {# La date était écrite en dur : elle annonçait mai 2024 quel
+                   que soit le texte affiché. Elle vient maintenant de la
+                   version en vigueur, et la version est rappelée à côté :
+                   c'est elle que citera un utilisateur en cas de litige. #}
+                {% if document %}
+                    <p class="lg-date">
+                        {{ 'Dernière mise à jour :'|trans }}
+                        {# Format numérique adapté à la langue : « 31/08/2026 »
+                           lu par un anglophone signifierait le 8 mars. Sur une
+                           page juridique, la date d'entrée en vigueur ne peut
+                           pas prêter à confusion. #}
+                        {{ (document.effectiveAt ?? document.publishedAt)|date(app.request.locale == 'en' ? 'm/d/Y' : 'd/m/Y') }}
+                        <span class="lg-date__version">{{ 'version'|trans }} {{ document.version }}</span>
+                    </p>
+                {% endif %}
 
-                {% for s in sections %}
-                    <section class="lg-section" id="lg-{{ loop.index }}">
-                        <h2 class="lg-h2">{{ loop.index }}. {{ s.title }}</h2>
-                        {% if s.intro %}<p class="lg-lead">{{ s.intro }}</p>{% endif %}
-                        {% if s.items %}
-                            <ul class="lg-list">
-                                {% for li in s.items %}<li>{{ li }}</li>{% endfor %}
-                            </ul>
+                {% if sections is empty %}
+                    {# AUCUNE VERSION PUBLIÉE POUR CE DOCUMENT.
+                       On n'envoie pas une 404 : cette adresse est citée dans le
+                       pied de page de tout le site et dans les cases à cocher
+                       de l'inscription. Une 404 y remettrait le lien mort qu'on
+                       vient de supprimer. On dit donc l'état réel — le texte
+                       est attendu du client, pas du code — et on laisse une
+                       porte de sortie utile. #}
+                    <div class="lg-pending">
+                        <p class="lg-p">{{ "Ce texte est en cours de rédaction et sera publié ici dès qu'il nous aura été transmis."|trans }}</p>
+                        <p class="lg-p">{{ "En attendant, notre équipe répond à toute question sur ce sujet."|trans }}</p>
+                        <a class="pl-btn pl-btn--primary" href="{{ path('app_corporate_contact') }}">{{ 'Nous contacter'|trans }}</a>
+                    </div>
+                {% else %}
+                    {# `numero` compte les articles, `loop.index` compterait
+                       aussi le préambule et décalerait tout le sommaire d'un
+                       cran dès qu'un texte en comporte un. #}
+                    {% set numero = 0 %}
+                    {% for s in sections %}
+                        {% if s.title %}
+                            {% set numero = numero + 1 %}
+                            <section class="lg-section" id="lg-{{ numero }}">
+                                <h2 class="lg-h2">{{ numero }}. {{ s.title }}</h2>
+                                <div class="lg-body">{{ s.html|raw }}</div>
+                            </section>
+                        {% else %}
+                            <div class="lg-body lg-body--preamble">{{ s.html|raw }}</div>
                         {% endif %}
-                        {% for para in s.paragraphs %}
-                            <p class="lg-p">{{ para }}</p>
-                        {% endfor %}
-                    </section>
-                {% endfor %}
+                    {% endfor %}
+                {% endif %}
 
             </div>
         </div>

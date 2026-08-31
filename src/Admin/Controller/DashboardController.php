@@ -100,6 +100,13 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(DestinationCrudController::class, 'Destinations', 'fa fa-map-location-dot');
         yield MenuItem::linkTo(CategoryCrudController::class, 'Catégories', 'fa fa-tags');
 
+        // Demande du CTO le 29/08 : les textes juridiques et l'aide se gèrent
+        // en base, parce qu'ils évoluent dans le temps et qu'une évolution ne
+        // peut pas exiger un déploiement.
+        yield MenuItem::section('Contenus éditoriaux');
+        yield MenuItem::linkTo(LegalDocumentCrudController::class, 'Textes juridiques', 'fa fa-scale-balanced');
+        yield MenuItem::linkTo(FaqEntryCrudController::class, 'FAQ', 'fa fa-circle-question');
+
         yield MenuItem::section('Site');
         yield MenuItem::linkToUrl('Voir le site', 'fa fa-arrow-up-right-from-square', '/');
     }

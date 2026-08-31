@@ -24,6 +24,7 @@ import './styles/gifts.css';
 import './styles/events.css';
 import './styles/account.css';
 import './styles/corporate.css';
+import './styles/support.css';   // centre d'aide, FAQ et corps des textes juridiques
 import './styles/app.css';
 
 // Adaptations telephone / tablette. Charge EN DERNIER : a specificite egale,
