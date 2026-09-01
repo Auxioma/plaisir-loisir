@@ -83,10 +83,19 @@ final class PhotoUploadTest extends WebTestCase
             $client->request('GET', '/activites');
 
             self::assertSame(200, $client->getResponse()->getStatusCode());
+            // ON CHERCHE L'ACTIVITE AU LIEU DE LA GUETTER SUR LA PREMIERE PAGE.
+            // Le catalogue est pagine depuis le 01/09 : une activite creee a
+            // l'instant se trouve la ou son classement la place. La recherche
+            // la ramene a coup sur, et c'est bien sa CARTE qu'on veut voir —
+            // la photo televersee est une couverture, elle s'affiche sur la
+            // carte et non sur la fiche detaillee.
+            $client->request('GET', '/activites?q='.rawurlencode($service->getTitle()));
+
+            self::assertSame(200, $client->getResponse()->getStatusCode());
             self::assertStringContainsString(
                 '/'.$media->getPath(),
                 $client->getResponse()->getContent() ?: '',
-                "La photo televersee n'apparait pas sur la page du catalogue.",
+                "La photo televersee n'apparait pas sur la carte de l'activite.",
             );
         } finally {
             // Le test écrit hors de la base : il nettoie derrière lui.

@@ -89,11 +89,16 @@ final class BackOfficeReachesTheSiteTest extends WebTestCase
             $visiteur->getResponse()->getStatusCode(),
             'Le catalogue tombe alors qu une activite vient d etre creee sans photo.',
         );
-        self::assertStringContainsString(
-            $titre,
-            $visiteur->getResponse()->getContent() ?: '',
-            "L'activite saisie dans le back-office n'apparait pas sur le site.",
-        );
+        // ON NE VERIFIE PLUS ICI QUE L'ACTIVITE FIGURE SUR CETTE PAGE.
+        // Le catalogue est pagine depuis le 01/09 : une activite creee a
+        // l'instant se trouve la ou son classement la place, pas forcement sur
+        // la premiere page. L'affirmation « elle est publiee sur le site » est
+        // prouvee juste en dessous, par la recherche — qui est d'ailleurs la
+        // facon dont on retrouve une activite precise dans un vrai catalogue.
+        //
+        // Ce qui se joue ici reste essentiel : le catalogue ne doit pas TOMBER
+        // a cause d'une activite sans photo. Le defaut s'est produit trois fois
+        // sur ce projet.
 
         // 4. Et la recherche la trouve.
         $visiteur->request('GET', '/activites?q=Semnoz');
@@ -104,9 +109,14 @@ final class BackOfficeReachesTheSiteTest extends WebTestCase
         );
 
         // 5. La version anglaise la montre aussi : les deux adresses servent
-        //    les mêmes données.
-        $visiteur->request('GET', '/en/activities');
-        self::assertStringContainsString($titre, $visiteur->getResponse()->getContent() ?: '');
+        //    les mêmes données. On y cherche également l'activité plutôt que de
+        //    la guetter sur la première page — le catalogue est paginé.
+        $visiteur->request('GET', '/en/activities?q=Semnoz');
+        self::assertStringContainsString(
+            $titre,
+            $visiteur->getResponse()->getContent() ?: '',
+            "L'adresse anglaise ne sert pas les mêmes données que la française.",
+        );
     }
 
     /**

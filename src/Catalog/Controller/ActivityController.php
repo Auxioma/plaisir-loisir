@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Catalog\Controller;
 
+use App\Catalog\Enum\ActivitySort;
 use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Repository\ServiceRepository;
 use App\Catalog\StaticCatalog;
@@ -35,6 +36,12 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class ActivityController extends AbstractController
 {
+    /**
+     * Douze activites par page : trois rangees de quatre, la grille de la
+     * maquette.
+     */
+    private const PAR_PAGE = 12;
+
     /** Valeur haute du curseur de budget, marquee « et + » sur la maquette. */
     private const PRICE_SLIDER_MAX = 1050;
 
@@ -73,6 +80,10 @@ final class ActivityController extends AbstractController
         // et un nombre de personnes, et la liste ne bougeait pas.
         $participants = $request->query->getInt('participants') ?: null;
         $date = $this->readDate($request);
+        // Le tri et la page vivent dans l'URL, comme les filtres : une liste
+        // triee se partage, se met en favori, et survit au bouton Precedent.
+        $tri = ActivitySort::fromRequest($request->query->get('tri'));
+        $page = max(1, $request->query->getInt('page', 1));
 
         $searching = '' !== $keywords
             || '' !== $place
@@ -83,17 +94,23 @@ final class ActivityController extends AbstractController
             || null !== $participants
             || null !== $date;
 
+        // DOUZE PAR PAGE : trois rangees de quatre, comme la maquette.
+        $resultats = $this->services->paginateForListing(
+            page: $page,
+            perPage: self::PAR_PAGE,
+            sort: $tri,
+            keywords: $keywords,
+            place: $place,
+            categorySlugs: $categories,
+            priceMin: $priceMin,
+            priceMax: $priceMax,
+            minRating: $minRating,
+            participants: $participants,
+            date: $date,
+        );
+
         $activities = $this->presenter->cards(
-            $this->services->findPublishedForListing(
-                keywords: $keywords,
-                place: $place,
-                categorySlugs: $categories,
-                priceMin: $priceMin,
-                priceMax: $priceMax,
-                minRating: $minRating,
-                participants: $participants,
-                date: $date,
-            ),
+            $resultats['items'],
             favoriteSlugs: $this->favorites->activitySlugs(),
         );
 
@@ -116,13 +133,20 @@ final class ActivityController extends AbstractController
             // explicite : une recherche depuis la barre du haut ne doit pas
             // ouvrir le panneau.
             'panneauOuvert' => $request->query->getBoolean('panneau'),
-            // Rangée 3 de la maquette = répétition des cartes 5 à 8. Cette
-            // répétition est un remplissage de maquette : sur un résultat de
-            // recherche elle afficherait deux fois les mêmes activités, ce qui
-            // ferait croire à un doublon. On ne la garde que hors recherche.
-            'gridActivities' => $searching
-                ? $activities
-                : array_merge($activities, \array_slice($activities, 4, 4)),
+            'tri' => $tri,
+            'tris' => ActivitySort::ordered(),
+            // Tout ce dont la page a besoin pour se paginer elle-meme.
+            'total' => $resultats['total'],
+            'page' => $resultats['page'],
+            'pages' => $resultats['pages'],
+            // LA REPETITION DES CARTES 5 A 8 EST SUPPRIMEE (01/09).
+            // La rangee 3 de la maquette repete les cartes 5 a 8 pour remplir
+            // trois rangees : c'etait un remplissage de planche, admissible
+            // tant que la page montrait tout le catalogue d'un bloc. Avec une
+            // pagination reelle, la page 1 aurait affiche douze cartes dont
+            // quatre en double, et la page 2 aurait recommence a la neuvieme :
+            // le visiteur aurait vu des doublons ET cru en avoir vu douze.
+            'gridActivities' => $activities,
             'offers' => StaticCatalog::offers(),
             'selections' => StaticCatalog::selections(),
             'cities' => StaticCatalog::cities(),

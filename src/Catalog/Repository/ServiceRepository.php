@@ -9,10 +9,12 @@ use App\Catalog\Entity\Category;
 use App\Catalog\Entity\Destination;
 use App\Catalog\Entity\Service;
 use App\Catalog\Entity\ServicePackage;
+use App\Catalog\Enum\ActivitySort;
 use App\Catalog\Enum\ServiceStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * @extends ServiceEntityRepository<Service>
@@ -58,16 +60,227 @@ class ServiceRepository extends ServiceEntityRepository
         ?int $participants = null,
         ?\DateTimeImmutable $date = null,
     ): array {
-        $qb = $this->createQueryBuilder('s')
+        $qb = $this->listingQueryBuilder($keywords, $place, $categorySlugs, $priceMin, $priceMax, $minRating, $participants, $date)
+            ->addSelect('p', 'm', 'c')
+            ->leftJoin('s.packages', 'p')
+            ->leftJoin('s.media', 'm')
+            ->orderBy('s.position', 'ASC')
+            ->addOrderBy('s.createdAt', 'ASC');
+
+        if (null !== $limit) {
+            // ATTENTION : avec les collections jointes ci-dessus, setMaxResults
+            // limite les lignes SQL et non les entites. C'est exactement pour
+            // cela que paginateForListing() ne s'appuie pas dessus.
+            $qb->setMaxResults($limit);
+        }
+
+        /** @var list<Service> $results */
+        $results = $qb->getQuery()->getResult();
+
+        return $results;
+    }
+
+    /**
+     * Une page du catalogue, triee, avec le nombre total de resultats.
+     *
+     * POURQUOI DEUX REQUETES ET NON UNE
+     * La requete d'affichage joint les formules et les photos pour eviter N+1.
+     * Une activite portant six photos y occupe donc SIX LIGNES SQL, et
+     * `setMaxResults(12)` ne ramenerait pas douze activites mais douze lignes,
+     * c'est-a-dire deux ou trois activites. Le piege est signale de longue date
+     * dans ce fichier ; findSimilar() le contourne avec Paginator.
+     *
+     * Ici on fait le decoupage explicitement, en deux temps :
+     *   1. une requete LEGERE, sans collection jointe, qui trie et decoupe pour
+     *      obtenir les identifiants de la page ;
+     *   2. la requete d'affichage, restreinte a ces identifiants.
+     * Ce detour est aussi ce qui rend possible le tri par prix : le prix vit
+     * sur les formules, il demande un regroupement que la requete d'affichage
+     * ne supporte pas.
+     *
+     * @param list<string> $categorySlugs
+     *
+     * @return array{items: list<Service>, total: int, page: int, pages: int}
+     */
+    public function paginateForListing(
+        int $page = 1,
+        int $perPage = 12,
+        ?ActivitySort $sort = null,
+        ?string $keywords = null,
+        ?string $place = null,
+        array $categorySlugs = [],
+        ?int $priceMin = null,
+        ?int $priceMax = null,
+        ?float $minRating = null,
+        ?int $participants = null,
+        ?\DateTimeImmutable $date = null,
+    ): array {
+        $sort ??= ActivitySort::default();
+        $perPage = max(1, $perPage);
+
+        $filtres = fn (): \Doctrine\ORM\QueryBuilder => $this->listingQueryBuilder(
+            $keywords, $place, $categorySlugs, $priceMin, $priceMax, $minRating, $participants, $date,
+        );
+
+        $total = (int) $filtres()
+            ->select('COUNT(DISTINCT s.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $pages = max(1, (int) ceil($total / $perPage));
+        // Une page hors bornes vient d'une adresse tapee a la main ou d'un lien
+        // devenu faux : on ramene dans les bornes plutot que de renvoyer une
+        // page vide, qui ferait croire a un catalogue vide.
+        $page = max(1, min($page, $pages));
+
+        $identifiants = $this->pageIdentifiers($filtres(), $sort, $page, $perPage);
+
+        if ([] === $identifiants) {
+            return ['items' => [], 'total' => $total, 'page' => $page, 'pages' => $pages];
+        }
+
+        /** @var list<Service> $services */
+        $services = $this->createQueryBuilder('s')
             ->addSelect('p', 'm', 'c')
             ->leftJoin('s.packages', 'p')
             ->leftJoin('s.media', 'm')
             ->leftJoin('s.category', 'c')
+            ->andWhere('s.id IN (:ids)')
+            // L'identifiant est un ULID cote entite et un UUID cote colonne.
+            // Rendu tel quel, il arrive sous sa forme base32 (« 01M16S... ») et
+            // PostgreSQL le refuse : « invalid input syntax for type uuid ».
+            // Seule la conversion explicite passe.
+            ->setParameter('ids', array_map(self::toDatabaseId(...), $identifiants))
+            ->getQuery()
+            ->getResult();
+
+        return [
+            'items' => $this->reorder($services, $identifiants),
+            'total' => $total,
+            'page' => $page,
+            'pages' => $pages,
+        ];
+    }
+
+    /**
+     * Les identifiants d'une page, dans l'ordre demande.
+     *
+     * @return list<mixed>
+     */
+    private function pageIdentifiers(\Doctrine\ORM\QueryBuilder $qb, ActivitySort $sort, int $page, int $perPage): array
+    {
+        $qb->select('s.id')
+            ->groupBy('s.id')
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage);
+
+        if ($sort->isByPrice()) {
+            // Le prix affiche est le PLUS BAS des formules : c'est donc sur
+            // MIN() qu'il faut trier, pas sur une formule prise au hasard.
+            // La colonne est numerique en base, l'ordre est donc numerique et
+            // non alphabetique — « 100 » ne passe pas avant « 99 ».
+            $qb->leftJoin('s.packages', 'tri')
+                ->addSelect('MIN(tri.price) AS HIDDEN prixMini')
+                // UNE ACTIVITE SANS AUCUNE FORMULE N'A PAS DE PRIX, et son
+                // MIN() vaut NULL. PostgreSQL range les NULL en TETE d'un tri
+                // decroissant : « prix decroissant » aurait donc commence par
+                // les activites qui n'affichent aucun prix. On les repousse en
+                // fin de liste dans les DEUX sens — une activite sans prix
+                // n'est ni la plus chere ni la moins chere.
+                ->addSelect('CASE WHEN MIN(tri.price) IS NULL THEN 1 ELSE 0 END AS HIDDEN sansPrix')
+                ->orderBy('sansPrix', 'ASC')
+                ->addOrderBy('prixMini', ActivitySort::PriceAsc === $sort ? 'ASC' : 'DESC');
+        } elseif (ActivitySort::Rating === $sort) {
+            $qb->orderBy('s.ratingAverage', 'DESC');
+        } else {
+            // « Les plus populaires » : l'ordre voulu par l'equipe d'abord —
+            // c'est ce que porte la colonne `position` —, puis la note et le
+            // nombre d'avis pour departager ce qui n'a pas ete classe.
+            $qb->orderBy('s.position', 'ASC')
+                ->addOrderBy('s.ratingAverage', 'DESC')
+                ->addOrderBy('s.reviewsCount', 'DESC');
+        }
+
+        // Un dernier critere stable : sans lui, deux activites de meme position
+        // pourraient s'echanger d'une page a l'autre et l'une n'apparaitre
+        // jamais.
+        $qb->addOrderBy('s.id', 'ASC');
+
+        return array_map(
+            static fn (array $ligne): mixed => $ligne['id'],
+            $qb->getQuery()->getArrayResult(),
+        );
+    }
+
+    /**
+     * La forme qu'attend la colonne : un UUID, pas un ULID base32.
+     */
+    private static function toDatabaseId(mixed $identifiant): string
+    {
+        return $identifiant instanceof Ulid ? $identifiant->toRfc4122() : (string) $identifiant;
+    }
+
+    /**
+     * Remet les entites dans l'ordre des identifiants.
+     *
+     * `IN (:ids)` ne garantit AUCUN ordre : sans ce reclassement, le tri
+     * choisi par le visiteur serait perdu entre les deux requetes.
+     *
+     * @param list<Service> $services
+     * @param list<mixed>   $identifiants
+     *
+     * @return list<Service>
+     */
+    private function reorder(array $services, array $identifiants): array
+    {
+        $parIdentifiant = [];
+
+        foreach ($services as $service) {
+            $parIdentifiant[(string) $service->getId()] = $service;
+        }
+
+        $ordonnes = [];
+
+        foreach ($identifiants as $identifiant) {
+            $cle = (string) $identifiant;
+
+            if (isset($parIdentifiant[$cle])) {
+                $ordonnes[] = $parIdentifiant[$cle];
+            }
+        }
+
+        return $ordonnes;
+    }
+
+    /**
+     * Les filtres du catalogue, communs a la liste complete et a la pagination.
+     *
+     * Ils vivent ici et NON dupliques dans les deux methodes : deux copies
+     * divergeraient au premier filtre ajoute, et l'on obtiendrait un compteur
+     * qui ne correspond pas aux cartes affichees.
+     *
+     * La jointure sur la categorie est dans cette base parce qu'un filtre en
+     * depend ; celles sur les formules et les photos n'y sont pas, car elles ne
+     * servent qu'a l'affichage et multiplieraient les lignes de la requete
+     * legere.
+     *
+     * @param list<string> $categorySlugs
+     */
+    private function listingQueryBuilder(
+        ?string $keywords,
+        ?string $place,
+        array $categorySlugs,
+        ?int $priceMin,
+        ?int $priceMax,
+        ?float $minRating,
+        ?int $participants,
+        ?\DateTimeImmutable $date,
+    ): \Doctrine\ORM\QueryBuilder {
+        $qb = $this->createQueryBuilder('s')
+            ->leftJoin('s.category', 'c')
             ->andWhere('s.status = :published')
             ->andWhere('s.deletedAt IS NULL')
-            ->setParameter('published', ServiceStatus::Published)
-            ->orderBy('s.position', 'ASC')
-            ->addOrderBy('s.createdAt', 'ASC');
+            ->setParameter('published', ServiceStatus::Published);
 
         $keywords = null !== $keywords ? trim($keywords) : '';
 
@@ -165,18 +378,7 @@ class ServiceRepository extends ServiceEntityRepository
                 ->setParameter('finJour', $date->setTime(23, 59, 59));
         }
 
-        if (null !== $limit) {
-            // ATTENTION : avec les collections jointes ci-dessus, setMaxResults
-            // limite les lignes SQL et non les entites. Aucun appel ne passe de
-            // limite aujourd'hui ; le jour ou l'un le fera, il faudra passer
-            // par Paginator, comme findSimilar().
-            $qb->setMaxResults($limit);
-        }
-
-        /** @var list<Service> $results */
-        $results = $qb->getQuery()->getResult();
-
-        return $results;
+        return $qb;
     }
 
     /**

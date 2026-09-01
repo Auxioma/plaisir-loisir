@@ -1036,3 +1036,37 @@ a.act-popup__title:hover { color: var(--pl-action); }
     .act-includes { grid-template-columns: 1fr; }
     .act-review-form__row { grid-template-columns: 1fr; }
 }
+
+/* ------------------------------------------------------------------ TRI --
+   Menu « Trier par » de la liste des activités (01/09).
+
+   La maquette n'affiche qu'un libellé et ne dessine aucun menu : elle ne dit
+   pas à quoi il ressemble ouvert. On reprend donc le déroulant natif
+   <details> du socle, déjà calé sur l'en-tête d'accueil et le pied de page,
+   plutôt que d'en inventer un — aucune valeur nouvelle n'est décidée ici.
+
+   Le déclencheur porte la classe `act-tool` de la maquette et non
+   `pl-dropdown__toggle` : il garde exactement l'apparence validée, mais il
+   faut alors retirer nous-mêmes le triangle que les navigateurs ajoutent à
+   un <summary>. */
+.act-sort > summary { list-style: none; }
+.act-sort > summary::-webkit-details-marker { display: none; }
+.act-sort[open] > summary { color: var(--pl-action); }
+.act-sort[open] > summary .pl-icon:last-child { transform: rotate(180deg); }
+
+/* Le bouton se trouve à l'extrémité droite de la barre de résultats : un menu
+   aligné à gauche déborderait du conteneur. */
+.act-sort__menu {
+    left: auto;
+    right: 0;
+    min-width: 210px;
+}
+
+/* Rang de la page, sous la grille. Absent de la maquette, qui ne montre
+   qu'une seule page : sans lui, arriver sur la page 2 par un lien partagé ne
+   se distingue pas de la page 1. */
+.act-page-note {
+    margin-top: var(--pl-sp-16);
+    text-align: center;
+    color: var(--pl-text-secondary);
+}

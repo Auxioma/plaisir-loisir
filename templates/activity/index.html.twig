@@ -234,16 +234,33 @@
             </div>
 
             <div class="act-results">
-                {# « 400+ » est le chiffre ecrit dans la maquette : il est conserve
-                   sur la page d'accueil du listing. Des qu'une recherche est en
-                   cours, on affiche le vrai nombre — annoncer « 400+ » au-dessus
-                   de trois cartes serait faux. #}
-                {% if searching|default(false) %}
-                    <p class="act-results__count"><strong>{{ gridActivities|length }}</strong> {{ (gridActivities|length > 1 ? 'résultats trouvés' : 'résultat trouvé')|trans }}</p>
-                {% else %}
-                    <p class="act-results__count"><strong>400+</strong> {{ 'de résultats trouvés'|trans }}</p>
-                {% endif %}
-                <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ 'Les plus populaires'|trans }}</strong></button>
+                {# LE COMPTEUR DIT MAINTENANT LE VRAI NOMBRE (01/09).
+                   Il affichait « 400+ » en dur hors recherche — le chiffre
+                   ecrit sur la planche — au-dessus de huit activites. Le
+                   nombre vient desormais du meme comptage que la pagination,
+                   sans quoi le compteur et le nombre de pages pourraient se
+                   contredire. #}
+                <p class="act-results__count">
+                    <strong>{{ total }}</strong> {{ (total > 1 ? 'résultats trouvés' : 'résultat trouvé')|trans }}
+                </p>
+
+                {# TRI. La maquette n'affiche qu'un libelle et ne dessine aucun
+                   menu : elle ne dit pas ce que le tri propose. On reprend le
+                   deroulant natif <details> deja employe par le pied de page,
+                   plutot que d'en inventer un. Des LIENS et non des boutons :
+                   chaque tri est une adresse a part entiere, partageable, et
+                   qui survit au bouton Precedent sans une ligne de script. #}
+                <details class="pl-dropdown act-sort">
+                    <summary class="act-tool act-tool--plain">
+                        {{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ tri.label|trans }}</strong> {{ icon.chevron_down(15) }}
+                    </summary>
+                    <div class="pl-dropdown__menu act-sort__menu">
+                        {% for t in tris %}
+                            <a class="pl-dropdown__item{{ t == tri ? ' is-active' }}"
+                               href="{{ path('app_activities', app.request.query.all|merge({ tri: t.value, page: null })) }}">{{ t.label|trans }}</a>
+                        {% endfor %}
+                    </div>
+                </details>
             </div>
         </div>
     </section>
@@ -277,9 +294,32 @@
                     {% endfor %}
                 </div>
             {% endif %}
-            <div class="act-more">
-                <button type="button" class="pl-btn pl-btn--outline-action">{{ "Voir plus d'activités"|trans }} {{ icon.chevron_down(16) }}</button>
-            </div>
+            {# « VOIR PLUS D'ACTIVITES » CHARGE VRAIMENT LA SUITE (01/09).
+               C'etait un <button> sans comportement : la page montrait tout le
+               catalogue et le bouton ne pouvait rien ajouter. Il conduit
+               desormais a la page suivante, en gardant les filtres et le tri
+               en cours — un lien, donc partageable et indexable.
+
+               Il DISPARAIT sur la derniere page : un bouton « voir plus »
+               quand il n'y a plus rien a voir est pire qu'un bouton absent. #}
+            {% if page < pages %}
+                <div class="act-more">
+                    <a class="pl-btn pl-btn--outline-action"
+                       href="{{ path('app_activities', app.request.query.all|merge({ page: page + 1 })) }}">{{ "Voir plus d'activités"|trans }} {{ icon.chevron_down(16) }}</a>
+                </div>
+            {% endif %}
+
+            {# Le rang de la page n'apparait nulle part dans la maquette, qui
+               ne montre qu'une seule page. Sans lui, arriver sur la page 2 par
+               un lien partage ne se distingue pas de la page 1. #}
+            {% if pages > 1 %}
+                <p class="act-results__count act-page-note">
+                    {{ 'Page'|trans }} {{ page }} {{ 'sur'|trans }} {{ pages }}
+                    {% if page > 1 %}
+                        · <a class="auth-inline-link" href="{{ path('app_activities', app.request.query.all|merge({ page: null })) }}">{{ 'Revenir au début'|trans }}</a>
+                    {% endif %}
+                </p>
+            {% endif %}
         </div>
     </section>
 
