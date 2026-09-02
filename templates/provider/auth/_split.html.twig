@@ -1,0 +1,64 @@
+{#
+    Coquille « deux cartes » du parcours professionnel.
+
+    Elle sert les trois écrans d'inscription : informations générales
+    (955:91899), documents (956:110425), félicitations (956:113304).
+
+    À gauche la carte blanche du formulaire, à droite le panneau illustré
+    « Plaisirs & Loisirs — Au delà du service, une relation de partenariat ».
+    Le panneau de droite est purement décoratif : il est donc caché aux
+    lecteurs d'écran, et il disparaît en dessous de 992px.
+
+    Le placeholder anglais « Verta is an internet provider app… » qui traîne
+    sur les trois écrans de la maquette n'est pas repris : il y est masqué
+    (`hidden="true"` dans le fichier Figma), c'est un reste de gabarit acheté.
+#}
+{% extends 'base.html.twig' %}
+
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block body %}
+    <div class="pa-split">
+        <section class="pa-panel pa-panel--form">
+            <div class="pa-panel__inner">
+                <header class="pa-signup__head">
+                    {# Cliquable pour la même raison que sur la connexion : ces
+                       écrans n'ont ni navbar ni pied de page. #}
+                    <a href="{{ path('app_home') }}" aria-label="{{ 'Revenir sur le site'|trans }}">
+                        <img class="pa-signup__logo" src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="110" height="86">
+                    </a>
+                    <h1 class="pa-signup__title">{{ 'Inscription'|trans }}</h1>
+                    <p class="pa-signup__subtitle">{{ 'Merci de renseigner vos informations afin de créer votre service gratuitement'|trans }}</p>
+                </header>
+
+                {# Fil des deux étapes. `step` vaut 1, 2 ou 3 ; au troisième
+                   écran les deux étapes sont franchies. #}
+                {% set step = step|default(1) %}
+                <ol class="pa-steps">
+                    <li class="pa-step{{ step >= 1 ? ' is-done' }}">
+                        <span class="pa-step__badge">{{ include('provider/auth/_icon_document.html.twig') }}</span>
+                        <span class="pa-step__label"><b>1-</b> {{ 'Informations générales'|trans }}</span>
+                    </li>
+                    <li class="pa-steps__sep" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </li>
+                    <li class="pa-step{{ step >= 2 ? ' is-done' }}">
+                        <span class="pa-step__badge">{{ include('provider/auth/_icon_document.html.twig') }}</span>
+                        <span class="pa-step__label"><b>2-</b> {{ 'Documents'|trans }}</span>
+                    </li>
+                </ol>
+
+                {% block pa_signup %}{% endblock %}
+            </div>
+        </section>
+
+        <section class="pa-panel pa-panel--brand" aria-hidden="true">
+            <div class="pa-brand">
+                <p class="pa-brand__name">{{ 'Plaisirs & Loisirs'|trans }}</p>
+                <p class="pa-brand__claim">{{ 'Au delà du service, une relation de partenariat'|trans }}</p>
+                <img class="pa-brand__art" src="{{ asset('images/provider/inscription-illustrations.png') }}" alt="" width="574" height="589">
+            </div>
+        </section>
+    </div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{#
+    Inscription professionnelle, étape 2/2 — Figma 956:110425.
+
+    Deux zones de dépôt nommées par la maquette (licence d'exploitation,
+    certificat de sécurité alimentaire), puis « Ajouter un autre document » qui
+    en ouvre autant que voulu.
+
+    LES FICHIERS NE VONT PAS DANS public/. Un extrait Kbis ou un certificat
+    d'assurance servis par le serveur web seraient téléchargeables par
+    quiconque devine leur adresse : ils sont rangés dans var/uploads/, hors
+    racine (voir ProviderDocumentStorage).
+#}
+{% extends 'provider/auth/_split.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Vos documents'|trans }}{% endblock %}
+
+{% set step = 2 %}
+
+{% block pa_signup %}
+    <form class="pa-signup__form pa-signup__form--docs" method="post"
+          action="{{ path('app_pro_register_documents') }}" enctype="multipart/form-data"
+          data-controller="upload">
+        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+
+        <div class="pa-drops">
+            {% for champ, titre in {
+                'operating_licence': "Ajouter votre licence d’exploitation",
+                'food_safety_certificate': 'Certificat de sécurité alimentaire',
+            } %}
+                <label class="pa-drop" data-upload-target="zone">
+                    <input class="pa-drop__input" type="file" name="{{ champ }}"
+                           accept=".pdf,image/jpeg,image/png,image/webp,image/heic"
+                           data-upload-target="input" data-action="change->upload#picked">
+                    <span class="pa-drop__icon">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" aria-hidden="true">
+                            <path d="M6.5 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 17.7 8.2 4 4 0 0 1 17.5 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 21V11m0 0-3 3m3-3 3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <span class="pa-drop__title">{{ titre|trans }}</span>
+                    <span class="pa-drop__hint" data-upload-target="name">{{ 'Cliquer pour importer le document, ou glisser et déposer le document'|trans }}</span>
+                </label>
+            {% endfor %}
+        </div>
+
+        {# Les pièces libres. Le gabarit caché est cloné par assets/provider_auth.js
+           à chaque clic sur « Ajouter un autre document » : sans JavaScript, la
+           première ligne reste visible et le dépôt fonctionne quand même. #}
+        <div class="pa-others" data-upload-target="others"></div>
+
+        <template data-upload-target="template">
+            <label class="pa-drop pa-drop--slim" data-upload-target="zone">
+                <input class="pa-drop__input" type="file" name="others[]"
+                       accept=".pdf,image/jpeg,image/png,image/webp,image/heic"
+                       data-upload-target="input" data-action="change->upload#picked">
+                <span class="pa-drop__title">{{ 'Document complémentaire'|trans }}</span>
+                <span class="pa-drop__hint" data-upload-target="name">{{ 'Cliquer pour importer le document'|trans }}</span>
+            </label>
+        </template>
+
+        <button type="button" class="pa-add" data-action="upload#add">
+            {{ icon.plus(20) }} {{ 'Ajouter un autre document'|trans }}
+        </button>
+
+        {% if documents is not empty %}
+            {# Le prestataire revenu sur l'écran doit voir ce qu'il a déjà
+               déposé, sinon il redépose tout. #}
+            <ul class="pa-filed">
+                {% for document in documents %}
+                    <li>
+                        <b>{{ document.kind.label|trans }}</b>
+                        <span>{{ document.originalName }} — {{ document.readableSize }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <button type="submit" class="pa-btn pa-btn--wide">{{ 'Enregistrer et continuer'|trans }}</button>
+    </form>
+{% endblock %}

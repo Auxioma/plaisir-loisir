@@ -49,10 +49,18 @@
                         <span><strong>{{ 'Développez votre visibilité'|trans }}</strong> {{ 'Recevez plus de demandes et fidélisez vos clients.'|trans }}</span>
                     </li>
                 </ul>
-                <a class="pl-btn pl-btn--primary pl-btn--block" href="{{ path('app_register', { type: 'pro' }) }}">
+                {# Jusqu'au 02/09 cette tuile menait au formulaire CLIENT avec un
+                   simple « ?type=pro » : le professionnel n'y declarait ni son
+                   activite, ni son siege social, ni ses pieces justificatives.
+                   Elle ouvre desormais le parcours professionnel en deux etapes. #}
+                <a class="pl-btn pl-btn--primary pl-btn--block" href="{{ path('app_pro_register') }}">
                     {{ 'Je suis un pro prestataire'|trans }} {{ icon.chevron_right(16) }}
                 </a>
-                <a class="auth-choice-panel__more" href="#">{{ "En savoir plus sur l'espace pro"|trans }}</a>
+                {# « Devenir partenaire » EST la page « en savoir plus » : elle
+                   presente l'offre professionnelle, ses etapes et son formulaire
+                   de contact. Ce lien etait un « # » mort depuis la maquette du
+                   27/07, juste sous la tuile qui, elle, ouvre l'inscription. #}
+                <a class="auth-choice-panel__more" href="{{ path('app_corporate_partner') }}">{{ "En savoir plus sur l'espace pro"|trans }}</a>
             </section>
 
             <div class="auth-choice-card__sep" aria-hidden="true"><span>{{ 'ou'|trans }}</span></div>

@@ -66,6 +66,13 @@ security:
         - { path: ^/(authentification|en/authentication), roles: PUBLIC_ACCESS }
         - { path: ^/(mot-de-passe-oublie|en/forgot-password), roles: PUBLIC_ACCESS }
 
+        # Parcours d'authentification PROFESSIONNEL (maquette « Profesionnelle »,
+        # bandeau AUTHENTIFICATIONS 01). Inscription en deux etapes, connexion,
+        # mot de passe oublie : tout y est accessible sans compte, par
+        # definition. Les deux langues sont listees, comme partout ici : ces
+        # regles portent sur des chemins, pas sur des noms de route.
+        - { path: ^/(pro|en/pro)/(inscription|signup|connexion|login|mot-de-passe-oublie|forgot-password), roles: PUBLIC_ACCESS }
+
         # Espace compte. Les règles précédentes visaient « ^/account » et
         # « ^/provider », deux préfixes qui ne correspondent à AUCUNE route :
         # /compte/favoris, /compte/notifications et /compte/parrainage étaient
