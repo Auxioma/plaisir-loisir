@@ -16,6 +16,7 @@ import './styles/design-system.css';
 import './styles/bootstrap-theme.css';
 import './styles/components.css';
 import './styles/auth.css';
+import './styles/provider-auth.css';   // parcours d'authentification professionnel
 import './styles/home.css';
 import './styles/activities.css';
 import './styles/destinations.css';

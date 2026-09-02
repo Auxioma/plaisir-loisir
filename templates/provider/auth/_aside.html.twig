@@ -1,0 +1,55 @@
+{#
+    Coquille « bande latérale » du parcours professionnel.
+
+    Elle sert les quatre écrans qui la portent dans la maquette : connexion
+    (955:90119), réinitialisation (955:90335), vue OTP (955:90558), et le
+    nouveau mot de passe que la maquette a oublié.
+
+    La bande de gauche mesure 339px et ne bouge jamais : c'est un argumentaire,
+    identique d'un écran à l'autre. Chaque écran ne remplit que `pa_card`.
+
+    LES TROIS PUCES « Neque porro quisquam » DE LA MAQUETTE NE SONT PAS
+    REPRISES : c'est du faux-texte laissé par Agnès. Cinq arguments réels
+    valent mieux que huit dont trois en latin.
+#}
+{% extends 'base.html.twig' %}
+
+{# Les écrans d'authentification professionnels occupent la page entière :
+   ni navbar ni pied de page dans la maquette. #}
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block body %}
+    <div class="pa-shell">
+        <aside class="pa-aside">
+            <div class="pa-aside__inner">
+                <img class="pa-aside__art" src="{{ asset('images/provider/avantages.png') }}" alt="" width="100" height="100">
+
+                <p class="pa-aside__title">{{ "Quelques avantages d’utiliser Plaisirs & Loisirs pour vos affaires"|trans }}</p>
+
+                <ul class="pa-aside__list">
+                    {% for avantage in [
+                        'Publiez vos offres et gérez vos disponibilités.',
+                        'Suivez vos réservations, vos clients et vos paiements.',
+                        'Recevez plus de demandes et fidélisez vos clients.',
+                        'Suivre la progression de votre business en temps réel',
+                        'Vos données personnelles restent protégées.',
+                    ] %}
+                        <li class="pa-aside__item">
+                            {# `done_all` de la maquette : deux coches superposées. #}
+                            <svg class="pa-aside__check" viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
+                                <path d="M1 13.5 4.8 17.3 12.6 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M7.4 13.5 11.2 17.3 22.9 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>{{ avantage|trans }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </aside>
+
+        <div class="pa-stage">
+            {% block pa_card %}{% endblock %}
+        </div>
+    </div>
+{% endblock %}

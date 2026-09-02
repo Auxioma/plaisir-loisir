@@ -72,12 +72,16 @@
                     <a class="auth-inline-link" href="{{ path('app_register') }}">{{ 'Créer un compte'|trans }}</a>
                 </p>
 
-                {# Maquette : l'accès professionnel passe par ce lien vers l'écran
-                   de choix, sur deux lignes centrées — et non par une bascule
-                   Client/Professionnel dans le formulaire. #}
+                {# Maquette : l'accès professionnel passe par ce lien, sur deux
+                   lignes centrées — et non par une bascule Client/Professionnel
+                   dans le formulaire.
+
+                   IL MÈNE À LA CONNEXION PROFESSIONNELLE, PAS À L'ÉCRAN DE CHOIX.
+                   Depuis cet écran on se connecte : le pendant professionnel est
+                   /pro/connexion, qui porte la bande latérale des avantages. #}
                 <p class="auth-switch auth-switch--pro">
                     {{ 'Vous êtes un professionnel ?'|trans }}<br>
-                    <a class="auth-inline-link" href="{{ path('app_auth_choice') }}?type=pro">{{ 'Accéder à votre espace'|trans }}</a>
+                    <a class="auth-inline-link" href="{{ path('app_pro_login') }}">{{ 'Accéder à votre espace'|trans }}</a>
                 </p>
             </div>
         </form>
