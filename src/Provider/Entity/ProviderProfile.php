@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Provider\Entity;
 
+use App\Catalog\Entity\Category;
 use App\Provider\Enum\ProviderStatus;
 use App\Provider\Repository\ProviderProfileRepository;
 use App\Shared\Doctrine\SoftDeletableTrait;
@@ -55,6 +56,25 @@ class ProviderProfile
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $websiteUrl = null;
+
+    /**
+     * Activité principale déclarée à l'inscription (« Choix de l'activité »).
+     *
+     * POURQUOI UNE RELATION VERS LE DOMAINE CATALOGUE
+     * Catalog dépend déjà de Provider (une prestation appartient à un
+     * prestataire) ; pointer d'ici vers Category rend la dépendance mutuelle,
+     * ce qu'on évite partout ailleurs. On l'assume ici parce que Category
+     * n'est pas « le catalogue » : c'est la NOMENCLATURE des activités, un
+     * vocabulaire de référence que les deux domaines nomment déjà de la même
+     * façon. Recopier son libellé dans une colonne texte aurait produit des
+     * intitulés divergents entre la fiche prestataire et le catalogue, et
+     * privé le back-office d'une liste déroulante fiable.
+     *
+     * Nullable : les dossiers ouverts avant cet écran n'en ont pas.
+     */
+    #[ORM\ManyToOne(targetEntity: Category::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Category $mainCategory = null;
 
     // Les informations fiscales et légales (forme juridique, SIRET, TVA, siège,
     // représentant légal, assurance) vivent dans App\Legal\Entity\CompanyIdentity,
@@ -172,6 +192,18 @@ class ProviderProfile
     /**
      * Pont pour Symfony Workflow : expose le statut sous forme de chaîne.
      */
+    public function getMainCategory(): ?Category
+    {
+        return $this->mainCategory;
+    }
+
+    public function setMainCategory(?Category $mainCategory): static
+    {
+        $this->mainCategory = $mainCategory;
+
+        return $this;
+    }
+
     public function getMarking(): string
     {
         return $this->status->value;

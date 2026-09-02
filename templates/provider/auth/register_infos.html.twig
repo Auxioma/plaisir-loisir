@@ -1,0 +1,119 @@
+{#
+    Inscription professionnelle, étape 1/2 — Figma 955:91899.
+
+    Même parti pris que l'inscription client : le balisage est celui de la
+    maquette, et seuls les CHAMPS passent par form_widget(). C'est ce qui donne
+    les bons noms postés (« provider_registration_form[...] ») et le jeton CSRF
+    déposé par form_end(). Aucun attribut `required` n'est ajouté par le type :
+    la validation est côté serveur.
+
+    LE MOT DE PASSE EST UN AJOUT, décidé par le CTO. La maquette n'en comportait
+    pas : le professionnel se serait inscrit sans jamais pouvoir se connecter à
+    l'écran voisin, qui en réclame un. Il prend la pleine largeur de la grille
+    de 436px, comme les autres champs longs.
+
+    Faute de la maquette corrigée : « Sélectionné votre activté » ->
+    « Sélectionnez votre activité ».
+
+    LA MENTION LÉGALE SOUS LE BOUTON EST UN AJOUT ELLE AUSSI. La maquette ne
+    prévoit pas de case « j'accepte les conditions générales », alors que
+    l'article 7.1 du RGPD exige de pouvoir prouver l'acceptation. Une case
+    inventée aurait dérangé la maquette ; une acceptation consignée sans que
+    rien ne soit affiché aurait été un faux. Cette ligne est le minimum
+    honnête, et c'est elle que le consentement enregistré atteste.
+#}
+{% extends 'provider/auth/_split.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Inscription professionnelle'|trans }}{% endblock %}
+
+{% block pa_signup %}
+    {{ form_start(registrationForm, { attr: { class: 'pa-signup__form' }, action: path('app_pro_register'), method: 'post' }) }}
+        <div class="pa-grid">
+            <div class="pa-field">
+                <label class="pa-label" for="proLastName">{{ 'Nom'|trans }}</label>
+                {{ form_widget(registrationForm.lastName, {
+                    id: 'proLastName',
+                    attr: { class: 'pa-input', placeholder: 'Votre nom'|trans, autocomplete: 'family-name' }
+                }) }}
+            </div>
+
+            <div class="pa-field">
+                <label class="pa-label" for="proFirstName">{{ 'Prénom'|trans }}</label>
+                {{ form_widget(registrationForm.firstName, {
+                    id: 'proFirstName',
+                    attr: { class: 'pa-input', placeholder: 'Votre prénom'|trans, autocomplete: 'given-name' }
+                }) }}
+            </div>
+        </div>
+
+        <div class="pa-field">
+            <label class="pa-label" for="proEmail">{{ 'Adresse e-mail'|trans }}</label>
+            {{ form_widget(registrationForm.email, {
+                id: 'proEmail',
+                attr: { class: 'pa-input', placeholder: 'Votre@email.com'|trans, autocomplete: 'email' }
+            }) }}
+        </div>
+
+        <div class="pa-field">
+            <label class="pa-label" for="proPhone">{{ 'Numéro de téléphone'|trans }}</label>
+            {{ form_widget(registrationForm.phone, {
+                id: 'proPhone',
+                attr: { class: 'pa-input', placeholder: 'Numéro de téléphone'|trans, autocomplete: 'tel' }
+            }) }}
+        </div>
+
+        <div class="pa-field">
+            <label class="pa-label" for="proPassword">{{ 'Mot de passe'|trans }}</label>
+            <div class="pa-input-wrap" data-controller="password-toggle">
+                {{ form_widget(registrationForm.password, {
+                    id: 'proPassword',
+                    attr: {
+                        class: 'pa-input pa-input--eye',
+                        placeholder: 'Au moins 8 caractères'|trans,
+                        autocomplete: 'new-password',
+                        'data-password-toggle-target': 'input',
+                    }
+                }) }}
+                <button type="button" class="pa-input__eye" data-action="password-toggle#toggle"
+                        aria-label="{{ 'Afficher ou masquer le mot de passe'|trans }}">
+                    <span data-password-toggle-target="show">{{ icon.eye() }}</span>
+                    <span data-password-toggle-target="hide" hidden>{{ icon.eye_off() }}</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="pa-field">
+            <label class="pa-label" for="proCategory">{{ "Choix de l'activité"|trans }}</label>
+            <div class="pa-select">
+                {{ form_widget(registrationForm.mainCategory, {
+                    id: 'proCategory',
+                    attr: { class: 'pa-input pa-input--select' }
+                }) }}
+                <span class="pa-select__caret" aria-hidden="true">{{ icon.chevron_down(24) }}</span>
+            </div>
+        </div>
+
+        <div class="pa-field">
+            <label class="pa-label" for="proOffice">{{ 'Adresse du siège social'|trans }}</label>
+            {{ form_widget(registrationForm.registeredOffice, {
+                id: 'proOffice',
+                attr: { class: 'pa-input', placeholder: 'Insérer votre siège social'|trans, autocomplete: 'street-address' }
+            }) }}
+        </div>
+
+        <button type="submit" class="pa-btn pa-btn--wide">{{ 'Enregistrer et continuer'|trans }}</button>
+
+        <p class="pa-legal">
+            {{ 'En créant votre compte, vous acceptez'|trans }}
+            <a href="{{ path('app_corporate_terms') }}">{{ "les conditions générales d'utilisation"|trans }}</a>
+            {{ 'et'|trans }}
+            <a href="{{ path('app_corporate_privacy') }}">{{ 'la politique de confidentialité'|trans }}</a>.
+        </p>
+
+        <p class="pa-switch">
+            {{ 'Vous avez déjà un compte professionnel ?'|trans }}<br>
+            <a href="{{ path('app_pro_login') }}">{{ 'Connectez-vous'|trans }}</a>
+        </p>
+    {{ form_end(registrationForm) }}
+{% endblock %}

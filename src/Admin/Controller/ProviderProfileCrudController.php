@@ -92,6 +92,16 @@ class ProviderProfileCrudController extends AbstractCrudController
             ->setHelp('Le membre qui administrera ce prestataire. Peut être renseigné plus tard.')
             ->autocomplete();
 
+        // Activite declaree a l'inscription professionnelle (etape 1/2).
+        // Category a bien un __toString(), mais on donne quand meme le
+        // libelle explicitement : c'est le piege qui a fait tomber trois
+        // ecrans du back-office le 24/08.
+        yield AssociationField::new('mainCategory', 'Activité principale')
+            ->setFormTypeOption('choice_label', 'name')
+            ->formatValue(static fn (mixed $v, ProviderProfile $profil): string => $profil->getMainCategory()?->getName() ?? '—')
+            ->setHelp('Déclarée par le prestataire à son inscription. Sert à orienter son dossier.')
+            ->autocomplete();
+
         yield TextareaField::new('bio', 'Présentation')->hideOnIndex();
 
         yield UrlField::new('websiteUrl', 'Site web')->hideOnIndex();

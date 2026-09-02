@@ -107,6 +107,10 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(UserCrudController::class, 'Membres', 'fa fa-users');
         yield MenuItem::linkTo(ProviderProfileCrudController::class, 'Prestataires', 'fa fa-briefcase');
 
+        // Pieces deposees a l'inscription professionnelle (etape 2/2). L'ecran
+        // de fin promet une verification : c'est ici qu'elle a lieu.
+        yield MenuItem::linkTo(ProviderDocumentCrudController::class, 'Pièces justificatives', 'fa fa-file-shield');
+
         // Ces deux tables étaient ÉCRITES et jamais relues : le site recueillait
         // des demandes et les jetait, en promettant une réponse.
         yield MenuItem::section('Demandes reçues');
