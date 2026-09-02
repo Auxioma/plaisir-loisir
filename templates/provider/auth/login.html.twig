@@ -1,0 +1,78 @@
+{#
+    Connexion professionnelle — Figma 955:90119.
+
+    LA MAQUETTE EN PROPOSE DEUX. Celle-ci, avec la bande latérale des
+    avantages, est celle que le client a retenue ; la « proposition 1 »
+    (955:90010), sans bande, est écartée.
+
+    Le formulaire poste sur /login comme celui des clients : il n'y a qu'un
+    pare-feu, donc qu'un seul `check_path`. Deux champs cachés font toute la
+    différence :
+      · `_failure_path` — sinon un mot de passe erroné renverrait le
+        professionnel sur l'écran de connexion CLIENT (le gestionnaire d'échec
+        de Symfony retombe sur `login_path`) ;
+      · `_csrf_token` — jeton « authenticate », attendu par form_login.
+
+    Fautes de la maquette corrigées : « Bienvenu » -> « Bienvenue »,
+    « Mot de passe oublier ? » -> « Mot de passe oublié ? ».
+#}
+{% extends 'provider/auth/_aside.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Connexion professionnelle'|trans }}{% endblock %}
+
+{% block pa_card %}
+    <div class="pa-card pa-card--login">
+        {# Le logo est cliquable : ces écrans n'ont ni navbar ni pied de page
+           (c'est la maquette), et sans lui un visiteur égaré n'aurait aucune
+           sortie vers le site. #}
+        <div class="pa-card__logo">
+            <a href="{{ path('app_home') }}" aria-label="{{ 'Revenir sur le site'|trans }}">
+                <img src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="177" height="44">
+            </a>
+        </div>
+
+        <h1 class="pa-card__title">{{ 'Bienvenue sur'|trans }}<br>{{ 'Plaisirs & Loisirs'|trans }}</h1>
+
+        <form class="pa-form" method="post" action="{{ path('app_login') }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            <input type="hidden" name="_failure_path" value="{{ path('app_pro_login') }}">
+
+            {% if error %}
+                <p class="pa-alert">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+            {% endif %}
+
+            <div class="pa-field">
+                <label class="pa-label" for="proEmail">{{ 'Email'|trans }}</label>
+                <input id="proEmail" class="pa-input" type="email" name="_email"
+                       value="{{ last_username }}" placeholder="{{ 'Entrer votre mail'|trans }}"
+                       autocomplete="email" required>
+            </div>
+
+            <div class="pa-field">
+                <label class="pa-label" for="proPassword">{{ 'Mot de passe'|trans }}</label>
+                <div class="pa-input-wrap" data-controller="password-toggle">
+                    <input id="proPassword" class="pa-input pa-input--eye" type="password" name="_password"
+                           data-password-toggle-target="input" placeholder="{{ 'Entrer votre mot de passe'|trans }}"
+                           autocomplete="current-password" required>
+                    <button type="button" class="pa-input__eye" data-action="password-toggle#toggle"
+                            aria-label="{{ 'Afficher ou masquer le mot de passe'|trans }}">
+                        <span data-password-toggle-target="show">{{ icon.eye() }}</span>
+                        <span data-password-toggle-target="hide" hidden>{{ icon.eye_off() }}</span>
+                    </button>
+                </div>
+                <a class="pa-forgot" href="{{ path('app_pro_forgot_password') }}">{{ 'Mot de passe oublié ?'|trans }}</a>
+            </div>
+
+            <button type="submit" class="pa-btn">{{ 'Commencer'|trans }}</button>
+        </form>
+
+        {# La maquette ne montre aucun lien vers l'inscription. Sans lui, le
+           professionnel qui arrive ici sans compte n'a aucune issue : le
+           parcours d'inscription existe mais rien n'y mène. #}
+        <p class="pa-switch">
+            {{ "Vous n'avez pas encore de compte professionnel ?"|trans }}<br>
+            <a href="{{ path('app_pro_register') }}">{{ 'Inscrivez-vous'|trans }}</a>
+        </p>
+    </div>
+{% endblock %}
