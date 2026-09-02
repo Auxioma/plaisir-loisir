@@ -1,0 +1,31 @@
+{#
+    Inscription professionnelle — écran de fin (Figma 956:113304).
+
+    La maquette annonce « … dans un délai de 02 : 59 mn ». Ce compte à rebours
+    n'est repris NI dans le texte NI en dur : aucun service client ne s'engage
+    à répondre en trois minutes, et afficher un délai que personne ne tient
+    fait plus de tort qu'une phrase sans chiffre. Le reste du texte est celui
+    de la maquette, à la faute près (« à bien été » -> « a bien été »).
+#}
+{% extends 'provider/auth/_split.html.twig' %}
+
+{% block title %}{{ 'Demande enregistrée'|trans }}{% endblock %}
+
+{% set step = 3 %}
+
+{% block pa_signup %}
+    <div class="pa-done">
+        <div class="pa-done__mark">
+            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" aria-hidden="true">
+                <path d="m4.5 12.5 5 5 10-11" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <h2 class="pa-done__title">{{ 'Félicitations'|trans }}</h2>
+        <p class="pa-done__text">
+            {{ 'Votre demande a bien été enregistrée, notre service client vous contactera après vérification afin de vous donner accès à la plateforme.'|trans }}
+        </p>
+
+        <a class="pa-btn pa-btn--wide" href="{{ path('app_home') }}">{{ 'Revenir sur le site'|trans }}</a>
+    </div>
+{% endblock %}
