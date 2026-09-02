@@ -106,11 +106,19 @@
                     <a class="auth-inline-link" href="{{ path('app_login') }}">{{ 'Connectez-vous'|trans }}</a>
                 </p>
 
-                {# Maquette : l'accès professionnel passe par ce lien vers l'écran
-                   de choix, et non par une bascule dans le formulaire. #}
+                {# Maquette : l'accès professionnel passe par ce lien, et non par
+                   une bascule dans le formulaire.
+
+                   IL MÈNE AU PARCOURS PROFESSIONNEL, PAS À L'ÉCRAN DE CHOIX.
+                   Jusqu'au 02/09 il renvoyait sur « /authentification?type=pro »,
+                   qui ramenait à CE MÊME formulaire client avec un type caché :
+                   le professionnel tournait en rond et finissait avec un compte
+                   sans activité, sans siège social et sans pièce justificative.
+                   Depuis cet écran on s'inscrit, donc on part sur l'inscription
+                   professionnelle — et non sur sa connexion. #}
                 <p class="auth-switch auth-switch--pro">
                     {{ 'Vous êtes un professionnel ?'|trans }}<br>
-                    <a class="auth-inline-link" href="{{ path('app_auth_choice') }}?type=pro">{{ 'Accéder à votre espace'|trans }}</a>
+                    <a class="auth-inline-link" href="{{ path('app_pro_register') }}">{{ 'Créer votre espace pro'|trans }}</a>
                 </p>
             </div>
         {{ form_end(registrationForm) }}
