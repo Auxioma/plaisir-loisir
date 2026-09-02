@@ -54,6 +54,7 @@ final class BackOfficeSweepTest extends WebTestCase
             'catégories' => '/admin/category',
             'membres' => '/admin/user',
             'prestataires' => '/admin/provider-profile',
+            'pièces justificatives' => '/admin/provider-document',
             'candidatures' => '/admin/partner-application',
             'messages' => '/admin/contact-message',
             'textes juridiques' => '/admin/legal-document',

@@ -1,0 +1,775 @@
+/* ==========================================================================
+ *  PARCOURS D'AUTHENTIFICATION PROFESSIONNEL — préfixe `pa-`
+ *
+ *  Sept écrans, deux gabarits :
+ *    · `pa-shell`  — bande latérale violette + carte centrée
+ *                    (connexion 955:90119, mot de passe 955:90335,
+ *                     OTP 955:90558, nouveau mot de passe)
+ *    · `pa-split`  — deux cartes côte à côte
+ *                    (inscription 955:91899, documents 956:110425,
+ *                     félicitations 956:113304)
+ *
+ *  Toutes les mesures viennent de la maquette 1440. Elles sont notées en
+ *  commentaire là où le chiffre paraîtrait arbitraire.
+ *
+ *  Les adaptations téléphone/tablette ne sont PAS ici : elles vivent dans
+ *  responsive.css, chargé en dernier, comme pour tout le reste du site.
+ * ======================================================================== */
+
+/* --------------------------------------------------------------------------
+ *  Jetons propres au parcours.
+ *  L'accent est le violet de la charte (--pl-action) : la maquette
+ *  professionnelle est entièrement bâtie dessus, là où le parcours client
+ *  reste sur le bleu nuit.
+ * ------------------------------------------------------------------------ */
+.pa-shell,
+.pa-split {
+    --pa-accent: var(--pl-action);          /* #5d00ff */
+    --pa-accent-soft: var(--pl-action-light); /* #f0eafb */
+    --pa-border: var(--pl-border);
+    --pa-radius: 8px;
+    --pa-radius-card: 12px;
+
+    font-family: var(--pl-font-family);
+    color: var(--pl-text);
+}
+
+/* ==========================================================================
+ *  1. GABARIT À BANDE LATÉRALE
+ * ======================================================================== */
+
+.pa-shell {
+    display: grid;
+    /* 339px : largeur exacte du conteneur de gauche dans la maquette. */
+    grid-template-columns: 339px minmax(0, 1fr);
+    min-height: 100vh;
+    background: var(--pl-white);
+}
+
+/* --------------------------------------------------------------------------
+ *  1.1 La bande d'arguments
+ * ------------------------------------------------------------------------ */
+.pa-aside {
+    background: var(--pa-accent);
+    color: var(--pl-white);
+    padding: 82px 47px 48px; /* relevé maquette : x=47, y=82 */
+}
+
+.pa-aside__inner {
+    width: 246px;
+    max-width: 100%;
+}
+
+.pa-aside__art {
+    display: block;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
+.pa-aside__title {
+    margin: 24px 0 0;
+    text-align: center;
+    font-size: 15px;
+    line-height: 24px;
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-white);
+}
+
+.pa-aside__list {
+    margin: 32px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 24px; /* 64 - 40 : pas vertical de la maquette moins la hauteur d'un item */
+}
+
+.pa-aside__item {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 7px; /* icône 24 + 7 = texte à x=31 */
+    align-items: start;
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: var(--pl-fw-semibold);
+}
+
+.pa-aside__check {
+    flex: none;
+    color: var(--pl-white);
+}
+
+/* --------------------------------------------------------------------------
+ *  1.2 La scène et la carte
+ * ------------------------------------------------------------------------ */
+.pa-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+}
+
+.pa-card {
+    /* 403 de large moins les 32 de padding = 339 de contenu (maquette). */
+    width: 403px;
+    max-width: 100%;
+    padding: 32px;
+    border: 1px solid var(--pa-border);
+    border-radius: var(--pa-radius-card);
+    background: var(--pl-white);
+}
+
+.pa-card__logo {
+    display: flex;
+    justify-content: center;
+    height: 60px;
+    align-items: center;
+}
+
+.pa-card__logo img {
+    width: 177px;
+    height: 44px;
+    object-fit: contain;
+}
+
+.pa-card__title {
+    margin: 53px 0 0; /* logo (60) + 53 = titre à y=113 */
+    text-align: center;
+    font-size: var(--pl-fs-h3);   /* 26 / 34 : deux lignes de 34 = 68 */
+    line-height: var(--pl-lh-h3);
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-text-strong);
+}
+
+.pa-card__lead {
+    margin: 8px 0 0;
+    text-align: center;
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-sm);
+    color: var(--pl-text-secondary);
+}
+
+/* Pastille 80x80 des écrans « mot de passe ». */
+.pa-badge {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: var(--pa-accent-soft);
+    color: var(--pa-accent);
+}
+
+.pa-card--pw .pa-card__title {
+    margin-top: 53px; /* pastille (80) + 53 = titre à y=133 */
+}
+
+/* ==========================================================================
+ *  2. FORMULAIRES (communs aux deux gabarits)
+ * ======================================================================== */
+
+.pa-form {
+    margin-top: 53px; /* titre puis formulaire à y=234 dans la maquette */
+    display: grid;
+    /* `minmax(0, 1fr)` et non `auto` : une piste `auto` se dimensionne sur son
+       element le plus large. La rangee de huit cases du code faisait alors
+       deborder toute la carte, bouton compris. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+}
+
+.pa-card--pw .pa-form {
+    margin-top: 53px;
+}
+
+.pa-field {
+    display: grid;
+    gap: 4px; /* label 20 + 4 = champ à y=24 */
+    min-width: 0;
+}
+
+.pa-label {
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-sm);
+    font-weight: var(--pl-fw-medium);
+    color: var(--pl-text);
+}
+
+.pa-input {
+    width: 100%;
+    height: 46px;
+    padding: 0 12px;
+    border: 1px solid var(--pa-border);
+    border-radius: var(--pa-radius);
+    background: var(--pl-white);
+    font-family: inherit;
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-sm);
+    color: var(--pl-text);
+}
+
+.pa-input::placeholder {
+    color: var(--pl-text-disabled);
+}
+
+.pa-input:focus-visible {
+    outline: 2px solid var(--pa-accent);
+    outline-offset: 1px;
+    border-color: var(--pa-accent);
+}
+
+/* Champ portant l'œil « afficher / masquer » : on réserve la place à droite. */
+.pa-input--eye {
+    padding-right: 44px;
+}
+
+.pa-input-wrap {
+    position: relative;
+    display: block;
+}
+
+.pa-input__eye {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--pl-text-secondary);
+    cursor: pointer;
+}
+
+.pa-input__eye svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Liste déroulante « Choix de l'activité » : le chevron de la maquette
+   remplace la flèche native, qui diffère d'un navigateur à l'autre. */
+.pa-select {
+    position: relative;
+}
+
+.pa-input--select {
+    appearance: none;
+    padding-right: 44px;
+    cursor: pointer;
+}
+
+.pa-select__caret {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    display: grid;
+    place-items: center;
+    color: var(--pl-text-secondary);
+}
+
+.pa-select__caret svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* « Mot de passe oublié ? » — aligné à droite sous le champ, en rouge dans la
+   maquette. */
+.pa-forgot {
+    margin-top: 4px;
+    justify-self: end;
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-sm);
+    color: var(--pl-error);
+    text-decoration: none;
+}
+
+.pa-forgot:hover,
+.pa-forgot:focus-visible {
+    text-decoration: underline;
+}
+
+.pa-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 28px; /* 44 de blanc dans la maquette, moins le gap de 16 */
+    padding: 10px 16px;
+    border: 0;
+    border-radius: var(--pa-radius);
+    background: var(--pa-accent);
+    color: var(--pl-white);
+    font-family: inherit;
+    font-size: var(--pl-fs-body);
+    line-height: var(--pl-lh-base);
+    font-weight: var(--pl-fw-bold);
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.pa-btn:hover,
+.pa-btn:focus-visible {
+    background: #4d00d6;
+    color: var(--pl-white);
+}
+
+.pa-btn--wide {
+    min-height: 52px; /* bouton de l'inscription : 561 x 52 */
+}
+
+.pa-alert {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: var(--pa-radius);
+    background: #fdecec;
+    color: var(--pl-error);
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-sm);
+}
+
+.pa-switch {
+    margin: 24px 0 0;
+    text-align: center;
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-sm);
+    color: var(--pl-text-secondary);
+}
+
+.pa-switch a {
+    color: var(--pa-accent);
+    font-weight: var(--pl-fw-semibold);
+}
+
+.pa-legal {
+    margin: 16px 0 0;
+    text-align: center;
+    font-size: var(--pl-fs-caption);
+    line-height: var(--pl-lh-caption);
+    color: var(--pl-text-secondary);
+}
+
+.pa-legal a {
+    color: var(--pa-accent);
+}
+
+/* --------------------------------------------------------------------------
+ *  2.1 Cases du code (vue OTP)
+ *
+ *  Une case par caractère, 46x46, séparées de 12 (58 - 46 dans la maquette).
+ *  Elles s'étalent sur toute la largeur disponible : la maquette en montre
+ *  six, le service en envoie huit, et une largeur figée aurait débordé.
+ * ------------------------------------------------------------------------ */
+.pa-otp {
+    display: flex;
+    /* 8 gouttieres de 12 comme la maquette ne tiendraient pas : elle dessine
+       SIX cases dans 339px (6x46 + 5x12 = 336), le service en envoie HUIT.
+       On resserre la gouttiere plutot que de deborder la carte. */
+    gap: 8px;
+    justify-content: center;
+}
+
+.pa-otp__cell {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 46px;
+    height: 46px;
+    padding: 0;
+    border: 1px solid var(--pa-border);
+    border-radius: var(--pa-radius);
+    background: var(--pl-white);
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: var(--pl-fw-bold);
+    line-height: 44px;
+    text-align: center;
+    text-transform: uppercase;
+    color: var(--pl-text-strong);
+}
+
+.pa-otp__cell:focus-visible {
+    outline: 2px solid var(--pa-accent);
+    outline-offset: 1px;
+    border-color: var(--pa-accent);
+}
+
+.pa-resend {
+    margin: 8px 0 0;
+    text-align: center;
+    font-size: var(--pl-fs-body-sm);
+    line-height: 22px;
+}
+
+.pa-resend a {
+    color: var(--pa-accent);
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+ *  3. GABARIT À DEUX CARTES (inscription)
+ * ======================================================================== */
+
+.pa-split {
+    display: grid;
+    grid-template-columns: minmax(0, 689fr) minmax(0, 686fr);
+    gap: 21px;          /* 732 - (22 + 689) : gouttière de la maquette */
+    padding: 22px;      /* marge des deux cartes */
+    min-height: 100vh;
+    background: #e6e8ee; /* fond gris de la page, releve au pixel */
+}
+
+.pa-panel {
+    border-radius: 24px;
+}
+
+.pa-panel--form {
+    background: var(--pl-white);
+    display: flex;
+    justify-content: center;
+    padding: 64px 64px 48px;
+}
+
+.pa-panel__inner {
+    width: 561px; /* largeur du contenu dans la maquette */
+    max-width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+ *  3.1 En-tête (logo, titre, sous-titre) et fil des étapes
+ * ------------------------------------------------------------------------ */
+.pa-signup__head {
+    text-align: center;
+}
+
+.pa-signup__logo {
+    display: block;
+    width: 110px;
+    height: 86px;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
+.pa-signup__title {
+    margin: 32px 0 0;
+    font-size: var(--pl-fs-h3);
+    line-height: 34px;
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-text-strong);
+}
+
+.pa-signup__subtitle {
+    /* 263px de large et centré : la maquette casse la phrase en deux lignes. */
+    max-width: 263px;
+    margin: 13px auto 0;
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-sm);
+    color: var(--pl-text-secondary);
+}
+
+.pa-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 32px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pa-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pa-step__badge {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--pa-accent);
+    border-radius: 50%;
+    color: var(--pa-accent);
+}
+
+.pa-step__label {
+    font-size: var(--pl-fs-body-sm);
+    line-height: 22px;
+    color: var(--pl-text);
+}
+
+/* L'étape franchie se remplit : sans cela, les deux pastilles seraient
+   identiques et le fil n'indiquerait plus où l'on se trouve. */
+.pa-step.is-done .pa-step__badge {
+    background: var(--pa-accent);
+    color: var(--pl-white);
+}
+
+.pa-steps__sep {
+    display: grid;
+    place-items: center;
+    color: var(--pl-text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+ *  3.2 Le formulaire
+ * ------------------------------------------------------------------------ */
+.pa-signup__form {
+    width: 561px;
+    max-width: 100%;
+    margin: 32px auto 0;
+    display: grid;
+    /* `minmax(0, 1fr)` et non `auto` : une piste `auto` prend la largeur de son
+       element le plus large, et le bouton de 561px poussait alors TOUS les
+       champs a 561 au lieu des 436 de la maquette. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+}
+
+/* Les champs : 436px centres dans les 561 du contenu (x=62.5 en maquette). */
+.pa-signup__form > .pa-field,
+.pa-signup__form > .pa-grid,
+.pa-signup__form > .pa-legal,
+.pa-signup__form > .pa-switch {
+    width: 436px;
+    max-width: 100%;
+    justify-self: center;
+}
+
+.pa-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px; /* 226 - 210 : gouttière Nom / Prénom */
+}
+
+.pa-signup__form .pa-input {
+    height: 48px; /* les champs de l'inscription sont un peu plus hauts */
+}
+
+/* Le bouton, lui, occupe les 561 pleins de la maquette. */
+.pa-signup__form .pa-btn {
+    width: 100%;
+    margin-top: 32px;
+}
+
+/* --------------------------------------------------------------------------
+ *  3.3 Zones de dépôt des documents
+ * ------------------------------------------------------------------------ */
+.pa-signup__form--docs {
+    width: 561px;
+}
+
+.pa-drops {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.pa-drop {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 8px;
+    min-height: 150px;
+    padding: 20px 16px;
+    border: 1px dashed #cfd3dd;
+    border-radius: var(--pa-radius);
+    text-align: center;
+    cursor: pointer;
+}
+
+.pa-drop:hover,
+.pa-drop:focus-within {
+    border-color: var(--pa-accent);
+    background: color-mix(in srgb, var(--pa-accent-soft) 55%, transparent);
+}
+
+/* Le champ natif est retiré du flux mais reste focalisable au clavier : le
+   masquer par `display:none` l'aurait exclu de la tabulation. */
+.pa-drop__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.pa-drop__icon {
+    color: var(--pa-accent);
+}
+
+.pa-drop__title {
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-sm);
+    font-weight: var(--pl-fw-medium);
+    color: var(--pa-accent);
+}
+
+.pa-drop__hint {
+    font-size: var(--pl-fs-caption);
+    line-height: var(--pl-lh-caption);
+    color: var(--pl-text-secondary);
+}
+
+/* Survol pendant un glisser-déposer. */
+.pa-drop.is-hovered {
+    border-color: var(--pa-accent);
+    background: var(--pa-accent-soft);
+}
+
+/* Un fichier choisi : la zone le dit, sinon rien ne prouve qu'il a été pris. */
+.pa-drop.is-filled {
+    border-style: solid;
+    border-color: var(--pa-accent);
+}
+
+.pa-drop.is-filled .pa-drop__hint {
+    color: var(--pl-success);
+    font-weight: var(--pl-fw-semibold);
+}
+
+.pa-others {
+    display: grid;
+    gap: 12px;
+}
+
+.pa-others:empty {
+    display: none;
+}
+
+.pa-drop--slim {
+    min-height: 72px;
+    padding: 12px 16px;
+}
+
+.pa-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 48px;
+    border: 1px dashed #cfd3dd;
+    border-radius: var(--pa-radius);
+    background: none;
+    font-family: inherit;
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-medium);
+    color: var(--pa-accent);
+    cursor: pointer;
+}
+
+.pa-add:hover,
+.pa-add:focus-visible {
+    border-color: var(--pa-accent);
+}
+
+.pa-add svg {
+    width: 18px;
+    height: 18px;
+}
+
+.pa-filed {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 6px;
+    font-size: var(--pl-fs-caption);
+    line-height: var(--pl-lh-caption);
+    color: var(--pl-text-secondary);
+}
+
+.pa-filed b {
+    color: var(--pl-text);
+}
+
+/* --------------------------------------------------------------------------
+ *  3.4 Écran de fin
+ * ------------------------------------------------------------------------ */
+.pa-done {
+    width: 561px;
+    max-width: 100%;
+    margin: 48px auto 0;
+    text-align: center;
+}
+
+.pa-done__mark {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--pa-accent-soft);
+    color: var(--pa-accent);
+}
+
+.pa-done__title {
+    margin: 24px 0 0;
+    font-size: var(--pl-fs-h4);
+    line-height: var(--pl-lh-tight);
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-text-strong);
+}
+
+.pa-done__text {
+    max-width: 420px;
+    margin: 12px auto 0;
+    font-size: var(--pl-fs-body-sm);
+    line-height: var(--pl-lh-sm);
+    color: var(--pl-text-secondary);
+}
+
+.pa-done .pa-btn {
+    margin-top: 40px;
+}
+
+/* --------------------------------------------------------------------------
+ *  3.5 Panneau de droite
+ * ------------------------------------------------------------------------ */
+.pa-panel--brand {
+    background: #f9f8fc; /* releve au pixel sur la maquette */
+    display: flex;
+    justify-content: center;
+    padding: 86px 13px 48px;
+}
+
+.pa-brand {
+    width: 659px;
+    max-width: 100%;
+    text-align: center;
+}
+
+.pa-brand__name {
+    margin: 0;
+    font-size: var(--pl-fs-h2);
+    line-height: var(--pl-lh-h2);
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-text-strong);
+}
+
+.pa-brand__claim {
+    max-width: 365px;
+    margin: 57px auto 0; /* titre (42) + 57 = accroche à y=99 */
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: var(--pl-fw-bold);
+    color: var(--pl-text-secondary);
+}
+
+.pa-brand__art {
+    display: block;
+    width: 574px;
+    max-width: 100%;
+    height: auto;
+    margin: 57px auto 0;
+}
