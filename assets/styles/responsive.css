@@ -1241,3 +1241,74 @@
     .lg-lead, .lg-list li, .lg-p { font-size: 17px; line-height: 27px; }
     .lg-h2 { font-size: 22px; }
 }
+
+/* --------------------------------------------------------------------------
+ *  10.8 Parcours d'authentification professionnel (préfixe `pa-`)
+ *
+ *  Deux gabarits à dégrader, et pas de maquette mobile — on applique les
+ *  règles décidées avec le client, énoncées en tête de fichier.
+ *
+ *  · La bande latérale de 339px est un ARGUMENTAIRE, pas de la navigation :
+ *    elle passe au-dessus de la carte en tablette, puis disparaît en
+ *    téléphone. La garder aurait laissé moins de 200px au formulaire.
+ *  · Le panneau illustré de l'inscription disparaît le premier : il est
+ *    purement décoratif, et il porte déjà `aria-hidden`.
+ *  · Les largeurs figées (403, 561, 436) deviennent 100 % de leur conteneur.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 1199.98px) {
+    /* Le panneau de droite s'en va : la carte du formulaire prend toute la
+       largeur, sinon elle serait comprimée sous ses 561px de contenu. */
+    .pa-split { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .pa-panel--brand { display: none; }
+    .pa-panel--form { padding: 48px 24px; }
+}
+
+@media (max-width: 991.98px) {
+    .pa-shell { grid-template-columns: minmax(0, 1fr); }
+    .pa-aside { padding: 40px 24px; }
+    .pa-aside__inner { width: 100%; max-width: 560px; margin: 0 auto; }
+    .pa-aside__list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; }
+    .pa-stage { padding: 32px 16px; }
+}
+
+@media (max-width: 767.98px) {
+    /* En téléphone la bande d'arguments repousserait le formulaire sous la
+       ligne de flottaison : on la retire. L'argumentaire reste lisible sur
+       l'écran de choix Pro/Client, qui le porte déjà. */
+    .pa-aside { display: none; }
+    .pa-shell { min-height: auto; }
+    .pa-stage { padding: 24px 16px; }
+    .pa-card { width: 100%; padding: 24px; }
+    .pa-card__title { margin-top: 32px; font-size: 22px; line-height: 30px; }
+    .pa-card--pw .pa-card__title { margin-top: 24px; }
+    .pa-form { margin-top: 32px; }
+
+    /* Les cases du code : huit sur une ligne de 320px, c'est 40px chacune
+       gouttières comprises. On resserre plutôt que de laisser déborder. */
+    .pa-otp { gap: 6px; }
+    .pa-otp__cell { height: 44px; font-size: 18px; line-height: 42px; }
+
+    .pa-panel--form { padding: 32px 16px; border-radius: 16px; }
+    .pa-panel__inner { width: 100%; }
+    .pa-signup__form { width: 100%; }
+    .pa-signup__form > .pa-field,
+    .pa-signup__form > .pa-grid,
+    .pa-signup__form > .pa-legal,
+    .pa-signup__form > .pa-switch { width: 100%; }
+    .pa-signup__form--docs { width: 100%; }
+    .pa-drops { grid-template-columns: minmax(0, 1fr); }
+    .pa-done { width: 100%; }
+
+    /* Le fil des étapes ne tient plus sur une ligne : les libellés passent
+       sous les pastilles plutôt que de déborder. */
+    .pa-steps { gap: 8px; }
+    .pa-step { flex-direction: column; gap: 4px; text-align: center; }
+    .pa-step__label { font-size: var(--pl-fs-caption); line-height: 16px; }
+}
+
+@media (max-width: 575.98px) {
+    .pa-split { padding: 12px; }
+    /* Nom et Prénom s'empilent : deux champs de 140px ne se remplissent pas. */
+    .pa-grid { grid-template-columns: minmax(0, 1fr); }
+    .pa-steps { flex-wrap: wrap; }
+}

@@ -36,3 +36,5 @@
 
 # Fichiers temporaires locaux (captures, exports…)
 .tmp/
+config.bat
+node_modules
