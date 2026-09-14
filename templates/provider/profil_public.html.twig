@@ -60,6 +60,12 @@
                     {{ 'Se connecter pour faire une demande'|trans }}
                 </a>
             {% endif %}
+
+            {% include '_partials/_report_form.html.twig' with {
+                subject_type: 'profile',
+                subject_id: provider.id,
+                subject_label: provider.displayName,
+            } %}
         </div>
     </div>
 </div>

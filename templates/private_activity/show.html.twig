@@ -146,5 +146,13 @@
             </div>
         </div>
     {% endif %}
+
+    {% if not can_manage %}
+        {% include '_partials/_report_form.html.twig' with {
+            subject_type: 'activity',
+            subject_id: activity.id,
+            subject_label: activity.title,
+        } %}
+    {% endif %}
 </div>
 {% endblock %}
