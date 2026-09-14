@@ -1,0 +1,66 @@
+{#
+    Fiche publique d'un professionnel vérifié (§5, §9 du CDC). L'appel à
+    l'action ouvre le formulaire de demande, pré-rempli avec son métier : la
+    demande reste ouverte à tous les prestataires de ce métier (voir
+    ServiceRequestVoter et QuoteService), pas adressée à ce seul profil — le
+    modèle déjà construit (un devis par annonceur et par demande) est un
+    marché d'appels d'offres, pas une messagerie directe.
+#}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ provider.displayName }}{% endblock %}
+
+{% block body %}
+<div class="container py-5" style="max-width: 760px;">
+    <p class="mb-3">
+        <a href="{{ path('app_provider_search') }}" class="text-decoration-none">&larr; {{ 'Retour à la recherche'|trans }}</a>
+    </p>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <h1 class="h3 mb-2" style="color: var(--pl-text-display); font-weight: var(--pl-fw-bold);">
+                {{ provider.displayName }}
+            </h1>
+
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                {% if provider.mainCategory %}
+                    <span class="badge rounded-pill" style="background: var(--pl-action-light); color: var(--pl-action);">
+                        {{ provider.mainCategory.name }}
+                    </span>
+                {% endif %}
+                {% if provider.city %}
+                    <span class="badge rounded-pill text-bg-light">📍 {{ provider.city }}</span>
+                {% endif %}
+            </div>
+
+            {% if provider.companyName %}
+                <p class="text-muted mb-3">{{ provider.companyName }}</p>
+            {% endif %}
+
+            {% if provider.bio %}
+                <p class="mb-4">{{ provider.bio|nl2br }}</p>
+            {% endif %}
+
+            {% if provider.websiteUrl or provider.facebookUrl or provider.instagramUrl or provider.linkedinUrl %}
+                <div class="d-flex flex-wrap gap-3 mb-4">
+                    {% if provider.websiteUrl %}<a href="{{ provider.websiteUrl }}" target="_blank" rel="noopener">{{ 'Site web'|trans }}</a>{% endif %}
+                    {% if provider.facebookUrl %}<a href="{{ provider.facebookUrl }}" target="_blank" rel="noopener">Facebook</a>{% endif %}
+                    {% if provider.instagramUrl %}<a href="{{ provider.instagramUrl }}" target="_blank" rel="noopener">Instagram</a>{% endif %}
+                    {% if provider.linkedinUrl %}<a href="{{ provider.linkedinUrl }}" target="_blank" rel="noopener">LinkedIn</a>{% endif %}
+                </div>
+            {% endif %}
+
+            {% if is_granted('ROLE_USER') %}
+                <a href="{{ path('app_account_requests_new', provider.mainCategory ? {metier: provider.mainCategory.slug} : {}) }}"
+                   class="btn pl-btn pl-btn--cta">
+                    {{ 'Faire une demande'|trans }}
+                </a>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="btn pl-btn pl-btn--cta">
+                    {{ 'Se connecter pour faire une demande'|trans }}
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{#
+    Détail d'une demande côté client : les devis reçus, avec accepter/refuser
+    (§10, §11 du CDC). QuoteService::accept() refuse déjà automatiquement les
+    autres devis et clôture la demande — l'écran ne fait qu'appeler le service.
+#}
+{% extends 'account/_layout.html.twig' %}
+
+{% block title %}{{ demande.title }}{% endblock %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Mes demandes'|trans, href: path('app_account_requests') }, { label: demande.title }],
+        title: demande.title,
+        subtitle: demande.category.name ~ ' — ' ~ (demande.open ? 'Ouverte aux propositions'|trans : 'Clôturée'|trans),
+    } %}
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <p class="mb-0">{{ demande.description|nl2br }}</p>
+        </div>
+    </div>
+
+    <h2 class="h5 mb-3">
+        {{ demande.quotes|length }} {{ demande.quotes|length > 1 ? 'devis reçus'|trans : 'devis reçu'|trans }}
+    </h2>
+
+    {% if demande.quotes is empty %}
+        {% include 'account/_empty.html.twig' with { message: 'Aucun professionnel n\'a encore répondu à cette demande.'|trans } %}
+    {% else %}
+        <div class="d-flex flex-column gap-3">
+            {% for devis in demande.quotes %}
+                <div class="card shadow-sm">
+                    <div class="card-body d-flex justify-content-between align-items-start flex-wrap gap-3">
+                        <div>
+                            <strong>{{ devis.provider.displayName }}</strong>
+                            <div class="fs-4 fw-bold" style="color: var(--pl-action);">{{ devis.amount|number_format(2, ',', ' ') }} {{ devis.currency }}</div>
+                            {% if devis.message %}
+                                <p class="text-muted mb-0 mt-2">{{ devis.message|nl2br }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="text-end">
+                            <span class="badge rounded-pill {{ devis.status.value == 'accepted' ? 'text-bg-success' : (devis.status.value == 'declined' ? 'text-bg-secondary' : 'text-bg-warning') }}">
+                                {{ devis.status.value == 'accepted' ? 'Accepté'|trans : (devis.status.value == 'declined' ? 'Refusé'|trans : 'En attente'|trans) }}
+                            </span>
+                            {% if demande.open and devis.status.value == 'pending' %}
+                                <div class="d-flex gap-2 mt-2">
+                                    <form method="post" action="{{ path('app_account_requests_quote_accept', {id: demande.id, quoteId: devis.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                        <button type="submit" class="btn btn-sm pl-btn pl-btn--primary">{{ 'Accepter'|trans }}</button>
+                                    </form>
+                                    <form method="post" action="{{ path('app_account_requests_quote_decline', {id: demande.id, quoteId: devis.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                        <button type="submit" class="btn btn-sm pl-btn pl-btn--outline-dark">{{ 'Refuser'|trans }}</button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

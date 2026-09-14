@@ -43,6 +43,28 @@
                         <a href="{{ path('app_offers') }}" class="pl-nav__link pl-nav__link--offres {{ nav_active == 'offres' ? 'is-active-cta' }}">{{ icon.flame(18) }} {{ 'Offres du moments'|trans }}</a>
                         <a href="{{ path('app_gifts') }}" class="pl-nav__link {{ nav_active == 'cadeaux' ? 'is-active' }}">{{ icon.gift(18) }} {{ 'Cadeaux'|trans }}</a>
                         <a href="{{ path('app_events_private') }}" class="pl-nav__link pl-nav__link--badged">{{ 'Activités privées'|trans }} <span class="pl-nav__badge">{{ 'Nouveau'|trans }}</span></a>
+                        {#
+                            §21.2 du cahier des charges du 3 septembre : « Trouver un
+                            professionnel » et « Déposer une demande » figurent dans la
+                            navigation recommandée. Aucune maquette Figma ne couvre cet
+                            écran (chapitres 9-11 du CDC, absents de la maquette).
+
+                            REGROUPÉS DANS UN MENU, PAS DEUX PILULES EN PLUS (14/09).
+                            Première version : deux liens ajoutés à la suite des 5
+                            existants. La barre est calée au pixel sur un cadre de 1440
+                            (docs/grille-figma.md) sans marge prévue pour un ajout — deux
+                            pilules texte l'ont fait déborder, provoquant un défilement
+                            horizontal sur toute la page. Un menu déroulant (même
+                            mécanique que « Découvrez » sur l'accueil, <details> natif,
+                            sans JS) ajoute la largeur d'UN seul item plutôt que deux.
+                        #}
+                        <details class="pl-dropdown">
+                            <summary class="pl-dropdown__toggle">{{ 'Professionnels'|trans }} {{ icon.chevron_down(16) }}</summary>
+                            <div class="pl-dropdown__menu">
+                                <a href="{{ path('app_provider_search') }}" class="pl-dropdown__item">{{ 'Trouver un professionnel'|trans }}</a>
+                                <a href="{{ path('app_account_requests_new') }}" class="pl-dropdown__item">{{ 'Déposer une demande'|trans }}</a>
+                            </div>
+                        </details>
                     </nav>
                 </div>
             </div>
@@ -52,6 +74,13 @@
             <a href="{{ path('app_corporate_partner') }}" class="pl-btn pl-btn--cta">{{ 'Déposer une annonce'|trans }}</a>
 
             {% if connected %}
+                {# Seul point d'accès à /pro/demandes pour un compte
+                   ROLE_PROVIDER : sans lien nulle part, la page n'était
+                   joignable qu'en tapant l'URL à la main (signalé le 14/09,
+                   même défaut que /professionnels avant son ajout au menu). #}
+                {% if is_granted('ROLE_PROVIDER') %}
+                    <a href="{{ path('app_pro_requests') }}" class="pl-iconbtn" aria-label="{{ 'Demandes reçues'|trans }}">{{ icon.receipt(20) }}</a>
+                {% endif %}
                 <a href="{{ path('app_account_favorites') }}" class="pl-iconbtn" aria-label="{{ 'Mes favoris'|trans }}">{{ icon.heart(20) }}</a>
                 <button type="button" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">{{ icon.mail(20) }}</button>
                 <a href="{{ path('app_account_notifications') }}" class="pl-iconbtn" aria-label="{{ 'Notifications'|trans }}">{{ icon.bell(20) }}</a>

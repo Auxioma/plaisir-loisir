@@ -1,0 +1,48 @@
+{#
+    Boîte de réception du professionnel : demandes ouvertes dans son métier
+    (§10, §11 du CDC). Pas de tableau de bord pro encore construit (lot G,
+    voir docs/rapport-client-2026-09-11) : écran autonome en attendant.
+#}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Demandes reçues'|trans }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-1" style="color: var(--pl-text-display); font-weight: var(--pl-fw-bold);">
+        {{ 'Demandes reçues'|trans }}
+    </h1>
+
+    {% if provider.mainCategory %}
+        <p class="text-muted mb-4">
+            {{ 'Demandes ouvertes dans votre métier :'|trans }} <strong>{{ provider.mainCategory.name }}</strong>
+        </p>
+    {% else %}
+        <div class="alert alert-warning">
+            {{ 'Aucun métier principal n\'est renseigné sur votre profil : aucune demande ne peut vous être présentée. Contactez l\'administration pour le compléter.'|trans }}
+        </div>
+    {% endif %}
+
+    {% if requests is empty %}
+        <p class="text-muted">{{ 'Aucune demande ouverte pour le moment.'|trans }}</p>
+    {% else %}
+        <div class="list-group">
+            {% for demande in requests %}
+                {% set deja_repondu = ('' ~ demande.id) in quoted_ids %}
+                <a href="{{ path('app_pro_requests_show', {id: demande.id}) }}"
+                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ demande.title }}</strong>
+                        <div class="text-muted small">{{ demande.createdAt|date('d/m/Y') }}</div>
+                    </div>
+                    {% if deja_repondu %}
+                        <span class="badge rounded-pill text-bg-secondary">{{ 'Déjà répondu'|trans }}</span>
+                    {% else %}
+                        <span class="badge rounded-pill text-bg-success">{{ 'À traiter'|trans }}</span>
+                    {% endif %}
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

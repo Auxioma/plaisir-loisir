@@ -34,11 +34,31 @@ class ProviderProfile
     #[ORM\Column(length: 120)]
     private string $displayName;
 
+    /**
+     * Identifiant public de l'URL (`/professionnels/{slug}`), unique.
+     *
+     * Nullable en base pour les dossiers créés avant ce champ : voir
+     * `ProviderSlugService`, qui le génère à l'inscription et rattrape les
+     * profils existants via `app:provider:backfill-slugs`.
+     */
+    #[ORM\Column(length: 160, unique: true, nullable: true)]
+    private ?string $slug = null;
+
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $bio = null;
 
     #[ORM\Column(length: 180, nullable: true)]
     private ?string $companyName = null;
+
+    /**
+     * Ville d'exercice affichée publiquement, distincte de l'adresse du siège
+     * social (`CompanyIdentity::registeredCity`, non publique). Sert à la
+     * recherche de professionnels par ville (§5, §9 du CDC) : même colonne
+     * texte, en attendant un vrai rayon géographique (pas de géocodage en
+     * place aujourd'hui).
+     */
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $city = null;
 
     #[ORM\Column(enumType: ProviderStatus::class)]
     private ProviderStatus $status = ProviderStatus::Draft;
@@ -101,6 +121,30 @@ class ProviderProfile
     public function setDisplayName(string $displayName): static
     {
         $this->displayName = $displayName;
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(?string $slug): static
+    {
+        $this->slug = $slug;
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(?string $city): static
+    {
+        $this->city = $city;
 
         return $this;
     }

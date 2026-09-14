@@ -48,6 +48,7 @@ final class ProviderRegistrationService
         private readonly ConsentService $consentService,
         private readonly RequestStack $requestStack,
         private readonly Registry $workflowRegistry,
+        private readonly ProviderSlugService $slugService,
     ) {
     }
 
@@ -97,6 +98,8 @@ final class ProviderRegistrationService
             ->setUser($user)
             ->setDisplayName('' !== $displayName ? mb_substr($displayName, 0, 120) : $email)
             ->setMainCategory($mainCategory);
+
+        $this->slugService->assign($profile);
 
         $this->entityManager->persist($profile);
 
