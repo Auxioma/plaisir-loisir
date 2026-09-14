@@ -55,38 +55,29 @@
                         #}
                         <a href="{{ path('app_events') }}" class="pl-nav__link">{{ 'Événements'|trans }}</a>
                         {#
-                            §21.2 du cahier des charges du 3 septembre : « Trouver un
-                            professionnel » et « Déposer une demande » figurent dans la
-                            navigation recommandée. Aucune maquette Figma ne couvre cet
-                            écran (chapitres 9-11 du CDC, absents de la maquette).
+                            §21.2 du CDC : « Trouver un professionnel », « Déposer une
+                            demande » ; §12-13 : « Activités privées entre particuliers ».
+                            Aucune maquette Figma ne couvre ces écrans.
 
-                            REGROUPÉS DANS UN MENU, PAS DEUX PILULES EN PLUS (14/09).
-                            Première version : deux liens ajoutés à la suite des 5
-                            existants. La barre est calée au pixel sur un cadre de 1440
-                            (docs/grille-figma.md) sans marge prévue pour un ajout — deux
-                            pilules texte l'ont fait déborder, provoquant un défilement
-                            horizontal sur toute la page. Un menu déroulant (même
-                            mécanique que « Découvrez » sur l'accueil, <details> natif,
-                            sans JS) ajoute la largeur d'UN seul item plutôt que deux.
+                            UN SEUL MENU POUR LES QUATRE LIENS, PAS DEUX (14/09, v2).
+                            Un menu « Professionnels » et un menu « Activités privées »
+                            distincts débordaient encore : la barre est calée au pixel sur
+                            un cadre de 1440 sans la moindre marge (docs/grille-figma.md),
+                            et DEUX menus déroulants supplémentaires pèsent presque autant
+                            que les libellés qu'ils remplacent (chacun porte son propre
+                            texte + chevron). Un seul menu « Plus », au libellé volontai-
+                            rement court, regroupe les quatre liens et ne coûte que la
+                            largeur d'un item générique. Signalé une deuxième fois par le
+                            client après le premier correctif (menu unique par fonction) :
+                            cette fois la largeur ajoutée est mesurée sur le PIRE cas
+                            (libellé le plus court possible), pas seulement réduite.
                         #}
                         <details class="pl-dropdown">
-                            <summary class="pl-dropdown__toggle">{{ 'Professionnels'|trans }} {{ icon.chevron_down(16) }}</summary>
+                            <summary class="pl-dropdown__toggle">{{ 'Plus'|trans }} {{ icon.chevron_down(16) }}</summary>
                             <div class="pl-dropdown__menu">
                                 <a href="{{ path('app_provider_search') }}" class="pl-dropdown__item">{{ 'Trouver un professionnel'|trans }}</a>
                                 <a href="{{ path('app_account_requests_new') }}" class="pl-dropdown__item">{{ 'Déposer une demande'|trans }}</a>
-                            </div>
-                        </details>
-                        {#
-                            §12-13 du CDC : « Activités privées entre particuliers »,
-                            libellé désormais libéré du lien Event renommé ci-dessus.
-                            Même menu déroulant, même raison (budget de largeur du
-                            cadre 1440, voir plus haut) — à vérifier à l'écran comme
-                            le menu « Professionnels » après son ajout.
-                        #}
-                        <details class="pl-dropdown">
-                            <summary class="pl-dropdown__toggle">{{ 'Activités privées'|trans }} {{ icon.chevron_down(16) }}</summary>
-                            <div class="pl-dropdown__menu">
-                                <a href="{{ path('app_private_activities') }}" class="pl-dropdown__item">{{ 'Découvrir les activités'|trans }}</a>
+                                <a href="{{ path('app_private_activities') }}" class="pl-dropdown__item">{{ 'Activités privées'|trans }}</a>
                                 <a href="{{ path('app_account_private_activities_new') }}" class="pl-dropdown__item">{{ 'Organiser une activité'|trans }}</a>
                             </div>
                         </details>

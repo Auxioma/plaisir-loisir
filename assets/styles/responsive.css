@@ -69,21 +69,29 @@
 /* --------------------------------------------------------------------------
  *  1.2 En-tête : panneau de navigation
  *
- *  POINT DE BASCULE : 1400px (`xxl`), pas 992px.
- *  Ce n'est pas un choix de confort mais une mesure. La navigation en ligne du
- *  header — logo + « Découvrez » + cinq liens + boutons + icônes — a une
- *  largeur incompressible d'environ 1015px de contenu ; avec les marges elle
- *  déborde tant que la fenêtre n'atteint pas ~1360px (vérifié sur les quatre
- *  headers : /activites, /destinations, /evenements, /a-propos). Le premier
- *  palier Bootstrap standard où elle tient est donc `xxl`. C'est exactement
- *  `navbar-expand-xxl` — la maquette 1440 garde sa navigation en ligne, et les
- *  tablettes paysage reçoivent le burger.
+ *  POINT DE BASCULE : 1600px, un point CUSTOM et non `xxl` (1400) — ce
+ *  n'était plus soutenable après le 14/09.
+ *
+ *  À l'origine ce point valait 1400 (`xxl`), mesuré pour les 5 liens de la
+ *  maquette : ~1015px de contenu, débordant sous ~1360px de fenêtre. Deux
+ *  chantiers y ont depuis ajouté un 6e lien (« Événements », qui remplace un
+ *  ancien lien de même largeur — neutre) et un menu déroulant « Plus »
+ *  regroupant 4 liens vers les professionnels et les activités privées (§9,
+ *  §12-13 du CDC). Deux menus séparés débordaient encore une fois fusionnés
+ *  en un seul par manque de marge ; un point de bascule à 1600 lui en donne.
+ *  Ce n'est PLUS un palier Bootstrap standard (rien au-delà de `xxl`
+ *  n'existe) : indépendant des autres règles `1400`/`1399.98` de ce fichier,
+ *  qui restent inchangées pour tout ce qui n'est pas cette navigation.
+ *
+ *  Non re-mesuré au pixel (pas d'outil de capture d'écran disponible) :
+ *  valeur volontairement généreuse pour laisser de la marge. À confirmer à
+ *  l'écran.
  * ------------------------------------------------------------------------ */
 
-/* Au-dessus de 1400px, le panneau n'existe pas : on annule tout ce que la
-   classe `.offcanvas` de Bootstrap impose, exactement comme le fait
-   `navbar-expand-xxl`. La navigation reprend sa place dans le flux. */
-@media (min-width: 1400px) {
+/* Au-dessus du point de bascule, le panneau n'existe pas : on annule tout ce
+   que la classe `.offcanvas` de Bootstrap impose. La navigation reprend sa
+   place dans le flux. */
+@media (min-width: 1600px) {
     .pl-navbar__panel.offcanvas {
         position: static;
         z-index: auto;
@@ -100,8 +108,8 @@
     .pl-navbar__panel-body { display: flex; padding: 0; overflow: visible; }
 }
 
-/* Sous 1400px : le panneau glisse depuis la droite. */
-@media (max-width: 1399.98px) {
+/* Sous le point de bascule : le panneau glisse depuis la droite. */
+@media (max-width: 1599.98px) {
     .pl-navbar__panel.offcanvas { width: 320px; max-width: 86vw; }
 
     .pl-navbar__panel-head {
@@ -174,9 +182,13 @@
     border-radius: 2px;
     background: var(--pl-text);
 }
-/* Bascule du burger — à laisser en dernier, cf. commentaire ci-dessus. */
-@media (min-width: 1400px) { .pl-burger { display: none; } }
-@media (max-width: 1399.98px) { .pl-burger { display: inline-flex; } }
+/* Bascule du burger — à laisser en dernier, cf. commentaire ci-dessus.
+   Même point de bascule custom (1600) que le panneau de navigation : les
+   deux doivent changer d'état ensemble, sinon soit le burger reste caché
+   alors que le menu est replié, soit il reste affiché en double du menu
+   déjà en ligne. */
+@media (min-width: 1600px) { .pl-burger { display: none; } }
+@media (max-width: 1599.98px) { .pl-burger { display: inline-flex; } }
 
 /* --------------------------------------------------------------------------
  *  1.3 En-tête : barre elle-même
