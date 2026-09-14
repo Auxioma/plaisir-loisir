@@ -30,6 +30,12 @@ services:
     # elle est résolue vers l'implémentation mock (Stripe la remplacera).
     App\Payment\Processor\PaymentProcessor: '@App\Payment\Processor\MockPaymentProcessor'
 
+    # Abonnements professionnels (§17 du CDC) : même principe que
+    # PaymentProcessor ci-dessus. Résolue vers le mock tant qu'aucune clé
+    # Stripe de test n'est configurée dans cet environnement — voir le
+    # commentaire de StripeSubscriptionGateway.
+    App\Payment\Stripe\SubscriptionGateway: '@App\Payment\Stripe\MockSubscriptionGateway'
+
     # La recherche est codée contre l'interface SearchService ; aujourd'hui
     # résolue vers PostgreSQL (Elasticsearch la remplacera).
     App\Search\SearchService: '@App\Search\DatabaseSearch'

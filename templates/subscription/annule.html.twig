@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Abonnement annulé'|trans }}{% endblock %}
+
+{% block body %}
+<div class="container py-5 text-center" style="max-width: 560px;">
+    <h1 class="h3 mb-3">{{ 'Souscription annulée'|trans }}</h1>
+    <p class="mb-4">{{ 'Vous n\'avez pas été débité. Vous pouvez réessayer à tout moment.'|trans }}</p>
+    <a href="{{ path('app_pro_subscription') }}" class="btn pl-btn pl-btn--cta">{{ 'Retour aux offres'|trans }}</a>
+</div>
+{% endblock %}

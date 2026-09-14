@@ -1,0 +1,23 @@
+{#
+    Retour après passage par Stripe Checkout (ou activation immédiate en
+    mode simulé). Comme pour le paiement d'une prestation
+    (PaymentController) : cet écran ne confirme jamais rien lui-même, c'est
+    le webhook qui l'a déjà fait avant que le navigateur n'arrive ici — sauf
+    en mode simulé, où il n'y a pas de webhook et l'abonnement est déjà actif
+    au moment de la redirection (voir MockSubscriptionGateway).
+#}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Abonnement confirmé'|trans }}{% endblock %}
+
+{% block body %}
+<div class="container py-5 text-center" style="max-width: 560px;">
+    <h1 class="h3 mb-3">{{ 'Merci !'|trans }}</h1>
+    {% if subscription and subscription.status.value == 'active' %}
+        <p class="mb-4">{{ 'Votre abonnement'|trans }} « {{ subscription.plan.name }} » {{ 'est actif.'|trans }}</p>
+    {% else %}
+        <p class="mb-4">{{ 'Votre paiement est en cours de confirmation.'|trans }}</p>
+    {% endif %}
+    <a href="{{ path('app_pro_subscription') }}" class="btn pl-btn pl-btn--cta">{{ 'Voir mon abonnement'|trans }}</a>
+</div>
+{% endblock %}

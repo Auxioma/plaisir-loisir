@@ -96,6 +96,9 @@
                    même défaut que /professionnels avant son ajout au menu). #}
                 {% if is_granted('ROLE_PROVIDER') %}
                     <a href="{{ path('app_pro_requests') }}" class="pl-iconbtn" aria-label="{{ 'Demandes reçues'|trans }}">{{ icon.receipt(20) }}</a>
+                    {# Même défaut évité pour /pro/abonnement (§17 du CDC) : sans ce
+                       lien, seule une URL tapée à la main y mène. #}
+                    <a href="{{ path('app_pro_subscription') }}" class="pl-iconbtn" aria-label="{{ 'Abonnement'|trans }}">{{ icon.card(20) }}</a>
                 {% endif %}
                 <a href="{{ path('app_account_favorites') }}" class="pl-iconbtn" aria-label="{{ 'Mes favoris'|trans }}">{{ icon.heart(20) }}</a>
                 <button type="button" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">{{ icon.mail(20) }}</button>
