@@ -194,6 +194,35 @@ En local, `messenger:consume async --limit=1` suffit à vider la file.
 `MAILER_SENDER` a par ailleurs été ajouté : sans en-tête `From`, Symfony refuse
 d'envoyer (« An email must have a From or a Sender header »).
 
+**MAILER_DSN=null://null dans `.env` est volontaire** — c'est le défaut de
+base, versionné, safe par défaut. La vraie valeur va dans `.env.local` (dev,
+non versionné) et dans les secrets du serveur (prod), jamais dans `.env`.
+
+**En local (14/09) — Mailpit, sans Docker.** Ce WSL n'a pas l'intégration
+Docker Desktop activée, donc le service `mailer` de `compose.override.yaml`
+(recette Flex de `symfony/mailer`) n'est pas utilisable tel quel ici. Mailpit
+existe aussi en binaire autonome, installé dans `~/.local/bin/mailpit` :
+
+```bash
+mailpit --smtp 127.0.0.1:1025 --listen 127.0.0.1:8025 &   # attrape-tout, aucun envoi réel
+```
+
+`.env.local` pointe déjà `MAILER_DSN=smtp://127.0.0.1:1025` dessus ; les
+e-mails envoyés en local se consultent sur http://127.0.0.1:8025. Vérifié le
+14/09 avec le flux mot de passe oublié : le message part bien via Messenger et
+arrive dans Mailpit avec le bon expéditeur, sujet et code. Si l'intégration WSL
+de Docker Desktop est activée un jour, `docker compose up -d mailer` fait la
+même chose sans installer de binaire.
+
+**En production — transport réel + worker supervisé.** Deux choses manquent
+encore, toutes deux hors du code applicatif :
+- un vrai DSN SMTP (fournisseur à choisir avec le client — Brevo, Mailjet, SES…
+  — puis `MAILER_DSN` dans les secrets du serveur, jamais dans le dépôt) ;
+- le worker supervisé en continu : gabarit prêt à l'emploi dans
+  `docs/deploy/messenger-worker.service` (unité systemd, redémarre seul en cas
+  de crash, se recycle toutes les heures pour éviter la dérive mémoire d'un
+  worker PHP de longue durée).
+
 ---
 
 ## 3. Socle juridique (18/08, demande du CTO)
