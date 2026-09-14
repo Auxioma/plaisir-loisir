@@ -11,7 +11,9 @@ use App\Quote\Repository\QuoteRepository;
 use App\Quote\Repository\ServiceRequestRepository;
 use App\Quote\Security\ServiceRequestVoter;
 use App\Quote\Service\QuoteService;
+use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
+use App\User\StaticAccount;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,6 +38,7 @@ final class ProviderRequestController extends AbstractController
         private readonly QuoteRepository $quotes,
         private readonly ProviderProfileRepository $providerProfiles,
         private readonly QuoteService $quoteService,
+        private readonly AccountIdentityPresenter $identity,
     ) {
     }
 
@@ -48,6 +51,9 @@ final class ProviderRequestController extends AbstractController
         $open = null !== $category ? $this->requests->findOpenForCategory($category) : [];
 
         return $this->render('quote/demandes_recues.html.twig', [
+            'user' => $this->identity->identityFor($this->currentUser()),
+            'menu' => StaticAccount::providerMenu(),
+            'active' => 'Demandes reçues',
             'provider' => $profile,
             'requests' => $open,
             'quoted_ids' => $this->alreadyQuotedIds($profile, $open),
@@ -92,6 +98,9 @@ final class ProviderRequestController extends AbstractController
         }
 
         return $this->render('quote/demande_recue_detail.html.twig', [
+            'user' => $this->identity->identityFor($this->currentUser()),
+            'menu' => StaticAccount::providerMenu(),
+            'active' => 'Demandes reçues',
             'demande' => $serviceRequest,
             'devis_existant' => $existingQuote,
             'peut_repondre' => null === $existingQuote && $serviceRequest->isOpen(),
@@ -107,13 +116,20 @@ final class ProviderRequestController extends AbstractController
         return str_replace(',', '.', $amount);
     }
 
-    private function currentProfile(): ProviderProfile
+    private function currentUser(): User
     {
         $user = $this->getUser();
 
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException();
         }
+
+        return $user;
+    }
+
+    private function currentProfile(): ProviderProfile
+    {
+        $user = $this->currentUser();
 
         $profile = $this->providerProfiles->findOneByUser($user);
 

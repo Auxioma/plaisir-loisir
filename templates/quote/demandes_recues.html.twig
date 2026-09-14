@@ -1,17 +1,18 @@
 {#
     Boîte de réception du professionnel : demandes ouvertes dans son métier
-    (§10, §11 du CDC). Pas de tableau de bord pro encore construit (lot G,
-    voir docs/rapport-client-2026-09-11) : écran autonome en attendant.
+    (§10, §11 du CDC). Rejoint la coquille account/_layout.html.twig le 14/09
+    (voir provider/tableau_de_bord.html.twig).
 #}
-{% extends 'base.html.twig' %}
+{% extends 'account/_layout.html.twig' %}
 
 {% block title %}{{ 'Demandes reçues'|trans }}{% endblock %}
 
-{% block body %}
-<div class="container py-5">
-    <h1 class="mb-1" style="color: var(--pl-text-display); font-weight: var(--pl-fw-bold);">
-        {{ 'Demandes reçues'|trans }}
-    </h1>
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Demandes reçues'|trans }],
+        title: 'Demandes reçues'|trans,
+        subtitle: 'Répondez aux demandes ouvertes dans votre métier par un devis.'|trans,
+    } %}
 
     {% if provider.mainCategory %}
         <p class="text-muted mb-4">
@@ -24,7 +25,7 @@
     {% endif %}
 
     {% if requests is empty %}
-        <p class="text-muted">{{ 'Aucune demande ouverte pour le moment.'|trans }}</p>
+        {% include 'account/_empty.html.twig' with { message: 'Aucune demande ouverte pour le moment.'|trans } %}
     {% else %}
         <div class="list-group">
             {% for demande in requests %}
@@ -44,5 +45,4 @@
             {% endfor %}
         </div>
     {% endif %}
-</div>
 {% endblock %}

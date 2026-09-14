@@ -11,7 +11,9 @@ use App\Provider\Repository\ProviderProfileRepository;
 use App\Quote\Enum\QuoteStatus;
 use App\Quote\Repository\QuoteRepository;
 use App\Quote\Repository\ServiceRequestRepository;
+use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
+use App\User\StaticAccount;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -48,6 +50,7 @@ final class ProviderDashboardController extends AbstractController
         private readonly CategoryRepository $categories,
         private readonly SubscriptionService $subscriptions,
         private readonly EntityManagerInterface $entityManager,
+        private readonly AccountIdentityPresenter $identity,
     ) {
     }
 
@@ -61,6 +64,9 @@ final class ProviderDashboardController extends AbstractController
         $sentQuotes = $this->quotes->findByProvider($provider);
 
         return $this->render('provider/tableau_de_bord.html.twig', [
+            'user' => $this->identity->identityFor($this->currentUser()),
+            'menu' => StaticAccount::providerMenu(),
+            'active' => 'Tableau de bord',
             'provider' => $provider,
             'open_requests_count' => \count($openRequests),
             'sent_quotes' => $sentQuotes,
@@ -116,6 +122,9 @@ final class ProviderDashboardController extends AbstractController
         }
 
         return $this->render('provider/profil_edition.html.twig', [
+            'user' => $this->identity->identityFor($this->currentUser()),
+            'menu' => StaticAccount::providerMenu(),
+            'active' => 'Ma fiche professionnelle',
             'provider' => $provider,
             'categories' => $this->categories->findRoots(),
         ]);
@@ -128,13 +137,20 @@ final class ProviderDashboardController extends AbstractController
         return '' !== $value ? mb_substr($value, 0, $maxLength) : null;
     }
 
-    private function currentProvider(): ProviderProfile
+    private function currentUser(): User
     {
         $user = $this->getUser();
 
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException();
         }
+
+        return $user;
+    }
+
+    private function currentProvider(): ProviderProfile
+    {
+        $user = $this->currentUser();
 
         $provider = $this->providerProfiles->findOneByUser($user);
 

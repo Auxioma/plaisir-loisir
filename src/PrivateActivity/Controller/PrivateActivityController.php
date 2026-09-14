@@ -15,6 +15,7 @@ use App\PrivateActivity\Repository\PrivateActivityRepository;
 use App\PrivateActivity\Security\ParticipationVoter;
 use App\PrivateActivity\Security\PrivateActivityVoter;
 use App\PrivateActivity\Service\PrivateActivityService;
+use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
 use App\User\StaticAccount;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -43,6 +44,7 @@ final class PrivateActivityController extends AbstractController
         private readonly ParticipationRepository $participations,
         private readonly CategoryRepository $categories,
         private readonly PrivateActivityService $service,
+        private readonly AccountIdentityPresenter $identity,
     ) {
     }
 
@@ -120,7 +122,7 @@ final class PrivateActivityController extends AbstractController
         $user = $this->currentUser();
 
         return $this->render('private_activity/mes_activites.html.twig', [
-            'user' => $this->accountUser(),
+            'user' => $this->identity->identityFor($this->currentUser()),
             'menu' => StaticAccount::menu(),
             'active' => 'Mes activités privées',
             'organized' => $this->activities->findByOrganizer($user),
@@ -196,7 +198,7 @@ final class PrivateActivityController extends AbstractController
         }
 
         return $this->render('private_activity/nouvelle.html.twig', [
-            'user' => $this->accountUser(),
+            'user' => $this->identity->identityFor($this->currentUser()),
             'menu' => StaticAccount::menu(),
             'active' => 'Mes activités privées',
             'categories' => $this->categories->findRoots(),
@@ -276,37 +278,6 @@ final class PrivateActivityController extends AbstractController
         }
 
         return $user;
-    }
-
-    /**
-     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unread: int}
-     */
-    private function accountUser(): array
-    {
-        $user = $this->currentUser();
-        $firstName = $user->getFirstName();
-        $fullName = trim($firstName.' '.$user->getLastName());
-        $demo = StaticAccount::user();
-
-        return [
-            'name' => '' !== $fullName ? $fullName : $user->getEmail(),
-            'firstName' => '' !== $firstName ? $firstName : $user->getLastName(),
-            'email' => $user->getEmail(),
-            'avatar' => $demo['avatar'],
-            'memberSince' => $this->formatMemberSince($user->getCreatedAt()),
-            'unread' => $demo['unread'],
-        ];
-    }
-
-    private function formatMemberSince(?\DateTimeImmutable $createdAt): string
-    {
-        if (null === $createdAt) {
-            return '';
-        }
-
-        $formatted = (string) \IntlDateFormatter::formatObject($createdAt, 'LLLL y', \Locale::getDefault());
-
-        return mb_strtoupper(mb_substr($formatted, 0, 1)).mb_substr($formatted, 1);
     }
 
     private function findOrFail(string $id): PrivateActivity

@@ -1,16 +1,18 @@
 {#
     Abonnement professionnel (§17 du CDC, route indicative /pro/abonnement du
-    §33.1). Aucune maquette Figma pour cet écran.
+    §33.1). Aucune maquette Figma pour cet écran. Rejoint la coquille
+    account/_layout.html.twig le 14/09 (voir provider/tableau_de_bord.html.twig).
 #}
-{% extends 'base.html.twig' %}
+{% extends 'account/_layout.html.twig' %}
 
 {% block title %}{{ 'Abonnement'|trans }}{% endblock %}
 
-{% block body %}
-<div class="container py-5" style="max-width: 900px;">
-    <h1 class="mb-4" style="color: var(--pl-text-display); font-weight: var(--pl-fw-bold);">
-        {{ 'Abonnement professionnel'|trans }}
-    </h1>
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Abonnement'|trans }],
+        title: 'Abonnement professionnel'|trans,
+        subtitle: 'Votre offre et sa facturation.'|trans,
+    } %}
 
     {% if subscription %}
         <div class="card shadow-sm mb-5">
@@ -95,5 +97,4 @@
             {% endfor %}
         </div>
     {% endif %}
-</div>
 {% endblock %}

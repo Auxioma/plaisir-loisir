@@ -1,22 +1,25 @@
 {#
     Tableau de bord professionnel (§8.3 du CDC). Aucune maquette Figma pour
-    cet écran — comme /professionnels et /activites-privees.
+    cet écran — comme /professionnels et /activites-privees. Rejoint la
+    coquille account/_layout.html.twig le 14/09 : un compte pro voyait
+    jusque-là un écran visuellement déconnecté du reste du site (voir
+    StaticAccount::providerMenu()).
 #}
-{% extends 'base.html.twig' %}
+{% extends 'account/_layout.html.twig' %}
 
 {% block title %}{{ 'Tableau de bord'|trans }}{% endblock %}
 
-{% block body %}
-<div class="container py-5" style="max-width: 900px;">
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Tableau de bord'|trans }],
+        title: ('Bonjour'|trans) ~ ' ' ~ provider.displayName,
+        subtitle: 'Aperçu de votre activité professionnelle.'|trans,
+    } %}
+
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
-        <div>
-            <h1 class="mb-1" style="color: var(--pl-text-display); font-weight: var(--pl-fw-bold);">
-                {{ 'Bonjour'|trans }} {{ provider.displayName }}
-            </h1>
-            <span class="badge rounded-pill {{ provider.status.value == 'verified' ? 'text-bg-success' : (provider.status.value == 'suspended' ? 'text-bg-danger' : 'text-bg-warning') }}">
-                {{ provider.status.value == 'verified' ? 'Dossier vérifié'|trans : (provider.status.value == 'pending_verification' ? 'Dossier en vérification'|trans : (provider.status.value == 'suspended' ? 'Dossier suspendu'|trans : 'Brouillon'|trans)) }}
-            </span>
-        </div>
+        <span class="badge rounded-pill {{ provider.status.value == 'verified' ? 'text-bg-success' : (provider.status.value == 'suspended' ? 'text-bg-danger' : 'text-bg-warning') }}">
+            {{ provider.status.value == 'verified' ? 'Dossier vérifié'|trans : (provider.status.value == 'pending_verification' ? 'Dossier en vérification'|trans : (provider.status.value == 'suspended' ? 'Dossier suspendu'|trans : 'Brouillon'|trans)) }}
+        </span>
         <a href="{{ path('app_pro_profile_edit') }}" class="btn pl-btn pl-btn--outline-dark">{{ 'Modifier ma fiche'|trans }}</a>
     </div>
 
@@ -86,5 +89,4 @@
     <p class="text-muted small">
         {{ 'Messagerie et avis reçus arrivent avec un prochain lot du projet.'|trans }}
     </p>
-</div>
 {% endblock %}

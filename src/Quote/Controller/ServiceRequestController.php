@@ -11,6 +11,7 @@ use App\Quote\Repository\ServiceRequestRepository;
 use App\Quote\Security\QuoteVoter;
 use App\Quote\Security\ServiceRequestVoter;
 use App\Quote\Service\QuoteService;
+use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
 use App\User\StaticAccount;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,6 +35,7 @@ final class ServiceRequestController extends AbstractController
         private readonly ServiceRequestRepository $requests,
         private readonly CategoryRepository $categories,
         private readonly QuoteService $quoteService,
+        private readonly AccountIdentityPresenter $identity,
     ) {
     }
 
@@ -52,7 +54,7 @@ final class ServiceRequestController extends AbstractController
     public function index(): Response
     {
         return $this->render('quote/mes_demandes.html.twig', [
-            'user' => $this->accountUser(),
+            'user' => $this->identity->identityFor($this->currentUser()),
             'menu' => StaticAccount::menu(),
             'active' => 'Mes demandes',
             'requests' => $this->requests->findByClient($this->currentUser()),
@@ -109,7 +111,7 @@ final class ServiceRequestController extends AbstractController
         }
 
         return $this->render('quote/nouvelle_demande.html.twig', [
-            'user' => $this->accountUser(),
+            'user' => $this->identity->identityFor($this->currentUser()),
             'menu' => StaticAccount::menu(),
             'active' => 'Mes demandes',
             'categories' => $this->categories->findRoots(),
@@ -125,7 +127,7 @@ final class ServiceRequestController extends AbstractController
         $this->denyAccessUnlessGranted(ServiceRequestVoter::VIEW, $serviceRequest);
 
         return $this->render('quote/demande_detail.html.twig', [
-            'user' => $this->accountUser(),
+            'user' => $this->identity->identityFor($this->currentUser()),
             'menu' => StaticAccount::menu(),
             'active' => 'Mes demandes',
             'demande' => $serviceRequest,
@@ -194,43 +196,5 @@ final class ServiceRequestController extends AbstractController
         }
 
         throw new NotFoundHttpException('Ce devis est introuvable.');
-    }
-
-    /**
-     * Même bloc « profil » que AccountController::accountUser() : la sidebar
-     * de l'espace compte (account/_layout.html.twig) l'attend sous cette
-     * forme partout où elle s'affiche. Dupliqué plutôt que partagé : les deux
-     * contrôleurs vivent dans des domaines différents (User, Quote), et
-     * extraire un service pour quinze lignes aurait devancé la vraie
-     * refonte de l'espace compte (lot H, cablage-back-front.md).
-     *
-     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unread: int}
-     */
-    private function accountUser(): array
-    {
-        $user = $this->currentUser();
-        $firstName = $user->getFirstName();
-        $fullName = trim($firstName.' '.$user->getLastName());
-        $demo = StaticAccount::user();
-
-        return [
-            'name' => '' !== $fullName ? $fullName : $user->getEmail(),
-            'firstName' => '' !== $firstName ? $firstName : $user->getLastName(),
-            'email' => $user->getEmail(),
-            'avatar' => $demo['avatar'],
-            'memberSince' => $this->formatMemberSince($user->getCreatedAt()),
-            'unread' => $demo['unread'],
-        ];
-    }
-
-    private function formatMemberSince(?\DateTimeImmutable $createdAt): string
-    {
-        if (null === $createdAt) {
-            return '';
-        }
-
-        $formatted = (string) \IntlDateFormatter::formatObject($createdAt, 'LLLL y', \Locale::getDefault());
-
-        return mb_strtoupper(mb_substr($formatted, 0, 1)).mb_substr($formatted, 1);
     }
 }

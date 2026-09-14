@@ -2,17 +2,18 @@
     Détail d'une demande côté professionnel : la description du client, et le
     formulaire de dépôt de devis (§10, §11 du CDC). QuoteService applique déjà
     les règles métier (demande close, doublon) ; l'écran affiche l'erreur
-    qu'il renvoie le cas échéant.
+    qu'il renvoie le cas échéant. Rejoint la coquille account/_layout.html.twig
+    le 14/09 (voir provider/tableau_de_bord.html.twig).
 #}
-{% extends 'base.html.twig' %}
+{% extends 'account/_layout.html.twig' %}
 
 {% block title %}{{ demande.title }}{% endblock %}
 
-{% block body %}
-<div class="container py-5" style="max-width: 640px;">
-    <p class="mb-3">
-        <a href="{{ path('app_pro_requests') }}" class="text-decoration-none">&larr; {{ 'Retour aux demandes reçues'|trans }}</a>
-    </p>
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Demandes reçues'|trans, href: path('app_pro_requests') }, { label: demande.title }],
+        title: demande.title,
+    } %}
 
     <div class="card shadow-sm mb-4">
         <div class="card-body">
@@ -58,5 +59,4 @@
             </div>
         </form>
     {% endif %}
-</div>
 {% endblock %}

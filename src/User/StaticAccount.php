@@ -60,6 +60,39 @@ final class StaticAccount
     }
 
     /**
+     * Menu de la sidebar pour un compte PRESTATAIRE (§8.3 du CDC), distinct
+     * de menu() ci-dessus.
+     *
+     * POURQUOI UN SECOND MENU, PAS UNE ENTRÉE AJOUTÉE AU PREMIER
+     * Signalé le 14/09 : le premier tableau de bord professionnel avait été
+     * construit comme un écran à part, sans rapport avec l'entrée
+     * « Tableau de bord » — déjà présente, mais morte (route null) — du menu
+     * ci-dessus. La corriger en pointant simplement cette entrée vers
+     * `/pro/tableau-de-bord` aurait laissé les AUTRES écrans pro (demandes
+     * reçues, abonnement, fiche professionnelle) toujours hors du menu.
+     * `/pro/*` est un espace suffisamment différent de `/compte/*`
+     * (activité professionnelle, pas de loisirs personnels) pour mériter son
+     * propre menu plutôt que de faire grossir encore la liste maquettée à 9
+     * entrées de menu() — mais la même coquille visuelle (account/_layout,
+     * account/_sidebar) : le prestataire n'a jamais l'impression de changer
+     * d'application.
+     *
+     * @return list<array{icon: string, title: string, subtitle: string, route: string|null, badge: bool}>
+     */
+    public static function providerMenu(): array
+    {
+        return [
+            ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité professionnelle', 'route' => 'app_pro_dashboard', 'badge' => false],
+            ['icon' => 'receipt', 'title' => 'Demandes reçues', 'subtitle' => 'Répondre par un devis', 'route' => 'app_pro_requests', 'badge' => false],
+            ['icon' => 'card', 'title' => 'Abonnement', 'subtitle' => 'Votre offre et sa facturation', 'route' => 'app_pro_subscription', 'badge' => false],
+            ['icon' => 'badge_check', 'title' => 'Ma fiche professionnelle', 'subtitle' => 'Ce que voient vos clients', 'route' => 'app_pro_profile_edit', 'badge' => false],
+            ['icon' => 'heart', 'title' => 'Mes favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false],
+            ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => true],
+            ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Fermer votre session', 'route' => 'app_account_logout_confirm', 'badge' => false],
+        ];
+    }
+
+    /**
      * Grille des favoris (onglets Activités/Destinations/Prestataires) :
      * mêmes 6 activités que le catalogue, valeurs de la maquette. Le titre
      * « Titre » est un placeholder de la maquette, reproduit tel quel.

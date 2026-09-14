@@ -2,21 +2,19 @@
     Modifier sa propre fiche professionnelle (§8.1 du CDC, route indicative
     /pro/profil du §33.1). Avant cet écran, seul le back-office pouvait
     modifier ces champs — aucun moyen pour un prestataire de le faire
-    lui-même. Aucune maquette Figma pour cet écran.
+    lui-même. Aucune maquette Figma pour cet écran. Rejoint la coquille
+    account/_layout.html.twig le 14/09 (voir tableau_de_bord.html.twig).
 #}
-{% extends 'base.html.twig' %}
+{% extends 'account/_layout.html.twig' %}
 
 {% block title %}{{ 'Modifier ma fiche'|trans }}{% endblock %}
 
-{% block body %}
-<div class="container py-5" style="max-width: 640px;">
-    <p class="mb-3">
-        <a href="{{ path('app_pro_dashboard') }}" class="text-decoration-none">&larr; {{ 'Retour au tableau de bord'|trans }}</a>
-    </p>
-
-    <h1 class="mb-4" style="color: var(--pl-text-display); font-weight: var(--pl-fw-bold);">
-        {{ 'Modifier ma fiche'|trans }}
-    </h1>
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Ma fiche professionnelle'|trans }],
+        title: 'Modifier ma fiche'|trans,
+        subtitle: 'Ce que voient vos clients sur votre fiche publique.'|trans,
+    } %}
 
     {% if provider.slug %}
         <p class="text-muted small mb-4">
@@ -86,5 +84,4 @@
             <button type="submit" class="btn pl-btn pl-btn--cta">{{ 'Enregistrer'|trans }}</button>
         </div>
     </form>
-</div>
 {% endblock %}

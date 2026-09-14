@@ -10,7 +10,9 @@ use App\Payment\Security\SubscriptionVoter;
 use App\Payment\Service\SubscriptionService;
 use App\Provider\Entity\ProviderProfile;
 use App\Provider\Repository\ProviderProfileRepository;
+use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
+use App\User\StaticAccount;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,6 +35,7 @@ final class SubscriptionController extends AbstractController
         private readonly SubscriptionPlanRepository $plans,
         private readonly SubscriptionRepository $subscriptions,
         private readonly SubscriptionService $service,
+        private readonly AccountIdentityPresenter $identity,
     ) {
     }
 
@@ -47,6 +50,9 @@ final class SubscriptionController extends AbstractController
         }
 
         return $this->render('subscription/index.html.twig', [
+            'user' => $this->identity->identityFor($this->currentUser()),
+            'menu' => StaticAccount::providerMenu(),
+            'active' => 'Abonnement',
             'subscription' => $current,
             'plans' => $this->plans->findActive(),
             // Historique (§17.2 du CDC) : les précédentes lignes, résiliées ou
@@ -129,13 +135,20 @@ final class SubscriptionController extends AbstractController
         return $this->redirectToRoute('app_pro_subscription');
     }
 
-    private function currentProvider(): ProviderProfile
+    private function currentUser(): User
     {
         $user = $this->getUser();
 
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException();
         }
+
+        return $user;
+    }
+
+    private function currentProvider(): ProviderProfile
+    {
+        $user = $this->currentUser();
 
         $provider = $this->providerProfiles->findOneByUser($user);
 
