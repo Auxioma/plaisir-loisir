@@ -1,0 +1,150 @@
+{#
+    Fiche d'une activité privée : visiteur, participant ou organisateur — un
+    seul gabarit, les blocs affichés dépendent des Voters (voir le
+    commentaire de PrivateActivityController). §12-13 du CDC.
+#}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ activity.title }}{% endblock %}
+
+{% block body %}
+<div class="container py-5" style="max-width: 760px;">
+    <p class="mb-3">
+        <a href="{{ path('app_private_activities') }}" class="text-decoration-none">&larr; {{ 'Retour aux activités privées'|trans }}</a>
+    </p>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                <h1 class="h3 mb-0" style="color: var(--pl-text-display); font-weight: var(--pl-fw-bold);">
+                    {{ activity.title }}
+                </h1>
+                {% if activity.status.value == 'cancelled' %}
+                    <span class="badge text-bg-danger">{{ 'Annulée'|trans }}</span>
+                {% elseif activity.status.value == 'full' %}
+                    <span class="badge text-bg-secondary">{{ 'Complet'|trans }}</span>
+                {% endif %}
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge rounded-pill" style="background: var(--pl-action-light); color: var(--pl-action);">
+                    {{ activity.category.name }}
+                </span>
+                {% if activity.visibility.value == 'members_only' %}
+                    <span class="badge rounded-pill text-bg-light">{{ 'Réservée aux membres'|trans }}</span>
+                {% elseif activity.visibility.value == 'private' %}
+                    <span class="badge rounded-pill text-bg-light">{{ 'Privée'|trans }}</span>
+                {% endif %}
+            </div>
+
+            {% if activity.scheduledAt %}
+                <p class="mb-1">🗓️ {{ activity.scheduledAt|date('d/m/Y à H:i') }}</p>
+            {% endif %}
+            {% if activity.city %}
+                <p class="mb-1">📍 {{ activity.city }}{{ can_view_exact_location and activity.location ? ' — ' ~ activity.location }}</p>
+            {% elseif can_view_exact_location and activity.location %}
+                <p class="mb-1">📍 {{ activity.location }}</p>
+            {% endif %}
+            {% if not can_view_exact_location and activity.showsExactAddress and activity.location %}
+                <p class="text-muted small mb-1">{{ 'L\'adresse exacte sera communiquée une fois votre participation acceptée.'|trans }}</p>
+            {% endif %}
+            {% if (activity.minParticipants or activity.maxParticipants) %}
+                <p class="text-muted small mb-1">
+                    {{ 'Participants'|trans }} :
+                    {% if activity.minParticipants %}{{ 'min.'|trans }} {{ activity.minParticipants }}{% endif %}
+                    {% if activity.minParticipants and activity.maxParticipants %} — {% endif %}
+                    {% if activity.maxParticipants %}{{ 'max.'|trans }} {{ activity.maxParticipants }}{% endif %}
+                    ({{ accepted|length }} {{ 'confirmé(s)'|trans }})
+                </p>
+            {% endif %}
+
+            {% if activity.description %}
+                <p class="mt-3 mb-0">{{ activity.description|nl2br }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if my_participation %}
+        <div class="alert {{ my_participation.status.value == 'accepted' ? 'alert-success' : (my_participation.status.value == 'refused' or my_participation.status.value == 'cancelled' ? 'alert-secondary' : 'alert-info') }}">
+            {% if my_participation.status.value == 'accepted' %}{{ 'Votre place est confirmée.'|trans }}
+            {% elseif my_participation.status.value == 'pending' %}{{ 'Votre demande est en attente de validation par l\'organisateur.'|trans }}
+            {% elseif my_participation.status.value == 'waiting_list' %}{{ 'Vous êtes sur liste d\'attente.'|trans }}
+            {% elseif my_participation.status.value == 'refused' %}{{ 'Votre demande a été refusée.'|trans }}
+            {% else %}{{ 'Vous avez annulé votre participation.'|trans }}
+            {% endif %}
+
+            {% if my_participation.status.value in ['accepted', 'pending', 'waiting_list'] %}
+                <form method="post" action="{{ path('app_account_private_activity_participation_cancel', {id: activity.id, participationId: my_participation.id}) }}" class="mt-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                    <button type="submit" class="btn btn-sm pl-btn pl-btn--outline-dark">{{ 'Annuler ma participation'|trans }}</button>
+                </form>
+            {% endif %}
+        </div>
+    {% elseif can_participate %}
+        <form method="post" action="{{ path('app_private_activity_participate', {id: activity.id}) }}" class="mb-4">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+            <button type="submit" class="btn pl-btn pl-btn--cta">{{ 'Participer'|trans }}</button>
+        </form>
+    {% elseif not is_granted('ROLE_USER') %}
+        <a href="{{ path('app_login') }}" class="btn pl-btn pl-btn--cta mb-4">{{ 'Se connecter pour participer'|trans }}</a>
+    {% endif %}
+
+    {% if can_manage %}
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-3">{{ 'Gestion de l\'activité'|trans }}</h2>
+
+                {% if activity.status.value != 'cancelled' %}
+                    <form method="post" action="{{ path('app_account_private_activity_cancel', {id: activity.id}) }}" class="mb-4">
+                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                        <button type="submit" class="btn btn-sm pl-btn pl-btn--outline-dark">{{ 'Annuler l\'activité'|trans }}</button>
+                    </form>
+                {% endif %}
+
+                {% if pending is not empty %}
+                    <h3 class="h6">{{ 'Demandes en attente'|trans }}</h3>
+                    <ul class="list-group mb-4">
+                        {% for participation in pending %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <span>{{ participation.participant.firstName }} {{ participation.participant.lastName }}</span>
+                                <div class="d-flex gap-2">
+                                    <form method="post" action="{{ path('app_account_private_activity_decide', {id: activity.id, participationId: participation.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                        <input type="hidden" name="decision" value="accepter">
+                                        <button type="submit" class="btn btn-sm pl-btn pl-btn--primary">{{ 'Accepter'|trans }}</button>
+                                    </form>
+                                    <form method="post" action="{{ path('app_account_private_activity_decide', {id: activity.id, participationId: participation.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                        <input type="hidden" name="decision" value="refuser">
+                                        <button type="submit" class="btn btn-sm pl-btn pl-btn--outline-dark">{{ 'Refuser'|trans }}</button>
+                                    </form>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <h3 class="h6">{{ 'Participants confirmés'|trans }} ({{ accepted|length }})</h3>
+                {% if accepted is empty %}
+                    <p class="text-muted small">{{ 'Personne pour le moment.'|trans }}</p>
+                {% else %}
+                    <ul class="list-group mb-4">
+                        {% for participation in accepted %}
+                            <li class="list-group-item">{{ participation.participant.firstName }} {{ participation.participant.lastName }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% if waiting is not empty %}
+                    <h3 class="h6">{{ 'Liste d\'attente'|trans }} ({{ waiting|length }})</h3>
+                    <ul class="list-group">
+                        {% for participation in waiting %}
+                            <li class="list-group-item">{{ participation.participant.firstName }} {{ participation.participant.lastName }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

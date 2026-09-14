@@ -49,6 +49,9 @@ final class StaticAccount
             // avant ce câblage. Même style que les items voisins en
             // attendant un avis de la designer sur son emplacement définitif.
             ['icon' => 'receipt', 'title' => 'Mes demandes', 'subtitle' => 'Devis reçus des professionnels', 'route' => 'app_account_requests', 'badge' => false],
+            // Même remarque que pour « Mes demandes » (14/09) : ajouté sans
+            // maquette, en attendant un avis de la designer.
+            ['icon' => 'users', 'title' => 'Mes activités privées', 'subtitle' => 'Sorties organisées et rejointes', 'route' => 'app_account_private_activities', 'badge' => false],
             ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => true],
             ['icon' => 'hand_heart', 'title' => 'Parrainage', 'subtitle' => 'Invitez vos amis', 'route' => 'app_account_referral', 'badge' => false],
             ['icon' => 'gear', 'title' => 'Paramètres du compte', 'subtitle' => 'Supprimer ou désactiver', 'route' => null, 'badge' => false],

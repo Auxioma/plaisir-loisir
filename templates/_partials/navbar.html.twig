@@ -42,7 +42,18 @@
                         <a href="{{ path('app_destinations') }}" class="pl-nav__link pl-nav__link--badged">{{ 'Destinations'|trans }} <span class="pl-nav__badge">{{ 'Nouveau'|trans }}</span></a>
                         <a href="{{ path('app_offers') }}" class="pl-nav__link pl-nav__link--offres {{ nav_active == 'offres' ? 'is-active-cta' }}">{{ icon.flame(18) }} {{ 'Offres du moments'|trans }}</a>
                         <a href="{{ path('app_gifts') }}" class="pl-nav__link {{ nav_active == 'cadeaux' ? 'is-active' }}">{{ icon.gift(18) }} {{ 'Cadeaux'|trans }}</a>
-                        <a href="{{ path('app_events_private') }}" class="pl-nav__link pl-nav__link--badged">{{ 'Activités privées'|trans }} <span class="pl-nav__badge">{{ 'Nouveau'|trans }}</span></a>
+                        {#
+                            RENOMMÉ (14/09) : ce lien menait à /evenements/prives, un
+                            onglet du domaine Event (contenu figé StaticEvents, hors
+                            périmètre du CDC actuel selon le rapport du 7 septembre) —
+                            PAS la fonctionnalité « Activités privées entre particuliers »
+                            du §12-13 du CDC, qui vit dans le domaine PrivateActivity.
+                            Les deux portaient le même libellé « Activités privées » :
+                            collision de nom repérée en construisant le Lot D. Ce lien
+                            pointe maintenant vers la landing du domaine Event lui-même
+                            (pas spécifiquement son onglet « privé »), sous son vrai nom.
+                        #}
+                        <a href="{{ path('app_events') }}" class="pl-nav__link">{{ 'Événements'|trans }}</a>
                         {#
                             §21.2 du cahier des charges du 3 septembre : « Trouver un
                             professionnel » et « Déposer une demande » figurent dans la
@@ -63,6 +74,20 @@
                             <div class="pl-dropdown__menu">
                                 <a href="{{ path('app_provider_search') }}" class="pl-dropdown__item">{{ 'Trouver un professionnel'|trans }}</a>
                                 <a href="{{ path('app_account_requests_new') }}" class="pl-dropdown__item">{{ 'Déposer une demande'|trans }}</a>
+                            </div>
+                        </details>
+                        {#
+                            §12-13 du CDC : « Activités privées entre particuliers »,
+                            libellé désormais libéré du lien Event renommé ci-dessus.
+                            Même menu déroulant, même raison (budget de largeur du
+                            cadre 1440, voir plus haut) — à vérifier à l'écran comme
+                            le menu « Professionnels » après son ajout.
+                        #}
+                        <details class="pl-dropdown">
+                            <summary class="pl-dropdown__toggle">{{ 'Activités privées'|trans }} {{ icon.chevron_down(16) }}</summary>
+                            <div class="pl-dropdown__menu">
+                                <a href="{{ path('app_private_activities') }}" class="pl-dropdown__item">{{ 'Découvrir les activités'|trans }}</a>
+                                <a href="{{ path('app_account_private_activities_new') }}" class="pl-dropdown__item">{{ 'Organiser une activité'|trans }}</a>
                             </div>
                         </details>
                     </nav>

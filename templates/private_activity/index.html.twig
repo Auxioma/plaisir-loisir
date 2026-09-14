@@ -1,0 +1,82 @@
+{#
+    Découverte des activités privées (§5, §12.3 du CDC). Un visiteur non
+    connecté voit les activités PUBLIQUES ; un membre connecté voit aussi
+    celles réservées aux membres (PrivateActivityController::index()).
+    Aucune maquette Figma pour cet écran, comme /professionnels.
+#}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Activités privées'|trans }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <h1 class="mb-0" style="color: var(--pl-text-display); font-weight: var(--pl-fw-bold);">
+            {{ 'Activités privées'|trans }}
+        </h1>
+        {% if is_granted('ROLE_USER') %}
+            <a href="{{ path('app_account_private_activities_new') }}" class="btn pl-btn pl-btn--cta">
+                {{ 'Organiser une activité'|trans }}
+            </a>
+        {% endif %}
+    </div>
+
+    <form method="get" class="row g-3 align-items-end mb-5">
+        <div class="col-sm-8">
+            <label class="form-label" for="metier">{{ 'Catégorie'|trans }}</label>
+            <select class="form-select" id="metier" name="metier">
+                <option value="">{{ 'Toutes les catégories'|trans }}</option>
+                {% for category in categories %}
+                    <option value="{{ category.slug }}" {{ selected_category and selected_category.slug == category.slug ? 'selected' }}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-4">
+            <button type="submit" class="btn pl-btn pl-btn--primary w-100">{{ 'Filtrer'|trans }}</button>
+        </div>
+    </form>
+
+    {% if not is_granted('ROLE_USER') %}
+        <p class="text-muted small mb-4">
+            {{ 'Connectez-vous pour voir aussi les activités réservées aux membres.'|trans }}
+        </p>
+    {% endif %}
+
+    {% if activities is empty %}
+        <p class="text-muted">{{ 'Aucune activité ne correspond à cette recherche pour le moment.'|trans }}</p>
+    {% else %}
+        <div class="row g-4">
+            {% for activity in activities %}
+                <div class="col-sm-6 col-lg-4">
+                    <a href="{{ path('app_private_activity_show', {id: activity.id}) }}" class="text-decoration-none">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <h2 class="h5 mb-0" style="color: var(--pl-text-strong);">{{ activity.title }}</h2>
+                                    {% if activity.visibility.value == 'members_only' %}
+                                        <span class="badge text-bg-light">{{ 'Membres'|trans }}</span>
+                                    {% endif %}
+                                </div>
+                                <span class="badge rounded-pill mb-2" style="background: var(--pl-action-light); color: var(--pl-action);">
+                                    {{ activity.category.name }}
+                                </span>
+                                {% if activity.scheduledAt %}
+                                    <p class="text-muted small mb-1">🗓️ {{ activity.scheduledAt|date('d/m/Y à H:i') }}</p>
+                                {% endif %}
+                                {% if activity.city %}
+                                    <p class="text-muted small mb-2">📍 {{ activity.city }}</p>
+                                {% endif %}
+                                {% if activity.status.value == 'full' %}
+                                    <span class="badge text-bg-secondary">{{ 'Complet'|trans }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
