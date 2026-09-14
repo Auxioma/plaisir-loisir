@@ -1,0 +1,90 @@
+{#
+    Modifier sa propre fiche professionnelle (§8.1 du CDC, route indicative
+    /pro/profil du §33.1). Avant cet écran, seul le back-office pouvait
+    modifier ces champs — aucun moyen pour un prestataire de le faire
+    lui-même. Aucune maquette Figma pour cet écran.
+#}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Modifier ma fiche'|trans }}{% endblock %}
+
+{% block body %}
+<div class="container py-5" style="max-width: 640px;">
+    <p class="mb-3">
+        <a href="{{ path('app_pro_dashboard') }}" class="text-decoration-none">&larr; {{ 'Retour au tableau de bord'|trans }}</a>
+    </p>
+
+    <h1 class="mb-4" style="color: var(--pl-text-display); font-weight: var(--pl-fw-bold);">
+        {{ 'Modifier ma fiche'|trans }}
+    </h1>
+
+    {% if provider.slug %}
+        <p class="text-muted small mb-4">
+            {{ 'Fiche publique'|trans }} :
+            <a href="{{ path('app_provider_profile', {slug: provider.slug}) }}" target="_blank" rel="noopener">
+                {{ path('app_provider_profile', {slug: provider.slug}) }}
+            </a>
+        </p>
+    {% endif %}
+
+    <form method="post" class="card shadow-sm">
+        <div class="card-body p-4">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+
+            <div class="mb-3">
+                <label class="form-label" for="displayName">{{ 'Nom affiché'|trans }}</label>
+                <input class="form-control" type="text" id="displayName" name="displayName" maxlength="120" required value="{{ provider.displayName }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="metier">{{ 'Métier principal'|trans }}</label>
+                <select class="form-select" id="metier" name="metier">
+                    <option value="">{{ 'Non renseigné'|trans }}</option>
+                    {% for category in categories %}
+                        <option value="{{ category.slug }}" {{ provider.mainCategory and provider.mainCategory.slug == category.slug ? 'selected' }}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="companyName">{{ 'Raison sociale'|trans }}</label>
+                <input class="form-control" type="text" id="companyName" name="companyName" maxlength="180" value="{{ provider.companyName }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="ville">{{ 'Ville d\'exercice'|trans }}</label>
+                <input class="form-control" type="text" id="ville" name="ville" maxlength="120" value="{{ provider.city }}"
+                       placeholder="{{ 'Ex. Lyon'|trans }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="bio">{{ 'Présentation'|trans }}</label>
+                <textarea class="form-control" id="bio" name="bio" rows="4">{{ provider.bio }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="websiteUrl">{{ 'Site web'|trans }}</label>
+                <input class="form-control" type="url" id="websiteUrl" name="websiteUrl" maxlength="255" value="{{ provider.websiteUrl }}">
+            </div>
+            <div class="row g-3 mb-4">
+                <div class="col-sm-4">
+                    <label class="form-label small" for="facebookUrl">Facebook</label>
+                    <input class="form-control form-control-sm" type="url" id="facebookUrl" name="facebookUrl" maxlength="255" value="{{ provider.facebookUrl }}">
+                </div>
+                <div class="col-sm-4">
+                    <label class="form-label small" for="instagramUrl">Instagram</label>
+                    <input class="form-control form-control-sm" type="url" id="instagramUrl" name="instagramUrl" maxlength="255" value="{{ provider.instagramUrl }}">
+                </div>
+                <div class="col-sm-4">
+                    <label class="form-label small" for="linkedinUrl">LinkedIn</label>
+                    <input class="form-control form-control-sm" type="url" id="linkedinUrl" name="linkedinUrl" maxlength="255" value="{{ provider.linkedinUrl }}">
+                </div>
+            </div>
+
+            <button type="submit" class="btn pl-btn pl-btn--cta">{{ 'Enregistrer'|trans }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

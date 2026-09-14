@@ -83,11 +83,11 @@ security:
         # est posée pour que le préfixe ne puisse pas s'ouvrir par inadvertance.
         - { path: ^/admin, roles: ROLE_ADMIN }
 
-        # Demandes reçues et abonnement côté professionnel (§10, §11, §17 du
-        # CDC, câblage du 14/09). /professionnels (recherche publique, fiche
-        # publique) reste volontairement hors de cette liste : c'est un écran
-        # public, sans compte.
-        - { path: ^/(pro|en/pro)/(demandes|requests|abonnement|subscription), roles: ROLE_PROVIDER }
+        # Demandes reçues, abonnement, tableau de bord et fiche personnelle
+        # côté professionnel (§8.3, §10, §11, §17 du CDC). /professionnels
+        # (recherche publique, fiche publique) reste volontairement hors de
+        # cette liste : c'est un écran public, sans compte.
+        - { path: ^/(pro|en/pro)/(demandes|requests|abonnement|subscription|tableau-de-bord|dashboard|profil|profile), roles: ROLE_PROVIDER }
 
 when@test:
     security:
