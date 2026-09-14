@@ -64,6 +64,11 @@
 .acc-menu__item.is-active strong, .acc-menu__item.is-active .acc-menu__icon { color: var(--pl-action); }
 .acc-menu__item.is-active.is-danger { background: #fdeaea; }
 .acc-menu__item.is-active.is-danger strong, .acc-menu__item.is-active.is-danger .acc-menu__icon { color: var(--pl-error); }
+/* Entrees sans ecran (albums, reservations...) : signale le 14/09, un clic
+   sans route ni indice se lisait comme un menu casse. */
+.acc-menu__item.is-disabled { cursor: default; opacity: .55; }
+.acc-menu__item.is-disabled:hover { background: none; }
+.acc-menu__item.is-disabled .acc-menu__text small { font-style: italic; }
 .acc-menu__count {
     margin-left: auto; flex: none; width: 20px; height: 20px; border-radius: 50%;
     background: var(--pl-error); color: var(--pl-white); font-size: 11px;

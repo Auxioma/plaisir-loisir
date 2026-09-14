@@ -104,12 +104,14 @@
                 <button type="button" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">{{ icon.mail(20) }}</button>
                 <a href="{{ path('app_account_notifications') }}" class="pl-iconbtn" aria-label="{{ 'Notifications'|trans }}">{{ icon.bell(20) }}</a>
 
-                {# Répond au signalement du 14/09 : un compte pro connecté
-                   n'avait littéralement aucune page qui lui soit propre — cet
-                   avatar menait comme pour un client à /compte/favoris. Il
-                   ouvre maintenant le tableau de bord professionnel (§8.3 du
-                   CDC), qui réunit demandes reçues, devis et abonnement. #}
-                <a href="{{ is_granted('ROLE_PROVIDER') ? path('app_pro_dashboard') : path('app_account_favorites') }}" class="pl-avatarbtn" aria-label="{{ is_granted('ROLE_PROVIDER') ? 'Tableau de bord'|trans : 'Paramètre du profil'|trans }}">
+                {# Répond au signalement du 14/09 : ni le compte pro ni le compte
+                   client n'avaient de page qui leur soit propre — l'avatar menait
+                   toujours à /compte/favoris, y compris avec le libellé « Profil »
+                   côté client, ce qui ne correspondait à rien de réel. Les deux
+                   ouvrent maintenant un vrai tableau de bord (§8.3 du CDC côté
+                   pro ; agrégat demandes/activités privées/favoris côté client,
+                   account/_layout.html.twig::dashboard()). #}
+                <a href="{{ is_granted('ROLE_PROVIDER') ? path('app_pro_dashboard') : path('app_account_dashboard') }}" class="pl-avatarbtn" aria-label="{{ 'Tableau de bord'|trans }}">
                     <img src="{{ asset('images/account/avatar-thomas.jpg') }}" alt="">
                     <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
                 </a>

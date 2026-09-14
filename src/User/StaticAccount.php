@@ -39,7 +39,7 @@ final class StaticAccount
     public static function menu(): array
     {
         return [
-            ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité', 'route' => null, 'badge' => false],
+            ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité', 'route' => 'app_account_dashboard', 'badge' => false],
             ['icon' => 'camera', 'title' => 'Mes albums photos', 'subtitle' => 'Gérez vos albums et photos', 'route' => null, 'badge' => false],
             ['icon' => 'badge_check', 'title' => 'Mes activités créées', 'subtitle' => 'Gérez vos activités sur Event', 'route' => null, 'badge' => false],
             ['icon' => 'receipt', 'title' => 'Mes réservations', 'subtitle' => 'Suivi de vos réservations', 'route' => null, 'badge' => false],

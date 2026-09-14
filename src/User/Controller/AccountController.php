@@ -9,6 +9,11 @@ use App\Catalog\Entity\Service;
 use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Presenter\DestinationPresenter;
 use App\Favorite\Repository\FavoriteRepository;
+use App\PrivateActivity\Entity\Participation;
+use App\PrivateActivity\Enum\ParticipationStatus;
+use App\PrivateActivity\Repository\ParticipationRepository;
+use App\PrivateActivity\Repository\PrivateActivityRepository;
+use App\Quote\Repository\ServiceRequestRepository;
 use App\User\Entity\User;
 use App\User\StaticAccount;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,7 +39,49 @@ final class AccountController extends AbstractController
         private readonly FavoriteRepository $favorites,
         private readonly ActivityPresenter $activityPresenter,
         private readonly DestinationPresenter $destinationPresenter,
+        private readonly ServiceRequestRepository $requests,
+        private readonly PrivateActivityRepository $privateActivities,
+        private readonly ParticipationRepository $participations,
     ) {
+    }
+
+    /**
+     * Aperçu du compte client (spec profil, entrée « Tableau de bord » de la
+     * sidebar). Signalé le 14/09 juste après le même correctif côté pro :
+     * cette entrée existait dans le menu depuis le début, mais pointait vers
+     * une route nulle — l'avatar du header y menait donc avec un libellé
+     * « Profil » qui, faute d'écran, redirigeait en réalité vers Favoris.
+     *
+     * Ce qui est réellement compté ici (demandes de devis, activités
+     * privées, favoris) existe déjà comme entité. Albums photos, activités
+     * créées (domaine Event) et réservations n'en ont encore aucune : la
+     * sidebar les affiche « Bientôt disponible » plutôt que comme des liens
+     * morts silencieux (account/_sidebar.html.twig).
+     */
+    #[Route(path: ['fr' => '/compte/tableau-de-bord', 'en' => '/en/account/dashboard'], name: 'app_account_dashboard')]
+    public function dashboard(): Response
+    {
+        $user = $this->currentUser();
+
+        $requests = $this->requests->findByClient($user);
+        $organized = $this->privateActivities->findByOrganizer($user);
+        $joined = array_filter(
+            $this->participations->findByParticipant($user),
+            static fn (Participation $p): bool => ParticipationStatus::Cancelled !== $p->getStatus(),
+        );
+        $favoriteActivitiesCount = \count($this->favorites->findServicesForUser($user));
+        $favoriteDestinationsCount = \count($this->favorites->findDestinationsForUser($user));
+
+        return $this->render('account/tableau_de_bord.html.twig', [
+            'user' => $this->accountUser(),
+            'menu' => StaticAccount::menu(),
+            'active' => 'Tableau de bord',
+            'requests_count' => \count($requests),
+            'recent_requests' => \array_slice($requests, 0, 5),
+            'organized_count' => \count($organized),
+            'joined_count' => \count($joined),
+            'favorites_count' => $favoriteActivitiesCount + $favoriteDestinationsCount,
+        ]);
     }
 
     /**
