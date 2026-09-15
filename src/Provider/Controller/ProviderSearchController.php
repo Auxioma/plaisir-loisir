@@ -6,6 +6,8 @@ namespace App\Provider\Controller;
 
 use App\Catalog\Repository\CategoryRepository;
 use App\Provider\Repository\ProviderProfileRepository;
+use App\Review\Enum\ReviewStatus;
+use App\Review\Repository\ReviewRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,6 +34,7 @@ final class ProviderSearchController extends AbstractController
     public function __construct(
         private readonly ProviderProfileRepository $providers,
         private readonly CategoryRepository $categories,
+        private readonly ReviewRepository $reviews,
     ) {
     }
 
@@ -64,8 +67,15 @@ final class ProviderSearchController extends AbstractController
             throw new NotFoundHttpException('Ce professionnel est introuvable.');
         }
 
+        $reviews = array_values(array_filter(
+            $this->reviews->findForProvider($profile),
+            static fn ($review): bool => ReviewStatus::Published === $review->getStatus(),
+        ));
+
         return $this->render('provider/profil_public.html.twig', [
             'provider' => $profile,
+            'reviews' => $reviews,
+            'average_rating' => $this->reviews->averageRatingForProvider($profile),
         ]);
     }
 }

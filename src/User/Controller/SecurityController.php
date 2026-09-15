@@ -6,6 +6,7 @@ namespace App\User\Controller;
 
 use App\User\Enum\AccountType;
 use App\User\Form\RegistrationFormType;
+use App\User\Service\EmailVerificationService;
 use App\User\Service\PasswordResetService;
 use App\User\Service\RegistrationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -250,13 +251,12 @@ final class SecurityController extends AbstractController
                     AccountType::fromInput($form->get('accountType')->getData()),
                 );
 
-                // Un professionnel doit savoir que son dossier est ouvert mais
-                // pas encore complet : sans cela, il croirait pouvoir publier.
-                $this->addFlash('success', \in_array('ROLE_PROVIDER', $user->getRoles(), true)
-                    ? 'Votre compte professionnel a été créé. Connectez-vous pour compléter votre dossier prestataire.'
-                    : 'Votre compte a été créé avec succès. Connectez-vous pour continuer.');
+                // Le compte reste en attente jusqu'à la vérification de
+                // l'adresse (Lot I) : on enchaîne directement sur cet écran
+                // plutôt que d'envoyer vers une connexion qui échouerait.
+                $request->getSession()->set(self::SESSION_VERIFY_EMAIL, $user->getEmail());
 
-                return $this->redirectToRoute('app_login');
+                return $this->redirectToRoute('app_email_verification');
             } catch (ConflictHttpException) {
                 // Sans ce filet, un e-mail déjà pris affichait une page
                 // d'erreur HTTP 409 au lieu du formulaire.
@@ -273,6 +273,79 @@ final class SecurityController extends AbstractController
         return $this->render('security/register.html.twig', [
             'registrationForm' => $form,
         ]);
+    }
+
+    /*
+     * ------------------------------------------------------------------------
+     *  Vérification de l'adresse e-mail à l'inscription (Lot I, 15/09).
+     *
+     *  Un seul écran, contrairement au mot de passe oublié : le code part
+     *  automatiquement à l'inscription (RegistrationService), il n'y a donc
+     *  pas d'étape « saisir son adresse » avant celle-ci. L'adresse en cours
+     *  de vérification vit en session pour la même raison que pour le mot de
+     *  passe oublié : elle ne doit transiter ni par l'URL ni par l'historique
+     *  du navigateur.
+     * ------------------------------------------------------------------------
+     */
+
+    private const SESSION_VERIFY_EMAIL = 'email_verification_email';
+
+    #[Route(path: ['fr' => '/verification-email', 'en' => '/en/verify-email'], name: 'app_email_verification', methods: ['GET', 'POST'])]
+    public function emailVerification(Request $request, EmailVerificationService $emailVerification): Response
+    {
+        $session = $request->getSession();
+        $email = (string) $session->get(self::SESSION_VERIFY_EMAIL, '');
+
+        if ('' === $email) {
+            return $this->redirectToRoute('app_register');
+        }
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Votre session a expiré, merci de recommencer.');
+
+                return $this->redirectToRoute('app_email_verification');
+            }
+
+            $code = trim((string) $request->request->get('code'));
+
+            if (!$emailVerification->confirm($email, $code)) {
+                $this->addFlash('error', 'Ce code est incorrect ou périmé. Vérifiez votre e-mail ou demandez-en un nouveau.');
+
+                return $this->redirectToRoute('app_email_verification');
+            }
+
+            $session->remove(self::SESSION_VERIFY_EMAIL);
+
+            $this->addFlash('success', 'Votre adresse e-mail est vérifiée. Vous pouvez vous connecter.');
+
+            return $this->redirectToRoute('app_login');
+        }
+
+        return $this->render('security/email_verification.html.twig');
+    }
+
+    #[Route(path: ['fr' => '/verification-email/renvoyer', 'en' => '/en/verify-email/resend'], name: 'app_email_verification_resend', methods: ['POST'])]
+    public function emailVerificationResend(Request $request, EmailVerificationService $emailVerification): Response
+    {
+        $session = $request->getSession();
+        $email = (string) $session->get(self::SESSION_VERIFY_EMAIL, '');
+
+        if ('' === $email) {
+            return $this->redirectToRoute('app_register');
+        }
+
+        if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de recommencer.');
+
+            return $this->redirectToRoute('app_email_verification');
+        }
+
+        $emailVerification->resend($email);
+
+        $this->addFlash('success', 'Un nouveau code vous a été envoyé.');
+
+        return $this->redirectToRoute('app_email_verification');
     }
 
     /**

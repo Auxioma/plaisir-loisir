@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Notification\EventSubscriber;
 
-use App\Catalog\Entity\Service;
 use App\Notification\Entity\Notification;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\EventSubscriber\ReviewNotificationSubscriber;
@@ -21,8 +20,8 @@ final class ReviewNotificationSubscriberTest extends TestCase
     public function testOnReviewAddedNotifiesTheProviderOwner(): void
     {
         $owner = new User();
-        $service = (new Service())->setProvider((new ProviderProfile())->setUser($owner));
-        $review = (new Review())->setService($service)->setRating(5);
+        $provider = (new ProviderProfile())->setUser($owner);
+        $review = (new Review())->setProvider($provider)->setRating(5);
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::once())->method('persist')->with(self::callback(
@@ -36,10 +35,10 @@ final class ReviewNotificationSubscriberTest extends TestCase
             ->onReviewAdded(new ReviewAdded($review));
     }
 
-    public function testDoesNothingWhenServiceHasNoProviderOwner(): void
+    public function testDoesNothingWhenProviderHasNoOwner(): void
     {
-        // Service sans annonceur rattaché : pas de destinataire.
-        $review = (new Review())->setService(new Service())->setRating(4);
+        // Prestataire sans utilisateur rattaché : pas de destinataire.
+        $review = (new Review())->setProvider(new ProviderProfile())->setRating(4);
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::never())->method('persist');

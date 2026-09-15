@@ -34,11 +34,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * fiche sans passer par le back-office.
  *
  * CE QUI RESTE HORS PÉRIMÈTRE ICI
- * « Conversations actives » et « Avis reçus » (§8.3 du CDC) : la messagerie
- * et le dépôt d'avis n'ont encore aucun écran ailleurs dans le dépôt (Review
- * dépend même encore de Booking, le catalogue à réservation directe mis en
- * pause par le Lot 0 — pas du modèle demande/devis actuel). Les compter ici
- * aurait affiché des chiffres qui ne représentent rien de réel.
+ * « Conversations actives » et « Avis reçus » (§8.3 du CDC) ont depuis reçu
+ * leur propre écran (Lot G : ConversationController ; Lot H :
+ * ReviewController) plutôt que d'être ajoutés ici — chacun mérite plus qu'un
+ * chiffre sur ce tableau de bord.
  */
 #[IsGranted('ROLE_PROVIDER')]
 final class ProviderDashboardController extends AbstractController

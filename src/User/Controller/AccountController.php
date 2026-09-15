@@ -8,15 +8,22 @@ use App\Catalog\Entity\Destination;
 use App\Catalog\Entity\Service;
 use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Presenter\DestinationPresenter;
+use App\Event\Repository\EventRepository;
 use App\Favorite\Repository\FavoriteRepository;
+use App\Messaging\Repository\MessageRepository;
 use App\PrivateActivity\Entity\Participation;
 use App\PrivateActivity\Enum\ParticipationStatus;
 use App\PrivateActivity\Repository\ParticipationRepository;
 use App\PrivateActivity\Repository\PrivateActivityRepository;
 use App\Quote\Repository\ServiceRequestRepository;
 use App\User\Entity\User;
+use App\User\Enum\UserStatus;
+use App\User\Service\AccountAnonymizer;
+use App\User\Service\AvatarStorageService;
 use App\User\StaticAccount;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -42,6 +49,11 @@ final class AccountController extends AbstractController
         private readonly ServiceRequestRepository $requests,
         private readonly PrivateActivityRepository $privateActivities,
         private readonly ParticipationRepository $participations,
+        private readonly MessageRepository $messages,
+        private readonly AvatarStorageService $avatars,
+        private readonly AccountAnonymizer $anonymizer,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly EventRepository $events,
     ) {
     }
 
@@ -196,6 +208,153 @@ final class AccountController extends AbstractController
         ]);
     }
 
+    /**
+     * « Mes activités créées » de la sidebar (Lot J, 15/09) : les événements
+     * (domaine Event) que l'utilisateur a lui-même organisés.
+     */
+    #[Route(path: ['fr' => '/compte/mes-evenements', 'en' => '/en/account/my-events'], name: 'app_account_events')]
+    public function events(): Response
+    {
+        return $this->render('account/mes_evenements.html.twig', [
+            'user' => $this->accountUser(),
+            'menu' => StaticAccount::menu(),
+            'active' => 'Mes activités créées',
+            'events' => $this->events->findByOrganizer($this->currentUser()),
+        ]);
+    }
+
+    /**
+     * « Mes réservations » de la sidebar (Lot J, 15/09), rebaptisée
+     * « Historique » : le catalogue à réservation directe (Booking) étant en
+     * pause, l'historique s'appuie sur ce que le modèle actuel produit
+     * réellement — demandes de devis clôturées, activités privées passées.
+     */
+    #[Route(path: ['fr' => '/compte/historique', 'en' => '/en/account/history'], name: 'app_account_history')]
+    public function history(): Response
+    {
+        $user = $this->currentUser();
+        $now = new \DateTimeImmutable();
+
+        $closedRequests = array_values(array_filter(
+            $this->requests->findByClient($user),
+            static fn ($request): bool => !$request->isOpen(),
+        ));
+
+        $pastParticipations = array_values(array_filter(
+            $this->participations->findByParticipant($user),
+            static fn (Participation $p): bool => ParticipationStatus::Cancelled !== $p->getStatus()
+                && null !== $p->getPrivateActivity()?->getScheduledAt()
+                && $p->getPrivateActivity()->getScheduledAt() < $now,
+        ));
+
+        return $this->render('account/historique.html.twig', [
+            'user' => $this->accountUser(),
+            'menu' => StaticAccount::menu(),
+            'active' => 'Mes réservations',
+            'closed_requests' => $closedRequests,
+            'past_participations' => $pastParticipations,
+        ]);
+    }
+
+    /**
+     * Paramètres du compte (Lot I, 15/09) : nom, téléphone, photo de profil,
+     * et désactivation/suppression. Aucune maquette — entrée de la sidebar
+     * restée « Bientôt disponible » depuis le câblage du 14/09.
+     */
+    #[Route(path: ['fr' => '/compte/parametres', 'en' => '/en/account/settings'], name: 'app_account_settings', methods: ['GET', 'POST'])]
+    public function settings(Request $request): Response
+    {
+        $user = $this->currentUser();
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+                return $this->redirectToRoute('app_account_settings');
+            }
+
+            $firstName = trim((string) $request->request->get('prenom', ''));
+            $lastName = trim((string) $request->request->get('nom', ''));
+            $phone = trim((string) $request->request->get('telephone', ''));
+
+            if ('' === $firstName || '' === $lastName) {
+                $this->addFlash('error', 'Le nom et le prénom ne peuvent pas être vides.');
+
+                return $this->redirectToRoute('app_account_settings');
+            }
+
+            $user->setFirstName(mb_substr($firstName, 0, 100));
+            $user->setLastName(mb_substr($lastName, 0, 100));
+            $user->setPhone('' !== $phone ? mb_substr($phone, 0, 30) : null);
+
+            $photo = $request->files->get('photo');
+            if ($photo instanceof UploadedFile) {
+                try {
+                    $this->avatars->store($user, $photo);
+                } catch (\InvalidArgumentException $e) {
+                    $this->addFlash('error', $e->getMessage());
+
+                    return $this->redirectToRoute('app_account_settings');
+                }
+            }
+
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'Vos informations ont été mises à jour.');
+
+            return $this->redirectToRoute('app_account_settings');
+        }
+
+        return $this->render('account/parametres.html.twig', [
+            'user' => $this->accountUser(),
+            'menu' => StaticAccount::menu(),
+            'active' => 'Paramètres du compte',
+            'account' => $user,
+        ]);
+    }
+
+    /**
+     * Désactivation : statut suspendu, réversible par l'administration —
+     * distincte de la suppression ci-dessous, qui efface les données.
+     */
+    #[Route(path: ['fr' => '/compte/parametres/desactiver', 'en' => '/en/account/settings/deactivate'], name: 'app_account_deactivate', methods: ['POST'])]
+    public function deactivate(Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+            return $this->redirectToRoute('app_account_settings');
+        }
+
+        $user = $this->currentUser();
+        $user->setStatus(UserStatus::Suspended);
+        $this->entityManager->flush();
+
+        $this->addFlash('success', 'Votre compte a été désactivé. Contactez-nous pour le réactiver.');
+
+        return $this->redirectToRoute('app_account_logout_confirm');
+    }
+
+    /**
+     * Suppression : irréversible, efface les données personnelles
+     * (AccountAnonymizer, voir ce service pour le détail RGPD).
+     */
+    #[Route(path: ['fr' => '/compte/parametres/supprimer', 'en' => '/en/account/settings/delete'], name: 'app_account_delete', methods: ['POST'])]
+    public function delete(Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+            return $this->redirectToRoute('app_account_settings');
+        }
+
+        $this->anonymizer->anonymize($this->currentUser());
+
+        $this->addFlash('success', 'Votre compte et vos données personnelles ont été supprimés.');
+
+        return $this->redirectToRoute('app_account_logout_confirm');
+    }
+
     #[Route(path: ['fr' => '/compte/deconnexion', 'en' => '/en/account/sign-out'], name: 'app_account_logout_confirm')]
     public function logoutConfirm(): Response
     {
@@ -214,7 +373,7 @@ final class AccountController extends AbstractController
      * au pixel, et laisse cohabiter l'identité réelle et les compteurs encore
      * statiques le temps que les entités correspondantes soient branchées.
      *
-     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unread: int}
+     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unreadMessages: int, unreadNotifications: int}
      */
     private function accountUser(): array
     {
@@ -235,14 +394,16 @@ final class AccountController extends AbstractController
             'name' => '' !== $fullName ? $fullName : $user->getEmail(),
             'firstName' => '' !== $firstName ? $firstName : $user->getLastName(),
             'email' => $user->getEmail(),
-            // L'entité User ne porte aucune photo de profil : tant que le
-            // téléversement d'avatar n'existe pas, on garde celle de la
-            // maquette plutôt que d'afficher un cadre vide.
-            'avatar' => $demo['avatar'],
+            // Photo réelle depuis le Lot I ; tant que personne n'en a
+            // déposé une, on garde celle de la maquette plutôt que
+            // d'afficher un cadre vide.
+            'avatar' => $user->getAvatarPath() ?? $demo['avatar'],
             'memberSince' => $this->formatMemberSince($user->getCreatedAt()),
-            // Compteur de notifications non lues : encore celui de la démo,
-            // il sera branché sur NotificationRepository avec l'écran.
-            'unread' => $demo['unread'],
+            // Messages non lus : réel depuis le Lot G (MessageRepository).
+            'unreadMessages' => $this->messages->countUnreadForUser($user),
+            // Notifications non lues : encore la démo, faute d'écran de
+            // préférences pour les compter (Lot H, non fait).
+            'unreadNotifications' => $demo['unreadNotifications'],
         ];
     }
 

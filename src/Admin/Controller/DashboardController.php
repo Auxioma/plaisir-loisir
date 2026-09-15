@@ -136,6 +136,9 @@ class DashboardController extends AbstractDashboardController
         // Sécurité et confiance (§16.4, §18, §18.1 du CDC).
         yield MenuItem::section('Modération');
         yield MenuItem::linkTo(ReportCrudController::class, 'Signalements', 'fa fa-flag');
+        // Publié automatiquement au dépôt (§16.2) : la modération se fait ici,
+        // a posteriori (Lot H, 15/09).
+        yield MenuItem::linkTo(ReviewCrudController::class, 'Avis', 'fa fa-star');
         yield MenuItem::linkTo(AuditLogCrudController::class, 'Journal d\'audit', 'fa fa-clipboard-list');
 
         yield MenuItem::section('Site');

@@ -21,7 +21,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
  */
 final class RegistrationFlowTest extends WebTestCase
 {
-    public function testANewEmailCreatesTheAccountAndRedirectsToLogin(): void
+    public function testANewEmailCreatesAPendingAccountAndRedirectsToEmailVerification(): void
     {
         $client = static::createClient();
         $email = sprintf('nouveau-%s@example.com', uniqid());
@@ -35,10 +35,15 @@ final class RegistrationFlowTest extends WebTestCase
         ]);
         $client->submit($form);
 
-        self::assertResponseRedirects('/login');
+        // Depuis le Lot I (15/09) : le compte reste en attente jusqu'à la
+        // vérification de l'adresse, on enchaîne donc sur cet écran plutôt
+        // que sur une connexion qui échouerait (AccountChecker).
+        self::assertResponseRedirects('/verification-email');
 
         $user = static::getContainer()->get(\App\User\Repository\UserRepository::class)->findOneBy(['email' => $email]);
         self::assertNotNull($user, 'Le compte n\'a pas été créé alors que l\'e-mail était disponible.');
+        self::assertSame(UserStatus::Pending, $user->getStatus());
+        self::assertNotNull($user->getEmailVerificationCodeHash(), 'Un code de vérification doit avoir été envoyé.');
     }
 
     /**

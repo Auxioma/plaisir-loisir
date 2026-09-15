@@ -8,6 +8,8 @@ use App\Catalog\Entity\Service;
 use App\Messaging\Entity\Conversation;
 use App\Messaging\Entity\Message;
 use App\Messaging\Repository\ConversationRepository;
+use App\Notification\Enum\NotificationCategory;
+use App\Notification\Service\NotificationService;
 use App\Provider\Entity\ProviderProfile;
 use App\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,6 +22,7 @@ final class MessagingService
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly ConversationRepository $conversations,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -61,7 +64,26 @@ final class MessagingService
         $this->entityManager->persist($message);
         $this->entityManager->flush();
 
+        $recipient = $this->otherParticipant($conversation, $author);
+        if (null !== $recipient) {
+            $this->notifications->notify(
+                $recipient,
+                NotificationCategory::Messaging,
+                'Nouveau message',
+                sprintf('%s vous a envoyé un message.', trim($author->getFirstName().' '.$author->getLastName())),
+            );
+        }
+
         return $message;
+    }
+
+    private function otherParticipant(Conversation $conversation, User $author): ?User
+    {
+        if ($conversation->getClient() === $author) {
+            return $conversation->getProvider()?->getUser();
+        }
+
+        return $conversation->getClient();
     }
 
     /**

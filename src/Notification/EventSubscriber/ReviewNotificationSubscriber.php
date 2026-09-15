@@ -10,7 +10,7 @@ use App\Review\Event\ReviewAdded;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Notifie l'annonceur lorsqu'un de ses services reçoit un nouvel avis.
+ * Notifie le prestataire lorsqu'il reçoit un nouvel avis.
  */
 final class ReviewNotificationSubscriber implements EventSubscriberInterface
 {
@@ -29,7 +29,7 @@ final class ReviewNotificationSubscriber implements EventSubscriberInterface
     public function onReviewAdded(ReviewAdded $event): void
     {
         $review = $event->getReview();
-        $owner = $review->getService()?->getProvider()?->getUser();
+        $owner = $review->getProvider()?->getUser();
         if (null === $owner) {
             return;
         }
@@ -38,7 +38,7 @@ final class ReviewNotificationSubscriber implements EventSubscriberInterface
             $owner,
             NotificationCategory::Review,
             'Nouvel avis',
-            \sprintf('Vous avez reçu un avis %d/5 sur l\'une de vos activités.', $review->getRating()),
+            \sprintf('Vous avez reçu un avis %d/5.', $review->getRating()),
         );
     }
 }

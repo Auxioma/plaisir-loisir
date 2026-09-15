@@ -9,8 +9,9 @@ namespace App\Notification\Enum;
  */
 enum NotificationCategory: string
 {
-    case Booking = 'booking';    // Réservations
-    case Review = 'review';      // Avis
-    case Payment = 'payment';    // Paiements
-    case System = 'system';      // Système / compte
+    case Booking = 'booking';        // Réservations
+    case Review = 'review';          // Avis
+    case Payment = 'payment';        // Paiements
+    case System = 'system';          // Système / compte
+    case Messaging = 'messaging';    // Nouveau message
 }

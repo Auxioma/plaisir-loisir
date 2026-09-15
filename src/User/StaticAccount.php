@@ -15,7 +15,7 @@ final class StaticAccount
     /**
      * Profil affiché dans la sidebar (et prénom de l'écran Déconnexion).
      *
-     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unread: int}
+     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unreadMessages: int, unreadNotifications: int}
      */
     public static function user(): array
     {
@@ -26,7 +26,12 @@ final class StaticAccount
             'avatar' => 'images/account/avatar-thomas.jpg',
             'memberSince' => 'Mai 2026',
             // Badge « non lues » partagé sidebar/header (spec, point 8).
-            'unread' => 3,
+            // Séparé en deux compteurs (14/09, Lot G) : les messages sont
+            // désormais réels (MessageRepository::countUnreadForUser), les
+            // notifications restent la démo tant que Notification n'a pas
+            // d'écran de préférences pour les compter.
+            'unreadMessages' => 3,
+            'unreadNotifications' => 3,
         ];
     }
 
@@ -34,15 +39,19 @@ final class StaticAccount
      * Menu de la sidebar. Les entrées sans maquette (route null) restent
      * inertes — pages à concevoir (spec, « entrées non maquettées »).
      *
-     * @return list<array{icon: string, title: string, subtitle: string, route: string|null, badge: bool}>
+     * `badge` vaut soit `false`, soit le nom du compteur à afficher
+     * (`'messages'` ou `'notifications'`, cf. `user.unreadMessages`/
+     * `user.unreadNotifications`).
+     *
+     * @return list<array{icon: string, title: string, subtitle: string, route: string|null, badge: string|false}>
      */
     public static function menu(): array
     {
         return [
             ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité', 'route' => 'app_account_dashboard', 'badge' => false],
             ['icon' => 'camera', 'title' => 'Mes albums photos', 'subtitle' => 'Gérez vos albums et photos', 'route' => null, 'badge' => false],
-            ['icon' => 'badge_check', 'title' => 'Mes activités créées', 'subtitle' => 'Gérez vos activités sur Event', 'route' => null, 'badge' => false],
-            ['icon' => 'receipt', 'title' => 'Mes réservations', 'subtitle' => 'Suivi de vos réservations', 'route' => null, 'badge' => false],
+            ['icon' => 'badge_check', 'title' => 'Mes activités créées', 'subtitle' => 'Gérez vos activités sur Event', 'route' => 'app_account_events', 'badge' => false],
+            ['icon' => 'receipt', 'title' => 'Mes réservations', 'subtitle' => 'Suivi de vos réservations', 'route' => 'app_account_history', 'badge' => false],
             ['icon' => 'heart', 'title' => 'Mes favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false],
             // Nouvel item (14/09) : aucune maquette ne le prévoit, le parcours
             // demande/devis (§10, §11 du CDC) n'existait dans aucun écran
@@ -52,9 +61,11 @@ final class StaticAccount
             // Même remarque que pour « Mes demandes » (14/09) : ajouté sans
             // maquette, en attendant un avis de la designer.
             ['icon' => 'users', 'title' => 'Mes activités privées', 'subtitle' => 'Sorties organisées et rejointes', 'route' => 'app_account_private_activities', 'badge' => false],
-            ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => true],
+            // Nouvel item (Lot G, §14 du CDC) : aucune maquette non plus.
+            ['icon' => 'mail', 'title' => 'Messages', 'subtitle' => 'Conversations avec les professionnels', 'route' => 'app_account_messages', 'badge' => 'messages'],
+            ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => 'notifications'],
             ['icon' => 'hand_heart', 'title' => 'Parrainage', 'subtitle' => 'Invitez vos amis', 'route' => 'app_account_referral', 'badge' => false],
-            ['icon' => 'gear', 'title' => 'Paramètres du compte', 'subtitle' => 'Supprimer ou désactiver', 'route' => null, 'badge' => false],
+            ['icon' => 'gear', 'title' => 'Paramètres du compte', 'subtitle' => 'Supprimer ou désactiver', 'route' => 'app_account_settings', 'badge' => false],
             ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Fermer votre session', 'route' => 'app_account_logout_confirm', 'badge' => false],
         ];
     }
@@ -77,17 +88,23 @@ final class StaticAccount
      * account/_sidebar) : le prestataire n'a jamais l'impression de changer
      * d'application.
      *
-     * @return list<array{icon: string, title: string, subtitle: string, route: string|null, badge: bool}>
+     * @return list<array{icon: string, title: string, subtitle: string, route: string|null, badge: string|false}>
      */
     public static function providerMenu(): array
     {
         return [
             ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité professionnelle', 'route' => 'app_pro_dashboard', 'badge' => false],
             ['icon' => 'receipt', 'title' => 'Demandes reçues', 'subtitle' => 'Répondre par un devis', 'route' => 'app_pro_requests', 'badge' => false],
+            // Nouvel item (Lot G, §14 du CDC) : même route que côté client, la
+            // conversation ne dépend pas du chapeau porté pour la consulter.
+            ['icon' => 'mail', 'title' => 'Messages', 'subtitle' => 'Conversations avec vos clients', 'route' => 'app_account_messages', 'badge' => 'messages'],
             ['icon' => 'card', 'title' => 'Abonnement', 'subtitle' => 'Votre offre et sa facturation', 'route' => 'app_pro_subscription', 'badge' => false],
             ['icon' => 'badge_check', 'title' => 'Ma fiche professionnelle', 'subtitle' => 'Ce que voient vos clients', 'route' => 'app_pro_profile_edit', 'badge' => false],
+            // Nouvel item (Lot H, §16.2 du CDC) : Review dépendait encore du
+            // catalogue à réservation directe en pause, aucun écran ici.
+            ['icon' => 'star', 'title' => 'Avis reçus', 'subtitle' => 'Ce que vos clients disent de vous', 'route' => 'app_pro_reviews', 'badge' => false],
             ['icon' => 'heart', 'title' => 'Mes favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false],
-            ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => true],
+            ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => 'notifications'],
             ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Fermer votre session', 'route' => 'app_account_logout_confirm', 'badge' => false],
         ];
     }

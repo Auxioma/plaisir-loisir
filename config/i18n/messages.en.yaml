@@ -1548,3 +1548,50 @@
 "Demandes de devis envoyées": "Quote requests sent"
 "Vos dernières demandes": "Your latest requests"
 "Vous n'avez encore rien demandé ni rejoint : vos demandes de devis et vos activités privées apparaîtront ici.": "You haven't requested or joined anything yet: your quote requests and private activities will appear here."
+
+# Messagerie client / professionnel (Lot G, §14 du CDC, 15/09).
+"Messages": "Messages"
+"Vos conversations avec les professionnels.": "Your conversations with professionals."
+"Vous n'avez encore aucune conversation. Elle démarre depuis la fiche d'un professionnel.": "You don't have any conversations yet. They start from a professional's profile."
+"Non lu": "Unread"
+"Aucun message pour le moment : écrivez le premier.": "No messages yet: write the first one."
+"Votre message...": "Your message..."
+"Contacter": "Contact"
+
+# Avis et notation des professionnels (Lot H, §16.2 du CDC, 15/09).
+"Avis reçus": "Reviews received"
+"Note moyenne :": "Average rating:"
+"Vous n'avez pas encore reçu d'avis.": "You haven't received any reviews yet."
+"Vous n'avez pas encore reçu d'avis. Ils apparaîtront ici une fois vos devis acceptés et honorés.": "You haven't received any reviews yet. They will appear here once your quotes are accepted and completed."
+"Votre réponse": "Your reply"
+"Répondre à cet avis...": "Reply to this review..."
+"Vous avez déjà noté ce professionnel.": "You have already rated this professional."
+"Votre commentaire (facultatif)": "Your comment (optional)"
+"Publier mon avis": "Post my review"
+"Avis": "Reviews"
+"Réponse du professionnel": "Professional's reply"
+
+# Vérification de l'e-mail à l'inscription (Lot I, 15/09).
+"Vérifier votre adresse e-mail": "Verify your email address"
+"Vérifiez votre adresse e-mail": "Verify your email address"
+"Un code de vérification vous a été envoyé par e-mail. Saisissez-le pour activer votre compte.": "A verification code has been sent to your email. Enter it to activate your account."
+
+# Paramètres du compte (Lot I, 15/09).
+"JPEG, PNG ou WebP, 4 Mo maximum.": "JPEG, PNG or WebP, 4 MB maximum."
+"Zone de danger": "Danger zone"
+"Désactiver mon compte": "Deactivate my account"
+"Supprimer mon compte": "Delete my account"
+"Désactiver votre compte ? Vous ne pourrez plus vous connecter tant qu'un administrateur ne l'aura pas réactivé.": "Deactivate your account? You won't be able to log in until an administrator reactivates it."
+"Supprimer définitivement votre compte et vos données personnelles ? Cette action est irréversible.": "Permanently delete your account and personal data? This action cannot be undone."
+"Paramètres du compte": "Account settings"
+
+# Rubriques restantes de l'espace client (Lot J, 15/09).
+"Mes activités créées": "My created events"
+"Les événements que vous avez organisés.": "The events you have organized."
+"Vous n'avez encore créé aucun événement.": "You haven't created any events yet."
+"Mes réservations": "My bookings"
+"Vos demandes clôturées et vos activités privées passées.": "Your closed requests and past private activities."
+"Demandes de devis clôturées": "Closed quote requests"
+"Aucune demande clôturée pour le moment.": "No closed requests yet."
+"Activités privées passées": "Past private activities"
+"Vous n'avez encore participé à aucune activité privée passée.": "You haven't taken part in any past private activities yet."

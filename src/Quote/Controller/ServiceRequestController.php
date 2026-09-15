@@ -11,6 +11,7 @@ use App\Quote\Repository\ServiceRequestRepository;
 use App\Quote\Security\QuoteVoter;
 use App\Quote\Security\ServiceRequestVoter;
 use App\Quote\Service\QuoteService;
+use App\Review\Repository\ReviewRepository;
 use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
 use App\User\StaticAccount;
@@ -36,6 +37,7 @@ final class ServiceRequestController extends AbstractController
         private readonly CategoryRepository $categories,
         private readonly QuoteService $quoteService,
         private readonly AccountIdentityPresenter $identity,
+        private readonly ReviewRepository $reviews,
     ) {
     }
 
@@ -126,11 +128,19 @@ final class ServiceRequestController extends AbstractController
 
         $this->denyAccessUnlessGranted(ServiceRequestVoter::VIEW, $serviceRequest);
 
+        $reviewedQuoteIds = [];
+        foreach ($serviceRequest->getQuotes() as $quote) {
+            if (null !== $this->reviews->findOneByQuote($quote)) {
+                $reviewedQuoteIds[] = (string) $quote->getId();
+            }
+        }
+
         return $this->render('quote/demande_detail.html.twig', [
             'user' => $this->identity->identityFor($this->currentUser()),
             'menu' => StaticAccount::menu(),
             'active' => 'Mes demandes',
             'demande' => $serviceRequest,
+            'reviewed_quote_ids' => $reviewedQuoteIds,
         ]);
     }
 

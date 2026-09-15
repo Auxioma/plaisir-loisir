@@ -1,12 +1,14 @@
 {#
     <AccountSidebar> : en-tête profil (avatar, nom, email, badge membre) +
     menu de 9 entrées. Item actif violet (rouge pour Déconnexion) ; badge
-    compteur rouge sur Notifications (même source que la cloche du header,
-    spec point 8). Les entrées sans route (albums, activités créées,
-    réservations, paramètres — aucune entité derrière pour l'instant)
-    s'affichent en <span>, non cliquables, avec un badge « Bientôt
-    disponible » plutôt qu'un lien mort silencieux (signalé le 14/09 : un
-    clic sans effet ni indice se lisait comme un menu cassé).
+    compteur rouge sur Messages et Notifications, chacun sa propre source
+    (`item.badge` vaut 'messages' ou 'notifications', Lot G du 15/09 — avant
+    cela les deux partageaient le même compteur de démonstration). Les
+    entrées sans route (albums, activités créées, réservations, paramètres —
+    aucune entité derrière pour l'instant) s'affichent en <span>, non
+    cliquables, avec un badge « Bientôt disponible » plutôt qu'un lien mort
+    silencieux (signalé le 14/09 : un clic sans effet ni indice se lisait
+    comme un menu cassé).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
@@ -38,6 +40,8 @@
                     {%- elseif item.icon == 'card' %}{{ icon.card(26) }}
                     {%- elseif item.icon == 'heart' %}{{ icon.heart(26) }}
                     {%- elseif item.icon == 'bell' %}{{ icon.bell(26) }}
+                    {%- elseif item.icon == 'mail' %}{{ icon.mail(26) }}
+                    {%- elseif item.icon == 'star' %}{{ icon.star(26) }}
                     {%- elseif item.icon == 'hand_heart' %}{{ icon.hand_heart(26) }}
                     {%- elseif item.icon == 'gear' %}{{ icon.gear(26) }}
                     {%- else %}{{ icon.logout(26) }}
@@ -47,8 +51,9 @@
                     <strong>{{ item.title }}</strong>
                     <small>{{ item.route ? item.subtitle : ('Bientôt disponible'|trans) }}</small>
                 </span>
-                {% if item.badge and user.unread > 0 %}
-                    <span class="acc-menu__count">{{ user.unread }}</span>
+                {% set badge_count = item.badge == 'messages' ? user.unreadMessages : (item.badge == 'notifications' ? user.unreadNotifications : 0) %}
+                {% if item.badge and badge_count > 0 %}
+                    <span class="acc-menu__count">{{ badge_count }}</span>
                 {% endif %}
             </{{ tag }}>
         {% endfor %}

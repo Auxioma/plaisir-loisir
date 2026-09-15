@@ -31,6 +31,9 @@
                 {% if provider.city %}
                     <span class="badge rounded-pill text-bg-light">📍 {{ provider.city }}</span>
                 {% endif %}
+                {% if average_rating is not null %}
+                    <span class="badge rounded-pill text-bg-light">⭐ {{ average_rating|number_format(1) }}/5 · {{ reviews|length }} {{ 'avis'|trans }}</span>
+                {% endif %}
             </div>
 
             {% if provider.companyName %}
@@ -51,10 +54,16 @@
             {% endif %}
 
             {% if is_granted('ROLE_USER') %}
-                <a href="{{ path('app_account_requests_new', provider.mainCategory ? {metier: provider.mainCategory.slug} : {}) }}"
-                   class="btn pl-btn pl-btn--cta">
-                    {{ 'Faire une demande'|trans }}
-                </a>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ path('app_account_requests_new', provider.mainCategory ? {metier: provider.mainCategory.slug} : {}) }}"
+                       class="btn pl-btn pl-btn--cta">
+                        {{ 'Faire une demande'|trans }}
+                    </a>
+                    <form method="post" action="{{ path('app_account_messages_start', {slug: provider.slug}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                        <button type="submit" class="btn pl-btn pl-btn--outline-dark">{{ 'Contacter'|trans }}</button>
+                    </form>
+                </div>
             {% else %}
                 <a href="{{ path('app_login') }}" class="btn pl-btn pl-btn--cta">
                     {{ 'Se connecter pour faire une demande'|trans }}
@@ -68,5 +77,30 @@
             } %}
         </div>
     </div>
+
+    {% if reviews is not empty %}
+        <h2 class="h5 mt-4 mb-3">{{ 'Avis'|trans }}</h2>
+        <div class="d-flex flex-column gap-3">
+            {% for review in reviews %}
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                            <strong>{{ review.author.firstName }}</strong>
+                            <span class="fw-bold" style="color: var(--pl-action);">{{ review.rating }}/5</span>
+                        </div>
+                        {% if review.comment %}
+                            <p class="mb-0 mt-1">{{ review.comment|nl2br }}</p>
+                        {% endif %}
+                        {% if review.providerReply %}
+                            <div class="border-start ps-3 mt-2">
+                                <div class="text-muted small">{{ 'Réponse du professionnel'|trans }}</div>
+                                <p class="mb-0">{{ review.providerReply|nl2br }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

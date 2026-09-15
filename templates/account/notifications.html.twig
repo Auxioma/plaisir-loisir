@@ -15,7 +15,7 @@
 {% block meta_description %}{{ 'Restez informé de toutes les nouveautés et activités qui vous intéressent.'|trans }}{% endblock %}
 
 {% set total = empty ? 0 : 6 %}
-{% set unread = empty ? 0 : user.unread %}
+{% set unread = empty ? 0 : user.unreadNotifications %}
 
 {% block account %}
     {% include 'account/_page_head.html.twig' with {

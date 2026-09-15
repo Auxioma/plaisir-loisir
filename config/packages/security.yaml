@@ -65,6 +65,9 @@ security:
         - { path: ^/(inscription|en/signup)$, roles: PUBLIC_ACCESS }
         - { path: ^/(authentification|en/authentication), roles: PUBLIC_ACCESS }
         - { path: ^/(mot-de-passe-oublie|en/forgot-password), roles: PUBLIC_ACCESS }
+        # Un compte « en attente » ne peut pas se connecter (AccountChecker) :
+        # cet écran doit donc rester joignable sans session (Lot I, 15/09).
+        - { path: ^/(verification-email|en/verify-email), roles: PUBLIC_ACCESS }
 
         # Parcours d'authentification PROFESSIONNEL (maquette « Profesionnelle »,
         # bandeau AUTHENTIFICATIONS 01). Inscription en deux etapes, connexion,
@@ -87,7 +90,7 @@ security:
         # côté professionnel (§8.3, §10, §11, §17 du CDC). /professionnels
         # (recherche publique, fiche publique) reste volontairement hors de
         # cette liste : c'est un écran public, sans compte.
-        - { path: ^/(pro|en/pro)/(demandes|requests|abonnement|subscription|tableau-de-bord|dashboard|profil|profile), roles: ROLE_PROVIDER }
+        - { path: ^/(pro|en/pro)/(demandes|requests|abonnement|subscription|tableau-de-bord|dashboard|profil|profile|avis|reviews), roles: ROLE_PROVIDER }
 
 when@test:
     security:

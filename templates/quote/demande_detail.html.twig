@@ -37,6 +37,10 @@
                             {% if devis.message %}
                                 <p class="text-muted mb-0 mt-2">{{ devis.message|nl2br }}</p>
                             {% endif %}
+                            <form method="post" action="{{ path('app_account_messages_start', {slug: devis.provider.slug}) }}" class="mt-2">
+                                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                <button type="submit" class="btn btn-sm pl-btn pl-btn--outline-dark">{{ 'Contacter'|trans }}</button>
+                            </form>
                         </div>
                         <div class="text-end">
                             <span class="badge rounded-pill {{ devis.status.value == 'accepted' ? 'text-bg-success' : (devis.status.value == 'declined' ? 'text-bg-secondary' : 'text-bg-warning') }}">
@@ -56,6 +60,27 @@
                             {% endif %}
                         </div>
                     </div>
+                    {% if devis.status.value == 'accepted' %}
+                        <div class="card-footer bg-white">
+                            {% if (devis.id ~ '') in reviewed_quote_ids %}
+                                <span class="text-muted small">{{ 'Vous avez déjà noté ce professionnel.'|trans }}</span>
+                            {% else %}
+                                <form method="post" action="{{ path('app_account_quote_review', {id: devis.id}) }}" class="d-flex flex-wrap align-items-center gap-2">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                    <label class="form-label mb-0" for="note-{{ devis.id }}">{{ 'Votre note'|trans }}</label>
+                                    <select class="form-select form-select-sm w-auto" id="note-{{ devis.id }}" name="note" required>
+                                        <option value="5">5/5</option>
+                                        <option value="4">4/5</option>
+                                        <option value="3">3/5</option>
+                                        <option value="2">2/5</option>
+                                        <option value="1">1/5</option>
+                                    </select>
+                                    <input type="text" name="commentaire" class="form-control form-control-sm" maxlength="2000" placeholder="{{ 'Votre commentaire (facultatif)'|trans }}">
+                                    <button type="submit" class="btn btn-sm pl-btn pl-btn--cta">{{ 'Publier mon avis'|trans }}</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
             {% endfor %}
         </div>

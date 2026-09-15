@@ -34,6 +34,7 @@ final class RegistrationService
         // générales fait naître une preuve » est une règle métier.
         private readonly ConsentService $consentService,
         private readonly RequestStack $requestStack,
+        private readonly EmailVerificationService $emailVerification,
     ) {
     }
 
@@ -73,10 +74,10 @@ final class RegistrationService
         $user->setLastName($lastName);
         $user->setPhone('' !== $phone ? $phone : null);
         $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
-        // Pas encore de vérification d'e-mail : le compte est actif tout de
-        // suite, sinon personne ne pourrait se connecter. À revoir quand la
-        // confirmation par e-mail sera au programme.
-        $user->setStatus(UserStatus::Active);
+        // Le compte reste en attente jusqu'à la vérification de l'adresse
+        // (Lot I, 15/09) : AccountChecker refuse la connexion tant que le
+        // code envoyé ci-dessous n'a pas été validé.
+        $user->setStatus(UserStatus::Pending);
 
         if ($accountType->isProvider()) {
             // getRoles() ajoute toujours ROLE_USER : un prestataire reste un
@@ -112,6 +113,10 @@ final class RegistrationService
             $request,
             $request?->getLocale() ?? 'fr',
         );
+
+        // Dernière étape : le code de vérification part une fois le compte
+        // entièrement constitué (dossier prestataire compris).
+        $this->emailVerification->sendCode($user);
 
         return $user;
     }

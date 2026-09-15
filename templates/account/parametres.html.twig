@@ -1,0 +1,74 @@
+{#
+    Paramètres du compte (Lot I, 15/09). Aucune maquette : réutilise le
+    gabarit de l'espace compte et des cartes Bootstrap, comme les autres
+    écrans ajoutés sans Figma (quote/mes_demandes.html.twig et consorts).
+    Variable : account (l'entité User).
+#}
+{% extends 'account/_layout.html.twig' %}
+
+{% block title %}{{ 'Paramètres du compte'|trans }}{% endblock %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Paramètres du compte'|trans }],
+        title: 'Paramètres du compte'|trans,
+    } %}
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h2 class="h5 mb-3">{{ 'Vos informations'|trans }}</h2>
+            <form method="post" action="{{ path('app_account_settings') }}" enctype="multipart/form-data">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="form-label" for="prenom">{{ 'Prénom'|trans }}</label>
+                        <input class="form-control" type="text" id="prenom" name="prenom" required maxlength="100" value="{{ account.firstName }}">
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label" for="nom">{{ 'Nom'|trans }}</label>
+                        <input class="form-control" type="text" id="nom" name="nom" required maxlength="100" value="{{ account.lastName }}">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="telephone">{{ 'Téléphone'|trans }}</label>
+                    <input class="form-control" type="tel" id="telephone" name="telephone" maxlength="30" value="{{ account.phone }}">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="photo">{{ 'Photo de profil'|trans }}</label>
+                    {% if account.avatarPath %}
+                        <div class="mb-2">
+                            <img src="{{ asset(account.avatarPath) }}" alt="" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover;">
+                        </div>
+                    {% endif %}
+                    <input class="form-control" type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/webp">
+                    <div class="form-text">{{ 'JPEG, PNG ou WebP, 4 Mo maximum.'|trans }}</div>
+                </div>
+
+                <button type="submit" class="btn pl-btn pl-btn--cta">{{ 'Enregistrer'|trans }}</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-danger shadow-sm">
+        <div class="card-body p-4">
+            <h2 class="h5 mb-3 text-danger">{{ 'Zone de danger'|trans }}</h2>
+
+            <div class="d-flex flex-wrap gap-2">
+                <form method="post" action="{{ path('app_account_deactivate') }}"
+                      onsubmit="return confirm('{{ 'Désactiver votre compte ? Vous ne pourrez plus vous connecter tant qu\'un administrateur ne l\'aura pas réactivé.'|trans|e('js') }}');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                    <button type="submit" class="btn btn-outline-danger">{{ 'Désactiver mon compte'|trans }}</button>
+                </form>
+
+                <form method="post" action="{{ path('app_account_delete') }}"
+                      onsubmit="return confirm('{{ 'Supprimer définitivement votre compte et vos données personnelles ? Cette action est irréversible.'|trans|e('js') }}');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                    <button type="submit" class="btn btn-danger">{{ 'Supprimer mon compte'|trans }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

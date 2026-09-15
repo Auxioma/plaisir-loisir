@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+/**
+ * Auto-generated Migration: Please modify to your needs!
+ */
+final class Version20260915225016 extends AbstractMigration
+{
+    public function getDescription(): string
+    {
+        return 'Vérification d\'adresse e-mail à l\'inscription et photo de profil (Lot I, 15/09).';
+    }
+
+    public function up(Schema $schema): void
+    {
+        // this up() migration is auto-generated, please modify it to your needs
+        $this->addSql('ALTER TABLE "user" ADD email_verification_code_hash VARCHAR(255) DEFAULT NULL');
+        $this->addSql('ALTER TABLE "user" ADD email_verification_expires_at TIMESTAMP(0) WITH TIME ZONE DEFAULT NULL');
+        $this->addSql('ALTER TABLE "user" ADD email_verification_attempts SMALLINT DEFAULT 0 NOT NULL');
+        $this->addSql('ALTER TABLE "user" ADD avatar_path VARCHAR(255) DEFAULT NULL');
+    }
+
+    public function down(Schema $schema): void
+    {
+        // this down() migration is auto-generated, please modify it to your needs
+        $this->addSql('ALTER TABLE "user" DROP email_verification_code_hash');
+        $this->addSql('ALTER TABLE "user" DROP email_verification_expires_at');
+        $this->addSql('ALTER TABLE "user" DROP email_verification_attempts');
+        $this->addSql('ALTER TABLE "user" DROP avatar_path');
+    }
+}

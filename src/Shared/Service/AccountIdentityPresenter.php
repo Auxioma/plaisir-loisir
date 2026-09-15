@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Service;
 
+use App\Messaging\Repository\MessageRepository;
 use App\User\Entity\User;
 use App\User\StaticAccount;
 
@@ -23,14 +24,20 @@ use App\User\StaticAccount;
  * d'utilitaire transverse.
  *
  * L'IDENTITÉ EST RÉELLE, LE RESTE PAS ENCORE
- * Avatar et compteur de non-lus viennent toujours de StaticAccount (Lot H,
- * espace compte réel, non fait) : l'entité User ne porte aucune photo et
- * Notification n'a pas d'écran de préférences pour compter les non-lus.
+ * Avatar réel depuis le Lot I (User::$avatarPath), avec repli sur celui de la
+ * maquette tant que rien n'a été déposé. Les messages non lus sont réels
+ * depuis le Lot G ; les notifications non lues restent la démo, faute
+ * d'écran de préférences pour les compter.
  */
 final class AccountIdentityPresenter
 {
+    public function __construct(
+        private readonly MessageRepository $messages,
+    ) {
+    }
+
     /**
-     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unread: int}
+     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unreadMessages: int, unreadNotifications: int}
      */
     public function identityFor(User $user): array
     {
@@ -42,9 +49,10 @@ final class AccountIdentityPresenter
             'name' => '' !== $fullName ? $fullName : $user->getEmail(),
             'firstName' => '' !== $firstName ? $firstName : $user->getLastName(),
             'email' => $user->getEmail(),
-            'avatar' => $demo['avatar'],
+            'avatar' => $user->getAvatarPath() ?? $demo['avatar'],
             'memberSince' => $this->formatMemberSince($user->getCreatedAt()),
-            'unread' => $demo['unread'],
+            'unreadMessages' => $this->messages->countUnreadForUser($user),
+            'unreadNotifications' => $demo['unreadNotifications'],
         ];
     }
 

@@ -1,0 +1,39 @@
+{#
+    Fil d'une conversation (§14 du CDC). Aucune maquette : réutilise le
+    gabarit de l'espace compte et une liste de bulles Bootstrap.
+    Variables : conversation, other (nom de l'interlocuteur), current_user.
+#}
+{% extends 'account/_layout.html.twig' %}
+
+{% block title %}{{ other }}{% endblock %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Messages'|trans, href: path('app_account_messages') }, { label: other }],
+        title: other,
+    } %}
+
+    <div class="d-flex flex-column gap-3 mb-4">
+        {% for message in conversation.messages %}
+            {% set mine = message.author == current_user %}
+            <div class="d-flex {{ mine ? 'justify-content-end' : 'justify-content-start' }}">
+                <div class="card shadow-sm" style="max-width: 32rem;{{ mine ? ' background-color: var(--pl-action); color: #fff;' : '' }}">
+                    <div class="card-body py-2 px-3">
+                        <p class="mb-1">{{ message.body|nl2br }}</p>
+                        <div class="small {{ mine ? 'text-white-50' : 'text-muted' }}">
+                            {{ message.createdAt|date('d/m/Y H:i') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            {% include 'account/_empty.html.twig' with { message: 'Aucun message pour le moment : écrivez le premier.'|trans } %}
+        {% endfor %}
+    </div>
+
+    <form method="post" action="{{ path('app_account_messages_show', {id: conversation.id}) }}" class="d-flex gap-2">
+        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+        <textarea name="message" class="form-control" rows="2" required maxlength="4000" placeholder="{{ 'Votre message...'|trans }}"></textarea>
+        <button type="submit" class="btn pl-btn pl-btn--cta align-self-end">{{ 'Envoyer'|trans }}</button>
+    </form>
+{% endblock %}

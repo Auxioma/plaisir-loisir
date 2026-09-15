@@ -1,0 +1,60 @@
+{#
+    « Mes réservations » de la sidebar, rebaptisée « Historique » (Lot J,
+    15/09) : le catalogue à réservation directe étant en pause, l'historique
+    s'appuie sur les demandes de devis clôturées et les activités privées
+    passées. Aucune maquette : réutilise le gabarit de l'espace compte.
+    Variables : closed_requests (list de ServiceRequest), past_participations
+    (list de Participation).
+#}
+{% extends 'account/_layout.html.twig' %}
+
+{% block title %}{{ 'Historique'|trans }}{% endblock %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Historique'|trans }],
+        title: 'Historique'|trans,
+        subtitle: 'Vos demandes clôturées et vos activités privées passées.'|trans,
+    } %}
+
+    <h2 class="h5 mb-3">{{ 'Demandes de devis clôturées'|trans }}</h2>
+    {% if closed_requests is empty %}
+        {% include 'account/_empty.html.twig' with { message: 'Aucune demande clôturée pour le moment.'|trans } %}
+    {% else %}
+        <div class="list-group mb-4">
+            {% for demande in closed_requests %}
+                {% set accepted = null %}
+                {% for devis in demande.quotes %}
+                    {% if devis.status.value == 'accepted' %}{% set accepted = devis %}{% endif %}
+                {% endfor %}
+                <a href="{{ path('app_account_requests_show', {id: demande.id}) }}"
+                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ demande.title }}</strong>
+                        <div class="text-muted small">
+                            {{ demande.category.name }}
+                            {% if accepted %} — {{ accepted.provider.displayName }} — {{ accepted.amount|number_format(2, ',', ' ') }} {{ accepted.currency }}{% endif %}
+                        </div>
+                    </div>
+                    <span class="badge rounded-pill text-bg-secondary">{{ 'Clôturée'|trans }}</span>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <h2 class="h5 mb-3">{{ 'Activités privées passées'|trans }}</h2>
+    {% if past_participations is empty %}
+        {% include 'account/_empty.html.twig' with { message: "Vous n'avez encore participé à aucune activité privée passée."|trans } %}
+    {% else %}
+        <div class="list-group">
+            {% for participation in past_participations %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ participation.privateActivity.title }}</strong>
+                        <div class="text-muted small">{{ participation.privateActivity.scheduledAt|date('d/m/Y') }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}
