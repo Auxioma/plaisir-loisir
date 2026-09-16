@@ -26,10 +26,9 @@ final class StaticAccount
             'avatar' => 'images/account/avatar-thomas.jpg',
             'memberSince' => 'Mai 2026',
             // Badge « non lues » partagé sidebar/header (spec, point 8).
-            // Séparé en deux compteurs (14/09, Lot G) : les messages sont
-            // désormais réels (MessageRepository::countUnreadForUser), les
-            // notifications restent la démo tant que Notification n'a pas
-            // d'écran de préférences pour les compter.
+            // Séparé en deux compteurs (14/09, Lot G) : les deux sont réels
+            // depuis le Lot K (MessageRepository puis NotificationRepository),
+            // seul l'avatar ci-dessus reste celui de la démo par défaut.
             'unreadMessages' => 3,
             'unreadNotifications' => 3,
         ];
@@ -170,37 +169,6 @@ final class StaticAccount
             ['place' => 'Alsace-Colmar', 'title' => 'Titre', 'rating' => '4.6', 'reviews' => 312, 'duration' => '2h', 'price' => 16, 'badge' => null, 'image' => 'images/account/alsace-galerie.jpg'],
             ['place' => 'Alsace-Colmar', 'title' => 'Titre', 'rating' => '4.8', 'reviews' => 64, 'duration' => '2h30', 'price' => 25, 'badge' => null, 'image' => 'images/account/alsace-colmar.jpg'],
             ['place' => 'Alsace', 'title' => 'Titre', 'rating' => '5.0', 'reviews' => 93, 'duration' => '3h', 'price' => 180, 'badge' => null, 'image' => 'images/account/alsace-helico.jpg'],
-        ];
-    }
-
-    /**
-     * Notifications groupées par section temporelle. `tone` pilote la
-     * couleur de l'icône ronde ; `muted` reproduit le fond gris de la
-     * maquette (items 3 et 6). Coquilles corrigées : « dasn » → dans,
-     * « alaissé » → a laissé, « électique » → électrique, « Ardècge » →
-     * Ardèche.
-     *
-     * @return list<array{section: string, items: list<array<string, string|bool|null>>}>
-     */
-    public static function notifications(): array
-    {
-        return [
-            [
-                'section' => "Aujourd'hui",
-                'items' => [
-                    ['icon' => 'heart', 'tone' => 'violet', 'title' => 'Votre activité a reçu un nouveau favori', 'detail' => "“Descente en canoe dans les Gorges de l'Ardèche”", 'time' => 'Il y a 10 minutes', 'thumb' => 'images/account/fav-kayak.jpg', 'muted' => false],
-                    ['icon' => 'calendar_check', 'tone' => 'violet', 'title' => 'Nouvelle réservation confirmée', 'detail' => 'Atelier cuisine provençale', 'meta' => '24 Mai 2026 à 10h00', 'time' => 'Il y a 1 heures', 'thumb' => 'images/account/fav-cuisine.jpg', 'muted' => false],
-                    ['icon' => 'heart', 'tone' => 'green', 'title' => 'Nouveau message de Sophie', 'detail' => "Bonjour Thomas, j'aimerais en savoir plus sur votre activités…", 'time' => 'Il y a 3 heures', 'thumb' => null, 'muted' => true],
-                ],
-            ],
-            [
-                'section' => 'Hier',
-                'items' => [
-                    ['icon' => 'heart', 'tone' => 'blue', 'title' => 'Rappel: Votre réservation arrive bientôt', 'detail' => 'Séance de yoga en pleine nature', 'meta' => '24 Mai 2026 à 10h00', 'time' => 'Hier à 18:30', 'thumb' => 'images/account/notif-yoga.jpg', 'muted' => false],
-                    ['icon' => 'calendar_check', 'tone' => 'green', 'title' => 'Votre activité a été publiée', 'detail' => '“Vol en montgolfière en provence ” est maintenant en ligne !', 'time' => 'Hier à 11:45', 'thumb' => 'images/activities/montgolfiere.jpg', 'muted' => false],
-                    ['icon' => 'heart', 'tone' => 'yellow', 'title' => 'Nouveau message de Sophie', 'detail' => 'Jean D. a laissé un commentaire sur “Location VTT électrique”', 'time' => 'Hier à 09:15', 'thumb' => null, 'muted' => true],
-                ],
-            ],
         ];
     }
 }

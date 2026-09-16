@@ -7,6 +7,8 @@ namespace App\Provider\Repository;
 use App\Catalog\Entity\Category;
 use App\Provider\Entity\ProviderProfile;
 use App\Provider\Enum\ProviderStatus;
+use App\Provider\Geo\FrenchCityCoordinates;
+use App\Provider\Geo\HaversineDistance;
 use App\User\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -53,11 +55,19 @@ class ProviderProfileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Recherche publique de professionnels vérifiés, par métier et/ou ville.
+     * Recherche publique de professionnels vérifiés, par métier, ville et
+     * rayon (§5, §9 du CDC).
+     *
+     * Le rayon n'est appliqué que si la ville recherchée est connue de
+     * FrenchCityCoordinates ; sinon la recherche retombe sur la
+     * correspondance texte habituelle (voir le commentaire de cette classe).
+     * Dans ce cas, seuls les prestataires dont la ville est ELLE AUSSI connue
+     * participent au tri par distance : les autres sont exclus plutôt
+     * qu'inclus avec une distance devinée.
      *
      * @return list<ProviderProfile>
      */
-    public function search(?Category $category, ?string $city): array
+    public function search(?Category $category, ?string $city, ?int $radiusKm = null): array
     {
         $qb = $this->createQueryBuilder('p')
             ->andWhere('p.status = :status')
@@ -72,13 +82,46 @@ class ProviderProfileRepository extends ServiceEntityRepository
             $qb->andWhere('p.mainCategory = :category')->setParameter('category', $category->getId(), 'ulid');
         }
 
-        if (null !== $city && '' !== trim($city)) {
+        $origin = null !== $radiusKm ? FrenchCityCoordinates::coordinatesFor($city) : null;
+
+        if (null === $origin && null !== $city && '' !== trim($city)) {
             $qb->andWhere('LOWER(p.city) LIKE LOWER(:city)')->setParameter('city', '%'.trim($city).'%');
         }
 
         /** @var list<ProviderProfile> $results */
         $results = $qb->getQuery()->getResult();
 
+        if (null !== $origin) {
+            return $this->withinRadius($results, $origin, $radiusKm);
+        }
+
         return $results;
+    }
+
+    /**
+     * @param array{0: float, 1: float} $origin
+     * @param list<ProviderProfile>     $providers
+     *
+     * @return list<ProviderProfile> triés du plus proche au plus loin
+     */
+    private function withinRadius(array $providers, array $origin, int $radiusKm): array
+    {
+        $withDistance = [];
+
+        foreach ($providers as $provider) {
+            $coordinates = FrenchCityCoordinates::coordinatesFor($provider->getCity());
+            if (null === $coordinates) {
+                continue;
+            }
+
+            $distance = HaversineDistance::betweenKm($origin[0], $origin[1], $coordinates[0], $coordinates[1]);
+            if ($distance <= $radiusKm) {
+                $withDistance[] = [$provider, $distance];
+            }
+        }
+
+        usort($withDistance, static fn (array $a, array $b): int => $a[1] <=> $b[1]);
+
+        return array_column($withDistance, 0);
     }
 }

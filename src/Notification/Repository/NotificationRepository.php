@@ -27,6 +27,14 @@ class NotificationRepository extends ServiceEntityRepository
         return $this->findBy(['recipient' => $recipient, 'readAt' => null], ['createdAt' => 'DESC']);
     }
 
+    /**
+     * @return Notification[]
+     */
+    public function findByRecipient(User $recipient): array
+    {
+        return $this->findBy(['recipient' => $recipient], ['createdAt' => 'DESC']);
+    }
+
     public function countUnread(User $recipient): int
     {
         return $this->count(['recipient' => $recipient, 'readAt' => null]);

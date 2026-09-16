@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\User\Service;
 
 use App\Legal\Service\ConsentService;
+use App\Notification\Repository\NotificationRepository;
+use App\Notification\Service\NotificationService;
 use App\Provider\Service\ProviderOnboardingService;
 use App\User\Entity\User;
 use App\User\Enum\AccountType;
@@ -101,7 +103,7 @@ final class RegistrationServiceTest extends TestCase
             $onboarding ?? $this->createStub(ProviderOnboardingService::class),
             $this->createStub(ConsentService::class),
             new RequestStack(),
-            new EmailVerificationService($em, $userRepository, $this->createStub(MailerInterface::class)),
+            new EmailVerificationService($em, $userRepository, $this->createStub(MailerInterface::class), new NotificationService($em, $this->createStub(NotificationRepository::class))),
         );
     }
 

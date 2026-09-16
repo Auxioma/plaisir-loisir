@@ -32,7 +32,12 @@
             <p class="auth-card__subtitle">{{ 'Nous allons tout mettre en place pour que vous puissiez accéder à votre compte personnel.'|trans }}</p>
         </div>
 
-        {{ form_start(registrationForm, { attr: { class: 'auth-form' }, action: path('app_register'), method: 'post' }) }}
+        {# data-turbo="false" : le contrôleur ré-affiche ce même formulaire avec ses erreurs
+           (HTTP 200, pas de redirection) quand la saisie est invalide. Turbo Drive exige une
+           redirection après un POST de formulaire ("Form responses must redirect to another
+           location") ; sans cet attribut il rejette silencieusement la réponse et l'utilisateur
+           ne voit jamais l'erreur (ex. e-mail déjà utilisé). #}
+        {{ form_start(registrationForm, { attr: { class: 'auth-form', 'data-turbo': 'false' }, action: path('app_register'), method: 'post' }) }}
             <div class="auth-fields">
                 <div class="auth-field">
                     <label class="auth-field__label" for="inputFullName">{{ 'Nom & prénom'|trans }}</label>

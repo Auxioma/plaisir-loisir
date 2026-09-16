@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Service;
 
 use App\Messaging\Repository\MessageRepository;
+use App\Notification\Repository\NotificationRepository;
 use App\User\Entity\User;
 use App\User\StaticAccount;
 
@@ -26,13 +27,14 @@ use App\User\StaticAccount;
  * L'IDENTITÉ EST RÉELLE, LE RESTE PAS ENCORE
  * Avatar réel depuis le Lot I (User::$avatarPath), avec repli sur celui de la
  * maquette tant que rien n'a été déposé. Les messages non lus sont réels
- * depuis le Lot G ; les notifications non lues restent la démo, faute
- * d'écran de préférences pour les compter.
+ * depuis le Lot G, les notifications non lues depuis le Lot K
+ * (NotificationRepository::countUnread).
  */
 final class AccountIdentityPresenter
 {
     public function __construct(
         private readonly MessageRepository $messages,
+        private readonly NotificationRepository $notifications,
     ) {
     }
 
@@ -52,7 +54,7 @@ final class AccountIdentityPresenter
             'avatar' => $user->getAvatarPath() ?? $demo['avatar'],
             'memberSince' => $this->formatMemberSince($user->getCreatedAt()),
             'unreadMessages' => $this->messages->countUnreadForUser($user),
-            'unreadNotifications' => $demo['unreadNotifications'],
+            'unreadNotifications' => $this->notifications->countUnread($user),
         ];
     }
 

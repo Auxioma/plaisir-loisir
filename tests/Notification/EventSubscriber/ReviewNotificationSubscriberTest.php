@@ -7,6 +7,7 @@ namespace App\Tests\Notification\EventSubscriber;
 use App\Notification\Entity\Notification;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\EventSubscriber\ReviewNotificationSubscriber;
+use App\Notification\Repository\NotificationRepository;
 use App\Notification\Service\NotificationService;
 use App\Provider\Entity\ProviderProfile;
 use App\Review\Entity\Review;
@@ -31,7 +32,7 @@ final class ReviewNotificationSubscriberTest extends TestCase
         ));
         $em->expects(self::once())->method('flush');
 
-        (new ReviewNotificationSubscriber(new NotificationService($em)))
+        (new ReviewNotificationSubscriber(new NotificationService($em, $this->createStub(NotificationRepository::class))))
             ->onReviewAdded(new ReviewAdded($review));
     }
 
@@ -43,7 +44,7 @@ final class ReviewNotificationSubscriberTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::never())->method('persist');
 
-        (new ReviewNotificationSubscriber(new NotificationService($em)))
+        (new ReviewNotificationSubscriber(new NotificationService($em, $this->createStub(NotificationRepository::class))))
             ->onReviewAdded(new ReviewAdded($review));
     }
 }

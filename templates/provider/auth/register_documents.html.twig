@@ -18,9 +18,11 @@
 {% set step = 2 %}
 
 {% block pa_signup %}
+    {# data-turbo="false" : voir templates/security/register.html.twig — même schéma
+       (ré-affichage 200 sur erreur) incompatible avec l'exigence de redirection de Turbo Drive. #}
     <form class="pa-signup__form pa-signup__form--docs" method="post"
           action="{{ path('app_pro_register_documents') }}" enctype="multipart/form-data"
-          data-controller="upload">
+          data-controller="upload" data-turbo="false">
         <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
 
         <div class="pa-drops">

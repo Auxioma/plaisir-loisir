@@ -1576,6 +1576,11 @@
 "Vérifiez votre adresse e-mail": "Verify your email address"
 "Un code de vérification vous a été envoyé par e-mail. Saisissez-le pour activer votre compte.": "A verification code has been sent to your email. Enter it to activate your account."
 
+# Redemande de code de vérification depuis la connexion (16/09) : un compte
+# « en attente » qui revient plus tard n'avait aucun moyen d'y accéder.
+"Entrez votre adresse e-mail pour recevoir un nouveau code de vérification.": "Enter your email address to receive a new verification code."
+"Recevoir un nouveau code": "Get a new code"
+
 # Paramètres du compte (Lot I, 15/09).
 "JPEG, PNG ou WebP, 4 Mo maximum.": "JPEG, PNG or WebP, 4 MB maximum."
 "Zone de danger": "Danger zone"
@@ -1595,3 +1600,22 @@
 "Aucune demande clôturée pour le moment.": "No closed requests yet."
 "Activités privées passées": "Past private activities"
 "Vous n'avez encore participé à aucune activité privée passée.": "You haven't taken part in any past private activities yet."
+
+# Notifications reconnectées + tableau de bord + préférences (Lot K, 16/09).
+"Notifications récentes": "Recent notifications"
+"Voir toutes les notifications": "See all notifications"
+"Vous n'avez encore aucune notification.": "You don't have any notifications yet."
+"Préférences": "Preferences"
+"Préférences de notification": "Notification preferences"
+"Recevoir aussi mes notifications par e-mail": "Also receive my notifications by email"
+"Les notifications restent toujours visibles dans votre espace compte, quel que soit ce réglage.": "Notifications always stay visible in your account area, whatever this setting is."
+
+# Export des données personnelles (Lot K, 16/09 ; §26 du CDC).
+"Vos données": "Your data"
+"Téléchargez une copie de vos données personnelles (profil, favoris, demandes, activités privées, avis, messages envoyés).": "Download a copy of your personal data (profile, favorites, requests, private activities, reviews, sent messages)."
+"Exporter mes données": "Export my data"
+
+# Recherche de professionnels par rayon (Lot K, 16/09 ; §5, §9 du CDC).
+"Rayon": "Radius"
+"Peu importe": "Any distance"
+"Le rayon ne s'applique que pour les villes reconnues ; sinon la recherche par texte reste utilisée.": "The radius only applies to recognized cities; otherwise, text search is used instead."

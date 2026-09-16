@@ -6,6 +6,7 @@ namespace App\Tests\Notification\Service;
 
 use App\Notification\Entity\Notification;
 use App\Notification\Enum\NotificationCategory;
+use App\Notification\Repository\NotificationRepository;
 use App\Notification\Service\NotificationService;
 use App\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,7 +22,7 @@ final class NotificationServiceTest extends TestCase
         $em->expects(self::once())->method('persist')->with(self::isInstanceOf(Notification::class));
         $em->expects(self::once())->method('flush');
 
-        $notification = (new NotificationService($em))->notify(
+        $notification = (new NotificationService($em, $this->createStub(NotificationRepository::class)))->notify(
             $recipient,
             NotificationCategory::Review,
             'Nouvel avis',
@@ -41,8 +42,29 @@ final class NotificationServiceTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::once())->method('flush');
 
-        (new NotificationService($em))->markAsRead($notification);
+        (new NotificationService($em, $this->createStub(NotificationRepository::class)))->markAsRead($notification);
 
         self::assertTrue($notification->isRead());
+    }
+
+    public function testMarkAllAsReadMarksEveryUnreadNotificationAndFlushesOnce(): void
+    {
+        $recipient = new User();
+        $first = new Notification();
+        $second = new Notification();
+
+        $repository = $this->createMock(NotificationRepository::class);
+        $repository->expects(self::once())
+            ->method('findUnreadByRecipient')
+            ->with($recipient)
+            ->willReturn([$first, $second]);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::once())->method('flush');
+
+        (new NotificationService($em, $repository))->markAllAsRead($recipient);
+
+        self::assertTrue($first->isRead());
+        self::assertTrue($second->isRead());
     }
 }

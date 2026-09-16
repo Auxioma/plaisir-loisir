@@ -28,7 +28,9 @@
 {% block title %}{{ 'Inscription professionnelle'|trans }}{% endblock %}
 
 {% block pa_signup %}
-    {{ form_start(registrationForm, { attr: { class: 'pa-signup__form' }, action: path('app_pro_register'), method: 'post' }) }}
+    {# data-turbo="false" : voir templates/security/register.html.twig — même schéma
+       (ré-affichage 200 sur erreur) incompatible avec l'exigence de redirection de Turbo Drive. #}
+    {{ form_start(registrationForm, { attr: { class: 'pa-signup__form', 'data-turbo': 'false' }, action: path('app_pro_register'), method: 'post' }) }}
         <div class="pa-grid">
             <div class="pa-field">
                 <label class="pa-label" for="proLastName">{{ 'Nom'|trans }}</label>

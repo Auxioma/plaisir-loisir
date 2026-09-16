@@ -8,6 +8,7 @@ use App\Messaging\Entity\Conversation;
 use App\Messaging\Entity\Message;
 use App\Messaging\Repository\ConversationRepository;
 use App\Messaging\Service\MessagingService;
+use App\Notification\Repository\NotificationRepository;
 use App\Notification\Service\NotificationService;
 use App\Provider\Entity\ProviderProfile;
 use App\User\Entity\User;
@@ -26,7 +27,7 @@ final class MessagingServiceTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::never())->method('persist');
 
-        $result = (new MessagingService($em, $conversations, new NotificationService($em)))
+        $result = (new MessagingService($em, $conversations, new NotificationService($em, $this->createStub(NotificationRepository::class))))
             ->openConversation(new User(), new ProviderProfile());
 
         self::assertSame($existing, $result);
@@ -44,7 +45,7 @@ final class MessagingServiceTest extends TestCase
         $em->expects(self::once())->method('persist')->with(self::isInstanceOf(Conversation::class));
         $em->expects(self::once())->method('flush');
 
-        $conversation = (new MessagingService($em, $conversations, new NotificationService($em)))
+        $conversation = (new MessagingService($em, $conversations, new NotificationService($em, $this->createStub(NotificationRepository::class))))
             ->openConversation($client, $provider);
 
         self::assertSame($client, $conversation->getClient());
@@ -69,7 +70,7 @@ final class MessagingServiceTest extends TestCase
         $em->expects(self::exactly(2))->method('persist');
         $em->expects(self::exactly(2))->method('flush');
 
-        $message = (new MessagingService($em, $this->createStub(ConversationRepository::class), new NotificationService($em)))
+        $message = (new MessagingService($em, $this->createStub(ConversationRepository::class), new NotificationService($em, $this->createStub(NotificationRepository::class))))
             ->sendMessage($conversation, $client, 'Bonjour, est-ce disponible ?');
 
         self::assertSame($client, $message->getAuthor());
@@ -86,7 +87,7 @@ final class MessagingServiceTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
 
-        (new MessagingService($em, $this->createStub(ConversationRepository::class), new NotificationService($em)))
+        (new MessagingService($em, $this->createStub(ConversationRepository::class), new NotificationService($em, $this->createStub(NotificationRepository::class))))
             ->sendMessage($conversation, new User(), 'Coucou');
     }
 
@@ -106,7 +107,7 @@ final class MessagingServiceTest extends TestCase
         $em->expects(self::once())->method('flush');
 
         // Le client lit : seuls les messages de l'annonceur passent à « lu ».
-        (new MessagingService($em, $this->createStub(ConversationRepository::class), new NotificationService($em)))
+        (new MessagingService($em, $this->createStub(ConversationRepository::class), new NotificationService($em, $this->createStub(NotificationRepository::class))))
             ->markRead($conversation, $client);
 
         self::assertFalse($fromClient->isRead());

@@ -266,6 +266,7 @@
 .acc-nactions { display: flex; gap: 22px; padding-bottom: 10px; }
 .acc-nlink { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--pl-action); text-decoration: none; }
 .acc-nlink:hover { text-decoration: underline; color: var(--pl-action); }
+button.acc-nlink { appearance: none; background: none; border: none; padding: 0; cursor: pointer; }
 
 .acc-nsection { margin: 26px 0 14px; font-size: 18px; font-weight: 700; color: var(--pl-text-strong); }
 /* Maquette : ligne de 88px (416->1336), fond #f8fafc SANS bordure pour TOUTES

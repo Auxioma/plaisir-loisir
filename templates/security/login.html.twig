@@ -29,7 +29,14 @@
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
             {% if error %}
-                <div class="auth-alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                <div class="auth-alert">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                    {# Compte « en attente » (AccountChecker::checkPreAuth) : seul cas où
+                       un lien est utile, l'utilisateur doit pouvoir redemander un code. #}
+                    {% if 'pas encore vérifiée' in error.messageKey %}
+                        <a class="auth-inline-link" href="{{ path('app_email_verification_request') }}">{{ 'Recevoir un nouveau code'|trans }}</a>
+                    {% endif %}
+                </div>
             {% endif %}
 
             <div class="auth-fields">

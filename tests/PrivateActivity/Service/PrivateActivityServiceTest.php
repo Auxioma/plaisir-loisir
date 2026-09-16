@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\PrivateActivity\Service;
 
 use App\Catalog\Entity\Category;
+use App\Notification\Entity\Notification;
+use App\Notification\Enum\NotificationCategory;
+use App\Notification\Repository\NotificationRepository;
+use App\Notification\Service\NotificationService;
 use App\PrivateActivity\Entity\Invitation;
 use App\PrivateActivity\Entity\Participation;
 use App\PrivateActivity\Entity\PrivateActivity;
@@ -117,17 +121,21 @@ final class PrivateActivityServiceTest extends TestCase
     {
         $activity = (new PrivateActivity())
             ->setOrganizer(new User())
+            ->setTitle('Atelier poterie')
             ->setParticipationMode(ParticipationMode::Automatic)
             ->setMaxParticipants(2);
 
         $participations = $this->createStub(ParticipationRepository::class);
         $participations->method('findOneByActivityAndParticipant')->willReturn(null);
 
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects(self::once())->method('flush');
+        // Stub, pas mock : l'acceptation immédiate déclenche aussi deux
+        // notifications (organisateur + participant), chacune avec son
+        // propre flush (voir le commentaire de service() ci-dessous) — ce
+        // test porte sur le statut, pas sur le compte d'appels.
+        $em = $this->createStub(EntityManagerInterface::class);
 
         $participation = $this->service($em, participations: $participations)
-            ->requestParticipation($activity, new User());
+            ->requestParticipation($activity, $this->namedUser());
 
         self::assertSame(ParticipationStatus::Accepted, $participation->getStatus());
         self::assertSame(PrivateActivityStatus::Open, $activity->getStatus());
@@ -147,6 +155,7 @@ final class PrivateActivityServiceTest extends TestCase
     {
         $activity = (new PrivateActivity())
             ->setOrganizer(new User())
+            ->setTitle('Atelier poterie')
             ->setParticipationMode(ParticipationMode::Automatic)
             ->setMaxParticipants(2);
         $activity->addParticipation((new Participation())->setParticipant(new User())->setStatus(ParticipationStatus::Accepted));
@@ -158,7 +167,7 @@ final class PrivateActivityServiceTest extends TestCase
         $em = $this->createStub(EntityManagerInterface::class);
 
         $participation = $this->service($em, participations: $participations)
-            ->requestParticipation($activity, new User());
+            ->requestParticipation($activity, $this->namedUser());
 
         self::assertSame(ParticipationStatus::WaitingList, $participation->getStatus());
         self::assertSame(PrivateActivityStatus::Full, $activity->getStatus(), 'L\'activité doit passer FULL une fois la capacité atteinte.');
@@ -172,6 +181,7 @@ final class PrivateActivityServiceTest extends TestCase
     {
         $activity = (new PrivateActivity())
             ->setOrganizer(new User())
+            ->setTitle('Sortie escalade')
             ->setParticipationMode(ParticipationMode::Validation)
             ->setMaxParticipants(10);
 
@@ -181,7 +191,7 @@ final class PrivateActivityServiceTest extends TestCase
         $em = $this->createStub(EntityManagerInterface::class);
 
         $participation = $this->service($em, participations: $participations)
-            ->requestParticipation($activity, new User());
+            ->requestParticipation($activity, $this->namedUser());
 
         self::assertSame(ParticipationStatus::Pending, $participation->getStatus());
     }
@@ -238,10 +248,11 @@ final class PrivateActivityServiceTest extends TestCase
         $organizer = new User();
         $activity = (new PrivateActivity())
             ->setOrganizer($organizer)
+            ->setTitle('Sortie vélo')
             ->setMaxParticipants(1)
             ->setStatus(PrivateActivityStatus::Full);
 
-        $leaving = (new Participation())->setParticipant(new User())->setStatus(ParticipationStatus::Accepted);
+        $leaving = (new Participation())->setParticipant($this->namedUser())->setStatus(ParticipationStatus::Accepted);
         $activity->addParticipation($leaving);
 
         $waiting = (new Participation())->setParticipant(new User())->setStatus(ParticipationStatus::WaitingList);
@@ -259,6 +270,129 @@ final class PrivateActivityServiceTest extends TestCase
         self::assertSame(ParticipationStatus::Accepted, $waiting->getStatus(), 'La personne en liste d\'attente n\'a pas été promue.');
     }
 
+    /**
+     * NotificationService est une classe finale (§NotificationServiceTest) :
+     * on l'instancie réellement, avec le même EntityManager que le service
+     * testé, plutôt que de tenter de la doubler — même règle que
+     * MessagingServiceTest.
+     */
+    /**
+     * §15 du CDC (« Activités ») : nouvelle demande de participation à
+     * notifier à l'organisateur.
+     */
+    public function testRequestParticipationNotifiesTheOrganizer(): void
+    {
+        $organizer = new User();
+        $activity = (new PrivateActivity())
+            ->setOrganizer($organizer)
+            ->setTitle('Randonnée au Mont-Blanc')
+            ->setParticipationMode(ParticipationMode::Validation);
+
+        $participations = $this->createStub(ParticipationRepository::class);
+        $participations->method('findOneByActivityAndParticipant')->willReturn(null);
+
+        $notified = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(function (object $entity) use (&$notified): void {
+            if ($entity instanceof Notification) {
+                $notified[] = $entity;
+            }
+        });
+
+        $this->service($em, participations: $participations)
+            ->requestParticipation($activity, $this->namedUser());
+
+        self::assertCount(1, $notified);
+        self::assertSame($organizer, $notified[0]->getRecipient());
+        self::assertSame(NotificationCategory::Activity, $notified[0]->getCategory());
+    }
+
+    public function testDecideNotifiesTheParticipantOfTheOutcome(): void
+    {
+        $organizer = new User();
+        $participant = new User();
+        $activity = (new PrivateActivity())->setOrganizer($organizer)->setTitle('Escalade')->setMaxParticipants(5);
+        $participation = (new Participation())->setParticipant($participant)->setStatus(ParticipationStatus::Pending);
+        $activity->addParticipation($participation);
+
+        $notified = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(function (object $entity) use (&$notified): void {
+            if ($entity instanceof Notification) {
+                $notified[] = $entity;
+            }
+        });
+
+        $this->service($em)->decide($participation, $organizer, false);
+
+        self::assertCount(1, $notified);
+        self::assertSame($participant, $notified[0]->getRecipient());
+        self::assertSame('Participation refusée', $notified[0]->getTitle());
+    }
+
+    /**
+     * §13.4 + §15 : la personne promue depuis la liste d'attente doit en
+     * être notifiée, et pas seulement voir son statut changer en silence.
+     */
+    public function testCancellingNotifiesTheOrganizerAndThePromotedParticipant(): void
+    {
+        $organizer = new User();
+        $activity = (new PrivateActivity())
+            ->setOrganizer($organizer)
+            ->setTitle('Sortie kayak')
+            ->setMaxParticipants(1)
+            ->setStatus(PrivateActivityStatus::Full);
+
+        $leaving = (new Participation())->setParticipant($this->namedUser())->setStatus(ParticipationStatus::Accepted);
+        $activity->addParticipation($leaving);
+
+        $promoted = (new Participation())->setParticipant(new User())->setStatus(ParticipationStatus::WaitingList);
+        $activity->addParticipation($promoted);
+
+        $participations = $this->createStub(ParticipationRepository::class);
+        $participations->method('findOldestWaiting')->willReturn([$promoted]);
+
+        $notified = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(function (object $entity) use (&$notified): void {
+            if ($entity instanceof Notification) {
+                $notified[] = $entity;
+            }
+        });
+
+        $this->service($em, participations: $participations)
+            ->cancelParticipation($leaving, $leaving->getParticipant());
+
+        self::assertCount(2, $notified);
+        $recipients = array_map(static fn (Notification $n): ?User => $n->getRecipient(), $notified);
+        self::assertContains($organizer, $recipients);
+        self::assertContains($promoted->getParticipant(), $recipients);
+    }
+
+    public function testCancelNotifiesEveryActiveParticipant(): void
+    {
+        $organizer = new User();
+        $activity = (new PrivateActivity())->setOrganizer($organizer)->setTitle('Pique-nique');
+
+        $accepted = (new Participation())->setParticipant(new User())->setStatus(ParticipationStatus::Accepted);
+        $refused = (new Participation())->setParticipant(new User())->setStatus(ParticipationStatus::Refused);
+        $activity->addParticipation($accepted);
+        $activity->addParticipation($refused);
+
+        $notified = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(function (object $entity) use (&$notified): void {
+            if ($entity instanceof Notification) {
+                $notified[] = $entity;
+            }
+        });
+
+        $this->service($em)->cancel($activity, $organizer);
+
+        self::assertCount(1, $notified, 'Seuls les participants actifs (pas les refusés) doivent être notifiés.');
+        self::assertSame($accepted->getParticipant(), $notified[0]->getRecipient());
+    }
+
     private function service(
         EntityManagerInterface $em,
         ?InvitationRepository $invitations = null,
@@ -268,6 +402,20 @@ final class PrivateActivityServiceTest extends TestCase
             $em,
             $invitations ?? $this->createStub(InvitationRepository::class),
             $participations ?? $this->createStub(ParticipationRepository::class),
+            new NotificationService($em, $this->createStub(NotificationRepository::class)),
         );
+    }
+
+    /**
+     * `User::$firstName`/`$lastName` sont des propriétés typées sans valeur
+     * par défaut : un `new User()` nu plante dès que le code de production
+     * lit ces champs (message de notification à l'organisateur/au
+     * participant). Ce participant-là a un nom ; les autres `new User()` du
+     * fichier ne servent que d'identité (destinataire, comparaison), jamais
+     * de nom affiché.
+     */
+    private function namedUser(): User
+    {
+        return (new User())->setFirstName('Alix')->setLastName('Test');
     }
 }

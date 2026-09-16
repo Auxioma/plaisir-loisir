@@ -11,6 +11,12 @@ use App\Catalog\Presenter\DestinationPresenter;
 use App\Event\Repository\EventRepository;
 use App\Favorite\Repository\FavoriteRepository;
 use App\Messaging\Repository\MessageRepository;
+use App\Notification\Entity\Notification;
+use App\Notification\Entity\NotificationPreference;
+use App\Notification\Presenter\NotificationPresenter;
+use App\Notification\Repository\NotificationPreferenceRepository;
+use App\Notification\Repository\NotificationRepository;
+use App\Notification\Service\NotificationService;
 use App\PrivateActivity\Entity\Participation;
 use App\PrivateActivity\Enum\ParticipationStatus;
 use App\PrivateActivity\Repository\ParticipationRepository;
@@ -19,11 +25,13 @@ use App\Quote\Repository\ServiceRequestRepository;
 use App\User\Entity\User;
 use App\User\Enum\UserStatus;
 use App\User\Service\AccountAnonymizer;
+use App\User\Service\AccountDataExporter;
 use App\User\Service\AvatarStorageService;
 use App\User\StaticAccount;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -52,8 +60,13 @@ final class AccountController extends AbstractController
         private readonly MessageRepository $messages,
         private readonly AvatarStorageService $avatars,
         private readonly AccountAnonymizer $anonymizer,
+        private readonly AccountDataExporter $dataExporter,
         private readonly EntityManagerInterface $entityManager,
         private readonly EventRepository $events,
+        private readonly NotificationRepository $notificationRepository,
+        private readonly NotificationService $notificationService,
+        private readonly NotificationPresenter $notificationPresenter,
+        private readonly NotificationPreferenceRepository $notificationPreferences,
     ) {
     }
 
@@ -93,7 +106,24 @@ final class AccountController extends AbstractController
             'organized_count' => \count($organized),
             'joined_count' => \count($joined),
             'favorites_count' => $favoriteActivitiesCount + $favoriteDestinationsCount,
+            'recent_notifications' => $this->notificationPresenter->items(\array_slice($this->notificationRepository->findByRecipient($user), 0, 5)),
         ]);
+    }
+
+    /**
+     * Favoris, notifications et déconnexion sont accessibles depuis les deux
+     * menus (client et pro, voir StaticAccount::providerMenu()) : un
+     * prestataire qui clique dessus depuis son espace pro ne doit pas se
+     * retrouver avec la sidebar client. Même règle que
+     * ConversationController::menuFor().
+     *
+     * @return list<array{icon: string, title: string, subtitle: string, route: string|null, badge: string|false}>
+     */
+    private function menuFor(User $user): array
+    {
+        return \in_array('ROLE_PROVIDER', $user->getRoles(), true)
+            ? StaticAccount::providerMenu()
+            : StaticAccount::menu();
     }
 
     /**
@@ -166,7 +196,7 @@ final class AccountController extends AbstractController
 
         return $this->render('account/favoris.html.twig', [
             'user' => $this->accountUser(),
-            'menu' => StaticAccount::menu(),
+            'menu' => $this->menuFor($user),
             'active' => 'Mes favoris',
             'tab' => $tab,
             'empty' => $empty,
@@ -179,22 +209,104 @@ final class AccountController extends AbstractController
     {
         return $this->render('account/liste.html.twig', [
             'user' => $this->accountUser(),
-            'menu' => StaticAccount::menu(),
+            'menu' => $this->menuFor($this->currentUser()),
             'active' => 'Mes favoris',
             'list_name' => 'Alsace - 2026',
             'favorites' => StaticAccount::alsaceList(),
         ]);
     }
 
+    /**
+     * Écran Notifications (Lot K, 16/09) : liste réelle
+     * (NotificationRepository), onglets Toutes/Non lues/Lues filtrés côté
+     * serveur, regroupement par jour via NotificationPresenter.
+     */
     #[Route(path: ['fr' => '/compte/notifications', 'en' => '/en/account/notifications'], name: 'app_account_notifications')]
     public function notifications(Request $request): Response
     {
+        $user = $this->currentUser();
+        $all = $this->notificationRepository->findByRecipient($user);
+        $total = \count($all);
+        $unread = \count(array_filter($all, static fn (Notification $n): bool => !$n->isRead()));
+
+        $filter = $request->query->get('filtre', 'toutes');
+        if (!\in_array($filter, ['toutes', 'non-lues', 'lues'], true)) {
+            $filter = 'toutes';
+        }
+
+        $filtered = match ($filter) {
+            'non-lues' => array_values(array_filter($all, static fn (Notification $n): bool => !$n->isRead())),
+            'lues' => array_values(array_filter($all, static fn (Notification $n): bool => $n->isRead())),
+            default => $all,
+        };
+
+        $empty = $request->query->has('vide')
+            ? $request->query->getBoolean('vide')
+            : [] === $filtered;
+
         return $this->render('account/notifications.html.twig', [
             'user' => $this->accountUser(),
-            'menu' => StaticAccount::menu(),
+            'menu' => $this->menuFor($user),
             'active' => 'Notifications',
-            'empty' => $request->query->getBoolean('vide'),
-            'groups' => StaticAccount::notifications(),
+            'empty' => $empty,
+            'filter' => $filter,
+            'total' => $total,
+            'unread' => $unread,
+            'groups' => $this->notificationPresenter->groups($filtered),
+        ]);
+    }
+
+    #[Route(path: ['fr' => '/compte/notifications/tout-marquer-lu', 'en' => '/en/account/notifications/mark-all-read'], name: 'app_account_notifications_mark_all_read', methods: ['POST'])]
+    public function markAllNotificationsRead(Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+            return $this->redirectToRoute('app_account_notifications');
+        }
+
+        $this->notificationService->markAllAsRead($this->currentUser());
+
+        return $this->redirectToRoute('app_account_notifications');
+    }
+
+    /**
+     * Préférences de notification (Lot K, 16/09 ; §7.2 et §8.3 du CDC).
+     * Seul le canal e-mail est proposé : c'est le seul réellement câblé
+     * (NotificationEmailListener) — le canal push n'a aucune infrastructure
+     * d'envoi, l'exposer serait un réglage sans effet.
+     */
+    #[Route(path: ['fr' => '/compte/notifications/preferences', 'en' => '/en/account/notifications/preferences'], name: 'app_account_notification_preferences', methods: ['GET', 'POST'])]
+    public function notificationPreferences(Request $request): Response
+    {
+        $user = $this->currentUser();
+        $preference = $this->notificationPreferences->findOneByUser($user);
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+                return $this->redirectToRoute('app_account_notification_preferences');
+            }
+
+            if (null === $preference) {
+                $preference = (new NotificationPreference())->setUser($user);
+                $this->entityManager->persist($preference);
+            }
+
+            $preference->setEmailEnabled($request->request->getBoolean('email_enabled'));
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'Vos préférences ont été enregistrées.');
+
+            return $this->redirectToRoute('app_account_notification_preferences');
+        }
+
+        return $this->render('account/notification_preferences.html.twig', [
+            'user' => $this->accountUser(),
+            'menu' => $this->menuFor($user),
+            'active' => 'Notifications',
+            'email_enabled' => $preference?->isEmailEnabled() ?? true,
         ]);
     }
 
@@ -314,6 +426,25 @@ final class AccountController extends AbstractController
     }
 
     /**
+     * Export des données personnelles (Lot K, 16/09 ; §26 du CDC — droit à
+     * la portabilité). GET, pas POST : contrairement à la désactivation ou
+     * la suppression ci-dessous, télécharger un export ne modifie aucun état,
+     * un jeton CSRF n'aurait rien à protéger.
+     */
+    #[Route(path: ['fr' => '/compte/parametres/exporter', 'en' => '/en/account/settings/export'], name: 'app_account_export')]
+    public function exportData(): Response
+    {
+        $data = $this->dataExporter->export($this->currentUser());
+
+        $response = new JsonResponse($data, headers: [
+            'Content-Disposition' => 'attachment; filename="mes-donnees-trouvemoi.json"',
+        ]);
+        $response->setEncodingOptions(JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        return $response;
+    }
+
+    /**
      * Désactivation : statut suspendu, réversible par l'administration —
      * distincte de la suppression ci-dessous, qui efface les données.
      */
@@ -360,7 +491,7 @@ final class AccountController extends AbstractController
     {
         return $this->render('account/deconnexion.html.twig', [
             'user' => $this->accountUser(),
-            'menu' => StaticAccount::menu(),
+            'menu' => $this->menuFor($this->currentUser()),
             'active' => 'Déconnexion',
         ]);
     }
@@ -401,9 +532,8 @@ final class AccountController extends AbstractController
             'memberSince' => $this->formatMemberSince($user->getCreatedAt()),
             // Messages non lus : réel depuis le Lot G (MessageRepository).
             'unreadMessages' => $this->messages->countUnreadForUser($user),
-            // Notifications non lues : encore la démo, faute d'écran de
-            // préférences pour les compter (Lot H, non fait).
-            'unreadNotifications' => $demo['unreadNotifications'],
+            // Notifications non lues : réel depuis le Lot K (NotificationRepository).
+            'unreadNotifications' => $this->notificationRepository->countUnread($user),
         ];
     }
 

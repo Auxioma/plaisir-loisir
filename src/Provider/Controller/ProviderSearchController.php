@@ -22,12 +22,13 @@ use Symfony\Component\Routing\Attribute\Route;
  * par métier ou par ville, alors que ServiceRequest et Quote — le cœur du
  * modèle demande/proposition — existaient déjà côté service.
  *
- * LA VILLE, PAS ENCORE LE RAYON
- * Le CDC demande métier/ville/rayon. Le rayon suppose un géocodage (adresse →
- * latitude/longitude) qu'aucun service du dépôt ne fournit aujourd'hui : la
- * recherche se limite donc à une correspondance texte sur la ville. Un vrai
- * rayon (Haversine sur lat/lng) est une extension immédiate de
- * ProviderProfileRepository::search() le jour où le géocodage existe.
+ * LE RAYON (Lot K, 16/09)
+ * Le CDC demande métier/ville/rayon. Un vrai géocodage (adresse précise →
+ * coordonnées) suppose un fournisseur externe — décision hors du périmètre
+ * de ce câblage, comme OAuth ou Stripe. La recherche par rayon s'appuie donc
+ * sur FrenchCityCoordinates, une table des principales villes françaises :
+ * suffisant pour un rayon utile, sans clé d'API ni appel réseau. Voir le
+ * commentaire de cette classe pour la limite assumée.
  */
 final class ProviderSearchController extends AbstractController
 {
@@ -43,18 +44,20 @@ final class ProviderSearchController extends AbstractController
     {
         $categorySlug = (string) $request->query->get('metier', '');
         $city = trim((string) $request->query->get('ville', ''));
+        $radiusKm = $request->query->getInt('rayon', 0);
 
         $category = '' !== $categorySlug
             ? $this->categories->findOneBy(['slug' => $categorySlug])
             : null;
 
-        $results = $this->providers->search($category, '' !== $city ? $city : null);
+        $results = $this->providers->search($category, '' !== $city ? $city : null, $radiusKm > 0 ? $radiusKm : null);
 
         return $this->render('provider/recherche.html.twig', [
             'results' => $results,
             'categories' => $this->categories->findRoots(),
             'selected_category' => $category,
             'city' => $city,
+            'radius' => $radiusKm,
         ]);
     }
 

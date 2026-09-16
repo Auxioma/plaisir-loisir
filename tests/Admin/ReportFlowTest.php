@@ -7,7 +7,13 @@ namespace App\Tests\Admin;
 use App\Admin\Entity\Report;
 use App\Admin\Enum\ReportStatus;
 use App\Catalog\Entity\Category;
+use App\Messaging\Service\MessagingService;
 use App\PrivateActivity\Service\PrivateActivityService;
+use App\Provider\Entity\ProviderProfile;
+use App\Provider\Enum\ProviderStatus;
+use App\Provider\Service\ProviderSlugService;
+use App\Quote\Service\QuoteService;
+use App\Review\Service\ReviewService;
 use App\User\Entity\User;
 use App\User\Enum\UserStatus;
 use Doctrine\ORM\EntityManagerInterface;
@@ -78,6 +84,101 @@ final class ReportFlowTest extends WebTestCase
         $count = $entityManager->getRepository(Report::class)->count(['subjectLabel' => $activity->getTitle()]);
 
         self::assertSame(1, $count, 'Le même signalement a été enregistré deux fois.');
+    }
+
+    /**
+     * §16.4 du CDC : le formulaire « Signaler » couvre aussi les avis
+     * (Lot K, 16/09 — jusqu'ici seuls Profil et Activité l'avaient).
+     */
+    public function testReportingAReviewCreatesAPendingReport(): void
+    {
+        $client = static::createClient();
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $category = $entityManager->getRepository(Category::class)->findOneBy([]);
+        self::assertNotNull($category);
+
+        $providerUser = $this->makeUser();
+        $provider = (new ProviderProfile())
+            ->setUser($providerUser)
+            ->setDisplayName('Pro '.uniqid())
+            ->setMainCategory($category)
+            ->setStatus(ProviderStatus::Verified);
+        static::getContainer()->get(ProviderSlugService::class)->assign($provider);
+        $entityManager->persist($provider);
+        $entityManager->flush();
+
+        $author = $this->makeUser();
+        $quoteService = static::getContainer()->get(QuoteService::class);
+        $request = $quoteService->createRequest($author, $category, 'Demande à noter', 'Description.');
+        $quote = $quoteService->submitQuote($request, $provider, '100.00');
+        $quoteService->accept($quote);
+
+        $review = static::getContainer()->get(ReviewService::class)->addReview($quote, $author, 5, 'Très bien.');
+
+        $reporter = $this->makeUser();
+        $client->loginUser($reporter);
+        $crawler = $client->request('GET', '/professionnels/'.$provider->getSlug());
+        self::assertResponseIsSuccessful();
+
+        $token = (string) $crawler->filter('form[action*="signalement"] input[name="_token"]')->first()->attr('value');
+        $client->request('POST', '/signalement', [
+            '_token' => $token,
+            'subject_type' => 'review',
+            'subject_id' => (string) $review->getId(),
+            'subject_label' => 'Avis de '.$author->getFirstName(),
+            'reason' => 'offensive_content',
+        ]);
+
+        self::assertResponseRedirects();
+
+        $report = $entityManager->getRepository(Report::class)->findOneBy(['subjectLabel' => 'Avis de '.$author->getFirstName()]);
+        self::assertNotNull($report, 'Le signalement de l\'avis n\'a pas été enregistré.');
+        self::assertSame(ReportStatus::Pending, $report->getStatus());
+    }
+
+    /**
+     * §16.4 du CDC : le formulaire « Signaler » couvre aussi les messages
+     * (Lot K, 16/09).
+     */
+    public function testReportingAMessageCreatesAPendingReport(): void
+    {
+        $client = static::createClient();
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $category = $entityManager->getRepository(Category::class)->findOneBy([]);
+        self::assertNotNull($category);
+
+        $providerUser = $this->makeUser();
+        $provider = (new ProviderProfile())
+            ->setUser($providerUser)
+            ->setDisplayName('Pro '.uniqid())
+            ->setMainCategory($category)
+            ->setStatus(ProviderStatus::Verified);
+        static::getContainer()->get(ProviderSlugService::class)->assign($provider);
+        $entityManager->persist($provider);
+        $entityManager->flush();
+
+        $messagingService = static::getContainer()->get(MessagingService::class);
+        $reporter = $this->makeUser();
+        $conversation = $messagingService->openConversation($reporter, $provider);
+        $messagingService->sendMessage($conversation, $providerUser, 'Contenu litigieux.');
+
+        $client->loginUser($reporter);
+        $crawler = $client->request('GET', '/compte/messages/'.$conversation->getId());
+        self::assertResponseIsSuccessful();
+
+        $token = (string) $crawler->filter('form[action*="signalement"] input[name="_token"]')->first()->attr('value');
+        $client->request('POST', '/signalement', [
+            '_token' => $token,
+            'subject_type' => 'message',
+            'subject_id' => (string) $conversation->getMessages()->first()->getId(),
+            'subject_label' => 'Message signalé',
+            'reason' => 'offensive_content',
+        ]);
+
+        self::assertResponseRedirects();
+
+        $report = $entityManager->getRepository(Report::class)->findOneBy(['subjectLabel' => 'Message signalé']);
+        self::assertNotNull($report, 'Le signalement du message n\'a pas été enregistré.');
     }
 
     private function makeActivity(): \App\PrivateActivity\Entity\PrivateActivity

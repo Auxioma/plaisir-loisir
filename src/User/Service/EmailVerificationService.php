@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\User\Service;
 
+use App\Notification\Enum\NotificationCategory;
+use App\Notification\Service\NotificationService;
 use App\User\Entity\User;
 use App\User\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,6 +35,7 @@ final class EmailVerificationService
         private readonly EntityManagerInterface $entityManager,
         private readonly UserRepository $userRepository,
         private readonly MailerInterface $mailer,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -109,6 +112,13 @@ final class EmailVerificationService
 
         $user->markEmailVerified();
         $this->entityManager->flush();
+
+        $this->notifications->notify(
+            $user,
+            NotificationCategory::System,
+            'Bienvenue sur TrouveMoi',
+            'Votre adresse e-mail est vérifiée, votre compte est actif.',
+        );
 
         return true;
     }

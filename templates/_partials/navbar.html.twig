@@ -13,7 +13,7 @@
     n'a pas accès. Une seule source de vérité : app.user.
 
     Icônes connectées câblées sur l'espace compte : cœur → Mes favoris,
-    cloche → Notifications, avatar → espace compte (messagerie à venir).
+    enveloppe → Messagerie, cloche → Notifications, avatar → espace compte.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 {# En dev seulement, « ?connecte=1 » prévisualise l'état connecté sans compte
@@ -101,7 +101,7 @@
                     <a href="{{ path('app_pro_subscription') }}" class="pl-iconbtn" aria-label="{{ 'Abonnement'|trans }}">{{ icon.card(20) }}</a>
                 {% endif %}
                 <a href="{{ path('app_account_favorites') }}" class="pl-iconbtn" aria-label="{{ 'Mes favoris'|trans }}">{{ icon.heart(20) }}</a>
-                <button type="button" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">{{ icon.mail(20) }}</button>
+                <a href="{{ path('app_account_messages') }}" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">{{ icon.mail(20) }}</a>
                 <a href="{{ path('app_account_notifications') }}" class="pl-iconbtn" aria-label="{{ 'Notifications'|trans }}">{{ icon.bell(20) }}</a>
 
                 {# Répond au signalement du 14/09 : ni le compte pro ni le compte
@@ -112,7 +112,7 @@
                    pro ; agrégat demandes/activités privées/favoris côté client,
                    account/_layout.html.twig::dashboard()). #}
                 <a href="{{ is_granted('ROLE_PROVIDER') ? path('app_pro_dashboard') : path('app_account_dashboard') }}" class="pl-avatarbtn" aria-label="{{ 'Tableau de bord'|trans }}">
-                    <img src="{{ asset('images/account/avatar-thomas.jpg') }}" alt="">
+                    <img src="{{ asset(app.user.avatarPath ?? 'images/account/avatar-thomas.jpg') }}" alt="">
                     <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
                 </a>
             {% else %}

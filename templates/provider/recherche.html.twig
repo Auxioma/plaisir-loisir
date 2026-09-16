@@ -1,7 +1,12 @@
 {#
-    Recherche de professionnels (§5, §9 du CDC) : filtre métier + ville, liste
-    des prestataires VÉRIFIÉS. Pas de maquette Figma pour cet écran — mise en
-    page Bootstrap 5 sobre plutôt qu'une reconstitution approximative au pixel.
+    Recherche de professionnels (§5, §9 du CDC) : filtre métier + ville +
+    rayon, liste des prestataires VÉRIFIÉS. Pas de maquette Figma pour cet
+    écran — mise en page Bootstrap 5 sobre plutôt qu'une reconstitution
+    approximative au pixel.
+    Le rayon (Lot K, 16/09) ne s'applique que si la ville saisie est connue
+    de FrenchCityCoordinates — sinon la recherche reste la correspondance
+    texte habituelle, sans message d'erreur : voir le commentaire de
+    ProviderProfileRepository::search().
 #}
 {% extends 'base.html.twig' %}
 
@@ -14,7 +19,7 @@
     </h1>
 
     <form method="get" class="row g-3 align-items-end mb-5">
-        <div class="col-sm-5">
+        <div class="col-sm-4">
             <label class="form-label" for="metier">{{ 'Métier'|trans }}</label>
             <select class="form-select" id="metier" name="metier">
                 <option value="">{{ 'Tous les métiers'|trans }}</option>
@@ -25,13 +30,26 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="col-sm-5">
+        <div class="col-sm-4">
             <label class="form-label" for="ville">{{ 'Ville'|trans }}</label>
             <input class="form-control" type="text" id="ville" name="ville" value="{{ city }}" placeholder="{{ 'Ex. Lyon'|trans }}">
         </div>
         <div class="col-sm-2">
+            <label class="form-label" for="rayon">{{ 'Rayon'|trans }}</label>
+            <select class="form-select" id="rayon" name="rayon">
+                <option value="0">{{ 'Peu importe'|trans }}</option>
+                <option value="10" {{ radius == 10 ? 'selected' }}>10 km</option>
+                <option value="25" {{ radius == 25 ? 'selected' }}>25 km</option>
+                <option value="50" {{ radius == 50 ? 'selected' }}>50 km</option>
+                <option value="100" {{ radius == 100 ? 'selected' }}>100 km</option>
+            </select>
+        </div>
+        <div class="col-sm-2">
             <button type="submit" class="btn pl-btn pl-btn--primary w-100">{{ 'Rechercher'|trans }}</button>
         </div>
+        {% if radius > 0 %}
+            <div class="col-12 text-muted small">{{ 'Le rayon ne s\'applique que pour les villes reconnues ; sinon la recherche par texte reste utilisée.'|trans }}</div>
+        {% endif %}
     </form>
 
     {% if results is empty %}

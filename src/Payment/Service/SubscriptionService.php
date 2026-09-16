@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Payment\Service;
 
+use App\Notification\Enum\NotificationCategory;
+use App\Notification\Service\NotificationService;
 use App\Payment\Entity\Subscription;
 use App\Payment\Entity\SubscriptionPlan;
 use App\Payment\Enum\SubscriptionStatus;
@@ -23,6 +25,7 @@ final class SubscriptionService
         private readonly EntityManagerInterface $entityManager,
         private readonly SubscriptionRepository $subscriptions,
         private readonly SubscriptionGateway $gateway,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -79,6 +82,18 @@ final class SubscriptionService
         }
 
         $this->entityManager->flush();
+
+        $owner = $provider->getUser();
+        if (null !== $owner) {
+            $this->notifications->notify(
+                $owner,
+                NotificationCategory::Payment,
+                'Abonnement résilié',
+                $atPeriodEnd
+                    ? 'Votre abonnement sera résilié à la fin de la période en cours.'
+                    : 'Votre abonnement a été résilié.',
+            );
+        }
     }
 
     /**
@@ -100,6 +115,7 @@ final class SubscriptionService
             return;
         }
 
+        $previousStatus = $subscription->getStatus();
         $subscription->setStatus($status);
 
         if (null !== $currentPeriodStart) {
@@ -110,6 +126,26 @@ final class SubscriptionService
         }
 
         $this->entityManager->flush();
+
+        if ($previousStatus === $status) {
+            return;
+        }
+
+        $owner = $subscription->getProvider()?->getUser();
+        if (null === $owner) {
+            return;
+        }
+
+        $message = match ($status) {
+            SubscriptionStatus::Active => ['Abonnement activé', 'Votre abonnement est actif.'],
+            SubscriptionStatus::PastDue => ['Échec de paiement', 'Le paiement de votre abonnement a échoué. Merci de mettre à jour votre moyen de paiement.'],
+            SubscriptionStatus::Cancelled => ['Abonnement résilié', 'Votre abonnement a été résilié.'],
+            SubscriptionStatus::Incomplete => null,
+        };
+
+        if (null !== $message) {
+            $this->notifications->notify($owner, NotificationCategory::Payment, $message[0], $message[1]);
+        }
     }
 
     private function stampCurrentPeriod(Subscription $subscription, SubscriptionPlan $plan): void

@@ -97,6 +97,11 @@
                                 <p class="mb-0">{{ review.providerReply|nl2br }}</p>
                             </div>
                         {% endif %}
+                        {% include '_partials/_report_form.html.twig' with {
+                            subject_type: 'review',
+                            subject_id: review.id,
+                            subject_label: 'Avis de ' ~ review.author.firstName,
+                        } %}
                     </div>
                 </div>
             {% endfor %}

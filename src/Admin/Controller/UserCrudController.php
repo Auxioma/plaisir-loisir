@@ -6,6 +6,8 @@ namespace App\Admin\Controller;
 
 use App\Admin\Enum\AuditAction;
 use App\Admin\Service\AuditLogger;
+use App\Notification\Enum\NotificationCategory;
+use App\Notification\Service\NotificationService;
 use App\User\Entity\User;
 use App\User\Enum\UserStatus;
 use App\User\Service\AccountAnonymizer;
@@ -61,6 +63,7 @@ class UserCrudController extends AbstractCrudController
         private readonly PasswordResetService $passwordReset,
         private readonly Security $security,
         private readonly AuditLogger $auditLogger,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -300,6 +303,15 @@ class UserCrudController extends AbstractCrudController
                 targetId: $membre->getId(),
                 targetLabel: $membre->getEmail(),
                 details: sprintf('%s → %s', self::statusLabel($statutAvant), self::statusLabel($membre->getStatus())),
+            );
+
+            // §15 du CDC (« Compte ») : la suspension fait partie des
+            // événements à notifier au membre concerné.
+            $this->notifications->notify(
+                $membre,
+                NotificationCategory::System,
+                'Compte suspendu',
+                'Votre compte a été suspendu. Contactez-nous si vous pensez qu\'il s\'agit d\'une erreur.',
             );
         }
 

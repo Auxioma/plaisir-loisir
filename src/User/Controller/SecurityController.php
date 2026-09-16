@@ -290,6 +290,45 @@ final class SecurityController extends AbstractController
 
     private const SESSION_VERIFY_EMAIL = 'email_verification_email';
 
+    /**
+     * Point d'entrée public pour redemander un code, quand la session posée à
+     * l'inscription (SESSION_VERIFY_EMAIL) a expiré ou n'a jamais existé — ex.
+     * un compte resté « en attente » (AccountChecker) qui revient se connecter
+     * plus tard n'avait jusqu'ici aucun moyen de retrouver cet écran. Même
+     * schéma que forgotPasswordRequest() : muet sur l'existence du compte.
+     */
+    #[Route(path: ['fr' => '/verification-email/demande', 'en' => '/en/verify-email/request'], name: 'app_email_verification_request', methods: ['GET', 'POST'])]
+    public function emailVerificationRequest(Request $request, EmailVerificationService $emailVerification): Response
+    {
+        $session = $request->getSession();
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Votre session a expiré, merci de recommencer.');
+
+                return $this->redirectToRoute('app_email_verification_request');
+            }
+
+            $email = trim((string) $request->request->get('email'));
+
+            if ('' === $email) {
+                $this->addFlash('error', 'Veuillez saisir votre adresse e-mail.');
+
+                return $this->redirectToRoute('app_email_verification_request');
+            }
+
+            $emailVerification->resend($email);
+
+            $session->set(self::SESSION_VERIFY_EMAIL, $email);
+
+            return $this->redirectToRoute('app_email_verification');
+        }
+
+        return $this->render('security/email_verification_request.html.twig', [
+            'email' => (string) $session->get(self::SESSION_VERIFY_EMAIL, ''),
+        ]);
+    }
+
     #[Route(path: ['fr' => '/verification-email', 'en' => '/en/verify-email'], name: 'app_email_verification', methods: ['GET', 'POST'])]
     public function emailVerification(Request $request, EmailVerificationService $emailVerification): Response
     {

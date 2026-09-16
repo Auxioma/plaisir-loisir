@@ -23,6 +23,13 @@
                         <div class="small {{ mine ? 'text-white-50' : 'text-muted' }}">
                             {{ message.createdAt|date('d/m/Y H:i') }}
                         </div>
+                        {% if not mine %}
+                            {% include '_partials/_report_form.html.twig' with {
+                                subject_type: 'message',
+                                subject_id: message.id,
+                                subject_label: 'Message de ' ~ other,
+                            } %}
+                        {% endif %}
                     </div>
                 </div>
             </div>

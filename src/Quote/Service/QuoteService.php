@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Quote\Service;
 
 use App\Catalog\Entity\Category;
+use App\Notification\Enum\NotificationCategory;
+use App\Notification\Service\NotificationService;
 use App\Provider\Entity\ProviderProfile;
+use App\Provider\Repository\ProviderProfileRepository;
 use App\Quote\Entity\Quote;
 use App\Quote\Entity\ServiceRequest;
 use App\Quote\Repository\QuoteRepository;
@@ -20,9 +23,16 @@ final class QuoteService
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly QuoteRepository $quotes,
+        private readonly ProviderProfileRepository $providers,
+        private readonly NotificationService $notifications,
     ) {
     }
 
+    /**
+     * Notifie les prestataires vérifiés du métier demandé (§15 du CDC :
+     * « nouvelle demande pertinente »). Même filtre que ProviderRequestController
+     * (métier uniquement, pas de rayon — cf. ProviderSearchController).
+     */
     public function createRequest(User $client, Category $category, string $title, string $description): ServiceRequest
     {
         $request = (new ServiceRequest())
@@ -33,6 +43,18 @@ final class QuoteService
 
         $this->entityManager->persist($request);
         $this->entityManager->flush();
+
+        foreach ($this->providers->search($category, null) as $provider) {
+            $owner = $provider->getUser();
+            if (null !== $owner) {
+                $this->notifications->notify(
+                    $owner,
+                    NotificationCategory::Quote,
+                    'Nouvelle demande',
+                    \sprintf('Une nouvelle demande « %s » correspond à votre métier.', $title),
+                );
+            }
+        }
 
         return $request;
     }
@@ -60,6 +82,16 @@ final class QuoteService
         $this->entityManager->persist($quote);
         $this->entityManager->flush();
 
+        $client = $request->getClient();
+        if (null !== $client) {
+            $this->notifications->notify(
+                $client,
+                NotificationCategory::Quote,
+                'Nouvelle réponse',
+                \sprintf('%s a répondu à votre demande « %s ».', $provider->getDisplayName(), $request->getTitle()),
+            );
+        }
+
         return $quote;
     }
 
@@ -84,6 +116,16 @@ final class QuoteService
         $request->close();
 
         $this->entityManager->flush();
+
+        $owner = $quote->getProvider()?->getUser();
+        if (null !== $owner) {
+            $this->notifications->notify(
+                $owner,
+                NotificationCategory::Quote,
+                'Devis accepté',
+                \sprintf('Votre devis pour « %s » a été accepté.', $request->getTitle()),
+            );
+        }
     }
 
     public function decline(Quote $quote): void

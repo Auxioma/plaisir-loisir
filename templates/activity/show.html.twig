@@ -147,7 +147,12 @@
                     <div class="act-logistics__map">
                         <img src="{{ asset(detail.logistics.map) }}" alt="Carte du lieu de rendez-vous">
                         <div class="act-logistics__map-actions">
-                            <a href="#" class="pl-btn pl-btn--primary">{{ 'Itinéraires'|trans }}</a>
+                            {% if detail.place %}
+                                {# Lien de navigation Google Maps par adresse texte : ne demande ni
+                                   clé d'API ni géocodage propre, contrairement à une vraie carte
+                                   intégrée. #}
+                                <a href="https://www.google.com/maps/dir/?api=1&destination={{ detail.place|url_encode }}" target="_blank" rel="noopener" class="pl-btn pl-btn--primary">{{ 'Itinéraires'|trans }}</a>
+                            {% endif %}
                             <a href="{{ path('app_corporate_contact') }}" class="pl-btn pl-btn--outline-action">{{ 'Nous contacter'|trans }}</a>
                         </div>
                     </div>

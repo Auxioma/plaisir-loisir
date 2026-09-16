@@ -8,6 +8,7 @@ use App\Provider\Entity\ProviderProfile;
 use App\Quote\Entity\Quote;
 use App\Review\Entity\Review;
 use App\Review\Enum\ReviewStatus;
+use App\User\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -32,6 +33,14 @@ class ReviewRepository extends ServiceEntityRepository
     public function findForProvider(ProviderProfile $provider): array
     {
         return $this->findBy(['provider' => $provider], ['createdAt' => 'DESC']);
+    }
+
+    /**
+     * @return Review[]
+     */
+    public function findByAuthor(User $author): array
+    {
+        return $this->findBy(['author' => $author], ['createdAt' => 'DESC']);
     }
 
     public function countPublishedForProvider(ProviderProfile $provider): int

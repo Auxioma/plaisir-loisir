@@ -6,6 +6,8 @@ namespace App\PrivateActivity\Service;
 
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\Service;
+use App\Notification\Enum\NotificationCategory;
+use App\Notification\Service\NotificationService;
 use App\PrivateActivity\Entity\Invitation;
 use App\PrivateActivity\Entity\Participation;
 use App\PrivateActivity\Entity\PrivateActivity;
@@ -39,6 +41,7 @@ final class PrivateActivityService
         private readonly EntityManagerInterface $entityManager,
         private readonly InvitationRepository $invitations,
         private readonly ParticipationRepository $participations,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -86,6 +89,18 @@ final class PrivateActivityService
 
         $activity->setStatus(PrivateActivityStatus::Cancelled);
         $this->entityManager->flush();
+
+        foreach ($activity->getParticipations() as $participation) {
+            $participant = $participation->getParticipant();
+            if (null !== $participant && \in_array($participation->getStatus(), [ParticipationStatus::Accepted, ParticipationStatus::Pending, ParticipationStatus::WaitingList], true)) {
+                $this->notifications->notify(
+                    $participant,
+                    NotificationCategory::Activity,
+                    'Activité annulée',
+                    \sprintf('« %s » a été annulée par son organisateur.', $activity->getTitle()),
+                );
+            }
+        }
     }
 
     /**
@@ -171,6 +186,25 @@ final class PrivateActivityService
         $this->refreshFullStatus($activity);
         $this->entityManager->flush();
 
+        $organizer = $activity->getOrganizer();
+        if (null !== $organizer) {
+            $this->notifications->notify(
+                $organizer,
+                NotificationCategory::Activity,
+                ParticipationStatus::Accepted === $participation->getStatus() ? 'Nouveau participant' : 'Nouvelle demande de participation',
+                \sprintf('%s pour « %s ».', trim($participant->getFirstName().' '.$participant->getLastName()), $activity->getTitle()),
+            );
+        }
+
+        if (ParticipationStatus::Accepted === $participation->getStatus()) {
+            $this->notifications->notify(
+                $participant,
+                NotificationCategory::Activity,
+                'Participation confirmée',
+                \sprintf('Votre place pour « %s » est confirmée.', $activity->getTitle()),
+            );
+        }
+
         return $participation;
     }
 
@@ -205,6 +239,16 @@ final class PrivateActivityService
         }
 
         $this->entityManager->flush();
+
+        $participant = $participation->getParticipant();
+        if (null !== $participant) {
+            $this->notifications->notify(
+                $participant,
+                NotificationCategory::Activity,
+                $accept ? 'Participation acceptée' : 'Participation refusée',
+                \sprintf('Votre demande pour « %s » a été %s.', $activity->getTitle(), $accept ? 'acceptée' : 'refusée'),
+            );
+        }
     }
 
     /**
@@ -224,13 +268,36 @@ final class PrivateActivityService
         $participation->setStatus(ParticipationStatus::Cancelled);
 
         $activity = $participation->getPrivateActivity();
+        $promoted = null;
 
         if ($wasAccepted && null !== $activity) {
             $activity->setStatus(PrivateActivityStatus::Open);
-            $this->promoteFromWaitingList($activity);
+            $promoted = $this->promoteFromWaitingList($activity);
         }
 
         $this->entityManager->flush();
+
+        $organizer = $activity?->getOrganizer();
+        if (null !== $organizer) {
+            $this->notifications->notify(
+                $organizer,
+                NotificationCategory::Activity,
+                'Désistement',
+                \sprintf('%s ne participe plus à « %s ».', trim($participant->getFirstName().' '.$participant->getLastName()), $activity->getTitle()),
+            );
+        }
+
+        if (null !== $promoted && null !== $activity) {
+            $promotedParticipant = $promoted->getParticipant();
+            if (null !== $promotedParticipant) {
+                $this->notifications->notify(
+                    $promotedParticipant,
+                    NotificationCategory::Activity,
+                    'Participation confirmée',
+                    \sprintf('Une place s\'est libérée : votre participation à « %s » est confirmée.', $activity->getTitle()),
+                );
+            }
+        }
     }
 
     /**
@@ -267,10 +334,10 @@ final class PrivateActivityService
         $activity->setStatus($this->hasRoom($activity) ? PrivateActivityStatus::Open : PrivateActivityStatus::Full);
     }
 
-    private function promoteFromWaitingList(PrivateActivity $activity): void
+    private function promoteFromWaitingList(PrivateActivity $activity): ?Participation
     {
         if (!$this->hasRoom($activity)) {
-            return;
+            return null;
         }
 
         $next = $this->participations->findOldestWaiting($activity)[0] ?? null;
@@ -279,5 +346,7 @@ final class PrivateActivityService
             $next->setStatus(ParticipationStatus::Accepted);
             $this->refreshFullStatus($activity);
         }
+
+        return $next;
     }
 }

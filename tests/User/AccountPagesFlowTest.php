@@ -7,6 +7,8 @@ namespace App\Tests\User;
 use App\Catalog\Entity\Category;
 use App\Event\Entity\Event;
 use App\Event\Repository\EventRepository;
+use App\Notification\Enum\NotificationCategory;
+use App\Notification\Service\NotificationService;
 use App\PrivateActivity\Service\PrivateActivityService;
 use App\Provider\Entity\ProviderProfile;
 use App\Provider\Enum\ProviderStatus;
@@ -105,6 +107,51 @@ final class AccountPagesFlowTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', 'Demande passée');
         self::assertSelectorTextContains('body', 'Sortie passée');
+    }
+
+    /**
+     * §26 du CDC : export des données personnelles (droit à la portabilité).
+     */
+    public function testExportDownloadsAJsonFileWithThePersonalData(): void
+    {
+        $client = static::createClient();
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $category = $entityManager->getRepository(Category::class)->findOneBy([]);
+        self::assertNotNull($category);
+
+        $user = $this->makeClient();
+        static::getContainer()->get(QuoteService::class)
+            ->createRequest($user, $category, 'Demande à exporter', 'Description.');
+
+        $client->loginUser($user);
+        $client->request('GET', '/compte/parametres/exporter');
+
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('content-type', 'application/json');
+        self::assertStringContainsString('attachment', (string) $client->getResponse()->headers->get('content-disposition'));
+
+        $data = json_decode((string) $client->getResponse()->getContent(), true, flags: \JSON_THROW_ON_ERROR);
+        self::assertSame($user->getEmail(), $data['compte']['email']);
+        self::assertSame('Demande à exporter', $data['demandes_de_devis'][0]['titre']);
+    }
+
+    /**
+     * §7.1 du CDC : le tableau de bord doit afficher les notifications
+     * récentes.
+     */
+    public function testDashboardShowsRecentNotifications(): void
+    {
+        $client = static::createClient();
+        $user = $this->makeClient();
+
+        static::getContainer()->get(NotificationService::class)
+            ->notify($user, NotificationCategory::System, 'Bienvenue sur TrouveMoi', 'Votre compte est prêt.');
+
+        $client->loginUser($user);
+        $client->request('GET', '/compte/tableau-de-bord');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Bienvenue sur TrouveMoi');
     }
 
     private function makeClient(): User
