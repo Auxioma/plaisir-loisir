@@ -3,6 +3,11 @@
     Liste des événements / Calendrier (bascule client, events.js) + filtre
     « A venir ». Le doublon de dropdown « A venir » de la capture 16 est
     corrigé (point à trancher n°5) : un seul filtre.
+
+    17/09 : les cartes montrent de vrais événements (EventsController::
+    groupDetail()) avec la carte prévue pour ce contenu (_event_card.html.twig),
+    et non plus des événements habillés en cartes de groupe (`_group_card`) —
+    l'autre volet du point à trancher n°5, résolu dans le même mouvement.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
@@ -19,8 +24,8 @@
 
     <div id="evn-gtab-liste">
         <div class="card-grid evn-grid evn-groups-grid">
-            {% for g in group_events %}
-                {% include 'event/nav/_group_card.html.twig' with { g: g, avatars: avatars, href: path('app_events_detail') } %}
+            {% for e in group_events %}
+                {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
             {% endfor %}
         </div>
     </div>

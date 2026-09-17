@@ -31,7 +31,7 @@
                 <div class="evn-cal__cell {{ cell.out ? 'is-out' }}">
                     <span class="evn-cal__num {{ cell.today ? 'is-today' }}">{{ cell.day }}</span>
                     {% for event in cell.events %}
-                        <a href="{{ path('app_events_detail') }}" class="evn-cal__event evn-cal__event--{{ event.color }}">
+                        <a href="{{ path('app_events_detail', { slug: event.slug }) }}" class="evn-cal__event evn-cal__event--{{ event.color }}">
                             <strong>{{ event.title }}</strong>
                             <span>{{ event.hours }}</span>
                         </a>

@@ -37,6 +37,12 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  *                         l'organisateur, ou un participant ACCEPTÉ si
  *                         `showExactAddress` est vrai. Jamais à une demande
  *                         encore en attente ou en liste d'attente.
+ * - VIEW_ALBUM          : voir/déposer des photos dans l'album de l'activité
+ *                         (§4 de docs/corrections-client-2026-07-27.md) —
+ *                         l'organisateur, ou un participant ACCEPTÉ (« chaque
+ *                         membre » du document). Pas les demandes en attente
+ *                         ou en liste d'attente : elles n'ont pas encore pris
+ *                         part à la sortie que l'album illustre.
  *
  * @extends Voter<string, PrivateActivity>
  */
@@ -46,6 +52,7 @@ final class PrivateActivityVoter extends Voter
     public const MANAGE = 'MANAGE';
     public const PARTICIPATE = 'PARTICIPATE';
     public const VIEW_EXACT_LOCATION = 'VIEW_EXACT_LOCATION';
+    public const VIEW_ALBUM = 'VIEW_ALBUM';
 
     public function __construct(
         private readonly ParticipationRepository $participations,
@@ -55,7 +62,7 @@ final class PrivateActivityVoter extends Voter
     protected function supports(string $attribute, mixed $subject): bool
     {
         return $subject instanceof PrivateActivity
-            && \in_array($attribute, [self::VIEW, self::MANAGE, self::PARTICIPATE, self::VIEW_EXACT_LOCATION], true);
+            && \in_array($attribute, [self::VIEW, self::MANAGE, self::PARTICIPATE, self::VIEW_EXACT_LOCATION, self::VIEW_ALBUM], true);
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
@@ -68,6 +75,7 @@ final class PrivateActivityVoter extends Voter
             self::MANAGE => $isOrganizer,
             self::PARTICIPATE => $user instanceof User && !$isOrganizer && PrivateActivityStatus::Cancelled !== $subject->getStatus(),
             self::VIEW_EXACT_LOCATION => $isOrganizer || ($subject->showsExactAddress() && $user instanceof User && $this->isAcceptedParticipant($subject, $user)),
+            self::VIEW_ALBUM => $isOrganizer || ($user instanceof User && $this->isAcceptedParticipant($subject, $user)),
             default => false,
         };
     }

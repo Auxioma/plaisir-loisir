@@ -13,7 +13,7 @@
 
     <div class="card-grid evn-grid evn-albums-grid">
         {% for a in albums %}
-            <a href="{{ path('app_group_album') }}" class="evn-album">
+            <a href="{{ path('app_group_album', { groupSlug: group.slug, albumId: a.id }) }}" class="evn-album">
                 <span class="evn-album__media">
                     <img src="{{ asset(a.image) }}" alt="{{ a.title }}">
                     {% if loop.first %}

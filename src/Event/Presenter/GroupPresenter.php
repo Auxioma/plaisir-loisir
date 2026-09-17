@@ -6,6 +6,7 @@ namespace App\Event\Presenter;
 
 use App\Event\Entity\Group;
 use App\Event\Entity\GroupAlbum;
+use App\User\Entity\User;
 
 /**
  * Traduit un groupe et ses albums en la forme attendue par les gabarits.
@@ -18,6 +19,9 @@ final class GroupPresenter
 {
     /** Meme repli que les listings : un album sans photo ne doit pas faire tomber l'onglet. */
     private const FALLBACK_ALBUM_IMAGE = 'images/events/alb-canoerouge.jpg';
+
+    /** Repli avatar, memes conditions que StaticAccount::user()['avatar']. */
+    private const FALLBACK_OWNER_AVATAR = 'images/account/avatar-thomas.jpg';
 
     /**
      * Abréviations de mois telles que la maquette les écrit.
@@ -49,6 +53,29 @@ final class GroupPresenter
             // que les gabarits reçoivent exactement ce qu'ils recevaient.
             'members' => (string) $group->getMembersCount(),
             'badge' => $group->getBadge(),
+            // Utilisé par la fiche détail (card() sert aussi les listings, qui
+            // l'ignorent simplement) : null si le groupe n'a pas de créateur
+            // (démonstration antérieure à l'assistant de création).
+            'owner' => $this->owner($group),
+        ];
+    }
+
+    /**
+     * @return array{name: string, avatar: string}|null
+     */
+    private function owner(Group $group): ?array
+    {
+        $owner = $group->getOwner();
+
+        if (!$owner instanceof User) {
+            return null;
+        }
+
+        $name = trim($owner->getFirstName().' '.$owner->getLastName());
+
+        return [
+            'name' => '' !== $name ? $name : $owner->getEmail(),
+            'avatar' => $owner->getAvatarPath() ?? self::FALLBACK_OWNER_AVATAR,
         ];
     }
 
@@ -79,6 +106,7 @@ final class GroupPresenter
 
         foreach ($albums as $album) {
             $cards[] = [
+                'id' => (string) $album->getId(),
                 'title' => $album->getTitle(),
                 'location' => $album->getLocation(),
                 'image' => $album->getImagePath() ?? self::FALLBACK_ALBUM_IMAGE,

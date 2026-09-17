@@ -2,14 +2,20 @@
     <GroupHeader> (spec §E4) : cover + colonne identité (titre, note,
     lieu, membres, partage) + barre d'onglets avec menu ⋮ et bouton
     « Demander à rejoindre le groupe » (grammaire corrigée : « la
-    groupe » → le groupe). Variable : tab (onglet actif).
+    groupe » → le groupe). Variables : group (carte du groupe, voir
+    GroupPresenter::card()), tab (onglet actif).
+
+    17/09 : nom, lieu, membres et couverture viennent du groupe réellement
+    consulté (auparavant figés sur « Cours collectifs de fitness à Lyon »,
+    quel que soit le groupe cliqué). La note/avis (aucune entité derrière,
+    voir apropos.html.twig) et le partage restent décoratifs.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
 <div class="evn-ghead">
-    <img class="evn-ghead__cover" src="{{ asset('images/events/grp-fitness-cover.jpg') }}" alt="Cours collectifs de fitness à Lyon">
+    <img class="evn-ghead__cover" src="{{ asset(group.image ?? 'images/events/grp-fitness-cover.jpg') }}" alt="{{ group.name }}">
     <div class="evn-ghead__id">
-        <h1 class="evn-ghead__title">{{ 'Cours collectifs de fitness à Lyon'|trans }}</h1>
+        <h1 class="evn-ghead__title">{{ group.name }}</h1>
         <p class="evn-groupcard__rating evn-ghead__rating">
             <span class="evn-stars" aria-label="{{ '4,5 étoiles sur 5'|trans }}">
                 {% for i in 1..5 %}<span class="{{ i <= 3 ? 'is-on' : 'is-off' }}">{{ icon.star(18) }}</span>{% endfor %}
@@ -18,8 +24,8 @@
             <span class="evn-dot" aria-hidden="true"></span>
             <a href="#">{{ '14 évaluations'|trans }}</a>
         </p>
-        <p class="evn-ghead__meta">{{ icon.map_pin(17) }} Lyon, France</p>
-        <p class="evn-ghead__meta">{{ icon.users(17) }} {{ '5246 membres'|trans }}</p>
+        {% if group.location %}<p class="evn-ghead__meta">{{ icon.map_pin(17) }} {{ group.location }}</p>{% endif %}
+        <p class="evn-ghead__meta">{{ icon.users(17) }} {{ group.members }} {{ 'membres'|trans }}</p>
         <p class="evn-ghead__share-label">{{ 'Partager'|trans }}</p>
         <div class="evn-ghead__share">
             <a href="#" aria-label="{{ 'Partager sur LinkedIn'|trans }}"><span class="evn-share-ic">in</span></a>
@@ -38,7 +44,7 @@
             { key: 'photos', label: 'Photos'|trans },
             { key: 'discussions', label: 'Discussions'|trans },
         ] %}
-            <a href="{{ path('app_group_detail', { onglet: group_tab(t.key) }) }}" class="evn-gtab {{ tab == t.key ? 'is-active' }}" {{ tab == t.key ? 'aria-current="page"' }}>
+            <a href="{{ path('app_group_detail', { slug: group.slug, onglet: group_tab(t.key) }) }}" class="evn-gtab {{ tab == t.key ? 'is-active' }}" {{ tab == t.key ? 'aria-current="page"' }}>
                 {%- if t.key == 'apropos' %}{{ icon.check_badge(22) }}
                 {%- elseif t.key == 'evenements' %}{{ icon.calendar_check(22) }}
                 {%- elseif t.key == 'membres' %}{{ icon.users(22) }}

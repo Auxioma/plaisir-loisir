@@ -60,6 +60,14 @@ class Event
     #[ORM\Column(length: 180, nullable: true)]
     private ?string $location = null;
 
+    /**
+     * Texte affiché sous « Détails » sur la fiche événement. L'assistant de
+     * création demande déjà cette information (StaticEventWizard, étape
+     * « Image et description ») ; le champ n'existait pas encore côté entité.
+     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $description = null;
+
     #[ORM\Column(type: 'datetimetz_immutable')]
     private \DateTimeImmutable $startsAt;
 
@@ -160,6 +168,18 @@ class Event
     public function setLocation(?string $location): static
     {
         $this->location = $location;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
 
         return $this;
     }

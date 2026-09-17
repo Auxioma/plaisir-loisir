@@ -1,0 +1,46 @@
+{#
+    « Mes albums photos » (§4 de docs/corrections-client-2026-07-27.md).
+
+    Aucune maquette Figma dédiée à cet écran. Plutôt qu'une mise en page
+    Bootstrap générique, on reprend le composant carte d'album déjà maquetté
+    et livré pour le domaine Événements (templates/event/nav/tabs/photos.html.twig,
+    captures 21-22 — classes `.evn-album*`, chargées globalement via
+    assets/styles/events.css) : même produit, même langage visuel, cohérent
+    avec le reste du site plutôt qu'un habillage improvisé.
+#}
+{% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Mes albums photos'|trans }}{% endblock %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Mes albums photos'|trans }],
+        title: 'Mes albums photos'|trans,
+        subtitle: "Chaque activité privée que vous organisez ou rejoignez a son propre album, partagé avec les autres participants."|trans,
+    } %}
+
+    {% if albums is empty %}
+        {% include 'account/_empty.html.twig' with { message: "Vous n'avez aucune activité privée avec un album pour le moment. Organisez ou rejoignez une sortie pour en créer un."|trans } %}
+    {% else %}
+        <div class="card-grid evn-grid evn-albums-grid">
+            {% for entry in albums %}
+                <a href="{{ path('app_account_album_show', {id: entry.activity.id}) }}" class="evn-album">
+                    <span class="evn-album__media{{ entry.cover ? '' : ' evn-album__media--empty' }}">
+                        {% if entry.cover %}
+                            <img src="{{ asset(entry.cover.path) }}" alt="{{ entry.activity.title }}">
+                        {% else %}
+                            {{ icon.camera(28) }}
+                        {% endif %}
+                    </span>
+                    <span class="evn-album__location">{{ icon.map_pin(14) }} {{ entry.activity.category.name }}</span>
+                    <span class="evn-album__title">{{ entry.activity.title }}</span>
+                    <span class="evn-album__meta">
+                        {{ entry.photoCount }} {{ entry.photoCount > 1 ? 'photos'|trans : 'photo'|trans }}
+                        {% if entry.activity.scheduledAt %}<i>|</i> {{ entry.activity.scheduledAt|date('d/m/Y') }}{% endif %}
+                    </span>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

@@ -48,7 +48,11 @@ final class StaticAccount
     {
         return [
             ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité', 'route' => 'app_account_dashboard', 'badge' => false],
-            ['icon' => 'camera', 'title' => 'Mes albums photos', 'subtitle' => 'Gérez vos albums et photos', 'route' => null, 'badge' => false],
+            // Câblé le 17/09 : entités Album/Photo, AlbumController,
+            // PrivateActivityVoter::VIEW_ALBUM (voir docs/corrections-client-
+            // 2026-07-27.md §4). Aucune maquette Figma pour cet écran — UI
+            // volontairement sommaire, à reprendre visuellement plus tard.
+            ['icon' => 'camera', 'title' => 'Mes albums photos', 'subtitle' => 'Gérez vos albums et photos', 'route' => 'app_account_albums', 'badge' => false],
             ['icon' => 'badge_check', 'title' => 'Mes activités créées', 'subtitle' => 'Gérez vos activités sur Event', 'route' => 'app_account_events', 'badge' => false],
             ['icon' => 'receipt', 'title' => 'Mes réservations', 'subtitle' => 'Suivi de vos réservations', 'route' => 'app_account_history', 'badge' => false],
             ['icon' => 'heart', 'title' => 'Mes favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false],

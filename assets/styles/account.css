@@ -362,6 +362,35 @@ button.acc-nlink { appearance: none; background: none; border: none; padding: 0;
 .acc-help__btn:hover { background: #dbe7fb; color: var(--pl-info); }
 
 /* --------------------------------------------------------------------------
+ *  ALBUM PHOTO (Lot L, 17/09) — §4 de docs/corrections-client-2026-07-27.md.
+ *  La grille elle-même (`.evn-album*`) vient du domaine Événements, déjà
+ *  maquetté (voir templates/private_activity/album_show.html.twig) ; ce qui
+ *  suit est propre à cet écran, absent des captures Événements : la case
+ *  vide d'un album sans photo, la zone d'ajout et le bouton de suppression.
+ * ------------------------------------------------------------------------ */
+
+.evn-album__media--empty {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--pl-surface-dashboard); color: var(--pl-text-muted);
+}
+
+.pl-album-upload { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.pl-album-upload input[type="file"] { max-width: 320px; }
+
+.pl-album-photo { position: relative; display: block; border-radius: var(--pl-radius-md); overflow: hidden; }
+.pl-album-photo img { border-radius: var(--pl-radius-md); aspect-ratio: 295 / 217; object-fit: cover; width: 100%; display: block; }
+.pl-album-photo__form { position: absolute; top: 10px; right: 10px; margin: 0; }
+.pl-album-photo__delete {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--pl-white); color: var(--pl-text-secondary);
+    border: 0; border-radius: var(--pl-radius-pill);
+    box-shadow: var(--pl-shadow-sm);
+    cursor: pointer;
+}
+.pl-album-photo__delete:hover { color: var(--pl-error); }
+
+/* --------------------------------------------------------------------------
  *  RESPONSIVE.
  * ------------------------------------------------------------------------ */
 

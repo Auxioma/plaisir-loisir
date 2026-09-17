@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Event\Controller;
 
+use App\Event\Entity\Event;
 use App\Event\Entity\Group;
+use App\Event\Entity\GroupAlbum;
 use App\Event\Presenter\CalendarPresenter;
 use App\Event\Presenter\EventPresenter;
 use App\Event\Presenter\GroupPresenter;
@@ -16,7 +18,9 @@ use App\I18n\Routing\LocaleUrlGenerator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * Flow navigation Événements (spec « Partie 2 — Événements ») :
@@ -37,20 +41,23 @@ final class EventsController extends AbstractController
     ) {
     }
 
-    /**
-     * Le groupe dont la maquette montre la page de detail.
-     *
-     * Il n'y a qu'un seul ecran de detail de groupe, et l'adresse n'en designe
-     * aucun : « /evenements/groupes/detail/{onglet} » ne porte pas de slug. On
-     * sert donc le premier groupe, celui qui porte les albums. Le jour ou
-     * l'adresse designera un groupe, cette methode disparaitra.
-     */
-    private function firstGroup(): Group
+    private function findEventOrFail(string $slug): Event
     {
-        $group = $this->groups->findForListing(1)[0] ?? null;
+        $event = $this->events->findOneBySlug($slug);
+
+        if (null === $event) {
+            throw new NotFoundHttpException('Cet événement est introuvable.');
+        }
+
+        return $event;
+    }
+
+    private function findGroupOrFail(string $slug): Group
+    {
+        $group = $this->groups->findOneBySlug($slug);
 
         if (null === $group) {
-            throw $this->createNotFoundException('Aucun groupe en base.');
+            throw new NotFoundHttpException('Ce groupe est introuvable.');
         }
 
         return $group;
@@ -182,20 +189,34 @@ final class EventsController extends AbstractController
         ]);
     }
 
-    #[Route(path: ['fr' => '/evenements/detail', 'en' => '/en/events/detail'], name: 'app_events_detail')]
-    public function detail(): Response
+    #[Route(path: ['fr' => '/evenements/detail/{slug}', 'en' => '/en/events/detail/{slug}'], name: 'app_events_detail')]
+    public function detail(string $slug): Response
     {
+        $event = $this->findEventOrFail($slug);
+
         return $this->render('event/nav/detail.html.twig', [
+            'event' => $this->presenter->card($event),
+            // Roster decoratif : aucune entite d'inscription a un evenement
+            // n'existe encore (voir Group::membersCount, meme situation), le
+            // compte reel (event.participants) l'accompagne deja sur la fiche.
             'participants' => StaticEvents::participants(),
-            'similar' => StaticEvents::similar(),
+            // « Vous aimerez peut-etre aussi » : d'autres evenements reels,
+            // le present exclu, plutot que la selection figee de la maquette.
+            'similar' => $this->presenter->cards(array_filter(
+                $this->events->findForListing(limit: 4 + 1),
+                static fn (Event $e): bool => $e !== $event,
+            )),
             'avatars' => StaticEvents::avatars(),
         ]);
     }
 
-    #[Route(path: ['fr' => '/evenements/detail/participants', 'en' => '/en/events/detail/participants'], name: 'app_events_participants')]
-    public function participants(): Response
+    #[Route(path: ['fr' => '/evenements/detail/{slug}/participants', 'en' => '/en/events/detail/{slug}/participants'], name: 'app_events_participants')]
+    public function participants(string $slug): Response
     {
+        $event = $this->findEventOrFail($slug);
+
         return $this->render('event/nav/participants.html.twig', [
+            'event' => $this->presenter->card($event),
             'participants' => StaticEvents::participants(),
         ]);
     }
@@ -209,11 +230,22 @@ final class EventsController extends AbstractController
         ]);
     }
 
-    #[Route(path: ['fr' => '/evenements/groupes/detail/photos/album', 'en' => '/en/events/groups/detail/photos/album'], name: 'app_group_album')]
-    public function album(): Response
+    #[Route(path: ['fr' => '/evenements/groupes/detail/{groupSlug}/photos/album/{albumId}', 'en' => '/en/events/groups/detail/{groupSlug}/photos/album/{albumId}'], name: 'app_group_album')]
+    public function album(string $groupSlug, string $albumId): Response
     {
+        $group = $this->findGroupOrFail($groupSlug);
+        $album = Ulid::isValid($albumId) ? $this->albums->find(Ulid::fromString($albumId)) : null;
+
+        if (!$album instanceof GroupAlbum || $album->getGroup() !== $group) {
+            throw new NotFoundHttpException('Cet album est introuvable.');
+        }
+
         return $this->render('event/nav/album.html.twig', [
-            'similar' => StaticEvents::similar(),
+            'group' => $this->groupPresenter->card($group),
+            'album' => $this->groupPresenter->albums([$album])[0],
+            // « Événements similaires à proximité » : mêmes cartes réelles
+            // que sur la fiche groupe (groupDetail()) et la fiche événement.
+            'similar' => $this->presenter->cards($this->events->findForListing(limit: 4)),
             'avatars' => StaticEvents::avatars(),
         ]);
     }
@@ -227,28 +259,41 @@ final class EventsController extends AbstractController
     // L'onglet apparait dans l'URL : il accepte donc les deux langues
     // (/detail/membres et /en/detail/members). tabKey() ramene ensuite la
     // valeur a l'identifiant interne attendu par les gabarits.
-    #[Route(path: ['fr' => '/evenements/groupes/detail/{onglet}', 'en' => '/en/events/groups/detail/{onglet}'], name: 'app_group_detail', requirements: ['onglet' => 'apropos|evenements|membres|photos|discussions|about|events|members'], defaults: ['onglet' => 'apropos'])]
-    public function groupDetail(string $onglet): Response
+    #[Route(path: ['fr' => '/evenements/groupes/detail/{slug}/{onglet}', 'en' => '/en/events/groups/detail/{slug}/{onglet}'], name: 'app_group_detail', requirements: ['onglet' => 'apropos|evenements|membres|photos|discussions|about|events|members'], defaults: ['onglet' => 'apropos'])]
+    public function groupDetail(string $slug, string $onglet): Response
     {
+        $group = $this->findGroupOrFail($slug);
         $onglet = LocaleUrlGenerator::tabKey($onglet);
 
+        $now = new \DateTimeImmutable();
+        $events = $this->events->findForListing();
+        $upcoming = array_values(array_filter($events, static fn (Event $e): bool => $e->getStartsAt() >= $now));
+        $past = array_values(array_filter($events, static fn (Event $e): bool => $e->getStartsAt() < $now));
+
         return $this->render('event/nav/groupe.html.twig', [
+            'group' => $this->groupPresenter->card($group),
             'tab' => $onglet,
-            'similar' => StaticEvents::similar(),
-            // « Evenements » et « Groupes similaires » affichent des EVENEMENTS
-            // avec la mise en page des cartes de groupe, et un texte de
-            // remplissage. Ils restent statiques : les recomposer supposerait
-            // de stocker du lorem ipsum en base.
-            'group_events' => StaticEvents::groupEvents(),
+            // Evenements reels a la place des groupes de remplissage de la
+            // maquette (StaticEvents::groupEvents(), point a trancher n°5,
+            // desormais tranche : on n'invente plus un habillage de groupe
+            // pour des evenements). Montre pour l'instant TOUS les evenements,
+            // faute de lien Event <-> Group en base — ce rattachement reste a
+            // concevoir le jour ou le produit en a besoin.
+            'group_events' => $this->presenter->cards($events),
+            'upcoming_events' => $this->presenter->cards(\array_slice($upcoming, 0, 3)),
+            'past_events' => $this->presenter->cards(\array_slice($past, 0, 3)),
             // Les membres sont des prenoms et des photos de la maquette, sans
             // compte derriere : il n'y a rien a brancher tant que l'adhesion a
             // un groupe n'existe pas.
             'members' => StaticEvents::members(),
-            'albums' => $this->groupPresenter->albums($this->albums->findForGroup($this->firstGroup())),
+            'albums' => $this->groupPresenter->albums($this->albums->findForGroup($group)),
+            // « Evenements similaires a proximite », commun aux onglets de
+            // cette page (groupe.html.twig) : de vrais evenements desormais,
+            // avec la carte prevue pour ( _event_card.html.twig), plutot que
+            // des evenements habilles en cartes de groupe.
+            'similar' => $this->presenter->cards($this->events->findForListing(limit: 4)),
             // L'onglet « Evenements » du groupe affiche le meme calendrier :
-            // il lui faut donc les memes variables. Il montre pour l'instant
-            // TOUS les evenements, faute de lien entre un evenement et un
-            // groupe — ce rattachement reste a concevoir.
+            // il lui faut donc les memes variables. Meme limite que ci-dessus.
             ...$this->calendarData(),
             'avatars' => StaticEvents::avatars(),
         ]);

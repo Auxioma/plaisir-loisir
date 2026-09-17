@@ -1,8 +1,21 @@
+{#
+    17/09 : album réel (EventsController::album(), route
+    /evenements/groupes/detail/{groupSlug}/photos/album/{albumId}).
+    Auparavant figé sur « Week-end spa & bien-être » quel que soit l'album
+    cliqué. Une seule photo (la couverture, GroupAlbum::imagePath) plutôt que
+    les cinq répétitions de la maquette : l'album n'a pas encore d'entité
+    Photo propre (voir GroupAlbum, même limite documentée pour PrivateActivity
+    avant l'ajout de son propre Album/Photo le 17/09 — non reproduite ici
+    faute de bouton de dépôt prévu par la maquette pour cet écran).
+    Le lien « Ouvrir l'événement » a été retiré : un album appartient à un
+    groupe, pas à un événement (aucun lien Event <-> Group n'existe), le
+    conserver aurait pointé vers un événement sans rapport.
+#}
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}{{ 'Week-end spa & bien-être — Photos du groupe'|trans }}{% endblock %}
-{% block meta_description %}{{ "L'album photo Week-end spa & bien-être du groupe Cours collectifs de fitness à Lyon."|trans }}{% endblock %}
+{% block title %}{{ album.title }} — {{ 'Photos du groupe'|trans }}{% endblock %}
+{% block meta_description %}{{ "L'album photo %title% du groupe %group%."|trans({'%title%': album.title, '%group%': group.name}) }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar_events.html.twig' with { nav_active: 'groupes' } %}
@@ -17,27 +30,24 @@
             <span aria-hidden="true">|</span>
             <a href="{{ path('app_groups') }}">{{ 'Groupes'|trans }}</a>
             <span aria-hidden="true">|</span>
-            <span aria-current="page" class="evn-crumb-current">{{ 'Groupe détails'|trans }}</span>
+            <a href="{{ path('app_group_detail', { slug: group.slug }) }}">{{ group.name }}</a>
+            <span aria-hidden="true">|</span>
+            <span aria-current="page" class="evn-crumb-current">{{ album.title }}</span>
         </nav>
 
         {% include 'event/nav/_group_header.html.twig' with { tab: 'photos' } %}
 
-        {# Détail d'un album (capture 23). Typos corrigées : « Week-en » →
-           Week-end, « Ouvrir l'événements » → l'événement. #}
         <section class="evn-gsection">
             <div class="evn-album-head">
-                <a href="{{ path('app_group_detail', { onglet: group_tab('photos') }) }}" class="evn-album-head__back" aria-label="{{ 'Retour aux albums'|trans }}">←</a>
-                <h2 class="evn-gh2 evn-gh2--tab">{{ 'Week-end spa & bien-être'|trans }}</h2>
+                <a href="{{ path('app_group_detail', { slug: group.slug, onglet: group_tab('photos') }) }}" class="evn-album-head__back" aria-label="{{ 'Retour aux albums'|trans }}">←</a>
+                <h2 class="evn-gh2 evn-gh2--tab">{{ album.title }}</h2>
             </div>
             <div class="evn-album-head__meta">
-                <span>{{ 'Mis à jour le 28 Juill. 2026'|trans }}</span>
-                <a href="{{ path('app_events_detail') }}" class="evn-album-open">{{ "Ouvrir l'événement"|trans }} {{ icon.arrow_up_right(14) }}</a>
+                {% if album.updated %}<span>{{ album.updated }}</span>{% endif %}
             </div>
 
             <div class="card-grid evn-grid evn-album-photos">
-                {% for i in 1..5 %}
-                    <img src="{{ asset('images/events/alb-spa2.jpg') }}" alt="Photo de l'album Week-end spa & bien-être">
-                {% endfor %}
+                <img src="{{ asset(album.image) }}" alt="{{ 'Photo de l\'album %title%'|trans({'%title%': album.title}) }}">
             </div>
         </section>
 
@@ -47,8 +57,8 @@
                 <a href="{{ path('app_events_all') }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
             </div>
             <div class="card-grid evn-similar-grid">
-                {% for g in similar %}
-                    {% include 'event/nav/_group_card.html.twig' with { g: g, avatars: avatars } %}
+                {% for e in similar %}
+                    {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
                 {% endfor %}
             </div>
         </section>
