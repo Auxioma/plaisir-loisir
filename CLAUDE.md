@@ -56,7 +56,7 @@ php bin/console doctrine:migrations:migrate -n
 php bin/console doctrine:fixtures:load -n
 php bin/console importmap:install
 
-php -S 127.0.0.1:8000 -t public/ public/index.php   # → http://127.0.0.1:8000
+php -S 127.0.0.1:8000 -t public/ router.php          # → http://127.0.0.1:8000
 ```
 
 `.env.local` (non versionné) pointe la base : `postgresql://app:app@127.0.0.1:5432/app`.
@@ -89,6 +89,11 @@ php bin/check-css-tokens.php     # une var CSS --pl-* non déclarée casse la mi
   portent sur des **chemins** → toute page protégée doit y figurer **dans ses deux langues**.
 - **`doctrine:query:sql`** est déprécié + pose une question interactive (paraît figé) → utiliser
   `dbal:run-sql`.
+- **Serveur local, toujours `router.php`, jamais `public/index.php`** : sans lui, `php -S` fait
+  passer même les fichiers statiques réels (CSS, JS d'EasyAdmin) par le noyau Symfony, qui perd
+  la détection de type MIME → CSS ignoré par le navigateur, icônes et mise en page cassées
+  (typiquement en plein écran dans `/admin`). Si ce bug reapparaît, c'est presque toujours qu'un
+  `php -S` a été relancé avec `public/index.php` au lieu de `router.php` à la racine.
 - **Prestataire, double verrou volontaire** : `ROLE_PROVIDER` = accès espace pro ; statut
   `verified` = droit de publier (`ActivityPublishingService` bloque sinon).
 - **Déploiement prod** : purger `var/cache/prod` + `public/assets` AVANT tout (sinon

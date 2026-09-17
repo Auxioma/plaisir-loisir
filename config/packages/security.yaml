@@ -33,6 +33,10 @@ security:
                 password_parameter: _password
                 enable_csrf: true
                 default_target_path: app_home
+                # Sans ce handler, default_target_path s'appliquait aussi aux
+                # administrateurs : connexion depuis /login → accueil public,
+                # /admin à taper soi-même dans la barre d'adresse.
+                success_handler: App\User\Security\LoginSuccessHandler
 
             logout:
                 path: app_logout
