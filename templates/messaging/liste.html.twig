@@ -1,8 +1,13 @@
 {#
     Liste des conversations (§14 du CDC). Aucune maquette : réutilise le
-    gabarit de l'espace compte (en-tête, sidebar) et une liste Bootstrap,
-    comme quote/mes_demandes.html.twig.
+    gabarit de l'espace compte (en-tête, sidebar).
     Variables : rows (list de {conversation, other, last_message, unread}).
+
+    Repris en cartes `.acc-conv` (18/09) à la place d'un `.list-group`
+    Bootstrap brut : même langage visuel que les notifications (`.acc-notif`)
+    — avatar en initiale (aucune photo à afficher, l'autre partie peut être
+    un client ou un professionnel), fond blanc + pastille rouge pour une
+    conversation non lue, fond gris une fois lue.
 #}
 {% extends 'account/_layout.html.twig' %}
 
@@ -18,24 +23,23 @@
     {% if rows is empty %}
         {% include 'account/_empty.html.twig' with { message: "Vous n'avez encore aucune conversation. Elle démarre depuis la fiche d'un professionnel."|trans } %}
     {% else %}
-        <div class="list-group">
+        <div class="acc-conv-list">
             {% for row in rows %}
                 <a href="{{ path('app_account_messages_show', {id: row.conversation.id}) }}"
-                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-start gap-3">
-                    <div>
+                   class="acc-conv{{ not row.unread ? ' acc-conv--muted' }}">
+                    <span class="acc-conv__avatar" aria-hidden="true">{{ row.other|slice(0, 1)|upper }}</span>
+                    <div class="acc-conv__body">
                         <strong>{{ row.other }}</strong>
                         {% if row.last_message %}
-                            <div class="text-muted small text-truncate" style="max-width: 32rem;">
-                                {{ row.last_message.body }}
-                            </div>
+                            <span class="acc-conv__preview">{{ row.last_message.body }}</span>
                         {% endif %}
                     </div>
-                    <div class="text-end text-nowrap">
+                    <div class="acc-conv__meta">
                         {% if row.last_message %}
-                            <div class="text-muted small">{{ row.last_message.createdAt|date('d/m/Y H:i') }}</div>
+                            <span class="acc-conv__time">{{ row.last_message.createdAt|date('d/m/Y H:i') }}</span>
                         {% endif %}
                         {% if row.unread %}
-                            <span class="badge rounded-pill text-bg-danger mt-1">{{ 'Non lu'|trans }}</span>
+                            <span class="acc-conv__badge" aria-label="{{ 'Non lu'|trans }}"></span>
                         {% endif %}
                     </div>
                 </a>

@@ -1,7 +1,13 @@
 {#
     Fil d'une conversation (§14 du CDC). Aucune maquette : réutilise le
-    gabarit de l'espace compte et une liste de bulles Bootstrap.
+    gabarit de l'espace compte.
     Variables : conversation, other (nom de l'interlocuteur), current_user.
+
+    Repris en bulles `.acc-chat` (18/09) à la place de `.card` Bootstrap
+    brutes avec un `style=` en dur pour la couleur : même violet que le
+    reste du site (`--pl-action`) posé en classe plutôt qu'inline, fil
+    resserré dans une carte unique pour qu'il se distingue du reste de la
+    page plutôt que de flotter sur le fond blanc.
 #}
 {% extends 'account/_layout.html.twig' %}
 
@@ -13,32 +19,30 @@
         title: other,
     } %}
 
-    <div class="d-flex flex-column gap-3 mb-4">
+    <div class="acc-chat">
         {% for message in conversation.messages %}
             {% set mine = message.author == current_user %}
-            <div class="d-flex {{ mine ? 'justify-content-end' : 'justify-content-start' }}">
-                <div class="card shadow-sm" style="max-width: 32rem;{{ mine ? ' background-color: var(--pl-action); color: #fff;' : '' }}">
-                    <div class="card-body py-2 px-3">
-                        <p class="mb-1">{{ message.body|nl2br }}</p>
-                        <div class="small {{ mine ? 'text-white-50' : 'text-muted' }}">
-                            {{ message.createdAt|date('d/m/Y H:i') }}
-                        </div>
-                        {% if not mine %}
-                            {% include '_partials/_report_form.html.twig' with {
-                                subject_type: 'message',
-                                subject_id: message.id,
-                                subject_label: 'Message de ' ~ other,
-                            } %}
-                        {% endif %}
-                    </div>
+            <div class="acc-chat__row{{ mine ? ' acc-chat__row--mine' }}">
+                <div class="acc-chat__bubble{{ mine ? ' acc-chat__bubble--mine' }}">
+                    <p class="acc-chat__text">{{ message.body|nl2br }}</p>
+                    <span class="acc-chat__time">{{ message.createdAt|date('d/m/Y H:i') }}</span>
                 </div>
+                {% if not mine %}
+                    <div class="acc-chat__report">
+                        {% include '_partials/_report_form.html.twig' with {
+                            subject_type: 'message',
+                            subject_id: message.id,
+                            subject_label: 'Message de ' ~ other,
+                        } %}
+                    </div>
+                {% endif %}
             </div>
         {% else %}
             {% include 'account/_empty.html.twig' with { message: 'Aucun message pour le moment : écrivez le premier.'|trans } %}
         {% endfor %}
     </div>
 
-    <form method="post" action="{{ path('app_account_messages_show', {id: conversation.id}) }}" class="d-flex gap-2">
+    <form method="post" action="{{ path('app_account_messages_show', {id: conversation.id}) }}" class="acc-chat__form">
         <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
         <textarea name="message" class="form-control" rows="2" required maxlength="4000" placeholder="{{ 'Votre message...'|trans }}"></textarea>
         <button type="submit" class="btn pl-btn pl-btn--cta align-self-end">{{ 'Envoyer'|trans }}</button>

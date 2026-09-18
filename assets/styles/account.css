@@ -288,16 +288,23 @@
 button.acc-nlink { appearance: none; background: none; border: none; padding: 0; cursor: pointer; }
 
 .acc-nsection { margin: 26px 0 14px; font-size: 18px; font-weight: 700; color: var(--pl-text-strong); }
-/* Maquette : ligne de 88px (416->1336), fond #f8fafc SANS bordure pour TOUTES
-   les lignes (nous n'en grisions que deux, les autres etaient blanches a
-   bordure), pastille RONDE de 56 et vignette de 72 collee a 10px du bord. */
+/* Maquette : ligne de 88px (416->1336), fond #f8fafc pour toutes les lignes,
+   pastille RONDE de 56 et vignette de 72 collee a 10px du bord.
+
+   DISTINCTION LU/NON LU RÉTABLIE (18/09) : `.acc-notif--muted` (lu, voir
+   `n.muted` = `Notification::isRead()`) portait exactement le même fond que
+   `.acc-notif` — aucune différence visuelle entre lu et non lu, alors que
+   c'est justement ce que cette classe existe pour montrer. Non lu garde le
+   gris de la maquette (c'est lui qui doit se remarquer) ; lu redevient
+   blanc et simple, sans rien qui attire l'œil une fois la notification
+   déjà vue. */
 .acc-nlist { display: grid; gap: 12px; }
 .acc-notif {
     display: flex; align-items: center; gap: 14px;
-    background: var(--pl-surface-dashboard); border: 0;
+    background: var(--pl-surface-dashboard); border: 1px solid var(--pl-surface-dashboard);
     border-radius: 12px; padding: 8px 10px 8px 15px;
 }
-.acc-notif--muted { background: var(--pl-surface-dashboard); }
+.acc-notif--muted { background: var(--pl-white); border-color: var(--pl-border); }
 .acc-notif__icon {
     width: 56px; height: 56px; border-radius: 50%; flex: none;
     display: inline-flex; align-items: center; justify-content: center;
@@ -313,6 +320,61 @@ button.acc-nlink { appearance: none; background: none; border: none; padding: 0;
 .acc-notif__time { font-size: 12px; color: var(--pl-text-muted); }
 .acc-notif__thumb { width: 72px; height: 72px; border-radius: 10px; object-fit: cover; margin-left: auto; flex: none; }
 .acc-nmore { text-align: center; margin: 30px 0 10px; }
+
+/* --------------------------------------------------------------------------
+ *  Messagerie (§14 du CDC) : aucune maquette, repris ici (18/09) dans le
+ *  même langage que les notifications ci-dessus plutôt qu'un `.list-group`
+ *  Bootstrap brut — cartes `.acc-conv` pour la liste, bulles `.acc-chat`
+ *  pour un fil. Même règle lu/non lu que les notifications (18/09) : gris +
+ *  pastille rouge tant que non lu — c'est lui qui doit se remarquer —
+ *  blanc et simple une fois lu.
+ * ------------------------------------------------------------------------ */
+.acc-conv-list { display: grid; gap: 12px; }
+.acc-conv {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--pl-surface-dashboard); border: 1px solid var(--pl-surface-dashboard);
+    border-radius: 12px; padding: 12px 15px;
+    text-decoration: none; color: inherit;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+.acc-conv:hover { background: var(--pl-border); border-color: var(--pl-border); }
+.acc-conv--muted { background: var(--pl-white); border-color: var(--pl-border); }
+.acc-conv--muted:hover { background: var(--pl-action-light); border-color: var(--pl-action-light); }
+.acc-conv__avatar {
+    width: 48px; height: 48px; flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%; background: var(--pl-action-light); color: var(--pl-action);
+    font-size: 18px; font-weight: 700;
+}
+.acc-conv__body { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.acc-conv__body strong { font-size: 16px; color: var(--pl-text-strong); }
+.acc-conv__preview {
+    display: block; font-size: 14px; color: var(--pl-text-muted);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 32rem;
+}
+.acc-conv__meta { display: grid; gap: 6px; justify-items: end; flex: none; }
+.acc-conv__time { font-size: 12px; color: var(--pl-text-muted); white-space: nowrap; }
+.acc-conv__badge { width: 10px; height: 10px; border-radius: 50%; background: var(--pl-error); justify-self: end; }
+
+/* Fil d'une conversation : bulles dans une carte, comme le reste de
+   l'espace compte, plutôt que flottantes sur le fond blanc de la page. */
+.acc-chat {
+    display: flex; flex-direction: column; gap: 12px;
+    background: var(--pl-surface-dashboard); border-radius: var(--pl-radius-md);
+    padding: 20px; margin-bottom: 20px; max-height: 60vh; overflow-y: auto;
+}
+.acc-chat__row { display: flex; flex-direction: column; max-width: 32rem; }
+.acc-chat__row--mine { align-self: flex-end; align-items: flex-end; }
+.acc-chat__bubble {
+    background: var(--pl-white); border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md); padding: 10px 14px;
+}
+.acc-chat__bubble--mine { background: var(--pl-action); border-color: var(--pl-action); color: var(--pl-white); }
+.acc-chat__text { margin: 0 0 4px; white-space: pre-line; }
+.acc-chat__time { font-size: 12px; color: var(--pl-text-muted); }
+.acc-chat__bubble--mine .acc-chat__time { color: rgb(255 255 255 / .7); }
+.acc-chat__report { margin-top: 4px; }
+.acc-chat__form { display: flex; gap: 8px; }
 
 /* --------------------------------------------------------------------------
  *  Déconnexion : illustration + arguments + confirmation + aide.
