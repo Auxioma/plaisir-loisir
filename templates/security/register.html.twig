@@ -11,8 +11,9 @@
         compte n'était créé) ;
       - form_end() dépose le jeton CSRF, absent jusqu'ici alors que l'écran
         de connexion en avait un.
-    Aucun attribut `required` n'est ajouté (`required => false` dans le type) :
-    la validation est côté serveur, comme dans la maquette qui n'en porte pas.
+    Les champs obligatoires portent désormais l'attribut `required` (hérité
+    du type) : le navigateur bloque l'envoi et signale les champs vides avant
+    même d'atteindre le serveur, qui reste la validation de référence.
 
     La maquette ne comporte NI bascule Client/Professionnel, NI champ Statut
     juridique, NI confirmation du mot de passe : l'accès professionnel passe
@@ -45,7 +46,7 @@
                         <span class="auth-input__icon">{{ icon.person() }}</span>
                         {{ form_widget(registrationForm.fullName, {
                             id: 'inputFullName',
-                            attr: { class: 'auth-input__control', placeholder: 'martinthomas@gmail.com', autocomplete: 'name' }
+                            attr: { class: 'auth-input__control', placeholder: 'Martin Thomas', autocomplete: 'name' }
                         }) }}
                     </div>
                 </div>
@@ -64,10 +65,20 @@
                 <div class="auth-field">
                     <label class="auth-field__label" for="inputPhone">{{ 'Numéro de téléphone'|trans }}</label>
                     <div class="auth-input">
-                        <span class="auth-input__icon">{{ icon.phone() }}</span>
-                        {{ form_widget(registrationForm.phone, {
+                        {# Indicateur pays compact à la place de l'icône statique
+                           (voir assets/controllers/phone_country_controller.js) :
+                           le <select> pays reste réel, juste réduit à un drapeau +
+                           indicatif cliquables, pour ne pas réagencer la maquette. #}
+                        <span class="auth-input__icon phone-country" data-controller="phone-country">
+                            <span class="phone-country__flag" data-phone-country-target="flag"></span>
+                            <span class="phone-country__code" data-phone-country-target="code"></span>
+                            {{ form_widget(registrationForm.phone.country, {
+                                attr: { class: 'phone-country__select', 'data-phone-country-target': 'select', 'data-action': 'change->phone-country#sync' }
+                            }) }}
+                        </span>
+                        {{ form_widget(registrationForm.phone.number, {
                             id: 'inputPhone',
-                            attr: { class: 'auth-input__control', placeholder: 'Votre@email.com'|trans, autocomplete: 'tel' }
+                            attr: { class: 'auth-input__control', placeholder: '06 12 34 56 78', autocomplete: 'tel' }
                         }) }}
                     </div>
                 </div>

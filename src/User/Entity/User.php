@@ -7,6 +7,7 @@ namespace App\User\Entity;
 use App\Shared\Doctrine\SoftDeletableTrait;
 use App\Shared\Doctrine\TimestampableTrait;
 use App\Shared\Doctrine\UlidIdentifierTrait;
+use App\Shared\Validator\ValidPhoneNumber;
 use App\User\Enum\UserStatus;
 use App\User\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -48,6 +49,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $lastName;
 
     #[ORM\Column(length: 30, nullable: true)]
+    #[ValidPhoneNumber]
     private ?string $phone = null;
 
     #[ORM\Column(enumType: UserStatus::class)]

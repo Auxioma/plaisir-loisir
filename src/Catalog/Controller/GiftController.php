@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Catalog\Controller;
 
+use App\Catalog\Form\GiftOfferFormType;
 use App\Catalog\StaticCatalog;
 use App\Catalog\StaticDestinations;
 use App\Catalog\StaticGifts;
+use App\Shared\Controller\FlashesFormErrorsTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +24,8 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class GiftController extends AbstractController
 {
+    use FlashesFormErrorsTrait;
+
     #[Route(path: ['fr' => '/cadeaux', 'en' => '/en/gift-cards'], name: 'app_gifts')]
     public function index(): Response
     {
@@ -52,7 +56,9 @@ final class GiftController extends AbstractController
     #[Route(path: ['fr' => '/cadeaux/offrir', 'en' => '/en/gift-cards/buy'], name: 'app_gifts_offer')]
     public function offer(): Response
     {
-        return $this->render('gift/offrir.html.twig');
+        return $this->render('gift/offrir.html.twig', [
+            'giftForm' => $this->createForm(GiftOfferFormType::class),
+        ]);
     }
 
     /**
@@ -60,21 +66,36 @@ final class GiftController extends AbstractController
      *
      * L'écran précédent postait ses champs en GET jusqu'au 25/08 : nom,
      * e-mail, téléphone, destinataire et message se retrouvaient dans
-     * l'adresse de cette page. Il poste désormais, et le jeton est vérifié
-     * ici comme sur les autres formulaires du site.
+     * l'adresse de cette page. Il poste désormais, et le formulaire de
+     * l'écran d'en face (GiftOfferFormType) est validé ici, là où il est
+     * réellement reçu — son `<form>` poste vers cette route, pas vers
+     * `app_gifts_offer`.
      *
      * La méthode GET reste acceptée : la page ne fait qu'afficher un écran
      * et l'interdire casserait l'actualisation et le bouton Précédent, sans
-     * rien protéger — c'est le formulaire d'en face qui portait le défaut,
-     * pas cette route.
+     * rien protéger.
+     *
+     * SUR ERREUR, ON RÉAFFICHE `gift/offrir.html.twig` (pas de redirection) :
+     * même parti pris que les autres formulaires du site (voir
+     * `CorporateController::partnerForm()`), pour conserver la saisie et les
+     * erreurs. Aucune donnée n'est persistée ici, avant comme après ce
+     * changement : le tunnel réservation/paiement réel n'est pas encore
+     * câblé (cf. CLAUDE.md).
      */
     #[Route(path: ['fr' => '/cadeaux/offrir/paiement', 'en' => '/en/gift-cards/buy/payment'], name: 'app_gifts_offer_payment', methods: ['GET', 'POST'])]
     public function payment(Request $request): Response
     {
-        if ($request->isMethod('POST') && !$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'Votre session a expiré, merci de recommencer la saisie.');
+        if ($request->isMethod('POST')) {
+            $form = $this->createForm(GiftOfferFormType::class);
+            $form->handleRequest($request);
 
-            return $this->redirectToRoute('app_gifts_offer');
+            if (!$form->isValid()) {
+                $this->flashFormErrors($form);
+
+                return $this->render('gift/offrir.html.twig', [
+                    'giftForm' => $form,
+                ]);
+            }
         }
 
         return $this->render('gift/paiement.html.twig');

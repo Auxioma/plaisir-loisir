@@ -10,7 +10,6 @@ use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Presenter\DestinationPresenter;
 use App\Event\Repository\EventRepository;
 use App\Favorite\Repository\FavoriteRepository;
-use App\Messaging\Repository\MessageRepository;
 use App\Notification\Entity\Notification;
 use App\Notification\Entity\NotificationPreference;
 use App\Notification\Presenter\NotificationPresenter;
@@ -22,8 +21,11 @@ use App\PrivateActivity\Enum\ParticipationStatus;
 use App\PrivateActivity\Repository\ParticipationRepository;
 use App\PrivateActivity\Repository\PrivateActivityRepository;
 use App\Quote\Repository\ServiceRequestRepository;
+use App\Shared\Controller\FlashesFormErrorsTrait;
+use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
 use App\User\Enum\UserStatus;
+use App\User\Form\AccountSettingsFormType;
 use App\User\Service\AccountAnonymizer;
 use App\User\Service\AccountDataExporter;
 use App\User\Service\AvatarStorageService;
@@ -50,6 +52,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 final class AccountController extends AbstractController
 {
+    use FlashesFormErrorsTrait;
+
     public function __construct(
         private readonly FavoriteRepository $favorites,
         private readonly ActivityPresenter $activityPresenter,
@@ -57,7 +61,6 @@ final class AccountController extends AbstractController
         private readonly ServiceRequestRepository $requests,
         private readonly PrivateActivityRepository $privateActivities,
         private readonly ParticipationRepository $participations,
-        private readonly MessageRepository $messages,
         private readonly AvatarStorageService $avatars,
         private readonly AccountAnonymizer $anonymizer,
         private readonly AccountDataExporter $dataExporter,
@@ -67,6 +70,7 @@ final class AccountController extends AbstractController
         private readonly NotificationService $notificationService,
         private readonly NotificationPresenter $notificationPresenter,
         private readonly NotificationPreferenceRepository $notificationPreferences,
+        private readonly AccountIdentityPresenter $identityPresenter,
     ) {
     }
 
@@ -378,28 +382,12 @@ final class AccountController extends AbstractController
     {
         $user = $this->currentUser();
 
-        if ($request->isMethod('POST')) {
-            if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
-                $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+        $form = $this->createForm(AccountSettingsFormType::class, $user);
+        $form->handleRequest($request);
 
-                return $this->redirectToRoute('app_account_settings');
-            }
+        if ($form->isSubmitted() && $form->isValid()) {
+            $photo = $form->get('photo')->getData();
 
-            $firstName = trim((string) $request->request->get('prenom', ''));
-            $lastName = trim((string) $request->request->get('nom', ''));
-            $phone = trim((string) $request->request->get('telephone', ''));
-
-            if ('' === $firstName || '' === $lastName) {
-                $this->addFlash('error', 'Le nom et le prénom ne peuvent pas être vides.');
-
-                return $this->redirectToRoute('app_account_settings');
-            }
-
-            $user->setFirstName(mb_substr($firstName, 0, 100));
-            $user->setLastName(mb_substr($lastName, 0, 100));
-            $user->setPhone('' !== $phone ? mb_substr($phone, 0, 30) : null);
-
-            $photo = $request->files->get('photo');
             if ($photo instanceof UploadedFile) {
                 try {
                     $this->avatars->store($user, $photo);
@@ -417,11 +405,14 @@ final class AccountController extends AbstractController
             return $this->redirectToRoute('app_account_settings');
         }
 
+        $this->flashFormErrors($form);
+
         return $this->render('account/parametres.html.twig', [
             'user' => $this->accountUser(),
             'menu' => StaticAccount::menu(),
             'active' => 'Paramètres du compte',
             'account' => $user,
+            'settingsForm' => $form,
         ]);
     }
 
@@ -499,58 +490,19 @@ final class AccountController extends AbstractController
     /**
      * Le bloc « profil » de la sidebar, alimenté par le compte en session.
      *
-     * On garde la forme de tableau attendue par les templates plutôt que de
-     * leur passer l'entité : cela évite de toucher aux six écrans déjà calés
-     * au pixel, et laisse cohabiter l'identité réelle et les compteurs encore
-     * statiques le temps que les entités correspondantes soient branchées.
+     * Déléguée à AccountIdentityPresenter (18/09) : cette méthode avait sa
+     * propre copie du même calcul, volontairement laissée de côté lors de
+     * l'extraction du 14/09 (« /compte/* continue de fonctionner sans
+     * dépendre de ce partage », voir l'historique de AccountIdentityPresenter)
+     * — jusqu'à ce que l'ajout des badges « Demandes reçues »/« Avis reçus »
+     * y révèle le vrai coût de la copie : cette version-ci ne les connaissait
+     * pas, et `account/_sidebar.html.twig` plantait (clé manquante) pour tout
+     * compte pro passant par un des dix écrans de ce contrôleur.
      *
-     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unreadMessages: int, unreadNotifications: int}
+     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unreadMessages: int, unreadNotifications: int, pendingProviderRequests: int, pendingProviderReviews: int}
      */
     private function accountUser(): array
     {
-        $user = $this->getUser();
-
-        // Sécurité de type : la classe entière exige ROLE_USER, donc getUser()
-        // ne peut pas être nul ici ; ce garde-fou rassure surtout PHPStan.
-        if (!$user instanceof User) {
-            throw $this->createAccessDeniedException();
-        }
-
-        $firstName = $user->getFirstName();
-        $fullName = trim($firstName.' '.$user->getLastName());
-
-        $demo = StaticAccount::user();
-
-        return [
-            'name' => '' !== $fullName ? $fullName : $user->getEmail(),
-            'firstName' => '' !== $firstName ? $firstName : $user->getLastName(),
-            'email' => $user->getEmail(),
-            // Photo réelle depuis le Lot I ; tant que personne n'en a
-            // déposé une, on garde celle de la maquette plutôt que
-            // d'afficher un cadre vide.
-            'avatar' => $user->getAvatarPath() ?? $demo['avatar'],
-            'memberSince' => $this->formatMemberSince($user->getCreatedAt()),
-            // Messages non lus : réel depuis le Lot G (MessageRepository).
-            'unreadMessages' => $this->messages->countUnreadForUser($user),
-            // Notifications non lues : réel depuis le Lot K (NotificationRepository).
-            'unreadNotifications' => $this->notificationRepository->countUnread($user),
-        ];
-    }
-
-    /**
-     * « Membre depuis Mai 2026 » — mois en toutes lettres, dans la langue
-     * active du site (l'écran existe en français et en anglais).
-     */
-    private function formatMemberSince(?\DateTimeImmutable $createdAt): string
-    {
-        if (null === $createdAt) {
-            return '';
-        }
-
-        // « LLLL » = nom du mois autonome (« janvier », et non « de janvier »),
-        // le seul correct hors d'une date complète.
-        $formatted = (string) \IntlDateFormatter::formatObject($createdAt, 'LLLL y', \Locale::getDefault());
-
-        return mb_strtoupper(mb_substr($formatted, 0, 1)).mb_substr($formatted, 1);
+        return $this->identityPresenter->identityFor($this->currentUser());
     }
 }

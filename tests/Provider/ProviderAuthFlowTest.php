@@ -337,7 +337,7 @@ final class ProviderAuthFlowTest extends WebTestCase
                 'lastName' => 'Riviere',
                 'firstName' => 'Paul',
                 'email' => $email,
-                'phone' => '0102030405',
+                'phone' => ['country' => 'FR', 'number' => '0102030405'],
                 'password' => 'motdepasse123',
                 'mainCategory' => (string) $categorie->getId(),
                 'registeredOffice' => '12 rue des Écoles, 75005 Paris',

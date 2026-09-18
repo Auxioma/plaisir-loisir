@@ -52,14 +52,18 @@ final class StateChangingRequestsTest extends WebTestCase
 
         self::assertGreaterThan(
             0,
-            $form->filter('input[name="_token"]')->count(),
+            $form->filter('input[name="gift_offer_form[_token]"]')->count(),
             'Le jeton anti-CSRF manque au formulaire cadeau.',
         );
 
-        // Et la page de paiement s'ouvre bien quand le formulaire est envoyé.
+        // Et la page de paiement s'ouvre bien quand le formulaire est envoyé
+        // avec des informations valides.
         $client->submit($form->form([
-            'fullName' => 'Martin Thomas',
-            'email' => 'martin@example.com',
+            'gift_offer_form[fullName]' => 'Martin Thomas',
+            'gift_offer_form[email]' => 'martin@example.com',
+            'gift_offer_form[phone][country]' => 'FR',
+            'gift_offer_form[phone][number]' => '0612345678',
+            'gift_offer_form[agreeTerms]' => '1',
         ]));
 
         self::assertSame(200, $client->getResponse()->getStatusCode());

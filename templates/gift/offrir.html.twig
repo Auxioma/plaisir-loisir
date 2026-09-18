@@ -37,8 +37,14 @@
                Le jeton accompagne le reste du site (contact, partenaire,
                assistants) : le contrôleur le vérifie avant d'afficher l'écran
                de paiement. #}
-            <form class="gift-steps" id="gift-form" method="post" action="{{ path('app_gifts_offer_payment') }}" novalidate>
-                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+            {# data-turbo="false" : réponse 200 (pas de redirection) sur erreur, pour
+               réafficher ce même écran avec ses erreurs — le formulaire poste vers
+               GiftController::payment(), qui réaffiche ce template en cas d'échec.
+               Même correctif que security/register.html.twig. #}
+            {{ form_start(giftForm, {
+                attr: { class: 'gift-steps', id: 'gift-form', novalidate: 'novalidate', 'data-turbo': 'false' },
+                action: path('app_gifts_offer_payment'), method: 'post',
+            }) }}
 
                 {# ==========================================================
                    CARTE 1 : VOS INFORMATIONS (états vide / erreur / rempli
@@ -53,8 +59,10 @@
                         <label class="gift-field__label" for="giftFullName">{{ 'Nom & prénom'|trans }}</label>
                         <div class="gift-input">
                             <span class="gift-input__icon">{{ icon.person(18) }}</span>
-                            <input id="giftFullName" type="text" name="fullName" placeholder="martinthomas"
-                                   autocomplete="name" required data-gift-required data-sync="name">
+                            {{ form_widget(giftForm.fullName, {
+                                id: 'giftFullName',
+                                attr: { placeholder: 'martinthomas', autocomplete: 'name', required: true, 'data-gift-required': true, 'data-sync': 'name' }
+                            }) }}
                         </div>
                         <p class="gift-field__error" hidden>{{ '*Champ obligatoire'|trans }}</p>
                     </div>
@@ -64,25 +72,38 @@
                             <label class="gift-field__label" for="giftEmail">{{ 'Adresse e-mail'|trans }}</label>
                             <div class="gift-input">
                                 <span class="gift-input__icon">{{ icon.mail(18) }}</span>
-                                <input id="giftEmail" type="email" name="email" placeholder="Votre@email.com"
-                                       autocomplete="email" required data-gift-required data-sync="email">
+                                {{ form_widget(giftForm.email, {
+                                    id: 'giftEmail',
+                                    attr: { placeholder: 'Votre@email.com'|trans, autocomplete: 'email', required: true, 'data-gift-required': true, 'data-sync': 'email' }
+                                }) }}
                             </div>
                             <p class="gift-field__hint">{{ 'Votre bon cadeau sera envoyé à cette adresse'|trans }}</p>
                             <p class="gift-field__error" hidden>{{ '*Champ obligatoire'|trans }}</p>
                         </div>
                         <div class="gift-field">
                             <label class="gift-field__label" for="giftPhone">{{ 'Numéro de téléphone'|trans }}</label>
-                            <div class="gift-input">
-                                <span class="gift-input__icon">{{ icon.phone(18) }}</span>
-                                <input id="giftPhone" type="tel" name="phone" placeholder="+33 6 12 34 56 78"
-                                       autocomplete="tel" required data-gift-required>
+                            {# Indicateur pays compact en préfixe interne, comme l'icône
+                               statique qu'il remplace visuellement (icon.phone) — voir
+                               assets/controllers/phone_country_controller.js. #}
+                            <div class="gift-input gift-input--phone">
+                                <span class="phone-country phone-country--prefix" data-controller="phone-country">
+                                    <span class="phone-country__flag" data-phone-country-target="flag"></span>
+                                    <span class="phone-country__code" data-phone-country-target="code"></span>
+                                    {{ form_widget(giftForm.phone.country, {
+                                        attr: { class: 'phone-country__select', 'data-phone-country-target': 'select', 'data-action': 'change->phone-country#sync' }
+                                    }) }}
+                                </span>
+                                {{ form_widget(giftForm.phone.number, {
+                                    id: 'giftPhone',
+                                    attr: { placeholder: '06 12 34 56 78', autocomplete: 'tel' }
+                                }) }}
                             </div>
                             <p class="gift-field__error" hidden>{{ '*Champ obligatoire'|trans }}</p>
                         </div>
                     </div>
 
                     <label class="gift-consent">
-                        <input type="checkbox" name="agreeTerms" required data-gift-required>
+                        {{ form_widget(giftForm.agreeTerms, { attr: { required: true, 'data-gift-required': true } }) }}
                         <span>{{ "J'accepte les"|trans }} <a class="auth-inline-link" href="{{ path('app_corporate_terms') }}">{{ 'conditions générales'|trans }}</a> {{ 'et la'|trans }} <a class="auth-inline-link" href="{{ path('app_corporate_privacy') }}">{{ 'politique de confidentialité'|trans }}</a></span>
                     </label>
                 </section>
@@ -126,7 +147,7 @@
                     <p class="gift-tunnel__total">{{ 'Total :'|trans }} <strong>160€</strong></p>
                     <button type="submit" class="pl-btn pl-btn--outline-action gift-next">{{ 'Suivant'|trans }} {{ icon.chevron_right(16) }}</button>
                 </div>
-            </form>
+            {{ form_end(giftForm) }}
 
             {% include 'gift/_order_summary.html.twig' %}
         </div>
