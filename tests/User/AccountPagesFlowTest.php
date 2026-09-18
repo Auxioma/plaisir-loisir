@@ -34,12 +34,14 @@ final class AccountPagesFlowTest extends WebTestCase
         $crawler = $client->request('GET', '/compte/parametres');
         self::assertResponseIsSuccessful();
 
-        $token = (string) $crawler->filter('form[action*="parametres"] input[name="_token"]')->first()->attr('value');
+        $token = (string) $crawler->filter('form[action*="parametres"] input[name="account_settings_form[_token]"]')->first()->attr('value');
         $client->request('POST', '/compte/parametres', [
-            'prenom' => 'Nouveau',
-            'nom' => 'Nom',
-            'telephone' => '0600000000',
-            '_token' => $token,
+            'account_settings_form' => [
+                'firstName' => 'Nouveau',
+                'lastName' => 'Nom',
+                'phone' => ['country' => 'FR', 'number' => '0600000000'],
+                '_token' => $token,
+            ],
         ]);
         self::assertResponseRedirects('/compte/parametres');
 
@@ -50,7 +52,42 @@ final class AccountPagesFlowTest extends WebTestCase
         self::assertNotNull($reloaded);
         self::assertSame('Nouveau', $reloaded->getFirstName());
         self::assertSame('Nom', $reloaded->getLastName());
-        self::assertSame('0600000000', $reloaded->getPhone());
+        // Stocké en E.164, comme tout numéro passé par PhoneNumberType.
+        self::assertSame('+33600000000', $reloaded->getPhone());
+    }
+
+    public function testTheSettingsScreenRejectsAnInvalidPhoneNumber(): void
+    {
+        $client = static::createClient();
+        $user = $this->makeClient();
+        $email = $user->getEmail();
+        $client->loginUser($user);
+
+        $crawler = $client->request('GET', '/compte/parametres');
+        $token = (string) $crawler->filter('form[action*="parametres"] input[name="account_settings_form[_token]"]')->first()->attr('value');
+
+        $client->request('POST', '/compte/parametres', [
+            'account_settings_form' => [
+                'firstName' => 'Nouveau',
+                'lastName' => 'Nom',
+                'phone' => ['country' => 'FR', 'number' => '123'],
+                '_token' => $token,
+            ],
+        ]);
+        // Formulaire soumis invalide réaffiché : Symfony répond 422, pas 200.
+        self::assertResponseStatusCodeSame(422);
+
+        // La dernière requête n'a pas rebooté le noyau : sans ce clear(),
+        // l'identity map Doctrine renverrait l'entité en mémoire mutée par
+        // la soumission du formulaire (firstName déjà écrit par le data
+        // mapper avant l'échec de validation), pas l'état réellement
+        // persisté en base (même pattern que tests/Admin/EditAndDeleteTest.php).
+        static::getContainer()->get(EntityManagerInterface::class)->clear();
+
+        $reloaded = static::getContainer()->get(\App\User\Repository\UserRepository::class)->findOneBy(['email' => $email]);
+        self::assertNotNull($reloaded);
+        self::assertNotSame('Nouveau', $reloaded->getFirstName());
+        self::assertNull($reloaded->getPhone());
     }
 
     public function testMyEventsListsWhatIOrganized(): void

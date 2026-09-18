@@ -6,6 +6,9 @@ namespace App\Shared\Service;
 
 use App\Messaging\Repository\MessageRepository;
 use App\Notification\Repository\NotificationRepository;
+use App\Provider\Repository\ProviderProfileRepository;
+use App\Quote\Repository\ServiceRequestRepository;
+use App\Review\Repository\ReviewRepository;
 use App\User\Entity\User;
 use App\User\StaticAccount;
 
@@ -29,17 +32,27 @@ use App\User\StaticAccount;
  * maquette tant que rien n'a été déposé. Les messages non lus sont réels
  * depuis le Lot G, les notifications non lues depuis le Lot K
  * (NotificationRepository::countUnread).
+ *
+ * BADGES PRO (18/09) : « Demandes reçues » et « Avis reçus » (menu
+ * StaticAccount::providerMenu()) restaient à 0 partout, contrairement à
+ * Messages/Notifications déjà réels — personne ne les avait câblés. Comme
+ * cette classe sert indifféremment un compte client ou pro (même
+ * `identityFor(User)`), les deux compteurs restent à 0 pour un client (pas
+ * de ProviderProfile) sans qu'il faille deux chemins de code.
  */
 final class AccountIdentityPresenter
 {
     public function __construct(
         private readonly MessageRepository $messages,
         private readonly NotificationRepository $notifications,
+        private readonly ProviderProfileRepository $providerProfiles,
+        private readonly ServiceRequestRepository $serviceRequests,
+        private readonly ReviewRepository $reviews,
     ) {
     }
 
     /**
-     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unreadMessages: int, unreadNotifications: int}
+     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unreadMessages: int, unreadNotifications: int, pendingProviderRequests: int, pendingProviderReviews: int}
      */
     public function identityFor(User $user): array
     {
@@ -55,7 +68,28 @@ final class AccountIdentityPresenter
             'memberSince' => $this->formatMemberSince($user->getCreatedAt()),
             'unreadMessages' => $this->messages->countUnreadForUser($user),
             'unreadNotifications' => $this->notifications->countUnread($user),
+            'pendingProviderRequests' => $this->pendingProviderRequests($user),
+            'pendingProviderReviews' => $this->pendingProviderReviews($user),
         ];
+    }
+
+    private function pendingProviderRequests(User $user): int
+    {
+        $profile = $this->providerProfiles->findOneByUser($user);
+        $category = $profile?->getMainCategory();
+
+        if (null === $profile || null === $category) {
+            return 0;
+        }
+
+        return $this->serviceRequests->countOpenUnquotedForProvider($category, $profile);
+    }
+
+    private function pendingProviderReviews(User $user): int
+    {
+        $profile = $this->providerProfiles->findOneByUser($user);
+
+        return null !== $profile ? $this->reviews->countAwaitingReplyForProvider($profile) : 0;
     }
 
     /**

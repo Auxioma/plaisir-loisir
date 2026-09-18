@@ -56,7 +56,7 @@ final class PasswordResetFlowTest extends WebTestCase
 
         self::assertResponseRedirects('/mot-de-passe-oublie/verification');
         $client->followRedirect();
-        self::assertSelectorTextContains('.alert', 'code est incorrect ou périmé');
+        self::assertSelectorTextContains('.toast-body', 'code est incorrect ou périmé');
     }
 
     /**
@@ -107,7 +107,7 @@ final class PasswordResetFlowTest extends WebTestCase
 
         self::assertResponseRedirects('/mot-de-passe-oublie/verification');
         $client->followRedirect();
-        self::assertSelectorTextContains('.alert', 'code est incorrect ou périmé');
+        self::assertSelectorTextContains('.toast-body', 'code est incorrect ou périmé');
     }
 
     private function makeExistingUser(string $email): User

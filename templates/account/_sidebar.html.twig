@@ -1,9 +1,11 @@
 {#
     <AccountSidebar> : en-tête profil (avatar, nom, email, badge membre) +
     menu de 9 entrées. Item actif violet (rouge pour Déconnexion) ; badge
-    compteur rouge sur Messages et Notifications, chacun sa propre source
-    (`item.badge` vaut 'messages' ou 'notifications', Lot G du 15/09 — avant
-    cela les deux partageaient le même compteur de démonstration). Les
+    compteur rouge sur Messages, Notifications, Demandes reçues et Avis
+    reçus, chacun sa propre source (`item.badge` vaut 'messages',
+    'notifications', 'requests' ou 'reviews' — les deux derniers uniquement
+    sur le menu pro, ajoutés le 18/09, mêmes conditions que les deux
+    premiers). Les
     entrées sans route (albums, activités créées, réservations, paramètres —
     aucune entité derrière pour l'instant) s'affichent en <span>, non
     cliquables, avec un badge « Bientôt disponible » plutôt qu'un lien mort
@@ -51,7 +53,7 @@
                     <strong>{{ item.title }}</strong>
                     <small>{{ item.route ? item.subtitle : ('Bientôt disponible'|trans) }}</small>
                 </span>
-                {% set badge_count = item.badge == 'messages' ? user.unreadMessages : (item.badge == 'notifications' ? user.unreadNotifications : 0) %}
+                {% set badge_count = item.badge == 'messages' ? user.unreadMessages : (item.badge == 'notifications' ? user.unreadNotifications : (item.badge == 'requests' ? user.pendingProviderRequests : (item.badge == 'reviews' ? user.pendingProviderReviews : 0))) %}
                 {% if item.badge and badge_count > 0 %}
                     <span class="acc-menu__count">{{ badge_count }}</span>
                 {% endif %}

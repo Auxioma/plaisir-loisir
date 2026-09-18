@@ -23,12 +23,17 @@ final class StaticAccount
             'name' => 'Thomas Martin',
             'firstName' => 'Thomas',
             'email' => 'Tmartin@email.com',
-            'avatar' => 'images/account/avatar-thomas.jpg',
+            // Silhouette générique, pas la photo de la maquette (signalé le
+            // 18/09) : c'est un repli affiché à N'IMPORTE QUEL compte tant
+            // qu'il n'a pas déposé sa propre photo, pas une photo de démo à
+            // remplacer plus tard — la personne choisit elle-même dans
+            // /compte/parametres (AvatarStorageService).
+            'avatar' => 'images/account/avatar-default.svg',
             'memberSince' => 'Mai 2026',
             // Badge « non lues » partagé sidebar/header (spec, point 8).
             // Séparé en deux compteurs (14/09, Lot G) : les deux sont réels
             // depuis le Lot K (MessageRepository puis NotificationRepository),
-            // seul l'avatar ci-dessus reste celui de la démo par défaut.
+            // seul l'avatar ci-dessus reste celui du repli par défaut.
             'unreadMessages' => 3,
             'unreadNotifications' => 3,
         ];
@@ -97,7 +102,7 @@ final class StaticAccount
     {
         return [
             ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité professionnelle', 'route' => 'app_pro_dashboard', 'badge' => false],
-            ['icon' => 'receipt', 'title' => 'Demandes reçues', 'subtitle' => 'Répondre par un devis', 'route' => 'app_pro_requests', 'badge' => false],
+            ['icon' => 'receipt', 'title' => 'Demandes reçues', 'subtitle' => 'Répondre par un devis', 'route' => 'app_pro_requests', 'badge' => 'requests'],
             // Nouvel item (Lot G, §14 du CDC) : même route que côté client, la
             // conversation ne dépend pas du chapeau porté pour la consulter.
             ['icon' => 'mail', 'title' => 'Messages', 'subtitle' => 'Conversations avec vos clients', 'route' => 'app_account_messages', 'badge' => 'messages'],
@@ -105,7 +110,7 @@ final class StaticAccount
             ['icon' => 'badge_check', 'title' => 'Ma fiche professionnelle', 'subtitle' => 'Ce que voient vos clients', 'route' => 'app_pro_profile_edit', 'badge' => false],
             // Nouvel item (Lot H, §16.2 du CDC) : Review dépendait encore du
             // catalogue à réservation directe en pause, aucun écran ici.
-            ['icon' => 'star', 'title' => 'Avis reçus', 'subtitle' => 'Ce que vos clients disent de vous', 'route' => 'app_pro_reviews', 'badge' => false],
+            ['icon' => 'star', 'title' => 'Avis reçus', 'subtitle' => 'Ce que vos clients disent de vous', 'route' => 'app_pro_reviews', 'badge' => 'reviews'],
             ['icon' => 'heart', 'title' => 'Mes favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false],
             ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => 'notifications'],
             ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Fermer votre session', 'route' => 'app_account_logout_confirm', 'badge' => false],

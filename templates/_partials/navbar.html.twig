@@ -14,6 +14,9 @@
 
     Icônes connectées câblées sur l'espace compte : cœur → Mes favoris,
     enveloppe → Messagerie, cloche → Notifications, avatar → espace compte.
+    Messagerie, Notifications et (pour ROLE_PROVIDER) Demandes reçues
+    portent un badge de non-lus, identique à celui du menu compte (signalé
+    le 18/09 : les badges divergeaient, le header n'affichait jamais rien).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 {# En dev seulement, « ?connecte=1 » prévisualise l'état connecté sans compte
@@ -95,14 +98,42 @@
                    joignable qu'en tapant l'URL à la main (signalé le 14/09,
                    même défaut que /professionnels avant son ajout au menu). #}
                 {% if is_granted('ROLE_PROVIDER') %}
-                    <a href="{{ path('app_pro_requests') }}" class="pl-iconbtn" aria-label="{{ 'Demandes reçues'|trans }}">{{ icon.receipt(20) }}</a>
+                    {# Même compteur que le badge « Demandes reçues » du menu
+                       compte pro (account/_sidebar.html.twig, user.pendingProviderRequests) :
+                       demandes ouvertes de son métier pas encore devisées. #}
+                    {% set pendingRequests = pending_requests_count(app.user) %}
+                    <a href="{{ path('app_pro_requests') }}" class="pl-iconbtn" aria-label="{{ 'Demandes reçues'|trans }}">
+                        {{ icon.receipt(20) }}
+                        {% if pendingRequests > 0 %}
+                            <span class="pl-iconbtn__badge">{{ pendingRequests > 99 ? '99+' : pendingRequests }}</span>
+                        {% endif %}
+                    </a>
                     {# Même défaut évité pour /pro/abonnement (§17 du CDC) : sans ce
                        lien, seule une URL tapée à la main y mène. #}
                     <a href="{{ path('app_pro_subscription') }}" class="pl-iconbtn" aria-label="{{ 'Abonnement'|trans }}">{{ icon.card(20) }}</a>
                 {% endif %}
                 <a href="{{ path('app_account_favorites') }}" class="pl-iconbtn" aria-label="{{ 'Mes favoris'|trans }}">{{ icon.heart(20) }}</a>
-                <a href="{{ path('app_account_messages') }}" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">{{ icon.mail(20) }}</a>
-                <a href="{{ path('app_account_notifications') }}" class="pl-iconbtn" aria-label="{{ 'Notifications'|trans }}">{{ icon.bell(20) }}</a>
+
+                {# Mêmes compteurs que le badge du menu compte
+                   (account/_sidebar.html.twig, user.unreadMessages /
+                   user.unreadNotifications) : UnreadCountsExtension interroge
+                   les mêmes dépôts, pour que le header et le menu compte
+                   affichent toujours le même nombre. #}
+                {% set unreadMessages = unread_messages_count(app.user) %}
+                <a href="{{ path('app_account_messages') }}" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">
+                    {{ icon.mail(20) }}
+                    {% if unreadMessages > 0 %}
+                        <span class="pl-iconbtn__badge">{{ unreadMessages > 99 ? '99+' : unreadMessages }}</span>
+                    {% endif %}
+                </a>
+
+                {% set unreadNotifications = unread_notifications_count(app.user) %}
+                <a href="{{ path('app_account_notifications') }}" class="pl-iconbtn" aria-label="{{ 'Notifications'|trans }}">
+                    {{ icon.bell(20) }}
+                    {% if unreadNotifications > 0 %}
+                        <span class="pl-iconbtn__badge">{{ unreadNotifications > 99 ? '99+' : unreadNotifications }}</span>
+                    {% endif %}
+                </a>
 
                 {# Répond au signalement du 14/09 : ni le compte pro ni le compte
                    client n'avaient de page qui leur soit propre — l'avatar menait
@@ -112,7 +143,7 @@
                    pro ; agrégat demandes/activités privées/favoris côté client,
                    account/_layout.html.twig::dashboard()). #}
                 <a href="{{ is_granted('ROLE_PROVIDER') ? path('app_pro_dashboard') : path('app_account_dashboard') }}" class="pl-avatarbtn" aria-label="{{ 'Tableau de bord'|trans }}">
-                    <img src="{{ asset(app.user.avatarPath ?? 'images/account/avatar-thomas.jpg') }}" alt="">
+                    <img src="{{ asset(app.user.avatarPath ?? 'images/account/avatar-default.svg') }}" alt="">
                     <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
                 </a>
             {% else %}

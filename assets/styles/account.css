@@ -28,7 +28,26 @@
     border-radius: 0 0 16px 16px; padding: 24px 24px 80px;
 }
 .acc-profile { display: flex; gap: 8px; align-items: flex-start; padding: 39px 0 23px 7px; }
-.acc-profile__avatar { width: 78px; height: 78px; border-radius: 50%; object-fit: cover; flex: none; }
+/* --pl-border (#e5e7eb, quasi blanc) passait inaperçu autour d'un avatar
+   rond. Un `border` classique pose en plus un autre problème sur un
+   <img> avec object-fit : il mange sur la boîte de l'image (mode
+   border-box), donc la photo se redessine à l'intérieur d'un cadre plus
+   petit — un rendu qui varie selon les navigateurs et peut laisser une
+   bande vide d'un côté du cercle. `box-shadow` dessine l'anneau EN PLUS
+   de la boîte de l'image, sans y toucher : la photo continue de remplir
+   tout le cercle jusqu'à son bord, et l'anneau reste net et uniforme
+   tout autour (comme sur LinkedIn, Airbnb…). */
+.acc-profile__avatar {
+    width: 78px; height: 78px; border-radius: 50%; object-fit: cover; flex: none;
+    box-shadow: 0 0 0 3px #b9bec7;
+}
+/* Aperçu de la photo de profil dans le formulaire des paramètres : même
+   anneau que .acc-profile__avatar, y compris pendant la prévisualisation
+   de l'image sélectionnée avant envoi. */
+.acc-photo-preview {
+    width: 72px; height: 72px; border-radius: 50%; object-fit: cover; flex: none;
+    box-shadow: 0 0 0 3px #b9bec7;
+}
 .acc-profile__id { display: grid; gap: 3px; min-width: 0; }
 .acc-profile__id strong { font-size: 16px; color: var(--pl-text-strong); }
 .acc-profile__id > span { font-size: 13px; color: var(--pl-text-muted); }
@@ -389,6 +408,30 @@ button.acc-nlink { appearance: none; background: none; border: none; padding: 0;
     cursor: pointer;
 }
 .pl-album-photo__delete:hover { color: var(--pl-error); }
+
+/* --------------------------------------------------------------------------
+ *  <ReviewStarsInput> : saisie de la note en étoiles (formulaire « Publier
+ *  mon avis », quote/demande_detail.html.twig). Aucune maquette (écran
+ *  ajouté au Lot H) : un chiffre en étoiles se donne comme il se lit
+ *  ailleurs sur le site (review-card__stars, home.css), pas via un <select>
+ *  "5/5, 4/5…". Widget CSS pur : 5 radios en ordre inversé (5 → 1) + la
+ *  ligne posée en `row-reverse`, pour que le survol/la sélection d'une
+ *  étoile allume aussi celles à sa gauche via `~` (sélecteur « frères
+ *  suivants ») sans une ligne de JS.
+ * ------------------------------------------------------------------------ */
+.review-stars-input { display: inline-flex; flex-direction: row-reverse; gap: 2px; }
+.review-stars-input input {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0; pointer-events: none;
+}
+.review-stars-input label { display: flex; cursor: pointer; color: var(--pl-border); }
+.review-stars-input label:hover,
+.review-stars-input label:hover ~ label,
+.review-stars-input input:checked ~ label {
+    color: var(--pl-warning);
+}
+.review-stars-input input:focus-visible + label { outline: 2px solid var(--pl-action); outline-offset: 2px; }
 
 /* --------------------------------------------------------------------------
  *  RESPONSIVE.

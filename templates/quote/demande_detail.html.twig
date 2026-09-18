@@ -2,8 +2,15 @@
     Détail d'une demande côté client : les devis reçus, avec accepter/refuser
     (§10, §11 du CDC). QuoteService::accept() refuse déjà automatiquement les
     autres devis et clôture la demande — l'écran ne fait qu'appeler le service.
+
+    Note en étoiles, pas un <select> (signalé le 18/09) : un avis se DONNE en
+    étoiles partout ailleurs sur le site (review-card__stars) — le menu
+    déroulant "5/5, 4/5…" ne correspondait à rien de connu. Widget CSS pur
+    (radios inversés + sélecteurs `~`, voir account.css) : aucun JS requis,
+    le clavier/lecteur d'écran gèrent un groupe de radios nativement.
 #}
 {% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ demande.title }}{% endblock %}
 
@@ -67,14 +74,13 @@
                             {% else %}
                                 <form method="post" action="{{ path('app_account_quote_review', {id: devis.id}) }}" class="d-flex flex-wrap align-items-center gap-2">
                                     <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                                    <label class="form-label mb-0" for="note-{{ devis.id }}">{{ 'Votre note'|trans }}</label>
-                                    <select class="form-select form-select-sm w-auto" id="note-{{ devis.id }}" name="note" required>
-                                        <option value="5">5/5</option>
-                                        <option value="4">4/5</option>
-                                        <option value="3">3/5</option>
-                                        <option value="2">2/5</option>
-                                        <option value="1">1/5</option>
-                                    </select>
+                                    <span class="form-label mb-0">{{ 'Votre note'|trans }}</span>
+                                    <span class="review-stars-input" role="radiogroup" aria-label="{{ 'Votre note'|trans }}">
+                                        {% for i in [5, 4, 3, 2, 1] %}
+                                            <input type="radio" id="note-{{ devis.id }}-{{ i }}" name="note" value="{{ i }}" required>
+                                            <label for="note-{{ devis.id }}-{{ i }}" aria-label="{{ i }} {{ i > 1 ? 'étoiles'|trans : 'étoile'|trans }}">{{ icon.star_solid(22) }}</label>
+                                        {% endfor %}
+                                    </span>
                                     <input type="text" name="commentaire" class="form-control form-control-sm" maxlength="2000" placeholder="{{ 'Votre commentaire (facultatif)'|trans }}">
                                     <button type="submit" class="btn btn-sm pl-btn pl-btn--cta">{{ 'Publier mon avis'|trans }}</button>
                                 </form>

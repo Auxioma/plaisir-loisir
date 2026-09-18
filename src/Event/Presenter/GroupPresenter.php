@@ -21,7 +21,7 @@ final class GroupPresenter
     private const FALLBACK_ALBUM_IMAGE = 'images/events/alb-canoerouge.jpg';
 
     /** Repli avatar, memes conditions que StaticAccount::user()['avatar']. */
-    private const FALLBACK_OWNER_AVATAR = 'images/account/avatar-thomas.jpg';
+    private const FALLBACK_OWNER_AVATAR = 'images/account/avatar-default.svg';
 
     /**
      * Abréviations de mois telles que la maquette les écrit.

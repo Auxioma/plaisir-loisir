@@ -48,6 +48,20 @@ class ReviewRepository extends ServiceEntityRepository
         return $this->count(['provider' => $provider, 'status' => ReviewStatus::Published]);
     }
 
+    /**
+     * Compteur du badge « Avis reçus » (menu compte pro) : avis publiés
+     * auxquels le prestataire n'a pas encore répondu (`providerReply`
+     * encore vide) — un avis déjà traité n'a plus rien de « nouveau ».
+     */
+    public function countAwaitingReplyForProvider(ProviderProfile $provider): int
+    {
+        return $this->count([
+            'provider' => $provider,
+            'status' => ReviewStatus::Published,
+            'providerReply' => null,
+        ]);
+    }
+
     public function averageRatingForProvider(ProviderProfile $provider): ?float
     {
         $average = $this->createQueryBuilder('r')

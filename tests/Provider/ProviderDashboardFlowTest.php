@@ -102,7 +102,7 @@ final class ProviderDashboardFlowTest extends WebTestCase
 
         self::assertResponseRedirects('/pro/profil');
         $client->followRedirect();
-        self::assertSelectorTextContains('.alert', 'ne peut pas être vide');
+        self::assertSelectorTextContains('.toast-body', 'ne peut pas être vide');
     }
 
     private function findOrMakeCategory(): Category

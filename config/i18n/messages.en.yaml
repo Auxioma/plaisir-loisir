@@ -1612,9 +1612,16 @@
 "Zone de danger": "Danger zone"
 "Désactiver mon compte": "Deactivate my account"
 "Supprimer mon compte": "Delete my account"
-"Désactiver votre compte ? Vous ne pourrez plus vous connecter tant qu'un administrateur ne l'aura pas réactivé.": "Deactivate your account? You won't be able to log in until an administrator reactivates it."
-"Supprimer définitivement votre compte et vos données personnelles ? Cette action est irréversible.": "Permanently delete your account and personal data? This action cannot be undone."
 "Paramètres du compte": "Account settings"
+
+# Confirmation par vraie modale plutôt que le confirm() natif du navigateur
+# (18/09) : les deux actions ouvrent désormais une boîte de dialogue de
+# l'application avec Annuler / confirmation explicite.
+"Désactiver mon compte ?": "Deactivate my account?"
+"Vous ne pourrez plus vous connecter tant qu'un administrateur ne l'aura pas réactivé.": "You won't be able to log in until an administrator reactivates it."
+"Supprimer mon compte ?": "Delete my account?"
+"Suppression définitive de votre compte et de vos données personnelles. Cette action est irréversible.": "Permanent deletion of your account and personal data. This action cannot be undone."
+"Supprimer définitivement": "Delete permanently"
 
 # Rubriques restantes de l'espace client (Lot J, 15/09).
 "Mes activités créées": "My created events"

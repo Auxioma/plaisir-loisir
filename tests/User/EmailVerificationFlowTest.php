@@ -57,7 +57,7 @@ final class EmailVerificationFlowTest extends WebTestCase
 
         self::assertResponseRedirects('/verification-email');
         $client->followRedirect();
-        self::assertSelectorTextContains('.alert', 'code est incorrect ou périmé');
+        self::assertSelectorTextContains('.toast-body', 'code est incorrect ou périmé');
     }
 
     public function testResendQueuesANewEmail(): void

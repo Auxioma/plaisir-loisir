@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\User\Controller;
 
+use App\Shared\Controller\FlashesFormErrorsTrait;
 use App\User\Enum\AccountType;
 use App\User\Form\RegistrationFormType;
 use App\User\Service\EmailVerificationService;
 use App\User\Service\PasswordResetService;
 use App\User\Service\RegistrationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -22,6 +22,8 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
  */
 final class SecurityController extends AbstractController
 {
+    use FlashesFormErrorsTrait;
+
     /**
      * Affiche le formulaire de connexion et transmet les erreurs éventuelles.
      */
@@ -385,21 +387,5 @@ final class SecurityController extends AbstractController
         $this->addFlash('success', 'Un nouveau code vous a été envoyé.');
 
         return $this->redirectToRoute('app_email_verification');
-    }
-
-    /**
-     * Recopie les erreurs de validation d'un formulaire dans les messages flash.
-     */
-    private function flashFormErrors(FormInterface $form): void
-    {
-        if (!$form->isSubmitted()) {
-            return;
-        }
-
-        // true : on veut aussi les erreurs portées par les champs enfants,
-        // pas seulement celles du formulaire lui-même.
-        foreach ($form->getErrors(true) as $error) {
-            $this->addFlash('error', $error->getMessage());
-        }
     }
 }

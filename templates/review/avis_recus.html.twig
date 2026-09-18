@@ -2,8 +2,14 @@
     Avis reçus par le professionnel (§16.2 du CDC). Aucune maquette : réutilise
     le gabarit de l'espace compte et une liste Bootstrap.
     Variables : reviews (list de Review), average (float|null).
+
+    Étoiles, pas « x/5 » en chiffres (signalé le 18/09) : même composant que
+    partout ailleurs où un avis s'affiche (review-card__stars, home.css /
+    templates/activity/_review_card.html.twig), pour que la note se lise
+    pareil ici et sur la fiche publique du prestataire.
 #}
 {% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ 'Avis reçus'|trans }}{% endblock %}
 
@@ -25,7 +31,11 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                             <strong>{{ review.author.firstName }} {{ review.author.lastName }}</strong>
-                            <span class="fw-bold" style="color: var(--pl-action);">{{ review.rating }}/5</span>
+                            <span class="review-card__stars" aria-label="{{ review.rating }} {{ 'étoiles sur 5'|trans }}">
+                                {% for i in 1..5 %}
+                                    <span class="{{ i <= review.rating ? 'is-on' : 'is-off' }}">{{ icon.star_solid(18) }}</span>
+                                {% endfor %}
+                            </span>
                         </div>
                         <div class="text-muted small mb-2">{{ review.createdAt|date('d/m/Y') }}</div>
                         {% if review.comment %}

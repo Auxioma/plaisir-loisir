@@ -70,7 +70,7 @@ final class RegistrationFlowTest extends WebTestCase
 
         self::assertResponseIsSuccessful('L\'écran doit se ré-afficher (200), pas rediriger ni renvoyer une erreur HTTP brute.');
         self::assertSelectorTextContains(
-            '.alert',
+            '.toast-body',
             'Un compte existe déjà avec cet e-mail',
             'Aucun message explicite ne signale que l\'e-mail est déjà pris.',
         );
