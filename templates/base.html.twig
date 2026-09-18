@@ -58,5 +58,15 @@
         {% block footer %}
             {% include '_partials/footer.html.twig' %}
         {% endblock %}
+
+        {# Posée ici, une seule fois, plutôt que dans chaque variante de
+           navbar (signalé le 18/09 : la modale restait nichée dans l'en-tête
+           — position: sticky + z-index — et s'ouvrait mal placée et non
+           cliquable). Une modale Bootstrap doit être un enfant direct de
+           body, jamais coincée dans le contexte d'empilement d'un ancêtre
+           positionné. #}
+        {% if app.user is not null %}
+            {% include '_partials/_logout_modal.html.twig' %}
+        {% endif %}
     </body>
 </html>

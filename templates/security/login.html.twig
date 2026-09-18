@@ -74,9 +74,14 @@
 
             <div class="auth-actions">
                 <button type="submit" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Se connecter'|trans }}</button>
+                {# Mène à l'écran « Bienvenue » (choix du profil), pas
+                   directement au formulaire d'inscription (signalé le 18/09) :
+                   depuis que l'en-tête ne propose plus qu'un choix de
+                   connexion, ce lien est le seul chemin restant vers cet
+                   écran qui présente les deux profils avant de choisir. #}
                 <p class="auth-switch">
                     {{ "Vous n'avez pas de compte ?"|trans }}
-                    <a class="auth-inline-link" href="{{ path('app_register') }}">{{ 'Créer un compte'|trans }}</a>
+                    <a class="auth-inline-link" href="{{ path('app_auth_choice') }}">{{ 'Créer un compte'|trans }}</a>
                 </p>
 
                 {# Maquette : l'accès professionnel passe par ce lien, sur deux

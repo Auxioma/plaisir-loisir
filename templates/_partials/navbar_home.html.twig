@@ -60,9 +60,24 @@
             {# « Deposer une annonce » s'adresse a un prestataire : la seule
                page existante pour cela est « Devenir partenaire ». #}
             <a href="{{ path('app_corporate_partner') }}" class="pl-btn pl-btn--cta">{{ 'Déposer une annonce'|trans }}</a>
-            <a href="{{ path('app_auth_choice') }}" class="pl-btn pl-btn--outline-dark">
-                {{ icon.person(20) }} {{ "S'inscrire"|trans }}
-            </a>
+            {# « Se connecter », pas « S'inscrire » (signalé le 18/09) : le
+               header n'a pas à savoir lequel des deux comptes (client ou
+               pro) visite le site, donc pas de connexion directe possible
+               en un clic ; ce choix se fait ici, dans ce menu, pour deux
+               destinations différentes (app_login / app_pro_login). L'inscription
+               reste jointe depuis chaque écran de connexion, via l'écran
+               « Bienvenue » (app_auth_choice) qui présente les deux profils
+               avant de choisir — elle n'a plus besoin d'un accès direct
+               depuis le header. #}
+            <details class="pl-dropdown pl-dropdown--signin">
+                <summary class="pl-btn pl-btn--outline-dark pl-dropdown__toggle--signin">
+                    {{ icon.person(20) }} {{ 'Se connecter'|trans }} {{ icon.chevron_down(16) }}
+                </summary>
+                <div class="pl-dropdown__menu pl-dropdown__menu--signin">
+                    <a href="{{ path('app_login') }}" class="pl-dropdown__item">{{ 'Client'|trans }}</a>
+                    <a href="{{ path('app_pro_login') }}" class="pl-dropdown__item">{{ 'Prestataire'|trans }}</a>
+                </div>
+            </details>
             {% include '_partials/_navbar_burger.html.twig' with { panel_id: 'plNav' } %}
         </div>
     </div>

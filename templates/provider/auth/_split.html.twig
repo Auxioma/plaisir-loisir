@@ -15,7 +15,13 @@
 #}
 {% extends 'base.html.twig' %}
 
-{% block header %}{% endblock %}
+{# Même choix que provider/auth/_aside.html.twig (signalé le 18/09) : navbar
+   réduite ajoutée, alors que la maquette n'en prévoit pas. Le logo cliquable
+   du bloc pa-signup__head plus bas reste en place : ce n'était pas son seul
+   rôle (il structure aussi l'écran), et le retirer n'a pas été demandé. #}
+{% block header %}
+    {% include '_partials/navbar_home.html.twig' %}
+{% endblock %}
 {% block footer %}{% endblock %}
 
 {% block body %}
