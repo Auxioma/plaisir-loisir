@@ -3,6 +3,17 @@ framework:
     form:
         csrf_protection:
             token_id: submit
+            # Par défaut, Symfony pose data-controller="csrf-protection" sur le
+            # jeton des Symfony Forms : le JS y ajoute alors un jeton
+            # « double-submit », et SameOriginCsrfTokenManager retient en
+            # session que ce navigateur l'utilise. Toute requête suivante sans
+            # ce jeton est ensuite refusée — or les ~40 formulaires écrits à la
+            # main (connexion, vérification d'e-mail, déconnexion, favoris…)
+            # n'en portent pas. Résultat : après l'inscription, plus aucune
+            # connexion ni vérification possible (« jeton CSRF invalide »).
+            # On s'en tient donc partout à la vérification d'origine
+            # (Sec-Fetch-Site / Origin), déjà utilisée par tout le reste du site.
+            field_attr: []
 
     csrf_protection:
         stateless_token_ids:
