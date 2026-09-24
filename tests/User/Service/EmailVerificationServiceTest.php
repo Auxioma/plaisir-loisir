@@ -122,6 +122,31 @@ final class EmailVerificationServiceTest extends TestCase
     }
 
     /**
+     * Régression : confirm() efface le code expiré ; le renvoi testait la
+     * présence de ce code et devenait muet — compte bloqué en attente.
+     */
+    public function testResendSendsANewCodeAfterTheOldOneExpired(): void
+    {
+        $user = (new User())->setEmail('bob@example.com')->setFirstName('Bob')->setLastName('Martin')->setStatus(UserStatus::Pending);
+        $user->startEmailVerification(password_hash('ABCDEFGH', PASSWORD_DEFAULT), new \DateTimeImmutable('-1 minute'));
+
+        $users = $this->createStub(UserRepository::class);
+        $users->method('findOneBy')->willReturn($user);
+
+        $mailer = $this->createMock(MailerInterface::class);
+        $mailer->expects(self::once())->method('send');
+
+        $service = new EmailVerificationService($this->createStub(EntityManagerInterface::class), $users, $mailer, new NotificationService($this->createStub(EntityManagerInterface::class), $this->createStub(NotificationRepository::class)));
+
+        self::assertFalse($service->confirm($user->getEmail(), 'ABCDEFGH'));
+        self::assertNull($user->getEmailVerificationCodeHash());
+
+        $service->resend($user->getEmail());
+
+        self::assertNotNull($user->getEmailVerificationCodeHash());
+    }
+
+    /**
      * Le code n'est jamais stocké en clair : on le capture au moment de
      * l'envoi de l'e-mail, comme le ferait une boîte mail de test.
      */
