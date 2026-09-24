@@ -1,0 +1,102 @@
+{#
+    Création d'une activité privée (§12.2 du CDC). Formulaire HTML + CSRF,
+    même convention que quote/nouvelle_demande.html.twig — pas de maquette ici
+    non plus.
+#}
+{% extends 'account/_layout.html.twig' %}
+
+{% block title %}{{ 'Organiser une activité'|trans }}{% endblock %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Mes activités privées'|trans, href: path('app_account_private_activities') }, { label: 'Organiser une activité'|trans }],
+        title: 'Organiser une activité'|trans,
+        subtitle: 'Publiez une sortie pour trouver d\'autres particuliers avec qui la partager.'|trans,
+    } %}
+
+    <form method="post" class="card shadow-sm" style="max-width: 640px;">
+        <div class="card-body p-4">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+
+            <div class="mb-3">
+                <label class="form-label" for="titre">{{ 'Titre'|trans }}</label>
+                <input class="form-control" type="text" id="titre" name="titre" maxlength="150" required
+                       placeholder="{{ 'Ex. Randonnée au Mont Blanc'|trans }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="metier">{{ 'Catégorie'|trans }}</label>
+                <select class="form-select" id="metier" name="metier" required>
+                    <option value="">{{ 'Sélectionnez une catégorie'|trans }}</option>
+                    {% for category in categories %}
+                        <option value="{{ category.slug }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="description">{{ 'Description'|trans }}</label>
+                <textarea class="form-control" id="description" name="description" rows="4"
+                          placeholder="{{ 'Présentez votre sortie…'|trans }}"></textarea>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label class="form-label" for="date">{{ 'Date et heure'|trans }}</label>
+                    <input class="form-control" type="datetime-local" id="date" name="date">
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label" for="ville">{{ 'Ville'|trans }}</label>
+                    <input class="form-control" type="text" id="ville" name="ville" placeholder="{{ 'Ex. Grenoble'|trans }}">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="lieu">{{ 'Lieu de rendez-vous exact'|trans }}</label>
+                <input class="form-control" type="text" id="lieu" name="lieu" placeholder="{{ 'Ex. Parking du téléphérique, 8h00'|trans }}">
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" id="afficher_adresse" name="afficher_adresse" value="1" checked>
+                    <label class="form-check-label small" for="afficher_adresse">
+                        {{ 'Communiquer ce lieu exact aux participants une fois acceptés (sinon, seule la ville est partagée)'|trans }}
+                    </label>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label class="form-label" for="min">{{ 'Participants minimum'|trans }}</label>
+                    <input class="form-control" type="number" id="min" name="min" min="1">
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label" for="max">{{ 'Participants maximum'|trans }}</label>
+                    <input class="form-control" type="number" id="max" name="max" min="1">
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6">
+                    <label class="form-label" for="visibilite">{{ 'Visibilité'|trans }}</label>
+                    <select class="form-select" id="visibilite" name="visibilite">
+                        {% for v in visibilities %}
+                            <option value="{{ v.value }}" {{ v.value == 'public' ? 'selected' }}>
+                                {{ v.value == 'public' ? 'Publique'|trans : (v.value == 'members_only' ? 'Réservée aux membres'|trans : 'Privée (sur invitation)'|trans) }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label" for="mode">{{ 'Mode d\'inscription'|trans }}</label>
+                    <select class="form-select" id="mode" name="mode">
+                        {% for m in modes %}
+                            <option value="{{ m.value }}" {{ m.value == 'validation' ? 'selected' }}>
+                                {{ m.value == 'automatic' ? 'Automatique'|trans : 'Je valide chaque demande'|trans }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn pl-btn pl-btn--cta">{{ 'Publier l\'activité'|trans }}</button>
+        </div>
+    </form>
+{% endblock %}

@@ -6,11 +6,13 @@ namespace App\Corporate\Controller;
 
 use App\Corporate\Entity\ContactMessage;
 use App\Corporate\Entity\PartnerApplication;
+use App\Corporate\Form\PartnerApplicationFormType;
 use App\Corporate\Service\CorporateInboxService;
 use App\Corporate\StaticCorporate;
 use App\Legal\Enum\LegalDocumentType;
 use App\Legal\Service\LegalContentRenderer;
 use App\Legal\Service\LegalDocumentService;
+use App\Shared\Controller\FlashesFormErrorsTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +26,8 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class CorporateController extends AbstractController
 {
+    use FlashesFormErrorsTrait;
+
     #[Route(path: ['fr' => '/a-propos', 'en' => '/en/about-us'], name: 'app_corporate_about')]
     public function about(): Response
     {
@@ -61,29 +65,24 @@ final class CorporateController extends AbstractController
     #[Route(path: ['fr' => '/devenir-partenaire/formulaire', 'en' => '/en/become-a-partner/form'], name: 'app_corporate_partner_form', methods: ['GET', 'POST'])]
     public function partnerForm(Request $request, CorporateInboxService $inbox): Response
     {
-        if ($request->isMethod('POST')) {
-            if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
-                $this->addFlash('error', 'Votre session a expiré, merci de renvoyer le formulaire.');
+        $application = new PartnerApplication();
+        $form = $this->createForm(PartnerApplicationFormType::class, $application);
+        $form->handleRequest($request);
 
-                return $this->redirectToRoute('app_corporate_partner_form');
-            }
-
-            $application = new PartnerApplication();
+        if ($form->isSubmitted()) {
+            // Secteur, trafic et ville restent hors du FormType (voir
+            // PartnerApplicationFormType) : ce sont des <select> dont les
+            // options n'ont jamais été câblées côté template, un défaut
+            // préexistant hors sujet ici. On recopie leur valeur brute
+            // exactement comme le faisait l'extraction manuelle d'avant.
             $application
-                ->setSiteName((string) $request->request->get('nom_site'))
-                ->setSiteUrl((string) $request->request->get('url_site'))
                 ->setSector((string) $request->request->get('secteur'))
                 ->setTraffic((string) $request->request->get('trafic'))
-                ->setCompanyName($request->request->getString('entreprise'))
-                ->setContactName($request->request->getString('responsable'))
-                ->setPhone($request->request->getString('telephone'))
-                ->setCity($request->request->getString('ville'))
-                ->setAddress((string) $request->request->get('adresse'))
-                ->setPostalCode((string) $request->request->get('code_postal'))
-                ->setEmail((string) $request->request->get('email'))
-                ->setDescription($request->request->getString('description'))
-                ->setTermsAccepted($request->request->getBoolean('cgu'))
-                ->setIpAddress($request->getClientIp());
+                ->setCity($request->request->getString('ville'));
+        }
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $application->setIpAddress($request->getClientIp());
 
             $errors = $inbox->submitPartnerApplication($application);
 
@@ -98,7 +97,11 @@ final class CorporateController extends AbstractController
             }
         }
 
-        return $this->render('corporate/partenaire_formulaire.html.twig');
+        $this->flashFormErrors($form);
+
+        return $this->render('corporate/partenaire_formulaire.html.twig', [
+            'partnerForm' => $form,
+        ]);
     }
 
     #[Route(path: ['fr' => '/carrieres', 'en' => '/en/careers'], name: 'app_corporate_careers')]

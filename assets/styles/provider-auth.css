@@ -225,6 +225,12 @@
     padding-right: 44px;
 }
 
+/* Champ téléphone : indicateur pays compact en préfixe interne (la maquette
+   ne prévoit pas d'icône ici, contrairement aux autres écrans du site). */
+.pa-input--phone {
+    padding-left: 60px;
+}
+
 .pa-input-wrap {
     position: relative;
     display: block;

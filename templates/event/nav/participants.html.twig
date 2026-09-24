@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}{{ 'Participants — Compétitions Canoë / Kayak'|trans }}{% endblock %}
-{% block meta_description %}{{ "La liste des participants de l'événement Compétitions Canoë / Kayak 2026."|trans }}{% endblock %}
+{% block title %}{{ 'Participants — %title%'|trans({'%title%': event.title}) }}{% endblock %}
+{% block meta_description %}{{ "La liste des participants de l'événement %title%."|trans({'%title%': event.title}) }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar_events.html.twig' with { nav_active: 'evenements' } %}
@@ -17,15 +17,15 @@
             <span aria-hidden="true">|</span>
             <a href="{{ path('app_events') }}">{{ 'Événements'|trans }}</a>
             <span aria-hidden="true">|</span>
-            <span aria-current="page" class="evn-crumb-current">{{ 'Compétitions Canoë / Kayak'|trans }}</span>
+            <span aria-current="page" class="evn-crumb-current">{{ event.title }}</span>
         </nav>
 
         {# Colonne centrée, légèrement en retrait comme la maquette. #}
         <div class="evn-participants__col">
-            <a href="{{ path('app_events_detail') }}" class="evn-back">← {{ 'Retour'|trans }}</a>
+            <a href="{{ path('app_events_detail', { slug: event.slug }) }}" class="evn-back">← {{ 'Retour'|trans }}</a>
 
             <h1 class="evn-participants__title">{{ 'Participants'|trans }}</h1>
-            <p class="evn-participants__subtitle">{{ 'Compétitions  Canoë / Kayak 2026'|trans }}</p>
+            <p class="evn-participants__subtitle">{{ event.title }}</p>
 
             {# Typo maquette corrigée : « Pertinance » → Pertinence. #}
             <div class="evn-participants__tools">
@@ -36,7 +36,7 @@
                 <button type="button" class="act-tool act-tool--plain evn-sort-right">{{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ 'Pertinence'|trans }}</strong> {{ icon.chevron_down(14) }}</button>
             </div>
 
-            <span class="evn-chip-count">{{ icon.check(14) }} {{ '12 participants'|trans }}</span>
+            <span class="evn-chip-count">{{ icon.check(14) }} {{ event.participants }} {{ 'participants'|trans }}</span>
 
             <div class="evn-plist">
                 {% for p in participants %}

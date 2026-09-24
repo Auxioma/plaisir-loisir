@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Review\Service;
 
-use App\Booking\Entity\Booking;
-use App\Booking\Enum\BookingStatus;
-use App\Catalog\Entity\Service;
+use App\Provider\Entity\ProviderProfile;
+use App\Quote\Entity\Quote;
+use App\Quote\Entity\ServiceRequest;
 use App\Review\Entity\Review;
 use App\Review\Event\ReviewAdded;
 use App\Review\Repository\ReviewRepository;
@@ -18,20 +18,22 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class ReviewServiceTest extends TestCase
 {
-    private function completedBooking(): Booking
+    private function acceptedQuote(User $client): Quote
     {
-        return (new Booking())
-            ->setClient(new User())
-            ->setService(new Service())
-            ->setStatus(BookingStatus::Completed);
+        $request = (new ServiceRequest())->setClient($client);
+        $quote = (new Quote())->setServiceRequest($request)->setProvider(new ProviderProfile())->setAmount('100.00');
+        $quote->accept();
+
+        return $quote;
     }
 
-    public function testAddReviewCreatesReviewFromBooking(): void
+    public function testAddReviewCreatesReviewFromAcceptedQuote(): void
     {
-        $booking = $this->completedBooking();
+        $client = new User();
+        $quote = $this->acceptedQuote($client);
 
         $reviews = $this->createStub(ReviewRepository::class);
-        $reviews->method('findOneByBooking')->willReturn(null);
+        $reviews->method('findOneByQuote')->willReturn(null);
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::once())->method('persist')->with(self::isInstanceOf(Review::class));
@@ -42,30 +44,18 @@ final class ReviewServiceTest extends TestCase
             ->with(self::isInstanceOf(ReviewAdded::class))
             ->willReturnArgument(0);
 
-        $review = (new ReviewService($em, $reviews, $dispatcher))->addReview($booking, 5, 'Génial');
+        $review = (new ReviewService($em, $reviews, $dispatcher))->addReview($quote, $client, 5, 'Génial');
 
-        self::assertSame($booking->getClient(), $review->getAuthor());
-        self::assertSame($booking->getService(), $review->getService());
-        self::assertSame($booking, $review->getBooking());
+        self::assertSame($client, $review->getAuthor());
+        self::assertSame($quote->getProvider(), $review->getProvider());
+        self::assertSame($quote, $review->getQuote());
         self::assertSame(5, $review->getRating());
         self::assertSame('Génial', $review->getComment());
     }
 
     public function testAddReviewRejectsRatingOutOfRange(): void
     {
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects(self::never())->method('persist');
-
-        $this->expectException(\InvalidArgumentException::class);
-
-        (new ReviewService($em, $this->createStub(ReviewRepository::class), $this->createStub(EventDispatcherInterface::class)))
-            ->addReview($this->completedBooking(), 6);
-    }
-
-    public function testAddReviewRejectsBookingNotCompleted(): void
-    {
-        // Réservation au statut pending par défaut.
-        $booking = (new Booking())->setClient(new User())->setService(new Service());
+        $client = new User();
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::never())->method('persist');
@@ -73,13 +63,47 @@ final class ReviewServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
 
         (new ReviewService($em, $this->createStub(ReviewRepository::class), $this->createStub(EventDispatcherInterface::class)))
-            ->addReview($booking, 4);
+            ->addReview($this->acceptedQuote($client), $client, 6);
     }
 
-    public function testAddReviewRejectsAlreadyReviewedBooking(): void
+    public function testAddReviewRejectsQuoteNotAccepted(): void
     {
+        $client = new User();
+        $request = (new ServiceRequest())->setClient($client);
+        $quote = (new Quote())->setServiceRequest($request)->setProvider(new ProviderProfile())->setAmount('100.00');
+        // Statut par défaut : en attente, pas encore accepté.
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::never())->method('persist');
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new ReviewService($em, $this->createStub(ReviewRepository::class), $this->createStub(EventDispatcherInterface::class)))
+            ->addReview($quote, $client, 4);
+    }
+
+    public function testAddReviewRejectsAnotherClient(): void
+    {
+        $owner = new User();
+        $intrus = new User();
+        $quote = $this->acceptedQuote($owner);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::never())->method('persist');
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new ReviewService($em, $this->createStub(ReviewRepository::class), $this->createStub(EventDispatcherInterface::class)))
+            ->addReview($quote, $intrus, 4);
+    }
+
+    public function testAddReviewRejectsAlreadyReviewedQuote(): void
+    {
+        $client = new User();
+        $quote = $this->acceptedQuote($client);
+
         $reviews = $this->createStub(ReviewRepository::class);
-        $reviews->method('findOneByBooking')->willReturn(new Review());
+        $reviews->method('findOneByQuote')->willReturn(new Review());
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::never())->method('persist');
@@ -87,6 +111,6 @@ final class ReviewServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
 
         (new ReviewService($em, $reviews, $this->createStub(EventDispatcherInterface::class)))
-            ->addReview($this->completedBooking(), 4);
+            ->addReview($quote, $client, 4);
     }
 }

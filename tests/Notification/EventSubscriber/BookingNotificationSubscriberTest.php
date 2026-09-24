@@ -8,6 +8,7 @@ use App\Booking\Entity\Booking;
 use App\Notification\Entity\Notification;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\EventSubscriber\BookingNotificationSubscriber;
+use App\Notification\Repository\NotificationRepository;
 use App\Notification\Service\NotificationService;
 use App\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -30,7 +31,7 @@ final class BookingNotificationSubscriberTest extends TestCase
         ));
         $em->expects(self::once())->method('flush');
 
-        (new BookingNotificationSubscriber(new NotificationService($em)))
+        (new BookingNotificationSubscriber(new NotificationService($em, $this->createStub(NotificationRepository::class))))
             ->onConfirmed(new EnteredEvent($booking, new Marking()));
     }
 
@@ -41,7 +42,7 @@ final class BookingNotificationSubscriberTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::never())->method('persist');
 
-        (new BookingNotificationSubscriber(new NotificationService($em)))
+        (new BookingNotificationSubscriber(new NotificationService($em, $this->createStub(NotificationRepository::class))))
             ->onCancelled(new EnteredEvent($booking, new Marking()));
     }
 }

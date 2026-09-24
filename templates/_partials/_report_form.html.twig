@@ -1,0 +1,36 @@
+{#
+    Formulaire « Signaler » réutilisable (§16.4 du CDC), replié par défaut
+    (<details> natif, sans JS — même mécanique que les menus déroulants du
+    header). Variables attendues : subject_type (valeur de
+    ReportSubjectType), subject_id (Ulid ou string), subject_label (texte
+    affiché sur le signalement côté modération).
+#}
+{% if is_granted('ROLE_USER') %}
+    <details class="mt-3">
+        <summary class="text-muted small" style="cursor: pointer;">{{ 'Signaler'|trans }}</summary>
+        <form method="post" action="{{ path('app_report_submit') }}" class="mt-2 p-3 border rounded" style="max-width: 420px;">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+            <input type="hidden" name="subject_type" value="{{ subject_type }}">
+            <input type="hidden" name="subject_id" value="{{ subject_id }}">
+            <input type="hidden" name="subject_label" value="{{ subject_label }}">
+            <input type="hidden" name="redirect" value="{{ app.request.uri }}">
+
+            <div class="mb-2">
+                <label class="form-label small" for="report-reason-{{ subject_id }}">{{ 'Motif'|trans }}</label>
+                <select class="form-select form-select-sm" id="report-reason-{{ subject_id }}" name="reason" required>
+                    <option value="scam">{{ 'Arnaque'|trans }}</option>
+                    <option value="spam">{{ 'Spam'|trans }}</option>
+                    <option value="disguised_commercial_activity">{{ 'Activité commerciale déguisée'|trans }}</option>
+                    <option value="offensive_content">{{ 'Contenu offensant'|trans }}</option>
+                    <option value="dangerous_activity">{{ 'Activité dangereuse'|trans }}</option>
+                    <option value="other">{{ 'Autre motif'|trans }}</option>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="form-label small" for="report-message-{{ subject_id }}">{{ 'Précisez si besoin (facultatif)'|trans }}</label>
+                <textarea class="form-control form-control-sm" id="report-message-{{ subject_id }}" name="message" rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-sm btn-outline-danger">{{ 'Envoyer le signalement'|trans }}</button>
+        </form>
+    </details>
+{% endif %}

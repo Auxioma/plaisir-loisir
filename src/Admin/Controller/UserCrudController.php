@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Admin\Controller;
 
+use App\Admin\Enum\AuditAction;
+use App\Admin\Service\AuditLogger;
+use App\Notification\Enum\NotificationCategory;
+use App\Notification\Service\NotificationService;
 use App\User\Entity\User;
 use App\User\Enum\UserStatus;
 use App\User\Service\AccountAnonymizer;
@@ -58,6 +62,8 @@ class UserCrudController extends AbstractCrudController
         private readonly AccountAnonymizer $anonymizer,
         private readonly PasswordResetService $passwordReset,
         private readonly Security $security,
+        private readonly AuditLogger $auditLogger,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -197,7 +203,16 @@ class UserCrudController extends AbstractCrudController
         }
 
         $adresse = $membre->getEmail();
+        $membreId = $membre->getId();
         $this->anonymizer->anonymize($membre);
+
+        $this->auditLogger->log(
+            actor: $this->currentAdmin(),
+            action: AuditAction::AccountAnonymized,
+            targetType: 'User',
+            targetId: $membreId,
+            targetLabel: $adresse,
+        );
 
         $this->addFlash('success', sprintf(
             'Le compte %s a été anonymisé. Ses réservations et ses paiements restent en base, sans plus rien qui l\'identifie.',
@@ -244,16 +259,20 @@ class UserCrudController extends AbstractCrudController
     }
 
     /**
-     * Empêche de retirer le dernier rôle administrateur par le formulaire.
-     *
-     * Le bouton « Anonymiser » est déjà protégé, mais on peut arriver au même
-     * résultat en décochant simplement la case : le back-office se fermerait
-     * alors à tout le monde, et seul un accès SSH permettrait de le rouvrir.
+     * Empêche de retirer le dernier rôle administrateur par le formulaire, et
+     * historise (§18.1 du CDC) un changement de statut ou de rôles — le
+     * formulaire générique d'EasyAdmin est le SEUL endroit où l'un ou l'autre
+     * change, il n'y a pas d'action dédiée à intercepter comme pour
+     * « Anonymiser ».
      *
      * @param AdminContext<User> $context
      */
     public function edit(AdminContext $context): KeyValueStore|Response
     {
+        $avant = $context->getEntity()->getInstance();
+        $statutAvant = $avant instanceof User ? $avant->getStatus() : null;
+        $rolesAvant = $avant instanceof User ? $avant->getRoles() : [];
+
         $reponse = parent::edit($context);
         $membre = $context->getEntity()->getInstance();
 
@@ -264,7 +283,56 @@ class UserCrudController extends AbstractCrudController
             $this->addFlash('warning', 'Le rôle administrateur a été rétabli : c\'était le dernier, le retirer aurait fermé le back-office à tout le monde.');
         }
 
+        if ($membre instanceof User) {
+            $this->auditStatusAndRoleChanges($membre, $statutAvant, $rolesAvant);
+        }
+
         return $reponse;
+    }
+
+    /**
+     * @param list<string> $rolesAvant
+     */
+    private function auditStatusAndRoleChanges(User $membre, ?UserStatus $statutAvant, array $rolesAvant): void
+    {
+        if (null !== $statutAvant && $statutAvant !== $membre->getStatus() && UserStatus::Suspended === $membre->getStatus()) {
+            $this->auditLogger->log(
+                actor: $this->currentAdmin(),
+                action: AuditAction::AccountSuspended,
+                targetType: 'User',
+                targetId: $membre->getId(),
+                targetLabel: $membre->getEmail(),
+                details: sprintf('%s → %s', self::statusLabel($statutAvant), self::statusLabel($membre->getStatus())),
+            );
+
+            // §15 du CDC (« Compte ») : la suspension fait partie des
+            // événements à notifier au membre concerné.
+            $this->notifications->notify(
+                $membre,
+                NotificationCategory::System,
+                'Compte suspendu',
+                'Votre compte a été suspendu. Contactez-nous si vous pensez qu\'il s\'agit d\'une erreur.',
+            );
+        }
+
+        $apres = $membre->getRoles();
+        if ($rolesAvant !== $apres) {
+            $this->auditLogger->log(
+                actor: $this->currentAdmin(),
+                action: AuditAction::RoleChanged,
+                targetType: 'User',
+                targetId: $membre->getId(),
+                targetLabel: $membre->getEmail(),
+                details: sprintf('[%s] → [%s]', implode(', ', $rolesAvant), implode(', ', $apres)),
+            );
+        }
+    }
+
+    private function currentAdmin(): ?User
+    {
+        $user = $this->security->getUser();
+
+        return $user instanceof User ? $user : null;
     }
 
     /**

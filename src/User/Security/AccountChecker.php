@@ -27,12 +27,18 @@ use Symfony\Component\Security\Core\User\UserInterface;
  * back-office du 31/08. Ajouter le bouton sans cette classe aurait donné à
  * Loïc une commande qui ne fait rien, ce qui est pire qu'une commande absente.
  *
- * LE CAS « EN ATTENTE » EST VOLONTAIREMENT LAISSÉ PASSER
- * C'est le statut par défaut de l'entité, mais l'inscription active
- * immédiatement (RegistrationService) : personne n'arrive donc « en attente »
- * par le parcours normal. Le refuser bloquerait les comptes créés autrement —
- * fixtures, back-office, commande d'administration — sans rien protéger. Le
- * jour où une confirmation d'adresse existera, ce sera ici, en une ligne.
+ * LE CAS « EN ATTENTE » (Lot I, 15/09)
+ * C'était le statut par défaut de l'entité, mais l'inscription activait
+ * jusqu'ici le compte immédiatement : personne n'arrivait donc « en attente »
+ * par le parcours normal, et le refuser aurait bloqué les comptes créés
+ * autrement (fixtures, back-office, commande d'administration) sans rien
+ * protéger. Ce n'est plus le cas : RegistrationService laisse désormais le
+ * compte en attente jusqu'à la vérification de l'adresse e-mail, donc le
+ * refus ci-dessous protège réellement quelque chose.
+ *
+ * Message distinct de celui des comptes suspendus/supprimés : ici, la
+ * personne qui tape SON PROPRE e-mail a besoin de savoir quoi faire (vérifier
+ * sa boîte mail), pas seulement qu'on lui refuse l'accès.
  */
 final class AccountChecker implements UserCheckerInterface
 {
@@ -51,6 +57,10 @@ final class AccountChecker implements UserCheckerInterface
 
         if (UserStatus::Suspended === $user->getStatus()) {
             throw new CustomUserMessageAccountStatusException('Ce compte n\'est plus accessible. Contactez-nous si vous pensez qu\'il s\'agit d\'une erreur.');
+        }
+
+        if (UserStatus::Pending === $user->getStatus()) {
+            throw new CustomUserMessageAccountStatusException('Votre adresse e-mail n\'est pas encore vérifiée. Consultez vos e-mails ou demandez un nouveau code depuis la page de vérification.');
         }
     }
 

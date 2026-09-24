@@ -42,6 +42,7 @@ class Conversation
      * @var Collection<int, Message>
      */
     #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'conversation', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['createdAt' => 'ASC'])]
     private Collection $messages;
 
     public function __construct()

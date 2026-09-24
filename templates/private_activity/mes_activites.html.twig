@@ -1,0 +1,62 @@
+{#
+    « Mes activités » (§13.6 du CDC : J'organise / Je participe). Liste
+    d'attente et invitations reçues laissées de côté ici — elles se
+    consultent depuis la fiche de chaque activité (show.html.twig).
+#}
+{% extends 'account/_layout.html.twig' %}
+
+{% block title %}{{ 'Mes activités privées'|trans }}{% endblock %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Mes activités privées'|trans }],
+        title: 'Mes activités privées'|trans,
+        subtitle: 'Les sorties que vous organisez et celles que vous rejoignez.'|trans,
+    } %}
+
+    <div class="mb-4">
+        <a href="{{ path('app_account_private_activities_new') }}" class="btn pl-btn pl-btn--cta">
+            {{ 'Organiser une activité'|trans }}
+        </a>
+    </div>
+
+    <h2 class="h5 mb-3">{{ 'J\'organise'|trans }}</h2>
+    {% if organized is empty %}
+        {% include 'account/_empty.html.twig' with { message: 'Vous n\'organisez aucune activité pour le moment.'|trans } %}
+    {% else %}
+        <div class="list-group mb-5">
+            {% for activity in organized %}
+                <a href="{{ path('app_private_activity_show', {id: activity.id}) }}"
+                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ activity.title }}</strong>
+                        <div class="text-muted small">{{ activity.category.name }}{{ activity.scheduledAt ? ' — ' ~ activity.scheduledAt|date('d/m/Y') }}</div>
+                    </div>
+                    <span class="badge rounded-pill {{ activity.status.value == 'cancelled' ? 'text-bg-danger' : (activity.status.value == 'full' ? 'text-bg-secondary' : 'text-bg-success') }}">
+                        {{ activity.status.value == 'cancelled' ? 'Annulée'|trans : (activity.status.value == 'full' ? 'Complet'|trans : 'Ouverte'|trans) }}
+                    </span>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <h2 class="h5 mb-3">{{ 'Je participe'|trans }}</h2>
+    {% if joined is empty %}
+        {% include 'account/_empty.html.twig' with { message: 'Vous ne participez à aucune activité pour le moment.'|trans } %}
+    {% else %}
+        <div class="list-group">
+            {% for participation in joined %}
+                <a href="{{ path('app_private_activity_show', {id: participation.privateActivity.id}) }}"
+                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ participation.privateActivity.title }}</strong>
+                        <div class="text-muted small">{{ participation.privateActivity.category.name }}</div>
+                    </div>
+                    <span class="badge rounded-pill {{ participation.status.value == 'accepted' ? 'text-bg-success' : (participation.status.value == 'refused' ? 'text-bg-danger' : 'text-bg-warning') }}">
+                        {{ participation.status.value == 'accepted' ? 'Confirmée'|trans : (participation.status.value == 'pending' ? 'En attente'|trans : (participation.status.value == 'waiting_list' ? 'Liste d\'attente'|trans : 'Refusée'|trans)) }}
+                    </span>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

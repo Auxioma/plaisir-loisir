@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Review\Entity;
 
-use App\Booking\Entity\Booking;
-use App\Catalog\Entity\Service;
+use App\Provider\Entity\ProviderProfile;
+use App\Quote\Entity\Quote;
 use App\Review\Entity\Review;
 use App\Review\Enum\ReviewStatus;
 use App\User\Entity\User;
@@ -16,19 +16,19 @@ final class ReviewTest extends TestCase
     public function testFieldsAreAssignable(): void
     {
         $author = new User();
-        $service = new Service();
-        $booking = new Booking();
+        $provider = new ProviderProfile();
+        $quote = new Quote();
 
         $review = (new Review())
             ->setAuthor($author)
-            ->setService($service)
-            ->setBooking($booking)
+            ->setProvider($provider)
+            ->setQuote($quote)
             ->setRating(4)
             ->setComment('Super expérience !');
 
         self::assertSame($author, $review->getAuthor());
-        self::assertSame($service, $review->getService());
-        self::assertSame($booking, $review->getBooking());
+        self::assertSame($provider, $review->getProvider());
+        self::assertSame($quote, $review->getQuote());
         self::assertSame(4, $review->getRating());
         self::assertSame('Super expérience !', $review->getComment());
     }

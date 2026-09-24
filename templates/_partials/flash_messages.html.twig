@@ -1,20 +1,33 @@
 {#
     Affiche les messages « flash » posés par les contrôleurs
-    (ex. $this->addFlash('success', '...')). On mappe nos types sur les
-    classes d'alerte Bootstrap.
+    (ex. $this->addFlash('success', '...')) en vrais toasts Bootstrap
+    (carte flottante, coin haut-droit, auto-fermeture minutée), pas en
+    bandeau plein-largeur en haut de page.
+
+    Couleurs en dur sur nos jetons --pl-* (pl-toast--*) plutôt que les
+    utilitaires Bootstrap (text-bg-success…) : ces derniers dépendent de
+    variables --bs-*-rgb calculées à la compilation Sass de Bootstrap, que
+    design-system.css ne redéfinit pas (seules --bs-success etc. le sont) —
+    ils resteraient donc aux couleurs Bootstrap par défaut, pas à la charte.
 #}
 {% set flash_styles = {
-    'success': 'alert-success',
-    'error':   'alert-danger',
-    'warning': 'alert-warning',
-    'info':    'alert-info',
+    'success': 'pl-toast--success',
+    'error':   'pl-toast--error',
+    'warning': 'pl-toast--warning',
+    'info':    'pl-toast--info',
 } %}
 
-{% for type, messages in app.flashes %}
-    {% for message in messages %}
-        <div class="alert {{ flash_styles[type] ?? 'alert-secondary' }} alert-dismissible fade show m-0 rounded-0 text-center" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ 'Fermer'|trans }}"></button>
-        </div>
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="toast pl-toast {{ flash_styles[type] ?? 'pl-toast--info' }}"
+                 role="alert" aria-live="assertive" aria-atomic="true"
+                 data-controller="toast" data-toast-delay-value="5000">
+                <div class="d-flex">
+                    <div class="toast-body">{{ message }}</div>
+                    <button type="button" class="btn-close pl-toast__close me-2 m-auto" data-bs-dismiss="toast" aria-label="{{ 'Fermer'|trans }}"></button>
+                </div>
+            </div>
+        {% endfor %}
     {% endfor %}
-{% endfor %}
+</div>

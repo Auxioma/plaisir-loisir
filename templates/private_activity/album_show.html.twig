@@ -1,0 +1,55 @@
+{#
+    Album photo d'une activité privée (§4 de docs/corrections-client-2026-07-27.md).
+    Voir albums.html.twig : grille reprise du composant d'album déjà maquetté
+    du domaine Événements (`.evn-album-photos`, capture 23). Le dépôt et la
+    suppression de photo n'existent pas dans ces captures (l'album y est en
+    lecture seule, alimenté depuis l'assistant de création d'événement) : ce
+    sont les deux seuls éléments ajoutés ici, avec les composants déjà
+    établis ailleurs sur le site (bouton `.pl-btn--cta`, bouton rond de
+    suppression sur le modèle de `.pl-card__fav`, voir account.css).
+#}
+{% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ activity.title }}{% endblock %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [
+            { label: 'Mes albums photos'|trans, href: path('app_account_albums') },
+            { label: activity.title },
+        ],
+        title: activity.title,
+        subtitle: (photo_count) ~ ' / ' ~ max_photos ~ ' ' ~ 'photos'|trans,
+    } %}
+
+    {% if photo_count < max_photos %}
+        <form method="post" action="{{ path('app_account_album_show', {id: activity.id}) }}" enctype="multipart/form-data" class="pl-album-upload">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+            <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="form-control" required>
+            <button type="submit" class="btn pl-btn pl-btn--cta">{{ icon.camera(18) }} {{ 'Ajouter une photo'|trans }}</button>
+        </form>
+    {% else %}
+        <p class="text-muted mb-4">{{ 'Cet album a atteint sa limite de %max% photos.'|trans({'%max%': max_photos}) }}</p>
+    {% endif %}
+
+    {% if photos is empty %}
+        {% include 'account/_empty.html.twig' with { message: "Aucune photo n'a encore été déposée dans cet album."|trans } %}
+    {% else %}
+        <div class="card-grid evn-grid evn-album-photos">
+            {% for photo in photos %}
+                <span class="pl-album-photo">
+                    <img src="{{ asset(photo.path) }}" alt="">
+                    {% if photo.author == app.user or activity.organizer == app.user %}
+                        <form method="post" action="{{ path('app_account_album_photo_delete', {id: activity.id, photoId: photo.id}) }}" class="pl-album-photo__form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                            <button type="submit" class="pl-album-photo__delete" aria-label="{{ 'Supprimer cette photo'|trans }}" title="{{ 'Supprimer cette photo'|trans }}">
+                                {{ icon.x(14) }}
+                            </button>
+                        </form>
+                    {% endif %}
+                </span>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\User\Form;
 
+use App\Shared\Form\PhoneNumberType;
 use App\User\Enum\AccountType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -27,9 +27,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  * L'écran affiche quatre champs — Nom & prénom, e-mail, téléphone, mot de
  * passe — plus la case des conditions générales ; on s'aligne dessus.
  *
- * `required => false` partout : le rendu HTML doit rester celui de la maquette,
- * qui ne porte aucun attribut `required`. La validation est donc entièrement
- * côté serveur (contraintes ci-dessous), et non déléguée au navigateur.
+ * `required` HTML actif sur les champs obligatoires (nom, e-mail, mot de
+ * passe, conditions générales) : le navigateur bloque désormais l'envoi et
+ * signale les champs vides avant même d'atteindre le serveur, en plus des
+ * contraintes ci-dessous qui restent la validation de référence. Le
+ * téléphone reste `required => false`, facultatif comme le veut l'entité.
  */
 final class RegistrationFormType extends AbstractType
 {
@@ -38,7 +40,6 @@ final class RegistrationFormType extends AbstractType
         $builder
             ->add('fullName', TextType::class, [
                 'label' => 'Nom & prénom',
-                'required' => false,
                 'constraints' => [
                     new Assert\NotBlank(message: 'Veuillez saisir vos nom et prénom.'),
                     new Assert\Length(
@@ -50,7 +51,6 @@ final class RegistrationFormType extends AbstractType
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Adresse e-mail',
-                'required' => false,
                 'constraints' => [
                     new Assert\NotBlank(message: 'Veuillez saisir votre adresse e-mail.'),
                     new Assert\Email(message: 'Veuillez saisir une adresse e-mail valide.'),
@@ -59,16 +59,12 @@ final class RegistrationFormType extends AbstractType
             ])
             // Le téléphone est facultatif : la colonne `phone` de l'entité User
             // est nullable et la maquette ne marque pas ce champ obligatoire.
-            ->add('phone', TelType::class, [
+            ->add('phone', PhoneNumberType::class, [
                 'label' => 'Numéro de téléphone',
                 'required' => false,
-                'constraints' => [
-                    new Assert\Length(max: 30),
-                ],
             ])
             ->add('password', PasswordType::class, [
                 'label' => 'Mot de passe',
-                'required' => false,
                 'constraints' => [
                     new Assert\NotBlank(message: 'Veuillez saisir un mot de passe.'),
                     new Assert\Length(
@@ -82,7 +78,6 @@ final class RegistrationFormType extends AbstractType
             ])
             ->add('agreeTerms', CheckboxType::class, [
                 'label' => "J'accepte les conditions générales",
-                'required' => false,
                 'constraints' => [
                     new Assert\IsTrue(message: 'Vous devez accepter les conditions générales et la politique de confidentialité.'),
                 ],

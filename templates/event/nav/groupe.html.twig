@@ -41,8 +41,8 @@
                 <a href="{{ path('app_events_all') }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
             </div>
             <div class="card-grid evn-similar-grid">
-                {% for g in similar %}
-                    {% include 'event/nav/_group_card.html.twig' with { g: g, avatars: avatars } %}
+                {% for e in similar %}
+                    {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
                 {% endfor %}
             </div>
         </section>

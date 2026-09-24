@@ -13,7 +13,10 @@
     n'a pas accès. Une seule source de vérité : app.user.
 
     Icônes connectées câblées sur l'espace compte : cœur → Mes favoris,
-    cloche → Notifications, avatar → espace compte (messagerie à venir).
+    enveloppe → Messagerie, cloche → Notifications, avatar → espace compte.
+    Messagerie, Notifications et (pour ROLE_PROVIDER) Demandes reçues
+    portent un badge de non-lus, identique à celui du menu compte (signalé
+    le 18/09 : les badges divergeaient, le header n'affichait jamais rien).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 {# En dev seulement, « ?connecte=1 » prévisualise l'état connecté sans compte
@@ -42,7 +45,45 @@
                         <a href="{{ path('app_destinations') }}" class="pl-nav__link pl-nav__link--badged">{{ 'Destinations'|trans }} <span class="pl-nav__badge">{{ 'Nouveau'|trans }}</span></a>
                         <a href="{{ path('app_offers') }}" class="pl-nav__link pl-nav__link--offres {{ nav_active == 'offres' ? 'is-active-cta' }}">{{ icon.flame(18) }} {{ 'Offres du moments'|trans }}</a>
                         <a href="{{ path('app_gifts') }}" class="pl-nav__link {{ nav_active == 'cadeaux' ? 'is-active' }}">{{ icon.gift(18) }} {{ 'Cadeaux'|trans }}</a>
-                        <a href="{{ path('app_events_private') }}" class="pl-nav__link pl-nav__link--badged">{{ 'Activités privées'|trans }} <span class="pl-nav__badge">{{ 'Nouveau'|trans }}</span></a>
+                        {#
+                            RENOMMÉ (14/09) : ce lien menait à /evenements/prives, un
+                            onglet du domaine Event (contenu figé StaticEvents, hors
+                            périmètre du CDC actuel selon le rapport du 7 septembre) —
+                            PAS la fonctionnalité « Activités privées entre particuliers »
+                            du §12-13 du CDC, qui vit dans le domaine PrivateActivity.
+                            Les deux portaient le même libellé « Activités privées » :
+                            collision de nom repérée en construisant le Lot D. Ce lien
+                            pointe maintenant vers la landing du domaine Event lui-même
+                            (pas spécifiquement son onglet « privé »), sous son vrai nom.
+                        #}
+                        <a href="{{ path('app_events') }}" class="pl-nav__link">{{ 'Événements'|trans }}</a>
+                        {#
+                            §21.2 du CDC : « Trouver un professionnel », « Déposer une
+                            demande » ; §12-13 : « Activités privées entre particuliers ».
+                            Aucune maquette Figma ne couvre ces écrans.
+
+                            UN SEUL MENU POUR LES QUATRE LIENS, PAS DEUX (14/09, v2).
+                            Un menu « Professionnels » et un menu « Activités privées »
+                            distincts débordaient encore : la barre est calée au pixel sur
+                            un cadre de 1440 sans la moindre marge (docs/grille-figma.md),
+                            et DEUX menus déroulants supplémentaires pèsent presque autant
+                            que les libellés qu'ils remplacent (chacun porte son propre
+                            texte + chevron). Un seul menu « Plus », au libellé volontai-
+                            rement court, regroupe les quatre liens et ne coûte que la
+                            largeur d'un item générique. Signalé une deuxième fois par le
+                            client après le premier correctif (menu unique par fonction) :
+                            cette fois la largeur ajoutée est mesurée sur le PIRE cas
+                            (libellé le plus court possible), pas seulement réduite.
+                        #}
+                        <details class="pl-dropdown">
+                            <summary class="pl-dropdown__toggle">{{ 'Plus'|trans }} {{ icon.chevron_down(16) }}</summary>
+                            <div class="pl-dropdown__menu">
+                                <a href="{{ path('app_provider_search') }}" class="pl-dropdown__item">{{ 'Trouver un professionnel'|trans }}</a>
+                                <a href="{{ path('app_account_requests_new') }}" class="pl-dropdown__item">{{ 'Déposer une demande'|trans }}</a>
+                                <a href="{{ path('app_private_activities') }}" class="pl-dropdown__item">{{ 'Activités privées'|trans }}</a>
+                                <a href="{{ path('app_account_private_activities_new') }}" class="pl-dropdown__item">{{ 'Organiser une activité'|trans }}</a>
+                            </div>
+                        </details>
                     </nav>
                 </div>
             </div>
@@ -52,16 +93,87 @@
             <a href="{{ path('app_corporate_partner') }}" class="pl-btn pl-btn--cta">{{ 'Déposer une annonce'|trans }}</a>
 
             {% if connected %}
+                {# Seul point d'accès à /pro/demandes pour un compte
+                   ROLE_PROVIDER : sans lien nulle part, la page n'était
+                   joignable qu'en tapant l'URL à la main (signalé le 14/09,
+                   même défaut que /professionnels avant son ajout au menu). #}
+                {% if is_granted('ROLE_PROVIDER') %}
+                    {# Même compteur que le badge « Demandes reçues » du menu
+                       compte pro (account/_sidebar.html.twig, user.pendingProviderRequests) :
+                       demandes ouvertes de son métier pas encore devisées. #}
+                    {% set pendingRequests = pending_requests_count(app.user) %}
+                    <a href="{{ path('app_pro_requests') }}" class="pl-iconbtn" aria-label="{{ 'Demandes reçues'|trans }}">
+                        {{ icon.receipt(20) }}
+                        {% if pendingRequests > 0 %}
+                            <span class="pl-iconbtn__badge">{{ pendingRequests > 99 ? '99+' : pendingRequests }}</span>
+                        {% endif %}
+                    </a>
+                    {# Même défaut évité pour /pro/abonnement (§17 du CDC) : sans ce
+                       lien, seule une URL tapée à la main y mène. #}
+                    <a href="{{ path('app_pro_subscription') }}" class="pl-iconbtn" aria-label="{{ 'Abonnement'|trans }}">{{ icon.card(20) }}</a>
+                {% endif %}
                 <a href="{{ path('app_account_favorites') }}" class="pl-iconbtn" aria-label="{{ 'Mes favoris'|trans }}">{{ icon.heart(20) }}</a>
-                <button type="button" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">{{ icon.mail(20) }}</button>
-                <a href="{{ path('app_account_notifications') }}" class="pl-iconbtn" aria-label="{{ 'Notifications'|trans }}">{{ icon.bell(20) }}</a>
 
-                <a href="{{ path('app_account_favorites') }}" class="pl-avatarbtn" aria-label="{{ 'Paramètre du profil'|trans }}">
-                    <img src="{{ asset('images/account/avatar-thomas.jpg') }}" alt="">
-                    <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
+                {# Mêmes compteurs que le badge du menu compte
+                   (account/_sidebar.html.twig, user.unreadMessages /
+                   user.unreadNotifications) : UnreadCountsExtension interroge
+                   les mêmes dépôts, pour que le header et le menu compte
+                   affichent toujours le même nombre. #}
+                {% set unreadMessages = unread_messages_count(app.user) %}
+                <a href="{{ path('app_account_messages') }}" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">
+                    {{ icon.mail(20) }}
+                    {% if unreadMessages > 0 %}
+                        <span class="pl-iconbtn__badge">{{ unreadMessages > 99 ? '99+' : unreadMessages }}</span>
+                    {% endif %}
                 </a>
+
+                {% set unreadNotifications = unread_notifications_count(app.user) %}
+                <a href="{{ path('app_account_notifications') }}" class="pl-iconbtn" aria-label="{{ 'Notifications'|trans }}">
+                    {{ icon.bell(20) }}
+                    {% if unreadNotifications > 0 %}
+                        <span class="pl-iconbtn__badge">{{ unreadNotifications > 99 ? '99+' : unreadNotifications }}</span>
+                    {% endif %}
+                </a>
+
+                {# Répond au signalement du 14/09 : ni le compte pro ni le compte
+                   client n'avaient de page qui leur soit propre — l'avatar menait
+                   toujours à /compte/favoris, y compris avec le libellé « Profil »
+                   côté client, ce qui ne correspondait à rien de réel. Les deux
+                   ouvrent maintenant un vrai tableau de bord (§8.3 du CDC côté
+                   pro ; agrégat demandes/activités privées/favoris côté client,
+                   account/_layout.html.twig::dashboard()).
+
+                   MENU « Profil / Déconnexion », PAS UN LIEN DIRECT (18/09) :
+                   l'avatar ouvrait le tableau de bord au premier clic, sans
+                   aucun accès rapide à la déconnexion depuis l'en-tête — il
+                   fallait passer par le tableau de bord puis chercher
+                   « Déconnexion » dans le menu du compte. La déconnexion
+                   ouvre une modale de confirmation plutôt que l'écran dédié
+                   (account/deconnexion.html.twig), plus adaptée à un menu. #}
+                <details class="pl-dropdown pl-dropdown--profile">
+                    <summary class="pl-avatarbtn pl-dropdown__toggle--profile" aria-label="{{ 'Menu du compte'|trans }}">
+                        <img src="{{ asset(app.user.avatarPath ?? 'images/account/avatar-default.svg') }}" alt="">
+                        <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
+                    </summary>
+                    <div class="pl-dropdown__menu pl-dropdown__menu--signin">
+                        <a href="{{ is_granted('ROLE_PROVIDER') ? path('app_pro_dashboard') : path('app_account_dashboard') }}" class="pl-dropdown__item">{{ icon.person(16) }} {{ 'Profil'|trans }}</a>
+                        <button type="button" class="pl-dropdown__item pl-dropdown__item--danger" data-bs-toggle="modal" data-bs-target="#confirm-logout">{{ icon.logout(16) }} {{ 'Déconnexion'|trans }}</button>
+                    </div>
+                </details>
             {% else %}
-                <a href="{{ path('app_auth_choice') }}" class="pl-btn pl-btn--outline-dark pl-btn--signup">{{ icon.person(18) }} {{ "S'inscrire"|trans }}</a>
+                {# Même choix que navbar_home.html.twig (signalé le 18/09) :
+                   « Se connecter » ouvre un menu Client / Prestataire vers les
+                   deux écrans de connexion, l'inscription reste jointe depuis
+                   ces écrans via la page « Bienvenue » (app_auth_choice). #}
+                <details class="pl-dropdown pl-dropdown--signin">
+                    <summary class="pl-btn pl-btn--outline-dark pl-dropdown__toggle--signin">
+                        {{ icon.person(18) }} {{ 'Se connecter'|trans }} {{ icon.chevron_down(16) }}
+                    </summary>
+                    <div class="pl-dropdown__menu pl-dropdown__menu--signin">
+                        <a href="{{ path('app_login') }}" class="pl-dropdown__item">{{ 'Client'|trans }}</a>
+                        <a href="{{ path('app_pro_login') }}" class="pl-dropdown__item">{{ 'Prestataire'|trans }}</a>
+                    </div>
+                </details>
             {% endif %}
             {% include '_partials/_navbar_burger.html.twig' with { panel_id: 'plNav' } %}
         </div>

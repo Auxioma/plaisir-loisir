@@ -1,0 +1,43 @@
+{#
+    Vérification de l'e-mail — point d'entrée public (16/09).
+
+    L'écran de vérification (email_verification.html.twig) exige une adresse
+    posée en session à l'inscription : fermer l'onglet, changer d'appareil ou
+    laisser expirer la session bloquait donc un compte « en attente » sans
+    aucun moyen d'y revenir. Ce formulaire ne fait que redemander l'adresse,
+    comme password_forgot.html.twig pour le mot de passe oublié, puis renvoie
+    vers l'écran de saisie du code.
+#}
+{% extends 'security/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Vérifier votre adresse e-mail'|trans }}{% endblock %}
+
+{% block auth_card %}
+    <div class="auth-card auth-card--pw">
+        <a class="auth-back" href="{{ path('app_login') }}">{{ icon.chevron_left(20) }} {{ 'Retour à la page de connexion'|trans }}</a>
+
+        <div class="auth-card__header">
+            <h2 class="auth-card__title">{{ 'Vérifier votre adresse e-mail'|trans }}</h2>
+            <p class="auth-card__subtitle">{{ 'Entrez votre adresse e-mail pour recevoir un nouveau code de vérification.'|trans }}</p>
+        </div>
+
+        <form class="auth-form" method="post" action="{{ path('app_email_verification_request') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+
+            <div class="auth-fields">
+                <div class="auth-field">
+                    <label class="auth-field__label" for="inputEmail">{{ 'Adresse e-mail'|trans }}</label>
+                    <div class="auth-input">
+                        <span class="auth-input__icon">{{ icon.mail() }}</span>
+                        <input id="inputEmail" class="auth-input__control" type="email" name="email"
+                               value="{{ email|default('') }}"
+                               placeholder="{{ 'Votre@email.com'|trans }}" autocomplete="email" required>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Recevoir le code'|trans }}</button>
+        </form>
+    </div>
+{% endblock %}

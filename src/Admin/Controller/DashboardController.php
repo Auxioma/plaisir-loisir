@@ -124,6 +124,23 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(LegalDocumentCrudController::class, 'Textes juridiques', 'fa fa-scale-balanced');
         yield MenuItem::linkTo(FaqEntryCrudController::class, 'FAQ', 'fa fa-circle-question');
 
+        // Seul modèle de revenu autorisé par le CDC (§1.2, §3.2, §17).
+        // Ajouté le 14/09 en même temps que l'écran, oublié du menu au premier
+        // câblage — même défaut que les liens publics avant leur ajout au
+        // menu (voir docs/cablage-back-front.md) : un écran de back-office
+        // sans lien n'est pas moins « orphelin » qu'une page publique.
+        yield MenuItem::section('Abonnements');
+        yield MenuItem::linkTo(SubscriptionPlanCrudController::class, 'Offres', 'fa fa-tags');
+        yield MenuItem::linkTo(SubscriptionCrudController::class, 'États d\'abonnement', 'fa fa-credit-card');
+
+        // Sécurité et confiance (§16.4, §18, §18.1 du CDC).
+        yield MenuItem::section('Modération');
+        yield MenuItem::linkTo(ReportCrudController::class, 'Signalements', 'fa fa-flag');
+        // Publié automatiquement au dépôt (§16.2) : la modération se fait ici,
+        // a posteriori (Lot H, 15/09).
+        yield MenuItem::linkTo(ReviewCrudController::class, 'Avis', 'fa fa-star');
+        yield MenuItem::linkTo(AuditLogCrudController::class, 'Journal d\'audit', 'fa fa-clipboard-list');
+
         yield MenuItem::section('Site');
         yield MenuItem::linkToUrl('Voir le site', 'fa fa-arrow-up-right-from-square', '/');
     }

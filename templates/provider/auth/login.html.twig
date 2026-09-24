@@ -69,10 +69,15 @@
 
         {# La maquette ne montre aucun lien vers l'inscription. Sans lui, le
            professionnel qui arrive ici sans compte n'a aucune issue : le
-           parcours d'inscription existe mais rien n'y mène. #}
+           parcours d'inscription existe mais rien n'y mène.
+
+           MÈNE À L'ÉCRAN « BIENVENUE » (choix du profil), PAS DIRECTEMENT AU
+           FORMULAIRE (signalé le 18/09) : même raison que sur la connexion
+           client, c'est désormais le seul chemin restant vers cet écran
+           depuis que l'en-tête ne propose plus qu'un choix de connexion. #}
         <p class="pa-switch">
             {{ "Vous n'avez pas encore de compte professionnel ?"|trans }}<br>
-            <a href="{{ path('app_pro_register') }}">{{ 'Inscrivez-vous'|trans }}</a>
+            <a href="{{ path('app_auth_choice') }}">{{ 'Inscrivez-vous'|trans }}</a>
         </p>
     </div>
 {% endblock %}

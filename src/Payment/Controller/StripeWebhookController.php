@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Payment\Controller;
 
+use App\Payment\Enum\SubscriptionStatus;
 use App\Payment\Service\PaymentService;
+use App\Payment\Service\SubscriptionService;
 use Psr\Log\LoggerInterface;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
@@ -24,6 +26,7 @@ final class StripeWebhookController extends AbstractController
 {
     public function __construct(
         private readonly PaymentService $paymentService,
+        private readonly SubscriptionService $subscriptionService,
         private readonly LoggerInterface $logger,
         private readonly string $stripeWebhookSecret,
     ) {
@@ -60,6 +63,51 @@ final class StripeWebhookController extends AbstractController
             }
         }
 
+        // Abonnements professionnels (§17.2 du CDC) : ces trois événements
+        // suffisent à tenir Subscription à jour — création (déjà couverte
+        // par checkout.session.completed côté paiement à la prestation, mais
+        // une souscription réelle en mode « subscription » déclenche aussi
+        // ceux-ci), changement d'état (renouvellement, échec de paiement →
+        // past_due) et résiliation.
+        if (\in_array($event->type, ['customer.subscription.updated', 'customer.subscription.deleted'], true)) {
+            $subscription = $event->data->object;
+
+            $this->subscriptionService->syncFromStripeSubscription(
+                stripeSubscriptionId: (string) ($subscription->id ?? ''),
+                status: $this->mapStripeStatus((string) ($subscription->status ?? ''), 'customer.subscription.deleted' === $event->type),
+                currentPeriodStart: $this->toDateTime($subscription->current_period_start ?? null),
+                currentPeriodEnd: $this->toDateTime($subscription->current_period_end ?? null),
+            );
+        }
+
         return new Response('OK', Response::HTTP_OK);
+    }
+
+    /**
+     * États Stripe (`incomplete`, `trialing`, `active`, `past_due`,
+     * `canceled`, `unpaid`, `paused`) ramenés aux quatre que la plateforme
+     * distingue (SubscriptionStatus) : trialing se comporte comme actif pour
+     * l'usage de la plateforme (aucune période d'essai n'est proposée
+     * aujourd'hui, mais Stripe peut renvoyer cet état), unpaid/paused comme
+     * un paiement en retard plutôt qu'une résiliation — Stripe continue de
+     * relancer avant d'abandonner.
+     */
+    private function mapStripeStatus(string $stripeStatus, bool $deleted): SubscriptionStatus
+    {
+        if ($deleted) {
+            return SubscriptionStatus::Cancelled;
+        }
+
+        return match ($stripeStatus) {
+            'active', 'trialing' => SubscriptionStatus::Active,
+            'canceled' => SubscriptionStatus::Cancelled,
+            'past_due', 'unpaid', 'paused' => SubscriptionStatus::PastDue,
+            default => SubscriptionStatus::Incomplete,
+        };
+    }
+
+    private function toDateTime(int|float|null $timestamp): ?\DateTimeImmutable
+    {
+        return null !== $timestamp ? (new \DateTimeImmutable())->setTimestamp((int) $timestamp) : null;
     }
 }

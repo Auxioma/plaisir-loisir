@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Review\Repository;
 
-use App\Booking\Entity\Booking;
-use App\Catalog\Entity\Service;
+use App\Provider\Entity\ProviderProfile;
+use App\Quote\Entity\Quote;
 use App\Review\Entity\Review;
 use App\Review\Enum\ReviewStatus;
+use App\User\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -21,31 +22,53 @@ class ReviewRepository extends ServiceEntityRepository
         parent::__construct($registry, Review::class);
     }
 
-    public function findOneByBooking(Booking $booking): ?Review
+    public function findOneByQuote(Quote $quote): ?Review
     {
-        return $this->findOneBy(['booking' => $booking]);
+        return $this->findOneBy(['quote' => $quote]);
     }
 
     /**
      * @return Review[]
      */
-    public function findByService(Service $service): array
+    public function findForProvider(ProviderProfile $provider): array
     {
-        return $this->findBy(['service' => $service], ['createdAt' => 'DESC']);
+        return $this->findBy(['provider' => $provider], ['createdAt' => 'DESC']);
     }
 
-    public function countPublishedForService(Service $service): int
+    /**
+     * @return Review[]
+     */
+    public function findByAuthor(User $author): array
     {
-        return $this->count(['service' => $service, 'status' => ReviewStatus::Published]);
+        return $this->findBy(['author' => $author], ['createdAt' => 'DESC']);
     }
 
-    public function averageRatingForService(Service $service): ?float
+    public function countPublishedForProvider(ProviderProfile $provider): int
+    {
+        return $this->count(['provider' => $provider, 'status' => ReviewStatus::Published]);
+    }
+
+    /**
+     * Compteur du badge « Avis reçus » (menu compte pro) : avis publiés
+     * auxquels le prestataire n'a pas encore répondu (`providerReply`
+     * encore vide) — un avis déjà traité n'a plus rien de « nouveau ».
+     */
+    public function countAwaitingReplyForProvider(ProviderProfile $provider): int
+    {
+        return $this->count([
+            'provider' => $provider,
+            'status' => ReviewStatus::Published,
+            'providerReply' => null,
+        ]);
+    }
+
+    public function averageRatingForProvider(ProviderProfile $provider): ?float
     {
         $average = $this->createQueryBuilder('r')
             ->select('AVG(r.rating)')
-            ->andWhere('r.service = :service')
+            ->andWhere('r.provider = :provider')
             ->andWhere('r.status = :published')
-            ->setParameter('service', $service)
+            ->setParameter('provider', $provider->getId(), 'ulid')
             ->setParameter('published', ReviewStatus::Published)
             ->getQuery()
             ->getSingleScalarResult();

@@ -1,0 +1,34 @@
+{#
+    Préférences de notification (Lot K, 16/09 ; §7.2 et §8.3 du CDC). Aucune
+    maquette : même gabarit Bootstrap que account/parametres.html.twig, seul
+    autre écran sans Figma de l'espace compte.
+    Seul le canal e-mail est proposé : c'est le seul réellement câblé
+    (NotificationEmailListener) — le canal push n'a aucune infrastructure
+    d'envoi, l'exposer serait un réglage sans effet.
+#}
+{% extends 'account/_layout.html.twig' %}
+
+{% block title %}{{ 'Préférences de notification'|trans }}{% endblock %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Notifications'|trans, href: path('app_account_notifications') }, { label: 'Préférences'|trans }],
+        title: 'Préférences de notification'|trans,
+    } %}
+
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <form method="post" action="{{ path('app_account_notification_preferences') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+
+                <div class="form-check form-switch mb-4">
+                    <input class="form-check-input" type="checkbox" role="switch" id="email_enabled" name="email_enabled" value="1" {{ email_enabled ? 'checked' }}>
+                    <label class="form-check-label" for="email_enabled">{{ 'Recevoir aussi mes notifications par e-mail'|trans }}</label>
+                    <div class="form-text">{{ 'Les notifications restent toujours visibles dans votre espace compte, quel que soit ce réglage.'|trans }}</div>
+                </div>
+
+                <button type="submit" class="btn pl-btn pl-btn--cta">{{ 'Enregistrer'|trans }}</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

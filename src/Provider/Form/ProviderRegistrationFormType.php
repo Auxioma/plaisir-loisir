@@ -6,6 +6,7 @@ namespace App\Provider\Form;
 
 use App\Catalog\Entity\Category;
 use App\Catalog\Repository\CategoryRepository;
+use App\Shared\Form\PhoneNumberType;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -28,6 +29,10 @@ use Symfony\Component\Validator\Constraints as Assert;
  * `required => false` partout, comme sur l'inscription client : le rendu doit
  * rester celui de la maquette, qui ne porte aucun attribut `required`. La
  * validation est entièrement côté serveur.
+ * `required` HTML actif sur les champs obligatoires, comme sur l'inscription
+ * client : le navigateur bloque désormais l'envoi et signale les champs
+ * vides avant même d'atteindre le serveur, en plus des contraintes
+ * ci-dessous qui restent la validation de référence.
  */
 final class ProviderRegistrationFormType extends AbstractType
 {
@@ -73,6 +78,13 @@ final class ProviderRegistrationFormType extends AbstractType
             ->add('password', PasswordType::class, [
                 'label' => 'Mot de passe',
                 'required' => false,
+            ->add('phone', PhoneNumberType::class, [
+                'label' => 'Numéro de téléphone',
+                'required' => true,
+                'not_blank_message' => 'Veuillez saisir un numéro de téléphone : notre service client vous y joindra.',
+            ])
+            ->add('password', PasswordType::class, [
+                'label' => 'Mot de passe',
                 'constraints' => [
                     new Assert\NotBlank(message: 'Veuillez saisir un mot de passe.'),
                     new Assert\Length(

@@ -6,7 +6,7 @@
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<a href="{{ path('app_events_detail') }}" class="evn-card">
+<a href="{{ path('app_events_detail', { slug: e.slug }) }}" class="evn-card">
     <div class="evn-card__media">
         {# Un evenement cree par l'assistant n'a PAS de photo : l'etape de
            televersement n'est pas branchee. Sans ce garde-fou, `asset(null)`

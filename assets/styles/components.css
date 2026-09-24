@@ -301,3 +301,74 @@
    flèche du bas déplace une sélection qu'on ne voit pas. */
 .pl-suggest__item:hover,
 .pl-suggest__item.is-active { background: var(--pl-action-light); color: var(--pl-action); }
+
+/* ===========================================================================
+ *  INDICATEUR PAYS COMPACT — champs téléphone (PhoneNumberType)
+ *  Reprend l'emplacement de l'icône statique existante des champs téléphone
+ *  (auth-input__icon, pf-input__icon, gift-input__icon) pour ne pas
+ *  réagencer les maquettes Figma. Le <select> réel (accessibilité, clavier,
+ *  sélecteur natif mobile) reste dans le DOM mais invisible, superposé au
+ *  drapeau + indicatif affichés — voir assets/controllers/phone_country_controller.js.
+ * ======================================================================== */
+.phone-country {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+}
+.phone-country__flag { font-size: 1rem; line-height: 1; }
+.phone-country__code { font-size: .7rem; color: var(--pl-text-muted); white-space: nowrap; }
+.phone-country__select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    cursor: pointer;
+    appearance: none;
+}
+
+/* Variante préfixe interne du champ : pour les écrans où le téléphone n'a
+   pas d'icône dédiée dans la maquette (inscription professionnelle) ou où
+   l'icône est déjà positionnée en absolu par-dessus le champ (cadeau). Le
+   composant se pose alors dans le coin gauche du champ, qui gagne un
+   padding pour lui faire de la place (voir .pa-input--phone / .gift-input--phone). */
+.phone-country--prefix {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+/* ===========================================================================
+ *  TOASTS — messages flash ($this->addFlash())
+ *  Remplace l'ancien bandeau Bootstrap plein-largeur en haut de page par de
+ *  vrais toasts (carte flottante, coin haut-droit, auto-fermeture minutée).
+ *  Structure/comportement (fondu, bouton de fermeture, timer) : composant
+ *  Toast natif de Bootstrap (voir assets/controllers/toast_controller.js) ;
+ *  seules les couleurs sont les nôtres (--pl-*), voir le commentaire du
+ *  template pour pourquoi les utilitaires Bootstrap ne suffisent pas.
+ * ======================================================================== */
+.pl-toast {
+    border: 0;
+    border-radius: var(--pl-radius-md);
+    box-shadow: var(--pl-shadow-sm);
+    color: #fff;
+}
+.pl-toast .toast-body { font-size: 14px; }
+.pl-toast--success { background-color: var(--pl-success); }
+.pl-toast--error   { background-color: var(--pl-error); }
+.pl-toast--info    { background-color: var(--pl-info); }
+/* Fond clair : texte et bouton de fermeture foncés plutôt que blancs, sinon illisibles. */
+.pl-toast--warning {
+    background-color: var(--pl-warning);
+    color: var(--pl-text-strong);
+}
+.pl-toast--warning .pl-toast__close { filter: none; }
+.pl-toast__close { filter: brightness(0) invert(1); }

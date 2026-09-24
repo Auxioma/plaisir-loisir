@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Review\Service;
 
-use App\Catalog\Entity\Service;
 use App\Provider\Entity\ProviderProfile;
 use App\Review\Entity\Review;
 use App\Review\Enum\ReviewStatus;
@@ -43,8 +42,8 @@ final class ReviewModerationServiceTest extends TestCase
     public function testReplyByProviderOwner(): void
     {
         $owner = new User();
-        $service = (new Service())->setProvider((new ProviderProfile())->setUser($owner));
-        $review = (new Review())->setService($service)->setRating(4);
+        $provider = (new ProviderProfile())->setUser($owner);
+        $review = (new Review())->setProvider($provider)->setRating(4);
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::once())->method('flush');
@@ -56,8 +55,8 @@ final class ReviewModerationServiceTest extends TestCase
 
     public function testReplyRejectsNonOwner(): void
     {
-        $service = (new Service())->setProvider((new ProviderProfile())->setUser(new User()));
-        $review = (new Review())->setService($service)->setRating(4);
+        $provider = (new ProviderProfile())->setUser(new User());
+        $review = (new Review())->setProvider($provider)->setRating(4);
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::never())->method('flush');

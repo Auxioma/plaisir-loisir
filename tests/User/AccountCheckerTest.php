@@ -76,21 +76,21 @@ final class AccountCheckerTest extends WebTestCase
     }
 
     /**
-     * « En attente » est le statut par défaut de l'entité, mais l'inscription
-     * active immédiatement : le refuser bloquerait les comptes créés
-     * autrement — fixtures, back-office, commande d'administration — sans rien
-     * protéger. Ce test fige ce choix pour qu'il ne change pas par accident.
+     * Depuis le Lot I (15/09), l'inscription laisse le compte « en attente »
+     * jusqu'à la vérification de l'adresse e-mail (RegistrationService) : ce
+     * statut doit donc réellement bloquer la connexion, sans quoi la
+     * vérification ne protégerait rien.
      */
-    public function testAPendingAccountIsNotBlocked(): void
+    public function testAPendingAccountIsBlockedUntilVerified(): void
     {
         $client = static::createClient();
         $membre = $this->makeUser(UserStatus::Pending);
 
         $this->submitLogin($client, $membre->getEmail(), self::MOT_DE_PASSE);
 
-        self::assertNotNull(
+        self::assertNull(
             static::getContainer()->get('security.token_storage')->getToken(),
-            'Un compte « en attente » ne peut plus se connecter : les comptes créés hors inscription sont bloqués.',
+            'Un compte « en attente » de vérification d\'e-mail a pu se connecter.',
         );
     }
 

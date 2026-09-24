@@ -1,0 +1,48 @@
+{#
+    Formulaire de dépôt d'une demande de devis (§10 du CDC). Simple formulaire
+    HTML + CSRF, comme CorporateController::contact()/partnerForm() — pas de
+    FormType Symfony : ni maquette ni data_class ne le justifient ici.
+#}
+{% extends 'account/_layout.html.twig' %}
+
+{% block title %}{{ 'Nouvelle demande'|trans }}{% endblock %}
+
+{% block account %}
+    {% include 'account/_page_head.html.twig' with {
+        crumbs: [{ label: 'Mes demandes'|trans, href: path('app_account_requests') }, { label: 'Nouvelle demande'|trans }],
+        title: 'Poser une demande'|trans,
+        subtitle: 'Décrivez votre besoin : les professionnels du métier choisi pourront vous répondre par un devis.'|trans,
+    } %}
+
+    <form method="post" class="card shadow-sm" style="max-width: 640px;">
+        <div class="card-body p-4">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+
+            <div class="mb-3">
+                <label class="form-label" for="metier">{{ 'Métier recherché'|trans }}</label>
+                <select class="form-select" id="metier" name="metier" required>
+                    <option value="">{{ 'Sélectionnez un métier'|trans }}</option>
+                    {% for category in categories %}
+                        <option value="{{ category.slug }}" {{ preselected == category.slug ? 'selected' }}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="titre">{{ 'Titre de votre demande'|trans }}</label>
+                <input class="form-control" type="text" id="titre" name="titre" maxlength="180" required
+                       placeholder="{{ 'Ex. Photographe pour mariage le 12 juin'|trans }}">
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label" for="description">{{ 'Décrivez votre besoin'|trans }}</label>
+                <textarea class="form-control" id="description" name="description" rows="5" required
+                          placeholder="{{ 'Date, lieu, nombre de personnes, budget envisagé…'|trans }}"></textarea>
+            </div>
+
+            <button type="submit" class="btn pl-btn pl-btn--cta">{{ 'Publier ma demande'|trans }}</button>
+        </div>
+    </form>
+{% endblock %}

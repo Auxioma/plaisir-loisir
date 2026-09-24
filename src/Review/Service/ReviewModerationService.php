@@ -31,13 +31,13 @@ final class ReviewModerationService
     }
 
     /**
-     * @throws \InvalidArgumentException si l'auteur n'est pas l'annonceur de l'activité notée
+     * @throws \InvalidArgumentException si l'auteur n'est pas le prestataire noté
      */
     public function reply(Review $review, User $author, string $text): void
     {
-        $owner = $review->getService()?->getProvider()?->getUser();
+        $owner = $review->getProvider()?->getUser();
         if ($owner !== $author) {
-            throw new \InvalidArgumentException('Seul l\'annonceur de l\'activité peut répondre à l\'avis.');
+            throw new \InvalidArgumentException('Seul le prestataire noté peut répondre à l\'avis.');
         }
 
         $review->reply($text);

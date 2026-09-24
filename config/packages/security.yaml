@@ -33,6 +33,10 @@ security:
                 password_parameter: _password
                 enable_csrf: true
                 default_target_path: app_home
+                # Sans ce handler, default_target_path s'appliquait aussi aux
+                # administrateurs : connexion depuis /login → accueil public,
+                # /admin à taper soi-même dans la barre d'adresse.
+                success_handler: App\User\Security\LoginSuccessHandler
 
             logout:
                 path: app_logout
@@ -65,6 +69,16 @@ security:
         - { path: ^/(inscription|en/signup)$, roles: PUBLIC_ACCESS }
         - { path: ^/(authentification|en/authentication), roles: PUBLIC_ACCESS }
         - { path: ^/(mot-de-passe-oublie|en/forgot-password), roles: PUBLIC_ACCESS }
+        # Un compte « en attente » ne peut pas se connecter (AccountChecker) :
+        # cet écran doit donc rester joignable sans session (Lot I, 15/09).
+        - { path: ^/(verification-email|en/verify-email), roles: PUBLIC_ACCESS }
+
+        # Parcours d'authentification PROFESSIONNEL (maquette « Profesionnelle »,
+        # bandeau AUTHENTIFICATIONS 01). Inscription en deux etapes, connexion,
+        # mot de passe oublie : tout y est accessible sans compte, par
+        # definition. Les deux langues sont listees, comme partout ici : ces
+        # regles portent sur des chemins, pas sur des noms de route.
+        - { path: ^/(pro|en/pro)/(inscription|signup|connexion|login|mot-de-passe-oublie|forgot-password), roles: PUBLIC_ACCESS }
 
         # Parcours d'authentification PROFESSIONNEL (maquette « Profesionnelle »,
         # bandeau AUTHENTIFICATIONS 01). Inscription en deux etapes, connexion,
@@ -83,9 +97,11 @@ security:
         # est posée pour que le préfixe ne puisse pas s'ouvrir par inadvertance.
         - { path: ^/admin, roles: ROLE_ADMIN }
 
-        # L'espace professionnel (ROLE_PROVIDER) viendra avec le « mode Pro » :
-        # il aura sa règle quand ses routes existeront. En protéger un préfixe
-        # imaginaire ne protège rien.
+        # Demandes reçues, abonnement, tableau de bord et fiche personnelle
+        # côté professionnel (§8.3, §10, §11, §17 du CDC). /professionnels
+        # (recherche publique, fiche publique) reste volontairement hors de
+        # cette liste : c'est un écran public, sans compte.
+        - { path: ^/(pro|en/pro)/(demandes|requests|abonnement|subscription|tableau-de-bord|dashboard|profil|profile|avis|reviews), roles: ROLE_PROVIDER }
 
 when@test:
     security:

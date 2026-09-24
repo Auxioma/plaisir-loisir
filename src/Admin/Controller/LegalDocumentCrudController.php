@@ -111,7 +111,32 @@ class LegalDocumentCrudController extends AbstractCrudController
             ->setHelp('Le titre en haut de la page publique.');
 
         yield TextEditorField::new('content', 'Texte')
-            ->setHelp('CHAQUE TITRE DE NIVEAU 2 OUVRE UN ARTICLE : le sommaire « Sur cette page », la numérotation et les ancres en découlent tout seuls. Vous n\'avez ni sommaire à tenir, ni article à renuméroter.')
+            // Deux remappages, pour les deux mêmes raisons : le contenu de
+            // Trix doit tomber exactement dans les balises que
+            // config/packages/html_sanitizer.yaml autorise pour ce champ
+            // (allow_elements : h2, p, ul, ol, li, strong, em, a...), sans
+            // quoi le filtrage à l'affichage retire la balise ET tout son
+            // contenu (action « drop » par défaut sur une balise non listée).
+            //
+            //  - Titre : Trix ne propose qu'UN SEUL niveau de titre, produit
+            //    par défaut en <h1>. LegalContentRenderer::sections() ne
+            //    découpe le texte en articles que sur des <h2> : sans ce
+            //    remappage, le bouton « Titre » produisait un <h1> — absent
+            //    du filtre, donc supprimé avec son contenu à l'affichage.
+            //  - Paragraphe : Trix enveloppe chaque paragraphe dans un <div>
+            //    par défaut, et <div> n'est pas non plus dans le filtre.
+            //    RÉSULTAT CONSTATÉ EN RECETTE : un texte saisi normalement
+            //    via la barre d'outils perdait TOUS ses titres et TOUS ses
+            //    paragraphes à l'affichage — ne survivaient que les listes à
+            //    puces (<ul>/<li> sont autorisés). Remapper le paragraphe par
+            //    défaut sur <p> aligne Trix sur ce que le filtre attend.
+            ->setTrixEditorConfig([
+                'blockAttributes' => [
+                    'default' => ['tagName' => 'p'],
+                    'heading1' => ['tagName' => 'h2'],
+                ],
+            ])
+            ->setHelp('Utilisez le bouton « Titre » de la barre d\'outils pour chaque article : le sommaire « Sur cette page », la numérotation et les ancres en découlent tout seuls. Ne collez pas de balises HTML dans le texte — Trix les afficherait telles quelles au lieu de les interpréter ; passez par les boutons (gras, liste, lien, titre).')
             ->hideOnIndex();
 
         yield TextField::new('changeSummary', 'Ce qui change')

@@ -1,0 +1,28 @@
+{#
+    Confirmation de déconnexion depuis le menu « Profil » du header (18/09) :
+    avant, le bouton avatar menait directement au tableau de bord, sans
+    aucun moyen rapide de se déconnecter depuis l'en-tête. Reprend les mêmes
+    textes que l'écran dédié (account/deconnexion.html.twig), mais en vraie
+    modale Bootstrap plutôt qu'une page entière — plus adapté à un menu
+    déroulant qu'à une redirection.
+#}
+<div class="modal fade" id="confirm-logout" tabindex="-1" aria-labelledby="confirm-logout-title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{{ path('app_logout') }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="confirm-logout-title">{{ 'Déconnexion'|trans }}</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'Fermer'|trans }}"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">{{ 'Êtes-vous sûr de vouloir vous déconnecter ?'|trans }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ 'Annuler'|trans }}</button>
+                    <button type="submit" class="btn btn-danger">{{ 'Oui, me déconnecter'|trans }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

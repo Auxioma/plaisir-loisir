@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Review\Entity;
 
-use App\Booking\Entity\Booking;
-use App\Catalog\Entity\Service;
+use App\Provider\Entity\ProviderProfile;
+use App\Quote\Entity\Quote;
 use App\Review\Enum\ReviewStatus;
 use App\Review\Repository\ReviewRepository;
 use App\Shared\Doctrine\TimestampableTrait;
@@ -14,11 +14,15 @@ use App\User\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Avis laissé par un client sur une activité, adossé à une réservation terminée
- * (preuve d'achat, pour limiter les faux avis). Un avis par réservation.
+ * Avis laissé par un client sur un professionnel, adossé à un devis accepté
+ * (preuve d'une relation réelle, pour limiter les faux avis, §16.2 du CDC).
+ * Un avis par devis.
+ *
+ * Anciennement adossé à Booking (catalogue à réservation directe, mis en
+ * pause le 11/09) : reconnecté au modèle demande/devis le 15/09 (Lot H).
  */
 #[ORM\Entity(repositoryClass: ReviewRepository::class)]
-#[ORM\Index(columns: ['service_id'])]
+#[ORM\Index(columns: ['provider_id'])]
 #[ORM\HasLifecycleCallbacks]
 class Review
 {
@@ -29,13 +33,13 @@ class Review
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $author = null;
 
-    #[ORM\ManyToOne(targetEntity: Service::class)]
+    #[ORM\ManyToOne(targetEntity: ProviderProfile::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?Service $service = null;
+    private ?ProviderProfile $provider = null;
 
-    #[ORM\ManyToOne(targetEntity: Booking::class)]
+    #[ORM\ManyToOne(targetEntity: Quote::class)]
     #[ORM\JoinColumn(nullable: false, unique: true, onDelete: 'CASCADE')]
-    private ?Booking $booking = null;
+    private ?Quote $quote = null;
 
     /**
      * Note de 1 à 5 (en étoiles).
@@ -70,26 +74,26 @@ class Review
         return $this;
     }
 
-    public function getService(): ?Service
+    public function getProvider(): ?ProviderProfile
     {
-        return $this->service;
+        return $this->provider;
     }
 
-    public function setService(?Service $service): static
+    public function setProvider(?ProviderProfile $provider): static
     {
-        $this->service = $service;
+        $this->provider = $provider;
 
         return $this;
     }
 
-    public function getBooking(): ?Booking
+    public function getQuote(): ?Quote
     {
-        return $this->booking;
+        return $this->quote;
     }
 
-    public function setBooking(?Booking $booking): static
+    public function setQuote(?Quote $quote): static
     {
-        $this->booking = $booking;
+        $this->quote = $quote;
 
         return $this;
     }

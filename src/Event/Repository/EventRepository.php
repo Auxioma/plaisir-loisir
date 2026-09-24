@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Event\Repository;
 
 use App\Event\Entity\Event;
+use App\User\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -110,5 +111,25 @@ class EventRepository extends ServiceEntityRepository
     public function findOneBySlug(string $slug): ?Event
     {
         return $this->findOneBy(['slug' => $slug]);
+    }
+
+    /**
+     * « Mes activités créées » de l'espace compte (Lot J, 15/09), même
+     * patron que PrivateActivityRepository::findByOrganizer.
+     *
+     * @return list<Event>
+     */
+    public function findByOrganizer(User $organizer): array
+    {
+        /** @var list<Event> $results */
+        $results = $this->createQueryBuilder('e')
+            ->andWhere('e.organizer = :organizer')
+            ->andWhere('e.deletedAt IS NULL')
+            ->orderBy('e.startsAt', 'DESC')
+            ->setParameter('organizer', $organizer->getId(), 'ulid')
+            ->getQuery()
+            ->getResult();
+
+        return $results;
     }
 }

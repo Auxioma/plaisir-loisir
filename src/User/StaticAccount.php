@@ -15,7 +15,7 @@ final class StaticAccount
     /**
      * Profil affiché dans la sidebar (et prénom de l'écran Déconnexion).
      *
-     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unread: int}
+     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unreadMessages: int, unreadNotifications: int}
      */
     public static function user(): array
     {
@@ -23,10 +23,19 @@ final class StaticAccount
             'name' => 'Thomas Martin',
             'firstName' => 'Thomas',
             'email' => 'Tmartin@email.com',
-            'avatar' => 'images/account/avatar-thomas.jpg',
+            // Silhouette générique, pas la photo de la maquette (signalé le
+            // 18/09) : c'est un repli affiché à N'IMPORTE QUEL compte tant
+            // qu'il n'a pas déposé sa propre photo, pas une photo de démo à
+            // remplacer plus tard — la personne choisit elle-même dans
+            // /compte/parametres (AvatarStorageService).
+            'avatar' => 'images/account/avatar-default.svg',
             'memberSince' => 'Mai 2026',
             // Badge « non lues » partagé sidebar/header (spec, point 8).
-            'unread' => 3,
+            // Séparé en deux compteurs (14/09, Lot G) : les deux sont réels
+            // depuis le Lot K (MessageRepository puis NotificationRepository),
+            // seul l'avatar ci-dessus reste celui du repli par défaut.
+            'unreadMessages' => 3,
+            'unreadNotifications' => 3,
         ];
     }
 
@@ -34,19 +43,76 @@ final class StaticAccount
      * Menu de la sidebar. Les entrées sans maquette (route null) restent
      * inertes — pages à concevoir (spec, « entrées non maquettées »).
      *
-     * @return list<array{icon: string, title: string, subtitle: string, route: string|null, badge: bool}>
+     * `badge` vaut soit `false`, soit le nom du compteur à afficher
+     * (`'messages'` ou `'notifications'`, cf. `user.unreadMessages`/
+     * `user.unreadNotifications`).
+     *
+     * @return list<array{icon: string, title: string, subtitle: string, route: string|null, badge: string|false}>
      */
     public static function menu(): array
     {
         return [
-            ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité', 'route' => null, 'badge' => false],
-            ['icon' => 'camera', 'title' => 'Mes albums photos', 'subtitle' => 'Gérez vos albums et photos', 'route' => null, 'badge' => false],
-            ['icon' => 'badge_check', 'title' => 'Mes activités créées', 'subtitle' => 'Gérez vos activités sur Event', 'route' => null, 'badge' => false],
-            ['icon' => 'receipt', 'title' => 'Mes réservations', 'subtitle' => 'Suivi de vos réservations', 'route' => null, 'badge' => false],
+            ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité', 'route' => 'app_account_dashboard', 'badge' => false],
+            // Câblé le 17/09 : entités Album/Photo, AlbumController,
+            // PrivateActivityVoter::VIEW_ALBUM (voir docs/corrections-client-
+            // 2026-07-27.md §4). Aucune maquette Figma pour cet écran — UI
+            // volontairement sommaire, à reprendre visuellement plus tard.
+            ['icon' => 'camera', 'title' => 'Mes albums photos', 'subtitle' => 'Gérez vos albums et photos', 'route' => 'app_account_albums', 'badge' => false],
+            ['icon' => 'badge_check', 'title' => 'Mes activités créées', 'subtitle' => 'Gérez vos activités sur Event', 'route' => 'app_account_events', 'badge' => false],
+            ['icon' => 'receipt', 'title' => 'Mes réservations', 'subtitle' => 'Suivi de vos réservations', 'route' => 'app_account_history', 'badge' => false],
             ['icon' => 'heart', 'title' => 'Mes favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false],
-            ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => true],
+            // Nouvel item (14/09) : aucune maquette ne le prévoit, le parcours
+            // demande/devis (§10, §11 du CDC) n'existait dans aucun écran
+            // avant ce câblage. Même style que les items voisins en
+            // attendant un avis de la designer sur son emplacement définitif.
+            ['icon' => 'receipt', 'title' => 'Mes demandes', 'subtitle' => 'Devis reçus des professionnels', 'route' => 'app_account_requests', 'badge' => false],
+            // Même remarque que pour « Mes demandes » (14/09) : ajouté sans
+            // maquette, en attendant un avis de la designer.
+            ['icon' => 'users', 'title' => 'Mes activités privées', 'subtitle' => 'Sorties organisées et rejointes', 'route' => 'app_account_private_activities', 'badge' => false],
+            // Nouvel item (Lot G, §14 du CDC) : aucune maquette non plus.
+            ['icon' => 'mail', 'title' => 'Messages', 'subtitle' => 'Conversations avec les professionnels', 'route' => 'app_account_messages', 'badge' => 'messages'],
+            ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => 'notifications'],
             ['icon' => 'hand_heart', 'title' => 'Parrainage', 'subtitle' => 'Invitez vos amis', 'route' => 'app_account_referral', 'badge' => false],
-            ['icon' => 'gear', 'title' => 'Paramètres du compte', 'subtitle' => 'Supprimer ou désactiver', 'route' => null, 'badge' => false],
+            ['icon' => 'gear', 'title' => 'Paramètres du compte', 'subtitle' => 'Supprimer ou désactiver', 'route' => 'app_account_settings', 'badge' => false],
+            ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Fermer votre session', 'route' => 'app_account_logout_confirm', 'badge' => false],
+        ];
+    }
+
+    /**
+     * Menu de la sidebar pour un compte PRESTATAIRE (§8.3 du CDC), distinct
+     * de menu() ci-dessus.
+     *
+     * POURQUOI UN SECOND MENU, PAS UNE ENTRÉE AJOUTÉE AU PREMIER
+     * Signalé le 14/09 : le premier tableau de bord professionnel avait été
+     * construit comme un écran à part, sans rapport avec l'entrée
+     * « Tableau de bord » — déjà présente, mais morte (route null) — du menu
+     * ci-dessus. La corriger en pointant simplement cette entrée vers
+     * `/pro/tableau-de-bord` aurait laissé les AUTRES écrans pro (demandes
+     * reçues, abonnement, fiche professionnelle) toujours hors du menu.
+     * `/pro/*` est un espace suffisamment différent de `/compte/*`
+     * (activité professionnelle, pas de loisirs personnels) pour mériter son
+     * propre menu plutôt que de faire grossir encore la liste maquettée à 9
+     * entrées de menu() — mais la même coquille visuelle (account/_layout,
+     * account/_sidebar) : le prestataire n'a jamais l'impression de changer
+     * d'application.
+     *
+     * @return list<array{icon: string, title: string, subtitle: string, route: string|null, badge: string|false}>
+     */
+    public static function providerMenu(): array
+    {
+        return [
+            ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité professionnelle', 'route' => 'app_pro_dashboard', 'badge' => false],
+            ['icon' => 'receipt', 'title' => 'Demandes reçues', 'subtitle' => 'Répondre par un devis', 'route' => 'app_pro_requests', 'badge' => 'requests'],
+            // Nouvel item (Lot G, §14 du CDC) : même route que côté client, la
+            // conversation ne dépend pas du chapeau porté pour la consulter.
+            ['icon' => 'mail', 'title' => 'Messages', 'subtitle' => 'Conversations avec vos clients', 'route' => 'app_account_messages', 'badge' => 'messages'],
+            ['icon' => 'card', 'title' => 'Abonnement', 'subtitle' => 'Votre offre et sa facturation', 'route' => 'app_pro_subscription', 'badge' => false],
+            ['icon' => 'badge_check', 'title' => 'Ma fiche professionnelle', 'subtitle' => 'Ce que voient vos clients', 'route' => 'app_pro_profile_edit', 'badge' => false],
+            // Nouvel item (Lot H, §16.2 du CDC) : Review dépendait encore du
+            // catalogue à réservation directe en pause, aucun écran ici.
+            ['icon' => 'star', 'title' => 'Avis reçus', 'subtitle' => 'Ce que vos clients disent de vous', 'route' => 'app_pro_reviews', 'badge' => 'reviews'],
+            ['icon' => 'heart', 'title' => 'Mes favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false],
+            ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => 'notifications'],
             ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Fermer votre session', 'route' => 'app_account_logout_confirm', 'badge' => false],
         ];
     }
@@ -112,37 +178,6 @@ final class StaticAccount
             ['place' => 'Alsace-Colmar', 'title' => 'Titre', 'rating' => '4.6', 'reviews' => 312, 'duration' => '2h', 'price' => 16, 'badge' => null, 'image' => 'images/account/alsace-galerie.jpg'],
             ['place' => 'Alsace-Colmar', 'title' => 'Titre', 'rating' => '4.8', 'reviews' => 64, 'duration' => '2h30', 'price' => 25, 'badge' => null, 'image' => 'images/account/alsace-colmar.jpg'],
             ['place' => 'Alsace', 'title' => 'Titre', 'rating' => '5.0', 'reviews' => 93, 'duration' => '3h', 'price' => 180, 'badge' => null, 'image' => 'images/account/alsace-helico.jpg'],
-        ];
-    }
-
-    /**
-     * Notifications groupées par section temporelle. `tone` pilote la
-     * couleur de l'icône ronde ; `muted` reproduit le fond gris de la
-     * maquette (items 3 et 6). Coquilles corrigées : « dasn » → dans,
-     * « alaissé » → a laissé, « électique » → électrique, « Ardècge » →
-     * Ardèche.
-     *
-     * @return list<array{section: string, items: list<array<string, string|bool|null>>}>
-     */
-    public static function notifications(): array
-    {
-        return [
-            [
-                'section' => "Aujourd'hui",
-                'items' => [
-                    ['icon' => 'heart', 'tone' => 'violet', 'title' => 'Votre activité a reçu un nouveau favori', 'detail' => "“Descente en canoe dans les Gorges de l'Ardèche”", 'time' => 'Il y a 10 minutes', 'thumb' => 'images/account/fav-kayak.jpg', 'muted' => false],
-                    ['icon' => 'calendar_check', 'tone' => 'violet', 'title' => 'Nouvelle réservation confirmée', 'detail' => 'Atelier cuisine provençale', 'meta' => '24 Mai 2026 à 10h00', 'time' => 'Il y a 1 heures', 'thumb' => 'images/account/fav-cuisine.jpg', 'muted' => false],
-                    ['icon' => 'heart', 'tone' => 'green', 'title' => 'Nouveau message de Sophie', 'detail' => "Bonjour Thomas, j'aimerais en savoir plus sur votre activités…", 'time' => 'Il y a 3 heures', 'thumb' => null, 'muted' => true],
-                ],
-            ],
-            [
-                'section' => 'Hier',
-                'items' => [
-                    ['icon' => 'heart', 'tone' => 'blue', 'title' => 'Rappel: Votre réservation arrive bientôt', 'detail' => 'Séance de yoga en pleine nature', 'meta' => '24 Mai 2026 à 10h00', 'time' => 'Hier à 18:30', 'thumb' => 'images/account/notif-yoga.jpg', 'muted' => false],
-                    ['icon' => 'calendar_check', 'tone' => 'green', 'title' => 'Votre activité a été publiée', 'detail' => '“Vol en montgolfière en provence ” est maintenant en ligne !', 'time' => 'Hier à 11:45', 'thumb' => 'images/activities/montgolfiere.jpg', 'muted' => false],
-                    ['icon' => 'heart', 'tone' => 'yellow', 'title' => 'Nouveau message de Sophie', 'detail' => 'Jean D. a laissé un commentaire sur “Location VTT électrique”', 'time' => 'Hier à 09:15', 'thumb' => null, 'muted' => true],
-                ],
-            ],
         ];
     }
 }

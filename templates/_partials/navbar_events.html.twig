@@ -47,15 +47,35 @@
 
             {% if connected %}
                 <a href="{{ path('app_account_favorites') }}" class="pl-iconbtn" aria-label="{{ 'Mes favoris'|trans }}">{{ icon.heart(20) }}</a>
-                <button type="button" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">{{ icon.mail(20) }}</button>
+                <a href="{{ path('app_account_messages') }}" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">{{ icon.mail(20) }}</a>
                 <a href="{{ path('app_account_notifications') }}" class="pl-iconbtn" aria-label="{{ 'Notifications'|trans }}">{{ icon.bell(20) }}</a>
 
-                <a href="{{ path('app_account_favorites') }}" class="pl-avatarbtn" aria-label="{{ 'Paramètre du profil'|trans }}">
-                    <img src="{{ asset('images/account/avatar-thomas.jpg') }}" alt="">
-                    <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
-                </a>
+                {# Menu « Profil / Déconnexion », pas un lien direct (18/09) :
+                   même choix que navbar.html.twig. #}
+                <details class="pl-dropdown pl-dropdown--profile">
+                    <summary class="pl-avatarbtn pl-dropdown__toggle--profile" aria-label="{{ 'Menu du compte'|trans }}">
+                        <img src="{{ asset(app.user.avatarPath ?? 'images/account/avatar-default.svg') }}" alt="">
+                        <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
+                    </summary>
+                    <div class="pl-dropdown__menu pl-dropdown__menu--signin">
+                        <a href="{{ path('app_account_favorites') }}" class="pl-dropdown__item">{{ icon.person(16) }} {{ 'Profil'|trans }}</a>
+                        <button type="button" class="pl-dropdown__item pl-dropdown__item--danger" data-bs-toggle="modal" data-bs-target="#confirm-logout">{{ icon.logout(16) }} {{ 'Déconnexion'|trans }}</button>
+                    </div>
+                </details>
             {% else %}
-                <a href="{{ path('app_auth_choice') }}" class="pl-btn pl-btn--outline-dark pl-btn--signup">{{ icon.person(18) }} {{ "S'inscrire"|trans }}</a>
+                {# Même choix que navbar_home.html.twig (signalé le 18/09) :
+                   « Se connecter » ouvre un menu Client / Prestataire vers les
+                   deux écrans de connexion, l'inscription reste jointe depuis
+                   ces écrans via la page « Bienvenue » (app_auth_choice). #}
+                <details class="pl-dropdown pl-dropdown--signin">
+                    <summary class="pl-btn pl-btn--outline-dark pl-dropdown__toggle--signin">
+                        {{ icon.person(18) }} {{ 'Se connecter'|trans }} {{ icon.chevron_down(16) }}
+                    </summary>
+                    <div class="pl-dropdown__menu pl-dropdown__menu--signin">
+                        <a href="{{ path('app_login') }}" class="pl-dropdown__item">{{ 'Client'|trans }}</a>
+                        <a href="{{ path('app_pro_login') }}" class="pl-dropdown__item">{{ 'Prestataire'|trans }}</a>
+                    </div>
+                </details>
             {% endif %}
             {% include '_partials/_navbar_burger.html.twig' with { panel_id: 'plNav' } %}
         </div>

@@ -33,7 +33,28 @@ final class EventPresenter
             // qu'ils recevaient.
             'participants' => (string) $event->getParticipantsCount(),
             'date' => $this->date($event),
+            // Utilisés par la fiche détail (card() sert aussi les listings,
+            // qui les ignorent simplement).
+            'description' => $event->getDescription(),
+            'organizer' => $this->organizerName($event),
         ];
+    }
+
+    /**
+     * « Martin Thomas », ou repli neutre : un événement de démonstration ou
+     * créé avant que l'assistant n'exige un organisateur n'en a pas.
+     */
+    private function organizerName(Event $event): string
+    {
+        $organizer = $event->getOrganizer();
+
+        if (null === $organizer) {
+            return 'L\'équipe TrouveMoi';
+        }
+
+        $name = trim($organizer->getFirstName().' '.$organizer->getLastName());
+
+        return '' !== $name ? $name : $organizer->getEmail();
     }
 
     /**

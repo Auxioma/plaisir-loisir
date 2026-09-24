@@ -16,6 +16,7 @@ use App\Catalog\Enum\ServiceStatus;
 use App\Catalog\Presenter\ActivityPresenter;
 use App\Provider\Entity\ProviderProfile;
 use App\Provider\Enum\ProviderStatus;
+use App\Provider\Service\ProviderSlugService;
 use App\User\Entity\User;
 use App\User\Enum\UserStatus;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -279,6 +280,7 @@ class CatalogFixtures extends Fixture
 
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly ProviderSlugService $providerSlugger,
     ) {
     }
 
@@ -406,6 +408,11 @@ class CatalogFixtures extends Fixture
         $provider->setDisplayName('Camille Aventures');
         $provider->setCompanyName('Aventures SARL');
         $provider->setStatus(ProviderStatus::Verified);
+        // Sans slug, ce dossier pourtant vérifié casse /professionnels (le
+        // listing tente de générer un lien vers un slug vide) et sa propre
+        // fiche publique est inaccessible — bug pré-existant, découvert en
+        // vérifiant le Lot G.
+        $this->providerSlugger->assign($provider);
         $manager->persist($provider);
 
         return $provider;

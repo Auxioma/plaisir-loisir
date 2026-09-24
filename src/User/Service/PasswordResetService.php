@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\User\Service;
 
+use App\Notification\Enum\NotificationCategory;
+use App\Notification\Service\NotificationService;
 use App\User\Entity\User;
 use App\User\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -47,6 +49,7 @@ final class PasswordResetService
         private readonly UserRepository $userRepository,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly MailerInterface $mailer,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -143,6 +146,13 @@ final class PasswordResetService
         $user->clearPasswordReset();
 
         $this->entityManager->flush();
+
+        $this->notifications->notify(
+            $user,
+            NotificationCategory::System,
+            'Mot de passe modifié',
+            'Le mot de passe de votre compte vient d\'être modifié. Si vous n\'êtes pas à l\'origine de ce changement, contactez-nous immédiatement.',
+        );
 
         return true;
     }

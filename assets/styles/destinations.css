@@ -32,9 +32,6 @@
 /* Favori actif : cœur plein rouge (carte New York, écran 2). */
 .pl-card__fav.is-active { color: var(--pl-error); }
 
-/* Bouton « S'inscrire » de l'en-tête visiteur. */
-.pl-btn--signup { display: inline-flex; align-items: center; gap: var(--pl-sp-8); }
-
 /* ===========================================================================
  *  CARTE ACTIVITÉ EN MODE « CATÉGORIE » (écrans 3-4, spec §1.10)
  * ======================================================================== */

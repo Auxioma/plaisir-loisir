@@ -1,7 +1,16 @@
 {#
     Onglet « À propos » du détail groupe (captures 12-13, état rempli) :
-    description + cards latérales Créateurs / Membres (152), événements à
-    venir / passés (25), photos (250), discussions (5) vide, derniers avis.
+    description + cards latérales Créateurs / Membres, événements à
+    venir / passés, photos, discussions (5) vide, derniers avis.
+
+    17/09 : la description et la carte « Créateurs » viennent du groupe
+    réellement consulté (Group::description, Group::owner), plutôt que du
+    texte figé « groupe de fitness de Lyon » quel que soit le groupe ouvert.
+    La carte « Créateurs » disparaît si le groupe n'a pas de créateur en base
+    (groupes de démonstration antérieurs à l'assistant de création) plutôt
+    que d'afficher un nom inventé. Membres, avis et discussions restent
+    décoratifs : ni adhésion ni avis n'existent encore comme entités pour un
+    groupe (contrairement aux avis du catalogue, adossés à un devis accepté).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
@@ -11,29 +20,30 @@
         {# Maquette « Groupes Détails » : la description est REPLIÉE à l'ouverture
            (« En savoir plus ») ; l'état déplié est une autre planche. #}
         <div class="evn-about__text is-collapsed">
-            <p>Tu as envie de bouger, t'amuser et retrouver la forme dans une ambiance survoltée ?<br>
-            Rejoins le tout nouveau groupe de fitness de Lyon pour des sessions de sport ludiques, conviviales et accessibles à tous ! Que tu sois débutant(e), sportif(ve) confirmé(e), en famille ou entre amis, viens dépenser ton énergie, te dépasser et faire de super rencontres.</p>
-            <p>🗓️ Fréquence : Tous les 15 jours<br>
-            📍 Lieu : [Nom du lieu ou parc], Lyon<br>
-            🎯 Objectif : Créer une communauté lyonnaise motivée et dynamique — et bientôt, lancer des défis &amp; mini-tournois sportifs !</p>
-            <p>Apporte ta tenue de sport, ta gourde, et surtout toute ta bonne humeur. On s'occupe du reste !</p>
+            {% if group.description %}
+                <p>{{ group.description|nl2br }}</p>
+            {% else %}
+                <p>{{ 'Ce groupe n\'a pas encore de description.'|trans }}</p>
+            {% endif %}
         </div>
         <button type="button" class="evn-more-link" data-evn-about-toggle>{{ 'En savoir plus'|trans }}</button>
     </div>
 
     <aside class="evn-about__side">
-        <div class="evn-side-card">
-            <p class="evn-side-card__title">{{ 'Créateurs'|trans }}</p>
-            <div class="evn-creator">
-                <img src="{{ asset('images/events/avatar-thomas.jpg') }}" alt="">
-                <span>
-                    <strong>Martin Thomas</strong>
-                    <a href="#">{{ 'Message'|trans }}</a>
-                </span>
+        {% if group.owner %}
+            <div class="evn-side-card">
+                <p class="evn-side-card__title">{{ 'Créateurs'|trans }}</p>
+                <div class="evn-creator">
+                    <img src="{{ asset(group.owner.avatar) }}" alt="">
+                    <span>
+                        <strong>{{ group.owner.name }}</strong>
+                        <a href="{{ path('app_account_messages') }}">{{ 'Message'|trans }}</a>
+                    </span>
+                </div>
             </div>
-        </div>
+        {% endif %}
         <div class="evn-side-card">
-            <p class="evn-side-card__title">{{ 'Membres'|trans }} <span>(152)</span> <a href="{{ path('app_group_detail', { onglet: group_tab('membres') }) }}" class="evn-side-card__more">{{ 'Voir plus'|trans }}</a></p>
+            <p class="evn-side-card__title">{{ 'Membres'|trans }} <span>({{ group.members }})</span> <a href="{{ path('app_group_detail', { slug: group.slug, onglet: group_tab('membres') }) }}" class="evn-side-card__more">{{ 'Voir plus'|trans }}</a></p>
             <div class="evn-side-card__avatars">
                 {% for i in 0..14 %}
                     <img src="{{ asset(avatars[i % 5]) }}" alt="">
@@ -43,57 +53,62 @@
     </aside>
 </div>
 
+{# 17/09 : cartes d'événements réels (upcoming_events / past_events,
+   EventsController::groupDetail()), triés sur la vraie date de l'événement,
+   plutôt que trois groupes de remplissage identiques sous les deux titres. #}
 <section class="evn-gsection">
     <div class="evn-section__head">
-        <h2 class="evn-gh2">{{ 'Événements à venir'|trans }} <span class="evn-gh2__count">(25)</span></h2>
-        <a href="{{ path('app_group_detail', { onglet: group_tab('evenements') }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
+        <h2 class="evn-gh2">{{ 'Événements à venir'|trans }} <span class="evn-gh2__count">{{ upcoming_events|length }}</span></h2>
+        <a href="{{ path('app_group_detail', { slug: group.slug, onglet: group_tab('evenements') }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
     </div>
     <div class="card-grid evn-gcards3">
-        {% for g in [
-            { name: 'Barbecue entre amis', image: 'images/events/ev-famille.jpg', description: 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum', location: 'Autrans, 38880', members: '12', badge: null },
-            { name: 'Randonnée dans le Vercors', image: 'images/events/ev-catacombes.jpg', description: 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum', location: 'Lyon, 69000', members: '12', badge: null },
-            { name: 'Randonnée dans le Vercors', image: 'images/events/ev-catacombes.jpg', description: 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum', location: 'Lyon, 69000', members: '12', badge: null },
-        ] %}
-            {% include 'event/nav/_group_card.html.twig' with { g: g, avatars: avatars } %}
+        {% for e in upcoming_events %}
+            {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
+        {% else %}
+            <p class="text-muted">{{ "Aucun événement à venir pour ce groupe."|trans }}</p>
         {% endfor %}
     </div>
 </section>
 
 <section class="evn-gsection">
     <div class="evn-section__head">
-        <h2 class="evn-gh2">{{ 'Événements passés'|trans }} <span class="evn-gh2__count">(25)</span></h2>
-        <a href="{{ path('app_group_detail', { onglet: group_tab('evenements') }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
+        <h2 class="evn-gh2">{{ 'Événements passés'|trans }} <span class="evn-gh2__count">{{ past_events|length }}</span></h2>
+        <a href="{{ path('app_group_detail', { slug: group.slug, onglet: group_tab('evenements') }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
     </div>
     <div class="card-grid evn-gcards3">
-        {% for g in [
-            { name: 'Barbecue entre amis', image: 'images/events/ev-famille.jpg', description: 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum', location: 'Autrans, 38880', members: '12', badge: null },
-            { name: 'Randonnée dans le Vercors', image: 'images/events/ev-catacombes.jpg', description: 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum', location: 'Lyon, 69000', members: '12', badge: null },
-            { name: 'Randonnée dans le Vercors', image: 'images/events/ev-catacombes.jpg', description: 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum', location: 'Lyon, 69000', members: '12', badge: null },
-        ] %}
-            {% include 'event/nav/_group_card.html.twig' with { g: g, avatars: avatars } %}
+        {% for e in past_events %}
+            {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
+        {% else %}
+            <p class="text-muted">{{ "Aucun événement passé pour ce groupe."|trans }}</p>
         {% endfor %}
     </div>
 </section>
 
+{# 17/09 : les vignettes viennent des couvertures des vrais albums du
+   groupe (GroupAlbum::imagePath) plutôt que de trois photos sans rapport,
+   fixes quel que soit le groupe. Le compteur reprend le nombre d'albums —
+   les photos elles-mêmes n'ont pas d'entité propre (voir GroupAlbum). #}
 <section class="evn-gsection">
     <div class="evn-section__head">
-        <h2 class="evn-gh2">{{ 'Photos'|trans }} <span class="evn-gh2__count">(250)</span></h2>
-        <a href="{{ path('app_group_detail', { onglet: group_tab('photos') }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
+        <h2 class="evn-gh2">{{ 'Photos'|trans }} <span class="evn-gh2__count">{{ albums|length }}</span></h2>
+        <a href="{{ path('app_group_detail', { slug: group.slug, onglet: group_tab('photos') }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
     </div>
     <div class="evn-gphotos">
         <button type="button" class="evn-gphotos__nav" aria-label="{{ 'Photos précédentes'|trans }}">{{ icon.chevron_left(16) }}</button>
-        <img src="{{ asset('images/events/ph-kayak1.jpg') }}" alt="Photo du groupe">
-        <img src="{{ asset('images/events/ph-kayak2.jpg') }}" alt="Photo du groupe">
-        <a href="{{ path('app_group_detail', { onglet: group_tab('photos') }) }}" class="evn-gphotos__more">
-            <img src="{{ asset('images/events/ph-kayak3.jpg') }}" alt="Photo du groupe">
-        </a>
+        {% for album in albums[:3] %}
+            <a href="{{ path('app_group_album', { groupSlug: group.slug, albumId: album.id }) }}" class="{{ loop.last and albums|length > 3 ? 'evn-gphotos__more' }}">
+                <img src="{{ asset(album.image) }}" alt="{{ 'Photo du groupe'|trans }}">
+            </a>
+        {% else %}
+            <p class="text-muted">{{ "Aucune photo n'a encore été déposée."|trans }}</p>
+        {% endfor %}
     </div>
 </section>
 
 <section class="evn-gsection">
     <div class="evn-section__head">
         <h2 class="evn-gh2">{{ 'Discussions'|trans }} <span class="evn-gh2__count">(5)</span></h2>
-        <a href="{{ path('app_group_detail', { onglet: group_tab('discussions') }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
+        <a href="{{ path('app_group_detail', { slug: group.slug, onglet: group_tab('discussions') }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
     </div>
     {% include 'event/nav/_empty.html.twig' with {
         image: 'images/events/empty-chat.jpg',

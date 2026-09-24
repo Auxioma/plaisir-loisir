@@ -1,0 +1,87 @@
+{#
+    Recherche de professionnels (§5, §9 du CDC) : filtre métier + ville +
+    rayon, liste des prestataires VÉRIFIÉS. Pas de maquette Figma pour cet
+    écran — mise en page Bootstrap 5 sobre plutôt qu'une reconstitution
+    approximative au pixel.
+    Le rayon (Lot K, 16/09) ne s'applique que si la ville saisie est connue
+    de FrenchCityCoordinates — sinon la recherche reste la correspondance
+    texte habituelle, sans message d'erreur : voir le commentaire de
+    ProviderProfileRepository::search().
+#}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Trouver un professionnel'|trans }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4" style="color: var(--pl-text-display); font-weight: var(--pl-fw-bold);">
+        {{ 'Trouver un professionnel'|trans }}
+    </h1>
+
+    <form method="get" class="row g-3 align-items-end mb-5">
+        <div class="col-sm-4">
+            <label class="form-label" for="metier">{{ 'Métier'|trans }}</label>
+            <select class="form-select" id="metier" name="metier">
+                <option value="">{{ 'Tous les métiers'|trans }}</option>
+                {% for category in categories %}
+                    <option value="{{ category.slug }}" {{ selected_category and selected_category.slug == category.slug ? 'selected' }}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-4">
+            <label class="form-label" for="ville">{{ 'Ville'|trans }}</label>
+            <input class="form-control" type="text" id="ville" name="ville" value="{{ city }}" placeholder="{{ 'Ex. Lyon'|trans }}">
+        </div>
+        <div class="col-sm-2">
+            <label class="form-label" for="rayon">{{ 'Rayon'|trans }}</label>
+            <select class="form-select" id="rayon" name="rayon">
+                <option value="0">{{ 'Peu importe'|trans }}</option>
+                <option value="10" {{ radius == 10 ? 'selected' }}>10 km</option>
+                <option value="25" {{ radius == 25 ? 'selected' }}>25 km</option>
+                <option value="50" {{ radius == 50 ? 'selected' }}>50 km</option>
+                <option value="100" {{ radius == 100 ? 'selected' }}>100 km</option>
+            </select>
+        </div>
+        <div class="col-sm-2">
+            <button type="submit" class="btn pl-btn pl-btn--primary w-100">{{ 'Rechercher'|trans }}</button>
+        </div>
+        {% if radius > 0 %}
+            <div class="col-12 text-muted small">{{ 'Le rayon ne s\'applique que pour les villes reconnues ; sinon la recherche par texte reste utilisée.'|trans }}</div>
+        {% endif %}
+    </form>
+
+    {% if results is empty %}
+        <p class="text-muted">{{ 'Aucun professionnel ne correspond à cette recherche pour le moment.'|trans }}</p>
+    {% else %}
+        <p class="text-muted mb-4">{{ results|length }} {{ results|length > 1 ? 'professionnels trouvés'|trans : 'professionnel trouvé'|trans }}</p>
+        <div class="row g-4">
+            {% for provider in results %}
+                <div class="col-sm-6 col-lg-4">
+                    <a href="{{ path('app_provider_profile', {slug: provider.slug}) }}" class="text-decoration-none">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h2 class="h5 mb-1" style="color: var(--pl-text-strong);">{{ provider.displayName }}</h2>
+                                {% if provider.mainCategory %}
+                                    <span class="badge rounded-pill mb-2" style="background: var(--pl-action-light); color: var(--pl-action);">
+                                        {{ provider.mainCategory.name }}
+                                    </span>
+                                {% endif %}
+                                {% if provider.city %}
+                                    <p class="text-muted small mb-2">📍 {{ provider.city }}</p>
+                                {% endif %}
+                                {% if provider.bio %}
+                                    <p class="text-muted small mb-0">
+                                        {{ provider.bio|length > 110 ? provider.bio|slice(0, 110) ~ '…' : provider.bio }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

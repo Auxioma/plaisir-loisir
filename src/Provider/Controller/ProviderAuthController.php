@@ -16,6 +16,10 @@ use App\User\Entity\User;
 use App\User\Service\PasswordResetService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
+use App\Shared\Controller\FlashesFormErrorsTrait;
+use App\User\Entity\User;
+use App\User\Service\PasswordResetService;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,6 +49,8 @@ use Symfony\Component\Uid\Ulid;
  */
 final class ProviderAuthController extends AbstractController
 {
+    use FlashesFormErrorsTrait;
+
     /** Dossier en cours de création, entre l'étape 1 et l'écran final. */
     private const SESSION_PROFILE = 'provider_registration_profile';
 

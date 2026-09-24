@@ -254,6 +254,11 @@
 .gift-input input::placeholder { color: var(--pl-text-disabled); }
 .gift-input input:focus { outline: none; border-color: var(--gift-purple); box-shadow: 0 0 0 3px rgb(93 0 255 / .08); }
 .gift-field.has-error .gift-input input { border-color: var(--gift-required); }
+
+/* Champ téléphone : l'indicateur pays compact prend plus de place que
+   l'icône statique des autres champs, le champ gagne un padding-gauche
+   supplémentaire pour lui faire de la place. */
+.gift-input--phone input { padding-left: 64px; }
 .gift-field__error { margin: 6px 0 0; font-size: 13px; color: var(--gift-required); }
 .gift-field__hint { margin: 8px 0 0; font-size: 13px; color: var(--pl-text-disabled); }
 

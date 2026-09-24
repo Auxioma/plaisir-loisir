@@ -7,6 +7,7 @@ namespace App\Corporate\Entity;
 use App\Corporate\Repository\PartnerApplicationRepository;
 use App\Shared\Doctrine\TimestampableTrait;
 use App\Shared\Doctrine\UlidIdentifierTrait;
+use App\Shared\Validator\ValidPhoneNumber;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -55,6 +56,7 @@ class PartnerApplication
     private ?string $contactName = null;
 
     #[ORM\Column(length: 30, nullable: true)]
+    #[ValidPhoneNumber]
     private ?string $phone = null;
 
     #[ORM\Column(length: 120, nullable: true)]

@@ -5,21 +5,25 @@ declare(strict_types=1);
 namespace App\Tests\User\Service;
 
 use App\Legal\Service\ConsentService;
+use App\Notification\Repository\NotificationRepository;
+use App\Notification\Service\NotificationService;
 use App\Provider\Service\ProviderOnboardingService;
 use App\User\Entity\User;
 use App\User\Enum\AccountType;
 use App\User\Enum\UserStatus;
 use App\User\Repository\UserRepository;
+use App\User\Service\EmailVerificationService;
 use App\User\Service\RegistrationService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final class RegistrationServiceTest extends TestCase
 {
-    public function testRegisterCreatesHashedAndActiveUser(): void
+    public function testRegisterCreatesHashedAndPendingUser(): void
     {
         $userRepository = $this->createStub(UserRepository::class);
         $userRepository->method('findOneBy')->willReturn(null); // email disponible
@@ -31,7 +35,9 @@ final class RegistrationServiceTest extends TestCase
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::once())->method('persist')->with(self::isInstanceOf(User::class));
-        $em->expects(self::once())->method('flush');
+        // Deux flush : l'inscription elle-même, puis l'envoi du code de
+        // vérification (EmailVerificationService::sendCode()).
+        $em->expects(self::exactly(2))->method('flush');
 
         $service = $this->service($em, $hasher, $userRepository);
 
@@ -43,7 +49,8 @@ final class RegistrationServiceTest extends TestCase
         self::assertSame('Bob', $user->getFirstName());
         self::assertSame('Martin', $user->getLastName());
         self::assertSame('hashed-password', $user->getPassword());
-        self::assertSame(UserStatus::Active, $user->getStatus());
+        self::assertSame(UserStatus::Pending, $user->getStatus());
+        self::assertNotNull($user->getEmailVerificationCodeHash(), 'Un code de vérification doit avoir été armé.');
         self::assertNotContains('ROLE_PROVIDER', $user->getRoles());
     }
 
@@ -96,6 +103,7 @@ final class RegistrationServiceTest extends TestCase
             $onboarding ?? $this->createStub(ProviderOnboardingService::class),
             $this->createStub(ConsentService::class),
             new RequestStack(),
+            new EmailVerificationService($em, $userRepository, $this->createStub(MailerInterface::class), new NotificationService($em, $this->createStub(NotificationRepository::class))),
         );
     }
 

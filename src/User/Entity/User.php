@@ -7,6 +7,7 @@ namespace App\User\Entity;
 use App\Shared\Doctrine\SoftDeletableTrait;
 use App\Shared\Doctrine\TimestampableTrait;
 use App\Shared\Doctrine\UlidIdentifierTrait;
+use App\Shared\Validator\ValidPhoneNumber;
 use App\User\Enum\UserStatus;
 use App\User\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -48,6 +49,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $lastName;
 
     #[ORM\Column(length: 30, nullable: true)]
+    #[ValidPhoneNumber]
     private ?string $phone = null;
 
     #[ORM\Column(enumType: UserStatus::class)]
@@ -75,6 +77,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'smallint', options: ['default' => 0])]
     private int $resetCodeAttempts = 0;
+
+    /*
+     * ------------------------------------------------------------------------
+     *  Vérification de l'adresse e-mail à l'inscription (Lot I, 15/09).
+     *
+     *  Même patron que la réinitialisation de mot de passe ci-dessus (code
+     *  haché, jamais en clair ; compteur de tentatives porté par l'entité).
+     *  Le compte reste UserStatus::Pending tant que le code n'est pas validé
+     *  (RegistrationService) ; AccountChecker refuse la connexion jusque-là.
+     *  Une inscription par connexion sociale saute cette étape : l'adresse
+     *  est déjà attestée par le fournisseur (SocialLoginService).
+     * ------------------------------------------------------------------------
+     */
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $emailVerificationCodeHash = null;
+
+    #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
+    private ?\DateTimeImmutable $emailVerificationExpiresAt = null;
+
+    #[ORM\Column(type: 'smallint', options: ['default' => 0])]
+    private int $emailVerificationAttempts = 0;
+
+    /**
+     * Chemin de la photo de profil, relatif à `public/` (ex.
+     * `uploads/avatars/xxx.jpg`) — null tant qu'aucune n'a été déposée.
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $avatarPath = null;
 
     /**
      * @var Collection<int, Address>
@@ -232,6 +263,77 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->resetCodeHash = null;
         $this->resetCodeExpiresAt = null;
         $this->resetCodeAttempts = 0;
+
+        return $this;
+    }
+
+    public function getEmailVerificationCodeHash(): ?string
+    {
+        return $this->emailVerificationCodeHash;
+    }
+
+    public function getEmailVerificationExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->emailVerificationExpiresAt;
+    }
+
+    public function getEmailVerificationAttempts(): int
+    {
+        return $this->emailVerificationAttempts;
+    }
+
+    /**
+     * Arme un nouveau code de vérification (empreinte + échéance) et remet
+     * le compteur de tentatives à zéro.
+     */
+    public function startEmailVerification(string $codeHash, \DateTimeImmutable $expiresAt): static
+    {
+        $this->emailVerificationCodeHash = $codeHash;
+        $this->emailVerificationExpiresAt = $expiresAt;
+        $this->emailVerificationAttempts = 0;
+
+        return $this;
+    }
+
+    public function registerFailedVerificationAttempt(): static
+    {
+        ++$this->emailVerificationAttempts;
+
+        return $this;
+    }
+
+    /**
+     * Efface le code en cours : après vérification réussie, après trop de
+     * tentatives, ou quand une nouvelle demande remplace l'ancienne.
+     */
+    public function clearEmailVerification(): static
+    {
+        $this->emailVerificationCodeHash = null;
+        $this->emailVerificationExpiresAt = null;
+        $this->emailVerificationAttempts = 0;
+
+        return $this;
+    }
+
+    /**
+     * Confirme l'adresse : active le compte et efface le code, en une fois.
+     */
+    public function markEmailVerified(): static
+    {
+        $this->status = UserStatus::Active;
+        $this->clearEmailVerification();
+
+        return $this;
+    }
+
+    public function getAvatarPath(): ?string
+    {
+        return $this->avatarPath;
+    }
+
+    public function setAvatarPath(?string $avatarPath): static
+    {
+        $this->avatarPath = $avatarPath;
 
         return $this;
     }

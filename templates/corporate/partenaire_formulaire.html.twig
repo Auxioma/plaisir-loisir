@@ -38,9 +38,10 @@
         <h1 class="pf-title">{{ "C'est le moment de se lancer !"|trans }}</h1>
         <p class="pf-lead">{{ "Commencez par nous parler un peu de vous. Après avoir envoyé ce formulaire, vous serez recontacté par un membre de l'équipe TrouveMoi Plaisirs & Loisirs"|trans }}</p>
 
-        <form class="pf-form" method="post" action="{{ path('app_corporate_partner_form') }}" novalidate>
-            {# Jeton anti-CSRF : champ cache, sans effet sur le rendu. #}
-            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+        {# data-turbo="false" : réponse 200 (pas de redirection) sur erreur, pour
+           réafficher le formulaire avec ses erreurs — voir security/register.html.twig
+           pour le même correctif appliqué à l'inscription. #}
+        {{ form_start(partnerForm, { attr: { class: 'pf-form', novalidate: 'novalidate', 'data-turbo': 'false' }, action: path('app_corporate_partner_form'), method: 'post' }) }}
 
             {# ---------------- Bloc 1 : informations du site web ---------------- #}
             <fieldset class="pf-block">
@@ -52,17 +53,26 @@
                     <label class="pf-label" for="pf-nom-site">{{ 'Nom du site*'|trans }}</label>
                     <span class="pf-input">
                         <span class="pf-input__icon">{{ icon.globe(20) }}</span>
-                        <input class="pf-input__control" type="text" id="pf-nom-site" name="nom_site" placeholder="{{ 'TrouveMoi Plaisirs & Loisirs'|trans }}" required>
+                        {{ form_widget(partnerForm.siteName, {
+                            id: 'pf-nom-site',
+                            attr: { class: 'pf-input__control', placeholder: 'TrouveMoi Plaisirs & Loisirs'|trans, required: true }
+                        }) }}
                     </span>
                 </div>
 
                 <div class="pf-field">
                     <label class="pf-label" for="pf-url-site">{{ 'URL du site*'|trans }}</label>
                     <span class="pf-input">
-                        <input class="pf-input__control" type="url" id="pf-url-site" name="url_site" placeholder="www.trouveplaisirsloisirs.com" required>
+                        {{ form_widget(partnerForm.siteUrl, {
+                            id: 'pf-url-site',
+                            attr: { class: 'pf-input__control', placeholder: 'www.trouveplaisirsloisirs.com', required: true }
+                        }) }}
                     </span>
                 </div>
 
+                {# Secteur/trafic : <select> non câblés côté template (aucune option
+                   de renseignée) — défaut préexistant, hors sujet ici. Laissés hors
+                   du formulaire Symfony ; voir CorporateController::partnerForm(). #}
                 <div class="pf-field">
                     <label class="pf-label" for="pf-secteur">{{ "Secteur d'activité*"|trans }}</label>
                     <span class="pf-input pf-input--select">
@@ -94,7 +104,10 @@
                     <label class="pf-label" for="pf-entreprise">{{ "Nom de l'entreprise"|trans }}</label>
                     <span class="pf-input pf-input--soft">
                         <span class="pf-input__icon">{{ icon.store(20) }}</span>
-                        <input class="pf-input__control" type="text" id="pf-entreprise" name="entreprise" placeholder="{{ 'Saisissez le nom de votre entreprise'|trans }}">
+                        {{ form_widget(partnerForm.companyName, {
+                            id: 'pf-entreprise',
+                            attr: { class: 'pf-input__control', placeholder: 'Saisissez le nom de votre entreprise'|trans }
+                        }) }}
                     </span>
                 </div>
 
@@ -102,7 +115,10 @@
                     <label class="pf-label" for="pf-responsable">{{ 'Nom & Prénom du responsable'|trans }}</label>
                     <span class="pf-input pf-input--soft">
                         <span class="pf-input__icon">{{ icon.person(20) }}</span>
-                        <input class="pf-input__control" type="text" id="pf-responsable" name="responsable" placeholder="martinthomas">
+                        {{ form_widget(partnerForm.contactName, {
+                            id: 'pf-responsable',
+                            attr: { class: 'pf-input__control', placeholder: 'martinthomas' }
+                        }) }}
                     </span>
                 </div>
 
@@ -111,8 +127,19 @@
                     <div class="pf-field">
                         <label class="pf-label" for="pf-tel">{{ 'Téléphone'|trans }}</label>
                         <span class="pf-input">
-                            <span class="pf-input__icon">{{ icon.phone(20) }}</span>
-                            <input class="pf-input__control" type="tel" id="pf-tel" name="telephone" placeholder="+33">
+                            {# Indicateur pays compact à la place de l'icône statique
+                               (voir assets/controllers/phone_country_controller.js). #}
+                            <span class="pf-input__icon phone-country" data-controller="phone-country">
+                                <span class="phone-country__flag" data-phone-country-target="flag"></span>
+                                <span class="phone-country__code" data-phone-country-target="code"></span>
+                                {{ form_widget(partnerForm.phone.country, {
+                                    attr: { class: 'phone-country__select', 'data-phone-country-target': 'select', 'data-action': 'change->phone-country#sync' }
+                                }) }}
+                            </span>
+                            {{ form_widget(partnerForm.phone.number, {
+                                id: 'pf-tel',
+                                attr: { class: 'pf-input__control', placeholder: '06 12 34 56 78' }
+                            }) }}
                         </span>
                     </div>
                     <div class="pf-field">
@@ -130,7 +157,10 @@
                     <label class="pf-label" for="pf-adresse">{{ 'Adresse*'|trans }}</label>
                     <span class="pf-input">
                         <span class="pf-input__icon">{{ icon.map_pin(20) }}</span>
-                        <input class="pf-input__control" type="text" id="pf-adresse" name="adresse" placeholder="{{ 'Saisissez votre adresse'|trans }}" required>
+                        {{ form_widget(partnerForm.address, {
+                            id: 'pf-adresse',
+                            attr: { class: 'pf-input__control', placeholder: 'Saisissez votre adresse'|trans, required: true }
+                        }) }}
                     </span>
                 </div>
 
@@ -139,7 +169,10 @@
                     <span class="pf-input">
                         {# La planche répète ici le libellé du champ « entreprise » :
                            conservé tel quel, à trancher avec Guillaume. #}
-                        <input class="pf-input__control" type="text" id="pf-cp" name="code_postal" placeholder="{{ 'Saisissez le nom de votre entreprise'|trans }}" required>
+                        {{ form_widget(partnerForm.postalCode, {
+                            id: 'pf-cp',
+                            attr: { class: 'pf-input__control', placeholder: 'Saisissez le nom de votre entreprise'|trans, required: true }
+                        }) }}
                     </span>
                 </div>
             </fieldset>
@@ -154,19 +187,28 @@
                     <label class="pf-label" for="pf-email">{{ 'Email*'|trans }}</label>
                     <span class="pf-input pf-input--soft">
                         <span class="pf-input__icon">{{ icon.mail(20) }}</span>
-                        <input class="pf-input__control" type="email" id="pf-email" name="email" placeholder="{{ 'TrouveMoi Plaisirs & Loisirs'|trans }}" required>
+                        {{ form_widget(partnerForm.email, {
+                            id: 'pf-email',
+                            attr: { class: 'pf-input__control', placeholder: 'TrouveMoi Plaisirs & Loisirs'|trans, required: true }
+                        }) }}
                     </span>
                 </div>
 
                 <div class="pf-field pf-field--area">
                     <label class="pf-visually-hidden" for="pf-description">{{ 'Décrivez votre activité'|trans }}</label>
-                    <textarea class="pf-textarea" id="pf-description" name="description" maxlength="150"
-                              placeholder="{{ "Décrivez en quelques lignes votre activité, le programme que vous proposez, vos petits+. N'hésitez pas à nous dire un peu plus sur vous, votre histoire, votre passion, votre expertise."|trans }}"></textarea>
+                    {{ form_widget(partnerForm.description, {
+                        id: 'pf-description',
+                        attr: {
+                            class: 'pf-textarea',
+                            maxlength: 150,
+                            placeholder: "Décrivez en quelques lignes votre activité, le programme que vous proposez, vos petits+. N'hésitez pas à nous dire un peu plus sur vous, votre histoire, votre passion, votre expertise."|trans,
+                        }
+                    }) }}
                     <span class="pf-counter">0/150</span>
                 </div>
 
                 <label class="pf-check">
-                    <input type="checkbox" name="cgu" required>
+                    {{ form_widget(partnerForm.termsAccepted, { attr: { required: true } }) }}
                     <span>{{ "J'accepte les"|trans }} <a href="{{ path('app_corporate_terms') }}">{{ 'conditions générales'|trans }}</a> {{ 'et de la'|trans }} <a href="{{ path('app_corporate_privacy') }}">{{ 'politique de confidentialité'|trans }}</a></span>
                 </label>
             </fieldset>
@@ -174,7 +216,7 @@
             <div class="pf-actions">
                 <button type="submit" class="pl-btn pl-btn--primary pf-submit">{{ 'Envoyer'|trans }}</button>
             </div>
-        </form>
+        {{ form_end(partnerForm) }}
     </div>
 </div>
 {% endblock %}

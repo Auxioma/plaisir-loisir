@@ -24,4 +24,18 @@ class QuoteRepository extends ServiceEntityRepository
     {
         return $this->findOneBy(['serviceRequest' => $request, 'provider' => $provider]);
     }
+
+    /**
+     * Devis envoyés par un prestataire — « Réponses envoyées » du tableau de
+     * bord professionnel (§8.3 du CDC).
+     *
+     * @return list<Quote>
+     */
+    public function findByProvider(ProviderProfile $provider): array
+    {
+        /** @var list<Quote> $results */
+        $results = $this->findBy(['provider' => $provider], ['createdAt' => 'DESC']);
+
+        return $results;
+    }
 }

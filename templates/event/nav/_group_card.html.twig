@@ -5,7 +5,7 @@
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<a href="{{ href|default(path('app_group_detail')) }}" class="evn-card evn-gcard">
+<a href="{{ href|default(path('app_group_detail', { slug: g.slug })) }}" class="evn-card evn-gcard">
     <div class="evn-card__media">
         {# Meme garde-fou que la carte d'evenement : un groupe cree par
            l'assistant n'a pas de photo, et `asset(null)` fait tomber la page. #}

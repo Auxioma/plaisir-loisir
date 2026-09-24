@@ -1,0 +1,33 @@
+# Service systemd — worker Messenger (envoi des e-mails)
+#
+# Sans ce service en service permanent, les messages (SendEmailMessage,
+# notifications) s'accumulent dans messenger_messages sans jamais partir :
+# voir CLAUDE.md « Pièges » et docs/cablage-back-front.md §2.7.
+#
+# Installation (sur le serveur, en tant que root) :
+#   cp docs/deploy/messenger-worker.service /etc/systemd/system/plaisir-loisir-messenger.service
+#   # adapter User=, WorkingDirectory= et le chemin de php si besoin
+#   systemctl daemon-reload
+#   systemctl enable --now plaisir-loisir-messenger.service
+#   systemctl status plaisir-loisir-messenger.service
+#
+# --time-limit redémarre le worker toutes les heures : une longue durée de vie
+# PHP finit par accumuler la mémoire (connexions Doctrine, etc.) ; Restart=always
+# le relance aussitôt, sans perte de message (les messages non acquittés
+# retournent en file).
+
+[Unit]
+Description=TrouveMoi Plaisir & Loisirs — worker Messenger (async : e-mails, notifications)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/var/www/plaisir-loisir
+Environment=APP_ENV=prod
+ExecStart=/usr/bin/php bin/console messenger:consume async --time-limit=3600 --memory-limit=256M --no-debug
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,10 +1,16 @@
 {#
     <AccountSidebar> : en-tête profil (avatar, nom, email, badge membre) +
     menu de 9 entrées. Item actif violet (rouge pour Déconnexion) ; badge
-    compteur rouge sur Notifications (même source que la cloche du header,
-    spec point 8). Les entrées sans route (pages non maquettées : tableau de
-    bord, albums, activités créées, réservations, paramètres) restent
-    inertes — à concevoir.
+    compteur rouge sur Messages, Notifications, Demandes reçues et Avis
+    reçus, chacun sa propre source (`item.badge` vaut 'messages',
+    'notifications', 'requests' ou 'reviews' — les deux derniers uniquement
+    sur le menu pro, ajoutés le 18/09, mêmes conditions que les deux
+    premiers). Les
+    entrées sans route (albums, activités créées, réservations, paramètres —
+    aucune entité derrière pour l'instant) s'affichent en <span>, non
+    cliquables, avec un badge « Bientôt disponible » plutôt qu'un lien mort
+    silencieux (signalé le 14/09 : un clic sans effet ni indice se lisait
+    comme un menu cassé).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
@@ -21,16 +27,23 @@
     <nav class="acc-menu" aria-label="{{ 'Menu du compte'|trans }}">
         {% for item in menu %}
             {% set is_active = item.title == active %}
-            <a href="{{ item.route ? path(item.route) : '#' }}"
-               class="acc-menu__item{{ is_active ? (item.title == 'Déconnexion' ? ' is-active is-danger' : ' is-active') }}"
-               {% if is_active %}aria-current="page"{% endif %}>
+            {% set tag = item.route ? 'a' : 'span' %}
+            <{{ tag }}
+               {% if item.route %}href="{{ path(item.route) }}"{% endif %}
+               class="acc-menu__item{{ is_active ? (item.title == 'Déconnexion' ? ' is-active is-danger' : ' is-active') }}{{ item.route ? '' : ' is-disabled' }}"
+               {% if is_active %}aria-current="page"{% endif %}
+               {% if not item.route %}aria-disabled="true"{% endif %}>
                 <span class="acc-menu__icon">
                     {%- if item.icon == 'grid' %}{{ icon.grid(26) }}
                     {%- elseif item.icon == 'camera' %}{{ icon.camera(26) }}
                     {%- elseif item.icon == 'badge_check' %}{{ icon.badge_check(26) }}
                     {%- elseif item.icon == 'receipt' %}{{ icon.receipt(26) }}
+                    {%- elseif item.icon == 'users' %}{{ icon.users(26) }}
+                    {%- elseif item.icon == 'card' %}{{ icon.card(26) }}
                     {%- elseif item.icon == 'heart' %}{{ icon.heart(26) }}
                     {%- elseif item.icon == 'bell' %}{{ icon.bell(26) }}
+                    {%- elseif item.icon == 'mail' %}{{ icon.mail(26) }}
+                    {%- elseif item.icon == 'star' %}{{ icon.star(26) }}
                     {%- elseif item.icon == 'hand_heart' %}{{ icon.hand_heart(26) }}
                     {%- elseif item.icon == 'gear' %}{{ icon.gear(26) }}
                     {%- else %}{{ icon.logout(26) }}
@@ -38,12 +51,13 @@
                 </span>
                 <span class="acc-menu__text">
                     <strong>{{ item.title }}</strong>
-                    <small>{{ item.subtitle }}</small>
+                    <small>{{ item.route ? item.subtitle : ('Bientôt disponible'|trans) }}</small>
                 </span>
-                {% if item.badge and user.unread > 0 %}
-                    <span class="acc-menu__count">{{ user.unread }}</span>
+                {% set badge_count = item.badge == 'messages' ? user.unreadMessages : (item.badge == 'notifications' ? user.unreadNotifications : (item.badge == 'requests' ? user.pendingProviderRequests : (item.badge == 'reviews' ? user.pendingProviderReviews : 0))) %}
+                {% if item.badge and badge_count > 0 %}
+                    <span class="acc-menu__count">{{ badge_count }}</span>
                 {% endif %}
-            </a>
+            </{{ tag }}>
         {% endfor %}
     </nav>
 </div>

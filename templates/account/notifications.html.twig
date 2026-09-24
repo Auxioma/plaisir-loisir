@@ -2,20 +2,18 @@
     Écran 3 — Notifications : onglets à compteurs + actions violettes,
     regroupement Aujourd'hui/Hier, items typés (icône ronde colorée +
     vignette), bouton « Charger plus ». ?vide=1 = état vide.
-    Décision (spec, point 2) : compteurs de la maquette incohérents
-    (Toutes 3 / Non lues 3 / Lues 7) → corrigés en Toutes 6 / Non lues 3 /
-    Lues 3 (6 items affichés, badge sidebar 3). Le fond gris des items 3 et
-    6 est reproduit tel quel (choix visuel maquette).
-    Coquille corrigée : « notificatications » → notifications.
+    Reconnecté au Lot K (16/09) : `groups`, `total` et `unread` viennent de
+    NotificationRepository/NotificationPresenter, plus de la démo. Les
+    onglets filtrent réellement (`?filtre=`), « Tout marquer comme lu » est
+    une action POST (effet de bord, jamais un lien GET — même règle qu'au
+    Lot 1 pour « Renvoyer le code »). « Paramètres » mène à l'écran de
+    préférences (§7.2/§8.3 du CDC), lui aussi sans maquette.
 #}
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ 'Notifications'|trans }}{% endblock %}
 {% block meta_description %}{{ 'Restez informé de toutes les nouveautés et activités qui vous intéressent.'|trans }}{% endblock %}
-
-{% set total = empty ? 0 : 6 %}
-{% set unread = empty ? 0 : user.unread %}
 
 {% block account %}
     {% include 'account/_page_head.html.twig' with {
@@ -26,13 +24,16 @@
 
     <div class="acc-ntabs-row">
         <nav class="acc-ntabs" aria-label="{{ 'Filtres de notifications'|trans }}">
-            <a href="#" class="acc-ntab is-active">{{ 'Toutes'|trans }} <span class="acc-ntab__count">{{ total }}</span></a>
-            <a href="#" class="acc-ntab">{{ 'Non lues'|trans }} <span class="acc-ntab__count">{{ unread }}</span></a>
-            <a href="#" class="acc-ntab">{{ 'Lues'|trans }} <span class="acc-ntab__count">{{ total - unread }}</span></a>
+            <a href="{{ path('app_account_notifications', { filtre: 'toutes' }) }}" class="acc-ntab{{ filter == 'toutes' ? ' is-active' }}">{{ 'Toutes'|trans }} <span class="acc-ntab__count">{{ total }}</span></a>
+            <a href="{{ path('app_account_notifications', { filtre: 'non-lues' }) }}" class="acc-ntab{{ filter == 'non-lues' ? ' is-active' }}">{{ 'Non lues'|trans }} <span class="acc-ntab__count">{{ unread }}</span></a>
+            <a href="{{ path('app_account_notifications', { filtre: 'lues' }) }}" class="acc-ntab{{ filter == 'lues' ? ' is-active' }}">{{ 'Lues'|trans }} <span class="acc-ntab__count">{{ total - unread }}</span></a>
         </nav>
         <div class="acc-nactions">
-            <a href="#" class="acc-nlink">{{ icon.check_badge(17) }} {{ 'Tout marquer comme lu'|trans }}</a>
-            <a href="#" class="acc-nlink">{{ icon.gear(17) }} {{ 'Paramètres'|trans }}</a>
+            <form method="post" action="{{ path('app_account_notifications_mark_all_read') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                <button type="submit" class="acc-nlink">{{ icon.check_badge(17) }} {{ 'Tout marquer comme lu'|trans }}</button>
+            </form>
+            <a href="{{ path('app_account_notification_preferences') }}" class="acc-nlink">{{ icon.gear(17) }} {{ 'Paramètres'|trans }}</a>
         </div>
     </div>
 
@@ -45,7 +46,15 @@
                 {% for n in group.items %}
                     <article class="acc-notif{{ n.muted ? ' acc-notif--muted' }}">
                         <span class="acc-notif__icon acc-notif__icon--{{ n.tone }}">
-                            {%- if n.icon == 'calendar_check' %}{{ icon.calendar_check(26) }}{% else %}{{ icon.heart(26) }}{% endif -%}
+                            {%- if n.icon == 'calendar_check' %}{{ icon.calendar_check(26) }}
+                            {%- elseif n.icon == 'star' %}{{ icon.star(26) }}
+                            {%- elseif n.icon == 'card' %}{{ icon.card(26) }}
+                            {%- elseif n.icon == 'mail' %}{{ icon.mail(26) }}
+                            {%- elseif n.icon == 'gear' %}{{ icon.gear(26) }}
+                            {%- elseif n.icon == 'receipt' %}{{ icon.receipt(26) }}
+                            {%- elseif n.icon == 'users' %}{{ icon.users(26) }}
+                            {%- else %}{{ icon.heart(26) }}
+                            {%- endif -%}
                         </span>
                         <div class="acc-notif__body">
                             <strong>{{ n.title }}</strong>
@@ -59,9 +68,5 @@
                 {% endfor %}
             </div>
         {% endfor %}
-
-        <div class="acc-nmore">
-            <button type="button" class="pl-btn pl-btn--outline-action">{{ 'Charger plus de notifications'|trans }} {{ icon.chevron_down(16) }}</button>
-        </div>
     {% endif %}
 {% endblock %}

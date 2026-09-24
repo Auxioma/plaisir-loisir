@@ -298,11 +298,14 @@
     </section>
 
     {# ===================== ÉVÉNEMENTS POPULAIRES ===================== #}
+    {# Slugs des événements correspondants dans EventFixtures : le lien de
+       chaque carte doit désigner un événement réel (route /evenements/
+       detail/{slug} depuis le 17/09), pas juste reprendre son titre. #}
     {% set events = [
-        {img: 'event-1.jpg', cat: 'Randonnée', title: 'Randonnée dans le Vercors',  place: 'Autrans, 38880',  time: '9h00 - 16h00',  participants: 12, date: '15 Mai 2026'},
-        {img: 'event-2.jpg', cat: 'Sports',    title: 'Match de foot amical',        place: 'Toulouse, 31000', time: '10h00 - 12h00', participants: 8,  date: '15 Mai 2026'},
-        {img: 'event-3.jpg', cat: 'Repas',     title: 'Barbecue entre amis',         place: 'Lyon, 69000',     time: '12h00 - 18h00', participants: 12, date: '18 Mai 2026'},
-        {img: 'event-4.jpg', cat: 'Bien-être', title: 'Séance de yoga en plein air', place: 'Nantes, 44000',   time: '10h00 - 11h30', participants: 12, date: '02 Juin 2026'},
+        {img: 'event-1.jpg', cat: 'Randonnée', title: 'Randonnée dans le Vercors',  place: 'Autrans, 38880',  time: '9h00 - 16h00',  participants: 12, date: '15 Mai 2026', slug: 'randonnee-dans-le-vercors'},
+        {img: 'event-2.jpg', cat: 'Sports',    title: 'Match de foot amical',        place: 'Toulouse, 31000', time: '10h00 - 12h00', participants: 8,  date: '15 Mai 2026', slug: 'match-de-foot-amical'},
+        {img: 'event-3.jpg', cat: 'Repas',     title: 'Barbecue entre amis',         place: 'Lyon, 69000',     time: '12h00 - 18h00', participants: 12, date: '18 Mai 2026', slug: 'barbecue-entre-amis'},
+        {img: 'event-4.jpg', cat: 'Bien-être', title: 'Séance de yoga en plein air', place: 'Nantes, 44000',   time: '10h00 - 11h30', participants: 12, date: '02 Juin 2026', slug: 'seance-de-yoga-en-plein-air'},
     ] %}
     <div class="container">
         <section class="home-section">
@@ -315,7 +318,7 @@
             </div>
             <div class="card-grid">
                 {% for e in events %}
-                    <a href="{{ path('app_events_detail') }}" class="pl-card pl-card--event">
+                    <a href="{{ path('app_events_detail', { slug: e.slug }) }}" class="pl-card pl-card--event">
                         <div class="pl-card__media">
                             <img src="{{ asset('images/home/' ~ e.img) }}" alt="{{ e.title }}">
                             <span class="pl-card__tag pl-card__tag--cat">{{ e.cat }}</span>

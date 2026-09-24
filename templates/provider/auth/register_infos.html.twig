@@ -4,8 +4,9 @@
     Même parti pris que l'inscription client : le balisage est celui de la
     maquette, et seuls les CHAMPS passent par form_widget(). C'est ce qui donne
     les bons noms postés (« provider_registration_form[...] ») et le jeton CSRF
-    déposé par form_end(). Aucun attribut `required` n'est ajouté par le type :
-    la validation est côté serveur.
+    déposé par form_end(). Les champs obligatoires portent désormais l'attribut
+    `required` (hérité du type) : le navigateur bloque l'envoi avant même
+    d'atteindre le serveur, qui reste la validation de référence.
 
     LE MOT DE PASSE EST UN AJOUT, décidé par le CTO. La maquette n'en comportait
     pas : le professionnel se serait inscrit sans jamais pouvoir se connecter à
@@ -28,7 +29,9 @@
 {% block title %}{{ 'Inscription professionnelle'|trans }}{% endblock %}
 
 {% block pa_signup %}
-    {{ form_start(registrationForm, { attr: { class: 'pa-signup__form' }, action: path('app_pro_register'), method: 'post' }) }}
+    {# data-turbo="false" : voir templates/security/register.html.twig — même schéma
+       (ré-affichage 200 sur erreur) incompatible avec l'exigence de redirection de Turbo Drive. #}
+    {{ form_start(registrationForm, { attr: { class: 'pa-signup__form', 'data-turbo': 'false' }, action: path('app_pro_register'), method: 'post' }) }}
         <div class="pa-grid">
             <div class="pa-field">
                 <label class="pa-label" for="proLastName">{{ 'Nom'|trans }}</label>
@@ -57,10 +60,23 @@
 
         <div class="pa-field">
             <label class="pa-label" for="proPhone">{{ 'Numéro de téléphone'|trans }}</label>
-            {{ form_widget(registrationForm.phone, {
-                id: 'proPhone',
-                attr: { class: 'pa-input', placeholder: 'Numéro de téléphone'|trans, autocomplete: 'tel' }
-            }) }}
+            {# La maquette ne prévoit pas d'icône pour ce champ (contrairement à
+               l'inscription client) : l'indicateur pays compact se loge en
+               préfixe interne du champ, comme un indicatif de téléphone
+               classique — voir assets/controllers/phone_country_controller.js. #}
+            <div class="pa-input-wrap">
+                <span class="phone-country phone-country--prefix" data-controller="phone-country">
+                    <span class="phone-country__flag" data-phone-country-target="flag"></span>
+                    <span class="phone-country__code" data-phone-country-target="code"></span>
+                    {{ form_widget(registrationForm.phone.country, {
+                        attr: { class: 'phone-country__select', 'data-phone-country-target': 'select', 'data-action': 'change->phone-country#sync' }
+                    }) }}
+                </span>
+                {{ form_widget(registrationForm.phone.number, {
+                    id: 'proPhone',
+                    attr: { class: 'pa-input pa-input--phone', placeholder: 'Numéro de téléphone'|trans, autocomplete: 'tel' }
+                }) }}
+            </div>
         </div>
 
         <div class="pa-field">

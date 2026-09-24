@@ -8,10 +8,32 @@ use App\Catalog\Entity\Destination;
 use App\Catalog\Entity\Service;
 use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Presenter\DestinationPresenter;
+use App\Event\Repository\EventRepository;
 use App\Favorite\Repository\FavoriteRepository;
+use App\Notification\Entity\Notification;
+use App\Notification\Entity\NotificationPreference;
+use App\Notification\Presenter\NotificationPresenter;
+use App\Notification\Repository\NotificationPreferenceRepository;
+use App\Notification\Repository\NotificationRepository;
+use App\Notification\Service\NotificationService;
+use App\PrivateActivity\Entity\Participation;
+use App\PrivateActivity\Enum\ParticipationStatus;
+use App\PrivateActivity\Repository\ParticipationRepository;
+use App\PrivateActivity\Repository\PrivateActivityRepository;
+use App\Quote\Repository\ServiceRequestRepository;
+use App\Shared\Controller\FlashesFormErrorsTrait;
+use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
+use App\User\Enum\UserStatus;
+use App\User\Form\AccountSettingsFormType;
+use App\User\Service\AccountAnonymizer;
+use App\User\Service\AccountDataExporter;
+use App\User\Service\AvatarStorageService;
 use App\User\StaticAccount;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -30,11 +52,82 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 final class AccountController extends AbstractController
 {
+    use FlashesFormErrorsTrait;
+
     public function __construct(
         private readonly FavoriteRepository $favorites,
         private readonly ActivityPresenter $activityPresenter,
         private readonly DestinationPresenter $destinationPresenter,
+        private readonly ServiceRequestRepository $requests,
+        private readonly PrivateActivityRepository $privateActivities,
+        private readonly ParticipationRepository $participations,
+        private readonly AvatarStorageService $avatars,
+        private readonly AccountAnonymizer $anonymizer,
+        private readonly AccountDataExporter $dataExporter,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly EventRepository $events,
+        private readonly NotificationRepository $notificationRepository,
+        private readonly NotificationService $notificationService,
+        private readonly NotificationPresenter $notificationPresenter,
+        private readonly NotificationPreferenceRepository $notificationPreferences,
+        private readonly AccountIdentityPresenter $identityPresenter,
     ) {
+    }
+
+    /**
+     * Aperçu du compte client (spec profil, entrée « Tableau de bord » de la
+     * sidebar). Signalé le 14/09 juste après le même correctif côté pro :
+     * cette entrée existait dans le menu depuis le début, mais pointait vers
+     * une route nulle — l'avatar du header y menait donc avec un libellé
+     * « Profil » qui, faute d'écran, redirigeait en réalité vers Favoris.
+     *
+     * Ce qui est réellement compté ici (demandes de devis, activités
+     * privées, favoris) existe déjà comme entité. Albums photos, activités
+     * créées (domaine Event) et réservations n'en ont encore aucune : la
+     * sidebar les affiche « Bientôt disponible » plutôt que comme des liens
+     * morts silencieux (account/_sidebar.html.twig).
+     */
+    #[Route(path: ['fr' => '/compte/tableau-de-bord', 'en' => '/en/account/dashboard'], name: 'app_account_dashboard')]
+    public function dashboard(): Response
+    {
+        $user = $this->currentUser();
+
+        $requests = $this->requests->findByClient($user);
+        $organized = $this->privateActivities->findByOrganizer($user);
+        $joined = array_filter(
+            $this->participations->findByParticipant($user),
+            static fn (Participation $p): bool => ParticipationStatus::Cancelled !== $p->getStatus(),
+        );
+        $favoriteActivitiesCount = \count($this->favorites->findServicesForUser($user));
+        $favoriteDestinationsCount = \count($this->favorites->findDestinationsForUser($user));
+
+        return $this->render('account/tableau_de_bord.html.twig', [
+            'user' => $this->accountUser(),
+            'menu' => StaticAccount::menu(),
+            'active' => 'Tableau de bord',
+            'requests_count' => \count($requests),
+            'recent_requests' => \array_slice($requests, 0, 5),
+            'organized_count' => \count($organized),
+            'joined_count' => \count($joined),
+            'favorites_count' => $favoriteActivitiesCount + $favoriteDestinationsCount,
+            'recent_notifications' => $this->notificationPresenter->items(\array_slice($this->notificationRepository->findByRecipient($user), 0, 5)),
+        ]);
+    }
+
+    /**
+     * Favoris, notifications et déconnexion sont accessibles depuis les deux
+     * menus (client et pro, voir StaticAccount::providerMenu()) : un
+     * prestataire qui clique dessus depuis son espace pro ne doit pas se
+     * retrouver avec la sidebar client. Même règle que
+     * ConversationController::menuFor().
+     *
+     * @return list<array{icon: string, title: string, subtitle: string, route: string|null, badge: string|false}>
+     */
+    private function menuFor(User $user): array
+    {
+        return \in_array('ROLE_PROVIDER', $user->getRoles(), true)
+            ? StaticAccount::providerMenu()
+            : StaticAccount::menu();
     }
 
     /**
@@ -107,7 +200,7 @@ final class AccountController extends AbstractController
 
         return $this->render('account/favoris.html.twig', [
             'user' => $this->accountUser(),
-            'menu' => StaticAccount::menu(),
+            'menu' => $this->menuFor($user),
             'active' => 'Mes favoris',
             'tab' => $tab,
             'empty' => $empty,
@@ -120,22 +213,104 @@ final class AccountController extends AbstractController
     {
         return $this->render('account/liste.html.twig', [
             'user' => $this->accountUser(),
-            'menu' => StaticAccount::menu(),
+            'menu' => $this->menuFor($this->currentUser()),
             'active' => 'Mes favoris',
             'list_name' => 'Alsace - 2026',
             'favorites' => StaticAccount::alsaceList(),
         ]);
     }
 
+    /**
+     * Écran Notifications (Lot K, 16/09) : liste réelle
+     * (NotificationRepository), onglets Toutes/Non lues/Lues filtrés côté
+     * serveur, regroupement par jour via NotificationPresenter.
+     */
     #[Route(path: ['fr' => '/compte/notifications', 'en' => '/en/account/notifications'], name: 'app_account_notifications')]
     public function notifications(Request $request): Response
     {
+        $user = $this->currentUser();
+        $all = $this->notificationRepository->findByRecipient($user);
+        $total = \count($all);
+        $unread = \count(array_filter($all, static fn (Notification $n): bool => !$n->isRead()));
+
+        $filter = $request->query->get('filtre', 'toutes');
+        if (!\in_array($filter, ['toutes', 'non-lues', 'lues'], true)) {
+            $filter = 'toutes';
+        }
+
+        $filtered = match ($filter) {
+            'non-lues' => array_values(array_filter($all, static fn (Notification $n): bool => !$n->isRead())),
+            'lues' => array_values(array_filter($all, static fn (Notification $n): bool => $n->isRead())),
+            default => $all,
+        };
+
+        $empty = $request->query->has('vide')
+            ? $request->query->getBoolean('vide')
+            : [] === $filtered;
+
         return $this->render('account/notifications.html.twig', [
             'user' => $this->accountUser(),
-            'menu' => StaticAccount::menu(),
+            'menu' => $this->menuFor($user),
             'active' => 'Notifications',
-            'empty' => $request->query->getBoolean('vide'),
-            'groups' => StaticAccount::notifications(),
+            'empty' => $empty,
+            'filter' => $filter,
+            'total' => $total,
+            'unread' => $unread,
+            'groups' => $this->notificationPresenter->groups($filtered),
+        ]);
+    }
+
+    #[Route(path: ['fr' => '/compte/notifications/tout-marquer-lu', 'en' => '/en/account/notifications/mark-all-read'], name: 'app_account_notifications_mark_all_read', methods: ['POST'])]
+    public function markAllNotificationsRead(Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+            return $this->redirectToRoute('app_account_notifications');
+        }
+
+        $this->notificationService->markAllAsRead($this->currentUser());
+
+        return $this->redirectToRoute('app_account_notifications');
+    }
+
+    /**
+     * Préférences de notification (Lot K, 16/09 ; §7.2 et §8.3 du CDC).
+     * Seul le canal e-mail est proposé : c'est le seul réellement câblé
+     * (NotificationEmailListener) — le canal push n'a aucune infrastructure
+     * d'envoi, l'exposer serait un réglage sans effet.
+     */
+    #[Route(path: ['fr' => '/compte/notifications/preferences', 'en' => '/en/account/notifications/preferences'], name: 'app_account_notification_preferences', methods: ['GET', 'POST'])]
+    public function notificationPreferences(Request $request): Response
+    {
+        $user = $this->currentUser();
+        $preference = $this->notificationPreferences->findOneByUser($user);
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+                return $this->redirectToRoute('app_account_notification_preferences');
+            }
+
+            if (null === $preference) {
+                $preference = (new NotificationPreference())->setUser($user);
+                $this->entityManager->persist($preference);
+            }
+
+            $preference->setEmailEnabled($request->request->getBoolean('email_enabled'));
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'Vos préférences ont été enregistrées.');
+
+            return $this->redirectToRoute('app_account_notification_preferences');
+        }
+
+        return $this->render('account/notification_preferences.html.twig', [
+            'user' => $this->accountUser(),
+            'menu' => $this->menuFor($user),
+            'active' => 'Notifications',
+            'email_enabled' => $preference?->isEmailEnabled() ?? true,
         ]);
     }
 
@@ -149,12 +324,165 @@ final class AccountController extends AbstractController
         ]);
     }
 
+    /**
+     * « Mes activités créées » de la sidebar (Lot J, 15/09) : les événements
+     * (domaine Event) que l'utilisateur a lui-même organisés.
+     */
+    #[Route(path: ['fr' => '/compte/mes-evenements', 'en' => '/en/account/my-events'], name: 'app_account_events')]
+    public function events(): Response
+    {
+        return $this->render('account/mes_evenements.html.twig', [
+            'user' => $this->accountUser(),
+            'menu' => StaticAccount::menu(),
+            'active' => 'Mes activités créées',
+            'events' => $this->events->findByOrganizer($this->currentUser()),
+        ]);
+    }
+
+    /**
+     * « Mes réservations » de la sidebar (Lot J, 15/09), rebaptisée
+     * « Historique » : le catalogue à réservation directe (Booking) étant en
+     * pause, l'historique s'appuie sur ce que le modèle actuel produit
+     * réellement — demandes de devis clôturées, activités privées passées.
+     */
+    #[Route(path: ['fr' => '/compte/historique', 'en' => '/en/account/history'], name: 'app_account_history')]
+    public function history(): Response
+    {
+        $user = $this->currentUser();
+        $now = new \DateTimeImmutable();
+
+        $closedRequests = array_values(array_filter(
+            $this->requests->findByClient($user),
+            static fn ($request): bool => !$request->isOpen(),
+        ));
+
+        $pastParticipations = array_values(array_filter(
+            $this->participations->findByParticipant($user),
+            static fn (Participation $p): bool => ParticipationStatus::Cancelled !== $p->getStatus()
+                && null !== $p->getPrivateActivity()?->getScheduledAt()
+                && $p->getPrivateActivity()->getScheduledAt() < $now,
+        ));
+
+        return $this->render('account/historique.html.twig', [
+            'user' => $this->accountUser(),
+            'menu' => StaticAccount::menu(),
+            'active' => 'Mes réservations',
+            'closed_requests' => $closedRequests,
+            'past_participations' => $pastParticipations,
+        ]);
+    }
+
+    /**
+     * Paramètres du compte (Lot I, 15/09) : nom, téléphone, photo de profil,
+     * et désactivation/suppression. Aucune maquette — entrée de la sidebar
+     * restée « Bientôt disponible » depuis le câblage du 14/09.
+     */
+    #[Route(path: ['fr' => '/compte/parametres', 'en' => '/en/account/settings'], name: 'app_account_settings', methods: ['GET', 'POST'])]
+    public function settings(Request $request): Response
+    {
+        $user = $this->currentUser();
+
+        $form = $this->createForm(AccountSettingsFormType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $photo = $form->get('photo')->getData();
+
+            if ($photo instanceof UploadedFile) {
+                try {
+                    $this->avatars->store($user, $photo);
+                } catch (\InvalidArgumentException $e) {
+                    $this->addFlash('error', $e->getMessage());
+
+                    return $this->redirectToRoute('app_account_settings');
+                }
+            }
+
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'Vos informations ont été mises à jour.');
+
+            return $this->redirectToRoute('app_account_settings');
+        }
+
+        $this->flashFormErrors($form);
+
+        return $this->render('account/parametres.html.twig', [
+            'user' => $this->accountUser(),
+            'menu' => StaticAccount::menu(),
+            'active' => 'Paramètres du compte',
+            'account' => $user,
+            'settingsForm' => $form,
+        ]);
+    }
+
+    /**
+     * Export des données personnelles (Lot K, 16/09 ; §26 du CDC — droit à
+     * la portabilité). GET, pas POST : contrairement à la désactivation ou
+     * la suppression ci-dessous, télécharger un export ne modifie aucun état,
+     * un jeton CSRF n'aurait rien à protéger.
+     */
+    #[Route(path: ['fr' => '/compte/parametres/exporter', 'en' => '/en/account/settings/export'], name: 'app_account_export')]
+    public function exportData(): Response
+    {
+        $data = $this->dataExporter->export($this->currentUser());
+
+        $response = new JsonResponse($data, headers: [
+            'Content-Disposition' => 'attachment; filename="mes-donnees-trouvemoi.json"',
+        ]);
+        $response->setEncodingOptions(JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        return $response;
+    }
+
+    /**
+     * Désactivation : statut suspendu, réversible par l'administration —
+     * distincte de la suppression ci-dessous, qui efface les données.
+     */
+    #[Route(path: ['fr' => '/compte/parametres/desactiver', 'en' => '/en/account/settings/deactivate'], name: 'app_account_deactivate', methods: ['POST'])]
+    public function deactivate(Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+            return $this->redirectToRoute('app_account_settings');
+        }
+
+        $user = $this->currentUser();
+        $user->setStatus(UserStatus::Suspended);
+        $this->entityManager->flush();
+
+        $this->addFlash('success', 'Votre compte a été désactivé. Contactez-nous pour le réactiver.');
+
+        return $this->redirectToRoute('app_account_logout_confirm');
+    }
+
+    /**
+     * Suppression : irréversible, efface les données personnelles
+     * (AccountAnonymizer, voir ce service pour le détail RGPD).
+     */
+    #[Route(path: ['fr' => '/compte/parametres/supprimer', 'en' => '/en/account/settings/delete'], name: 'app_account_delete', methods: ['POST'])]
+    public function delete(Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+            return $this->redirectToRoute('app_account_settings');
+        }
+
+        $this->anonymizer->anonymize($this->currentUser());
+
+        $this->addFlash('success', 'Votre compte et vos données personnelles ont été supprimés.');
+
+        return $this->redirectToRoute('app_account_logout_confirm');
+    }
+
     #[Route(path: ['fr' => '/compte/deconnexion', 'en' => '/en/account/sign-out'], name: 'app_account_logout_confirm')]
     public function logoutConfirm(): Response
     {
         return $this->render('account/deconnexion.html.twig', [
             'user' => $this->accountUser(),
-            'menu' => StaticAccount::menu(),
+            'menu' => $this->menuFor($this->currentUser()),
             'active' => 'Déconnexion',
         ]);
     }
@@ -162,57 +490,19 @@ final class AccountController extends AbstractController
     /**
      * Le bloc « profil » de la sidebar, alimenté par le compte en session.
      *
-     * On garde la forme de tableau attendue par les templates plutôt que de
-     * leur passer l'entité : cela évite de toucher aux six écrans déjà calés
-     * au pixel, et laisse cohabiter l'identité réelle et les compteurs encore
-     * statiques le temps que les entités correspondantes soient branchées.
+     * Déléguée à AccountIdentityPresenter (18/09) : cette méthode avait sa
+     * propre copie du même calcul, volontairement laissée de côté lors de
+     * l'extraction du 14/09 (« /compte/* continue de fonctionner sans
+     * dépendre de ce partage », voir l'historique de AccountIdentityPresenter)
+     * — jusqu'à ce que l'ajout des badges « Demandes reçues »/« Avis reçus »
+     * y révèle le vrai coût de la copie : cette version-ci ne les connaissait
+     * pas, et `account/_sidebar.html.twig` plantait (clé manquante) pour tout
+     * compte pro passant par un des dix écrans de ce contrôleur.
      *
-     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unread: int}
+     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unreadMessages: int, unreadNotifications: int, pendingProviderRequests: int, pendingProviderReviews: int}
      */
     private function accountUser(): array
     {
-        $user = $this->getUser();
-
-        // Sécurité de type : la classe entière exige ROLE_USER, donc getUser()
-        // ne peut pas être nul ici ; ce garde-fou rassure surtout PHPStan.
-        if (!$user instanceof User) {
-            throw $this->createAccessDeniedException();
-        }
-
-        $firstName = $user->getFirstName();
-        $fullName = trim($firstName.' '.$user->getLastName());
-
-        $demo = StaticAccount::user();
-
-        return [
-            'name' => '' !== $fullName ? $fullName : $user->getEmail(),
-            'firstName' => '' !== $firstName ? $firstName : $user->getLastName(),
-            'email' => $user->getEmail(),
-            // L'entité User ne porte aucune photo de profil : tant que le
-            // téléversement d'avatar n'existe pas, on garde celle de la
-            // maquette plutôt que d'afficher un cadre vide.
-            'avatar' => $demo['avatar'],
-            'memberSince' => $this->formatMemberSince($user->getCreatedAt()),
-            // Compteur de notifications non lues : encore celui de la démo,
-            // il sera branché sur NotificationRepository avec l'écran.
-            'unread' => $demo['unread'],
-        ];
-    }
-
-    /**
-     * « Membre depuis Mai 2026 » — mois en toutes lettres, dans la langue
-     * active du site (l'écran existe en français et en anglais).
-     */
-    private function formatMemberSince(?\DateTimeImmutable $createdAt): string
-    {
-        if (null === $createdAt) {
-            return '';
-        }
-
-        // « LLLL » = nom du mois autonome (« janvier », et non « de janvier »),
-        // le seul correct hors d'une date complète.
-        $formatted = (string) \IntlDateFormatter::formatObject($createdAt, 'LLLL y', \Locale::getDefault());
-
-        return mb_strtoupper(mb_substr($formatted, 0, 1)).mb_substr($formatted, 1);
+        return $this->identityPresenter->identityFor($this->currentUser());
     }
 }

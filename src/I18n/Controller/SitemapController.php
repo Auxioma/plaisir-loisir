@@ -33,6 +33,12 @@ final class SitemapController extends AbstractController
      * remplacera les donnees de demonstration : les lister aujourd'hui
      * reviendrait a soumettre a Google des pages de test.
      *
+     * `app_events_detail` retiree le 17/09 : la route est desormais
+     * parametree par slug (une adresse par evenement, plus une seule page
+     * fixe) — meme raison que les fiches d'activite ci-dessus, son tour
+     * viendra avec une boucle sur les evenements reels plutot qu'une entree
+     * statique.
+     *
      * @var list<string>
      */
     private const ROUTES = [
@@ -49,7 +55,6 @@ final class SitemapController extends AbstractController
         'app_events_all',
         'app_events_calendar',
         'app_events_private',
-        'app_events_detail',
         'app_groups',
         'app_corporate_about',
         'app_corporate_partner',

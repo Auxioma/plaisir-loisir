@@ -153,7 +153,7 @@
                         <li>{{ icon.check_badge(20) }} {{ 'Partagez vos photos'|trans }}</li>
                         <li>{{ icon.check_badge(20) }} {{ 'Aucun prestataire, 100% gratuit'|trans }}</li>
                     </ul>
-                    <a href="#" class="pl-btn pl-btn--blue">{{ 'Créer une activité privée'|trans }} {{ icon.party(18) }}</a>
+                    <a href="{{ path('app_account_private_activities_new') }}" class="pl-btn pl-btn--blue">{{ 'Créer une activité privée'|trans }} {{ icon.party(18) }}</a>
                 </div>
                 <div class="home-private__collage" aria-hidden="true">
                     <img class="home-private__photo home-private__photo--1" src="{{ asset('images/home/prive-2.jpg') }}" alt="">
@@ -179,7 +179,7 @@
                         <span><strong>{{ 'Profitez et partagez vos souvenirs'|trans }}</strong> {{ 'Indiquez où, quand et avec qui.'|trans }}</span>
                     </li>
                 </ol>
-                <a href="#" class="pl-btn pl-btn--outline-blue">{{ 'En savoir plus'|trans }}</a>
+                <a href="{{ path('app_private_activities') }}" class="pl-btn pl-btn--outline-blue">{{ 'En savoir plus'|trans }}</a>
             </aside>
         </div>
     </section>
@@ -329,7 +329,7 @@
                     <li>{{ icon.check_square(22) }} {{ 'Réservation en ligne'|trans }}</li>
                     <li>{{ icon.check_square(22) }} {{ 'Gestion simplifiée'|trans }}</li>
                 </ul>
-                <a href="#" class="pl-btn pl-btn--cta">{{ 'Découvrez nos abonnements'|trans }} {{ icon.crown(18) }}</a>
+                <a href="{{ path('app_pro_register') }}" class="pl-btn pl-btn--cta">{{ 'Découvrez nos abonnements'|trans }} {{ icon.crown(18) }}</a>
             </div>
             <div class="home-pro__media">
                 <img src="{{ asset('images/home/provider-figma.png') }}" alt="Prestataire souriant, bras croisés">

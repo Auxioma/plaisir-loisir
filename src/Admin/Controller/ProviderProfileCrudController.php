@@ -65,7 +65,14 @@ class ProviderProfileCrudController extends AbstractCrudController
         yield TextField::new('displayName', 'Nom affiché')
             ->setHelp('Le nom que voient les visiteurs sur la fiche d\'une activité.');
 
+        yield TextField::new('slug', 'Adresse publique')
+            ->setHelp('Génère /professionnels/{slug}. Laissé vide, il est calculé automatiquement à l\'inscription.')
+            ->hideOnIndex();
+
         yield TextField::new('companyName', 'Raison sociale')->hideOnIndex();
+
+        yield TextField::new('city', 'Ville')
+            ->setHelp('Sert la recherche de professionnels par ville (page publique).');
 
         yield ChoiceField::new('status', 'Statut')
             ->setChoices(array_combine(

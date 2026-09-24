@@ -65,6 +65,24 @@
     z-index: 1100;
 }
 .pl-dropdown--lang .pl-dropdown__menu { min-width: 170px; }
+
+/* Bouton « Se connecter » de l'en-tête visiteur (18/09, tous les en-têtes :
+   navbar_home, navbar, navbar_corporate, navbar_events). Le sommaire garde
+   l'habillage de .pl-btn/.pl-btn--outline-dark (pas .pl-dropdown__toggle,
+   chargé après components.css et qui écraserait son padding et sa taille) :
+   cette classe n'ajoute que ce que .pl-btn ne fournit pas — le retrait du
+   triangle natif de <summary> et la rotation du chevron à l'ouverture. */
+.pl-dropdown__toggle--signin { list-style: none; }
+.pl-dropdown__toggle--signin::-webkit-details-marker { display: none; }
+.pl-dropdown--signin[open] > .pl-dropdown__toggle--signin { background: var(--pl-text); color: var(--pl-white); }
+.pl-dropdown--signin[open] > .pl-dropdown__toggle--signin > .pl-icon:last-child { transform: rotate(180deg); }
+.pl-dropdown__menu--signin { left: auto; right: 0; min-width: 170px; }
+
+/* Menu « Profil / Déconnexion » de l'avatar connecté (18/09, tous les
+   en-têtes) : même mécanique que le bouton « Se connecter » ci-dessus, sur
+   .pl-avatarbtn plutôt que .pl-btn. */
+.pl-dropdown__toggle--profile { list-style: none; }
+.pl-dropdown__toggle--profile::-webkit-details-marker { display: none; }
 /* Variante footer : chip sombre + menu ouvert vers le haut (bas de page). */
 .pl-dropdown--footer { position: relative; }
 .pl-dropdown--footer > summary { list-style: none; }
@@ -72,16 +90,27 @@
 .pl-dropdown__menu--up { top: auto; bottom: calc(100% + 10px); left: auto; right: 0; min-width: 170px; }
 .pl-dropdown__item {
     display: flex; align-items: center; gap: var(--pl-sp-8);
+    width: 100%;
     padding: 10px 12px;
+    background: none;
+    border: 0;
     color: var(--pl-text);
+    font-family: inherit;
     font-size: var(--pl-fs-body-sm);
     font-weight: var(--pl-fw-medium);
     text-decoration: none;
+    text-align: left;
     border-radius: var(--pl-radius-sm);
     white-space: nowrap;
+    cursor: pointer;
 }
 .pl-dropdown__item:hover { background: #f4f5f7; }
 .pl-dropdown__item.is-active { background: var(--pl-action-light); color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
+/* Item de déconnexion : même rouge que .acc-menu__item.is-danger
+   (account.css), pour rester le même signal partout où on quitte le compte.
+   Déclarée après .pl-dropdown__item (même spécificité, sinon écrasée). */
+.pl-dropdown__item--danger { color: var(--pl-error); }
+.pl-dropdown__item--danger:hover { background: #fdeaea; }
 
 /* Petit drapeau du sélecteur de langue. */
 /* Maquette : disque de 16px, pas un rectangle a coins legerement arrondis. */

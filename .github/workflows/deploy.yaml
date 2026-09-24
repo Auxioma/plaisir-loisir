@@ -52,6 +52,13 @@ jobs:
             git fetch --all --prune
             git reset --hard origin/develop
 
+            # 1bis. Purger le cache et les assets compilés AVANT toute commande
+            # console : après un changement de pile (ex. retrait d'un bundle),
+            # un cache/prod périmé fait tomber le noyau à la première commande
+            # exécutée sur ce cache, y compris cache:clear lui-même
+            # (« ApiPlatformBundle not found », voir note-revue-11-08.md §6).
+            rm -rf var/cache/prod public/assets
+
             # 2. Dépendances PHP (sans les paquets de dev, autoloader optimisé)
             composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 

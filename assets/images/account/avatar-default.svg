@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="">
+    <!-- Repli tant qu'aucune photo n'a été déposée : silhouette générique,
+         mêmes gris que le reste du site (jetons pl-border et
+         pl-text-disabled, design-system.css). Un carré exact (viewBox
+         100x100), comme les photos réelles : object-fit: cover s'applique
+         pareil, aucun CSS à changer là où ce repli est utilisé. -->
+    <circle cx="50" cy="50" r="50" fill="#e5e7eb"/>
+    <g clip-path="url(#avatar-default-circle)" fill="#9ba4bb">
+        <circle cx="50" cy="40" r="18"/>
+        <path d="M50 60c-22 0-40 14.5-40 32.5V100h80v-7.5C90 74.5 72 60 50 60z"/>
+    </g>
+    <defs>
+        <clipPath id="avatar-default-circle">
+            <circle cx="50" cy="50" r="50"/>
+        </clipPath>
+    </defs>
+</svg>
