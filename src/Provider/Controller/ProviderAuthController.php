@@ -12,6 +12,10 @@ use App\Provider\Repository\ProviderDocumentRepository;
 use App\Provider\Repository\ProviderProfileRepository;
 use App\Provider\Service\ProviderDocumentStorage;
 use App\Provider\Service\ProviderRegistrationService;
+use App\User\Entity\User;
+use App\User\Service\PasswordResetService;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use App\Shared\Controller\FlashesFormErrorsTrait;
 use App\User\Entity\User;
 use App\User\Service\PasswordResetService;
@@ -443,5 +447,23 @@ final class ProviderAuthController extends AbstractController
         }
 
         return trim((string) $saisie);
+    }
+
+    /**
+     * Recopie les erreurs de validation dans les messages flash.
+     *
+     * Même parti pris que sur l'inscription client : la maquette ne prévoit
+     * aucun emplacement pour un message sous les champs, on ne va pas inventer
+     * du balisage dans la carte.
+     */
+    private function flashFormErrors(FormInterface $form): void
+    {
+        if (!$form->isSubmitted()) {
+            return;
+        }
+
+        foreach ($form->getErrors(true) as $error) {
+            $this->addFlash('error', $error->getMessage());
+        }
     }
 }

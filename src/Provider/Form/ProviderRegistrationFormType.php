@@ -12,6 +12,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -25,6 +26,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  * sans jamais pouvoir se connecter à l'écran de connexion voisin, qui en
  * réclame un. Le CTO a tranché — on l'ajoute, dans la grille existante.
  *
+ * `required => false` partout, comme sur l'inscription client : le rendu doit
+ * rester celui de la maquette, qui ne porte aucun attribut `required`. La
+ * validation est entièrement côté serveur.
  * `required` HTML actif sur les champs obligatoires, comme sur l'inscription
  * client : le navigateur bloque désormais l'envoi et signale les champs
  * vides avant même d'atteindre le serveur, en plus des contraintes
@@ -37,6 +41,7 @@ final class ProviderRegistrationFormType extends AbstractType
         $builder
             ->add('lastName', TextType::class, [
                 'label' => 'Nom',
+                'required' => false,
                 'constraints' => [
                     new Assert\NotBlank(message: 'Veuillez saisir votre nom.'),
                     new Assert\Length(max: 100),
@@ -44,6 +49,7 @@ final class ProviderRegistrationFormType extends AbstractType
             ])
             ->add('firstName', TextType::class, [
                 'label' => 'Prénom',
+                'required' => false,
                 'constraints' => [
                     new Assert\NotBlank(message: 'Veuillez saisir votre prénom.'),
                     new Assert\Length(max: 100),
@@ -51,6 +57,7 @@ final class ProviderRegistrationFormType extends AbstractType
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Adresse e-mail',
+                'required' => false,
                 'constraints' => [
                     new Assert\NotBlank(message: 'Veuillez saisir votre adresse e-mail.'),
                     new Assert\Email(message: 'Veuillez saisir une adresse e-mail valide.'),
@@ -60,6 +67,17 @@ final class ProviderRegistrationFormType extends AbstractType
             // Obligatoire ici, contrairement à l'inscription client : un
             // dossier professionnel se vérifie par téléphone, et le service
             // client de la maquette annonce qu'il rappellera.
+            ->add('phone', TelType::class, [
+                'label' => 'Numéro de téléphone',
+                'required' => false,
+                'constraints' => [
+                    new Assert\NotBlank(message: 'Veuillez saisir un numéro de téléphone : notre service client vous y joindra.'),
+                    new Assert\Length(max: 30),
+                ],
+            ])
+            ->add('password', PasswordType::class, [
+                'label' => 'Mot de passe',
+                'required' => false,
             ->add('phone', PhoneNumberType::class, [
                 'label' => 'Numéro de téléphone',
                 'required' => true,
@@ -82,6 +100,7 @@ final class ProviderRegistrationFormType extends AbstractType
                 'label' => "Choix de l'activité",
                 'class' => Category::class,
                 'choice_label' => 'name',
+                'required' => false,
                 'placeholder' => 'Sélectionnez votre activité',
                 // Seules les rubriques de premier niveau : la maquette montre
                 // une liste courte, et un prestataire se déclare « Sport » ou
@@ -97,6 +116,7 @@ final class ProviderRegistrationFormType extends AbstractType
             ])
             ->add('registeredOffice', TextType::class, [
                 'label' => 'Adresse du siège social',
+                'required' => false,
                 'constraints' => [
                     new Assert\NotBlank(message: 'Veuillez indiquer l\'adresse de votre siège social.'),
                     new Assert\Length(max: 255),
