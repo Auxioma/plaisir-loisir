@@ -338,14 +338,16 @@ final class SecurityController extends AbstractController
         $email = (string) $session->get(self::SESSION_VERIFY_EMAIL, '');
 
         if ('' === $email) {
-            return $this->redirectToRoute('app_register');
+            $this->addFlash('error', 'Votre session a expiré. Veuillez saisir votre adresse e-mail pour recevoir un code.');
+
+            return $this->redirectToRoute('app_email_verification_request');
         }
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
-                $this->addFlash('error', 'Votre session a expiré, merci de recommencer.');
+                $this->addFlash('error', 'Votre session a expiré. Veuillez saisir votre adresse e-mail pour recevoir un nouveau code.');
 
-                return $this->redirectToRoute('app_email_verification');
+                return $this->redirectToRoute('app_email_verification_request');
             }
 
             $code = trim((string) $request->request->get('code'));
@@ -373,13 +375,15 @@ final class SecurityController extends AbstractController
         $email = (string) $session->get(self::SESSION_VERIFY_EMAIL, '');
 
         if ('' === $email) {
-            return $this->redirectToRoute('app_register');
+            $this->addFlash('error', 'Votre session a expiré. Veuillez saisir votre adresse e-mail pour recevoir un nouveau code.');
+
+            return $this->redirectToRoute('app_email_verification_request');
         }
 
         if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'Votre session a expiré, merci de recommencer.');
+            $this->addFlash('error', 'Votre session a expiré. Veuillez saisir votre adresse e-mail pour recevoir un nouveau code.');
 
-            return $this->redirectToRoute('app_email_verification');
+            return $this->redirectToRoute('app_email_verification_request');
         }
 
         $emailVerification->resend($email);
