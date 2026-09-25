@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace App\Shared\Service;
 
-use App\Messaging\Repository\MessageRepository;
-use App\Notification\Repository\NotificationRepository;
-use App\Provider\Repository\ProviderProfileRepository;
-use App\Quote\Repository\ServiceRequestRepository;
-use App\Review\Repository\ReviewRepository;
 use App\User\Entity\User;
 use App\User\StaticAccount;
 
@@ -43,11 +38,7 @@ use App\User\StaticAccount;
 final class AccountIdentityPresenter
 {
     public function __construct(
-        private readonly MessageRepository $messages,
-        private readonly NotificationRepository $notifications,
-        private readonly ProviderProfileRepository $providerProfiles,
-        private readonly ServiceRequestRepository $serviceRequests,
-        private readonly ReviewRepository $reviews,
+        private readonly AccountBadgeCounter $badges,
     ) {
     }
 
@@ -66,30 +57,13 @@ final class AccountIdentityPresenter
             'email' => $user->getEmail(),
             'avatar' => $user->getAvatarPath() ?? $demo['avatar'],
             'memberSince' => $this->formatMemberSince($user->getCreatedAt()),
-            'unreadMessages' => $this->messages->countUnreadForUser($user),
-            'unreadNotifications' => $this->notifications->countUnread($user),
-            'pendingProviderRequests' => $this->pendingProviderRequests($user),
-            'pendingProviderReviews' => $this->pendingProviderReviews($user),
+            // Mêmes compteurs que le header, calculés une seule fois pour
+            // les deux (AccountBadgeCounter).
+            'unreadMessages' => $this->badges->unreadMessages($user),
+            'unreadNotifications' => $this->badges->unreadNotifications($user),
+            'pendingProviderRequests' => $this->badges->pendingProviderRequests($user),
+            'pendingProviderReviews' => $this->badges->pendingProviderReviews($user),
         ];
-    }
-
-    private function pendingProviderRequests(User $user): int
-    {
-        $profile = $this->providerProfiles->findOneByUser($user);
-        $category = $profile?->getMainCategory();
-
-        if (null === $profile || null === $category) {
-            return 0;
-        }
-
-        return $this->serviceRequests->countOpenUnquotedForProvider($category, $profile);
-    }
-
-    private function pendingProviderReviews(User $user): int
-    {
-        $profile = $this->providerProfiles->findOneByUser($user);
-
-        return null !== $profile ? $this->reviews->countAwaitingReplyForProvider($profile) : 0;
     }
 
     /**

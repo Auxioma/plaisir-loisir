@@ -44,6 +44,7 @@ final class SupportController extends AbstractController
         }
 
         $rubriques = [];
+        $totaux = $faq->countPublishedByCategory($locale);
 
         foreach (FaqCategory::ordered() as $rubrique) {
             $rubriques[] = [
@@ -51,7 +52,7 @@ final class SupportController extends AbstractController
                 'label' => $rubrique->label(),
                 'description' => $rubrique->description(),
                 'icon' => $rubrique->icon(),
-                'count' => $faq->countPublished($rubrique, $locale),
+                'count' => $totaux[$rubrique->value] ?? 0,
             ];
         }
 
