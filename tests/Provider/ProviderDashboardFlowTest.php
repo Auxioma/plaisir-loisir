@@ -30,7 +30,11 @@ final class ProviderDashboardFlowTest extends WebTestCase
 
         $client->request('GET', '/pro/tableau-de-bord');
 
-        self::assertResponseStatusCodeSame(403);
+        // Zone interdite à ce type de compte : retour sur son propre espace
+        // avec un message (AccessDeniedHandler), plus d'erreur 403 brute.
+        self::assertResponseRedirects('/compte/tableau-de-bord');
+        $client->followRedirect();
+        self::assertSelectorTextContains('body', 'Vous n\'avez pas accès à cette page.');
     }
 
     public function testTheDashboardShowsRealCountsForTheLoggedInProvider(): void
