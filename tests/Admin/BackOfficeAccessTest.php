@@ -48,11 +48,20 @@ final class BackOfficeAccessTest extends WebTestCase
 
         $client->request('GET', '/admin');
 
-        self::assertSame(
-            403,
-            $client->getResponse()->getStatusCode(),
-            'Un membre sans le rôle administrateur ne doit pas entrer dans le back-office.',
-        );
+        // Refusé, mais renvoyé sur son espace plutôt que sur une erreur 403.
+        self::assertResponseRedirects('/compte/tableau-de-bord', null, 'Un membre sans le rôle administrateur ne doit pas entrer dans le back-office.');
+        $client->followRedirect();
+        self::assertSelectorTextContains('body', 'Vous n\'avez pas accès à cette page.');
+    }
+
+    public function testAProviderIsSentBackToTheirOwnSpace(): void
+    {
+        $client = static::createClient();
+        $client->loginUser($this->makeUser($client, roles: ['ROLE_PROVIDER']));
+
+        $client->request('GET', '/admin');
+
+        self::assertResponseRedirects('/pro/tableau-de-bord');
     }
 
     public function testAnAdministratorReachesTheCatalogue(): void

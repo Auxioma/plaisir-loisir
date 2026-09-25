@@ -41,7 +41,11 @@ final class SubscriptionFlowTest extends WebTestCase
 
         $client->request('GET', '/pro/abonnement');
 
-        self::assertResponseStatusCodeSame(403);
+        // Zone interdite à ce type de compte : retour sur son propre espace
+        // avec un message (AccessDeniedHandler), plus d'erreur 403 brute.
+        self::assertResponseRedirects('/compte/tableau-de-bord');
+        $client->followRedirect();
+        self::assertSelectorTextContains('body', 'Vous n\'avez pas accès à cette page.');
     }
 
     public function testSubscribingActivatesImmediatelyWithTheMockGateway(): void

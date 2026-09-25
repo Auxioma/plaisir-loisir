@@ -38,6 +38,11 @@ security:
                 # /admin à taper soi-même dans la barre d'adresse.
                 success_handler: App\User\Security\LoginSuccessHandler
 
+            # Compte connecté sans les droits de la page (ex. client sur
+            # /admin) : retour sur son propre espace avec un message, au lieu
+            # d'une erreur 403 brute.
+            access_denied_handler: App\User\Security\AccessDeniedHandler
+
             logout:
                 path: app_logout
                 target: app_home
