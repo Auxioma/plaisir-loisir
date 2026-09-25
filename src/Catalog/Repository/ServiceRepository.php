@@ -61,9 +61,12 @@ class ServiceRepository extends ServiceEntityRepository
         ?\DateTimeImmutable $date = null,
     ): array {
         $qb = $this->listingQueryBuilder($keywords, $place, $categorySlugs, $priceMin, $priceMax, $minRating, $participants, $date)
-            ->addSelect('p', 'm', 'c')
+            ->addSelect('p', 'm', 'c', 'det')
             ->leftJoin('s.packages', 'p')
             ->leftJoin('s.media', 'm')
+            // Côté inverse d'un OneToOne : sans cette jointure, Doctrine charge
+            // le détail par une requête distincte pour CHAQUE activité (N+1).
+            ->leftJoin('s.detail', 'det')
             ->orderBy('s.position', 'ASC')
             ->addOrderBy('s.createdAt', 'ASC');
 
@@ -141,9 +144,10 @@ class ServiceRepository extends ServiceEntityRepository
 
         /** @var list<Service> $services */
         $services = $this->createQueryBuilder('s')
-            ->addSelect('p', 'm', 'c')
+            ->addSelect('p', 'm', 'c', 'det')
             ->leftJoin('s.packages', 'p')
             ->leftJoin('s.media', 'm')
+            ->leftJoin('s.detail', 'det')
             ->leftJoin('s.category', 'c')
             ->andWhere('s.id IN (:ids)')
             // L'identifiant est un ULID cote entite et un UUID cote colonne.
@@ -390,9 +394,10 @@ class ServiceRepository extends ServiceEntityRepository
     {
         /** @var list<Service> $results */
         $results = $this->createQueryBuilder('s')
-            ->addSelect('p', 'm', 'c')
+            ->addSelect('p', 'm', 'c', 'det')
             ->leftJoin('s.packages', 'p')
             ->leftJoin('s.media', 'm')
+            ->leftJoin('s.detail', 'det')
             ->leftJoin('s.category', 'c')
             ->andWhere('s.destination = :destination')
             ->andWhere('s.status = :published')
@@ -426,9 +431,10 @@ class ServiceRepository extends ServiceEntityRepository
     public function findSimilar(Service $service, int $limit = 4): array
     {
         $qb = $this->createQueryBuilder('s')
-            ->addSelect('p', 'm', 'c')
+            ->addSelect('p', 'm', 'c', 'det')
             ->leftJoin('s.packages', 'p')
             ->leftJoin('s.media', 'm')
+            ->leftJoin('s.detail', 'det')
             ->leftJoin('s.category', 'c')
             ->andWhere('s.status = :published')
             ->andWhere('s.deletedAt IS NULL')
@@ -463,9 +469,10 @@ class ServiceRepository extends ServiceEntityRepository
     public function findPublishedBySlug(string $slug): ?Service
     {
         return $this->createQueryBuilder('s')
-            ->addSelect('p', 'm', 'c')
+            ->addSelect('p', 'm', 'c', 'det')
             ->leftJoin('s.packages', 'p')
             ->leftJoin('s.media', 'm')
+            ->leftJoin('s.detail', 'det')
             ->leftJoin('s.category', 'c')
             ->andWhere('s.slug = :slug')
             ->andWhere('s.status = :published')

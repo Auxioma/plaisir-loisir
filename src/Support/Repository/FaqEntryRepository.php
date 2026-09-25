@@ -107,16 +107,31 @@ class FaqEntryRepository extends ServiceEntityRepository
         return $resultats;
     }
 
-    public function countPublished(FaqCategory $category, string $locale = 'fr'): int
+    /**
+     * Nombre de questions publiées par rubrique, en une seule requête : le
+     * Centre d'aide en affiche une par tuile, et un COUNT par rubrique
+     * coûtait autant d'allers-retours que de rubriques.
+     *
+     * @return array<string, int> valeur de la rubrique => nombre
+     */
+    public function countPublishedByCategory(string $locale = 'fr'): array
     {
-        return (int) $this->createQueryBuilder('f')
-            ->select('COUNT(f.id)')
+        /** @var list<array{category: FaqCategory, total: int|string}> $lignes */
+        $lignes = $this->createQueryBuilder('f')
+            ->select('f.category AS category', 'COUNT(f.id) AS total')
             ->andWhere('f.locale = :locale')
-            ->andWhere('f.category = :category')
             ->andWhere('f.published = true')
             ->setParameter('locale', $locale)
-            ->setParameter('category', $category)
+            ->groupBy('f.category')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getResult();
+
+        $totaux = [];
+
+        foreach ($lignes as $ligne) {
+            $totaux[$ligne['category']->value] = (int) $ligne['total'];
+        }
+
+        return $totaux;
     }
 }
