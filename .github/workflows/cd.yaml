@@ -38,7 +38,7 @@ jobs:
 
       - name: Deploy to preprod
         run: |
-          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=20 -p ${{ secrets.APP_PORT || '22' }}${{ secrets.APP_USER }}@${{ secrets.APP_HOST }} << 'EOF'
+          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=20 -p ${{ secrets.APP_PORT || '22' }} ${{ secrets.APP_USER }}@${{ secrets.APP_HOST }} << 'EOF'
             set -e
 
             cd /var/www/vhosts/trouvemoi.eu/httpdocs
