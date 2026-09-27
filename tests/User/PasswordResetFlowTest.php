@@ -26,7 +26,7 @@ final class PasswordResetFlowTest extends WebTestCase
 {
     /**
      * Adresse inconnue : le parcours avance quand même (choix de sécurité
-     * volontaire), mais ne doit RIEN mettre en file d'attente — aucun e-mail
+     * volontaire), mais ne doit RIEN envoyer — aucun e-mail
      * à personne — et le code saisi à l'étape 2 doit être refusé avec un
      * message clair, pas une erreur serveur ni un silence.
      */
@@ -35,20 +35,12 @@ final class PasswordResetFlowTest extends WebTestCase
         $client = static::createClient();
         $email = sprintf('jamais-inscrit-%s@example.com', uniqid());
 
-        $connection = static::getContainer()->get(EntityManagerInterface::class)->getConnection();
-        $before = (int) $connection->fetchOne('SELECT COUNT(*) FROM messenger_messages');
-
         $crawler = $client->request('GET', '/mot-de-passe-oublie');
         $token = (string) $crawler->filter('input[name="_token"]')->attr('value');
 
         $client->request('POST', '/mot-de-passe-oublie', ['email' => $email, '_token' => $token]);
         self::assertResponseRedirects('/mot-de-passe-oublie/verification');
-
-        // Compte relatif à l'état avant l'appel : la table s'accumule d'un
-        // test à l'autre (pas de rollback par test dans cette suite), un
-        // simple COUNT(*) === 0 serait donc fragile.
-        $after = (int) $connection->fetchOne('SELECT COUNT(*) FROM messenger_messages');
-        self::assertSame($before, $after, 'Une adresse sans compte ne doit déclencher AUCUN envoi.');
+        self::assertEmailCount(0, message: 'Une adresse sans compte ne doit déclencher AUCUN envoi.');
 
         $crawler = $client->request('GET', '/mot-de-passe-oublie/verification');
         $token = (string) $crawler->filter('input[name="_token"]')->attr('value');
@@ -60,8 +52,7 @@ final class PasswordResetFlowTest extends WebTestCase
     }
 
     /**
-     * Adresse connue : un e-mail part réellement (mis en file d'attente pour
-     * le worker Messenger), avec le bon destinataire et un code de 8
+     * Adresse connue : un e-mail part réellement (envoi synchrone), avec le bon destinataire et un code de 8
      * caractères conforme à la maquette.
      */
     public function testAKnownEmailQueuesTheResetCodeEmail(): void
@@ -70,21 +61,17 @@ final class PasswordResetFlowTest extends WebTestCase
         $email = sprintf('connu-%s@example.com', uniqid());
         $this->makeExistingUser($email);
 
-        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
-        $before = (int) $entityManager->getConnection()->fetchOne('SELECT COUNT(*) FROM messenger_messages');
-
         $crawler = $client->request('GET', '/mot-de-passe-oublie');
         $token = (string) $crawler->filter('input[name="_token"]')->attr('value');
 
         $client->request('POST', '/mot-de-passe-oublie', ['email' => $email, '_token' => $token]);
         self::assertResponseRedirects('/mot-de-passe-oublie/verification');
+        self::assertEmailCount(1, message: 'L\'e-mail du code n\'a pas été envoyé.');
 
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
         $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
         self::assertNotNull($user);
         self::assertNotNull($user->getResetCodeHash(), 'Aucun code n\'a été généré pour un compte pourtant existant.');
-
-        $after = (int) $entityManager->getConnection()->fetchOne('SELECT COUNT(*) FROM messenger_messages');
-        self::assertSame($before + 1, $after, 'L\'e-mail du code n\'a pas été mis en file d\'attente.');
     }
 
     /**
