@@ -78,4 +78,18 @@ jobs:
               printf '%s : ' "$t"
               php bin/console dbal:run-sql "SELECT count(*) AS n FROM $t" 2>&1 | grep -Eo '^\s*[0-9]+\s*$' | tr -d ' ' || echo "?"
             done
+
+            # Les mails passent par la file Messenger « async » : sans worker
+            # (messenger:consume) ils restent en base et ne partent jamais.
+            section "Mails : configuration (mot de passe masqué)"
+            php -r '$e = include ".env.local.php"; foreach (["MAILER_DSN", "MAILER_SENDER", "MESSENGER_TRANSPORT_DSN"] as $k) { echo $k, "=", preg_replace("#//([^:@/]*):[^@]*@#", "//$1:***@", $e[$k] ?? "(absent)"), "\n"; }'
+
+            section "Mails : messages en attente / en échec"
+            php bin/console dbal:run-sql "SELECT queue_name, count(*) AS n, min(created_at) AS plus_ancien FROM messenger_messages GROUP BY queue_name" 2>&1 | grep -vi deprecat
+            php bin/console messenger:failed:show --max=5 2>&1 | grep -vi deprecat | head -40
+
+            section "Mails : worker et serveurs SMTP locaux"
+            pgrep -af "messenger:consume" || echo "aucun worker messenger:consume en cours"
+            crontab -l 2>&1 | grep -v '^#' || true
+            ss -ltn 2>/dev/null | grep -E ':(25|465|587|1025|8025)\s' || echo "aucun port SMTP local ouvert"
           EOF
