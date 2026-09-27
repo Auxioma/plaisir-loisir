@@ -1,0 +1,56 @@
+name: Diagnostic serveur
+
+# ---------------------------------------------------------------------------
+#  Lancement manuel uniquement (Actions > Diagnostic serveur > Run workflow).
+#  LECTURE SEULE : affiche l'état du serveur de déploiement (utilisateur,
+#  contenu du vhost, versions PHP/Git/Composer, PostgreSQL) pour préparer
+#  la première installation. Ne modifie rien et n'affiche aucun fichier .env.
+#  Mêmes secrets que le workflow CD.
+# ---------------------------------------------------------------------------
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+
+    env:
+      SSHPASS: ${{ secrets.APP_PASS }}
+
+    steps:
+      - name: Install sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      - name: État du serveur
+        run: |
+          sshpass -e ssh -q -o StrictHostKeyChecking=no -o ConnectTimeout=20 -p ${{ secrets.APP_PORT || '22' }} ${{ secrets.APP_USER }}@${{ secrets.APP_HOST }} << 'EOF'
+            section() { echo; echo "===== $1 ====="; }
+
+            section "Utilisateur"
+            whoami; id; echo "HOME=$HOME"; echo "SHELL=$SHELL"
+
+            section "Vhost trouvemoi.eu"
+            ls -la /var/www/vhosts/trouvemoi.eu 2>&1 | head -40
+
+            section "Contenu de httpdocs"
+            ls -la /var/www/vhosts/trouvemoi.eu/httpdocs 2>&1 | head -60
+            du -sh /var/www/vhosts/trouvemoi.eu/httpdocs 2>&1
+
+            section "Autres dossiers candidats"
+            ls -d ~/preprod /var/www/vhosts/*/httpdocs 2>&1
+
+            section "PHP"
+            which php; php -v 2>&1 | head -1
+            ls /opt/plesk/php/ 2>&1
+            php -m 2>&1 | grep -iE '^(pdo_pgsql|intl|ctype|iconv|gd|zip)$'
+
+            section "Outils"
+            git --version 2>&1; which composer 2>&1; composer --version 2>&1 | head -1
+            ls -la ~/.ssh 2>&1
+
+            section "PostgreSQL"
+            psql --version 2>&1; (pg_lsclusters 2>&1 || true)
+          EOF
