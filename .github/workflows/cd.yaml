@@ -79,6 +79,14 @@ jobs:
             composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
             composer dump-env prod
 
+            # Base créée hors migrations (schema:create) : aucune migration
+            # enregistrée alors que le schéma est déjà à jour. On les marque
+            # jouées au lieu de les rejouer (« relation already exists »).
+            # Une base vide, elle, n'est pas à jour : elle migre normalement.
+            executed=$(php bin/console dbal:run-sql "SELECT count(*) AS n FROM doctrine_migration_versions" 2>/dev/null | grep -Eo '^\s*[0-9]+\s*$' | tr -d ' ' || true)
+            if [ "${executed:-0}" = 0 ] && php bin/console doctrine:schema:validate --skip-mapping -q; then
+              php bin/console doctrine:migrations:version --add --all --no-interaction
+            fi
             php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
             php bin/console importmap:install --no-interaction
             php bin/console asset-map:compile
