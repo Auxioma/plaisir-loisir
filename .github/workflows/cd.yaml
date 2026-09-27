@@ -57,10 +57,12 @@ jobs:
       # Un cache/prod périmé fait tomber le noyau à la première commande
       # console, cache:clear compris (« ApiPlatformBundle not found »,
       # voir docs/note-revue-11-08.md §6) : on le purge AVANT tout.
-      # var/ a été créé par root : on le rend à l'utilisateur du site.
-      - name: Purger le cache et rendre var/ au site
+      # Des fichiers (var/, vendor/…) ont été créés par root lors d'installations
+      # manuelles : l'utilisateur du site ne peut ni les modifier ni les
+      # supprimer (composer échoue). On lui rend tout ce qui n'est pas à lui.
+      - name: Purger le cache et rendre les fichiers au site
         run: |
-          $SSH "set -e; cd $SITE_DIR; rm -rf var/cache/prod public/assets; chown -R $SITE_USER:psacln var"
+          $SSH "set -e; cd $SITE_DIR; rm -rf var/cache/prod public/assets; find . -mindepth 1 ! -user $SITE_USER -exec chown -h $SITE_USER:psacln {} +"
 
       - name: Déployer
         run: |
