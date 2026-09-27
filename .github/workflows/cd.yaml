@@ -1,7 +1,7 @@
 name: CD
 
 # ---------------------------------------------------------------------------
-#  Déploie `master` sur le serveur (~/preprod) dès que le workflow « CI » est
+#  Déploie `master` sur le serveur (/var/www/vhosts/trouvemoi.eu/httpdocs) dès que le workflow « CI » est
 #  vert sur `master`. Un push dont la CI échoue n'est jamais déployé.
 #
 #  Secrets à définir dans GitHub (Settings > Secrets and variables > Actions) :
@@ -40,7 +40,7 @@ jobs:
           sshpass -e ssh -o StrictHostKeyChecking=no -p 5022 ${{ secrets.APP_USER }}@${{ secrets.APP_HOST }} << 'EOF'
             set -e
 
-            cd ~/preprod
+            cd /var/www/vhosts/trouvemoi.eu/httpdocs
             git pull origin master
 
             # Un cache/prod périmé fait tomber le noyau à la première commande
