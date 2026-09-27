@@ -1,8 +1,20 @@
 name: CD
 
 # ---------------------------------------------------------------------------
-#  Déploie `master` sur le serveur (/var/www/vhosts/trouvemoi.eu/httpdocs) dès que le workflow « CI » est
-#  vert sur `master`. Un push dont la CI échoue n'est jamais déployé.
+#  Déploie `master` sur le serveur Plesk (/var/www/vhosts/trouvemoi.eu/httpdocs)
+#  dès que le workflow « CI » est vert sur `master`. Un push dont la CI échoue
+#  n'est jamais déployé. On déploie exactement le commit validé par la CI.
+#
+#  Le code est récupéré par Git directement sur le serveur, avec le jeton
+#  temporaire du workflow (aucune clé à installer sur le serveur). Au premier
+#  passage, httpdocs (simple copie du projet) devient un dépôt Git : les
+#  fichiers suivis sont remplacés, les autres (.env.local, vendor/, var/…)
+#  sont conservés.
+#
+#  La connexion SSH se fait en root, mais tout le reste tourne sous
+#  l'utilisateur système du site Plesk (SITE_USER), propriétaire des fichiers
+#  et de PHP-FPM : sinon cache et vendor appartiendraient à root et le site
+#  ne pourrait plus y écrire.
 #
 #  Secrets à définir dans GitHub (Settings > Secrets and variables > Actions) :
 #    APP_HOST : hôte du serveur
@@ -19,8 +31,11 @@ on:
 
 # Un seul déploiement à la fois ; un nouveau push annule celui en attente.
 concurrency:
-  group: deploy-preprod
+  group: deploy-trouvemoi
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
@@ -29,6 +44,9 @@ jobs:
 
     env:
       SSHPASS: ${{ secrets.APP_PASS }}
+      SSH: sshpass -e ssh -q -o StrictHostKeyChecking=no -o ConnectTimeout=20 -p ${{ secrets.APP_PORT || '22' }} ${{ secrets.APP_USER }}@${{ secrets.APP_HOST }}
+      SITE_DIR: /var/www/vhosts/trouvemoi.eu/httpdocs
+      SITE_USER: trouvemoi.eu_w3wfa542s9m
 
     steps:
       - name: Install sshpass
@@ -36,22 +54,28 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y sshpass
 
-      - name: Deploy to preprod
+      # Un cache/prod périmé fait tomber le noyau à la première commande
+      # console, cache:clear compris (« ApiPlatformBundle not found »,
+      # voir docs/note-revue-11-08.md §6) : on le purge AVANT tout.
+      # var/ a été créé par root : on le rend à l'utilisateur du site.
+      - name: Purger le cache et rendre var/ au site
         run: |
-          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=20 -p ${{ secrets.APP_PORT || '22' }} ${{ secrets.APP_USER }}@${{ secrets.APP_HOST }} << 'EOF'
+          $SSH "set -e; cd $SITE_DIR; rm -rf var/cache/prod public/assets; chown -R $SITE_USER:psacln var"
+
+      - name: Déployer
+        run: |
+          $SSH "sudo -u $SITE_USER -H bash -s" << 'EOF'
             set -e
-
-            cd /var/www/vhosts/trouvemoi.eu/httpdocs
-            git pull origin master
-
-            # Un cache/prod périmé fait tomber le noyau à la première commande
-            # console, cache:clear compris (« ApiPlatformBundle not found »,
-            # voir docs/note-revue-11-08.md §6) : on le purge AVANT tout.
-            rm -rf var/cache/prod public/assets
-
             export APP_ENV=prod
-            php composer.phar install --no-dev --no-interaction --prefer-dist --optimize-autoloader
-            php composer.phar dump-env prod
+            cd /var/www/vhosts/trouvemoi.eu/httpdocs
+
+            [ -d .git ] || git init -q
+            git fetch -q --depth=1 "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ${{ github.event.workflow_run.head_sha }}
+            git reset -q --hard FETCH_HEAD
+            git log -1 --oneline
+
+            composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+            composer dump-env prod
 
             php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
             php bin/console importmap:install --no-interaction
