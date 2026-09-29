@@ -1,0 +1,62 @@
+{#
+    Page d'erreur du site public (toutes les erreurs : 404, 403, 500…).
+
+    Symfony ne l'affiche qu'en production ; en développement la page de
+    débogage prend le relais. Pour la voir en local : /_error/404, /_error/500.
+
+    Le bouton principal ramène à la rubrique d'où vient l'adresse (une activité
+    disparue → la liste des activités), voir `ErrorPageExtension`. On ne
+    redirige PAS automatiquement : une adresse morte doit répondre 404 pour
+    que les moteurs de recherche l'oublient.
+
+    Le back-office (/admin) n'arrive normalement jamais ici : ses erreurs
+    renvoient à la liste de la rubrique (`AdminErrorRedirectSubscriber`).
+#}
+{% extends 'base.html.twig' %}
+
+{% set messages = {
+    404: {
+        title: 'Page introuvable'|trans,
+        text: "La page que vous cherchez n'existe pas ou n'est plus disponible. Elle a peut-être été supprimée ou son adresse a changé."|trans,
+    },
+    403: {
+        title: 'Accès refusé'|trans,
+        text: "Vous n'avez pas les droits nécessaires pour accéder à cette page."|trans,
+    },
+    405: {
+        title: 'Action impossible'|trans,
+        text: "Cette action n'est pas possible depuis cette page."|trans,
+    },
+    410: {
+        title: 'Page supprimée'|trans,
+        text: "Cette page a été supprimée et n'est plus disponible."|trans,
+    },
+} %}
+{% set content = messages[status_code] ?? {
+    title: 'Une erreur est survenue'|trans,
+    text: "Un problème technique nous empêche d'afficher cette page. Notre équipe en est informée ; réessayez dans quelques instants."|trans,
+} %}
+{% set fallback = error_fallback() %}
+
+{% block title %}{{ content.title }}{% endblock %}
+{% block meta_description %}{{ content.text }}{% endblock %}
+
+{% block body %}
+<section class="pl-error-page">
+    <div class="container pl-error-page__inner">
+        <p class="pl-error-page__code">{{ 'Erreur'|trans }} {{ status_code }}</p>
+        <h1 class="pl-error-page__title">{{ content.title }}</h1>
+        <p class="pl-error-page__text">{{ content.text }}</p>
+
+        <div class="pl-error-page__actions">
+            {% if fallback %}
+                <a href="{{ fallback.url }}" class="pl-btn pl-btn--primary">{{ fallback.label|trans }}</a>
+                <a href="{{ path('app_home') }}" class="pl-btn pl-btn--outline-dark">{{ "Retour à l'accueil"|trans }}</a>
+            {% else %}
+                <a href="{{ path('app_home') }}" class="pl-btn pl-btn--primary">{{ "Retour à l'accueil"|trans }}</a>
+                <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--outline-dark">{{ 'Voir toutes les activités'|trans }}</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
