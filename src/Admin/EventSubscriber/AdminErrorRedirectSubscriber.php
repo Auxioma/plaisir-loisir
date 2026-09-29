@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Admin\EventSubscriber;
 
+use Doctrine\DBAL\Exception\ConstraintViolationException;
+use Doctrine\DBAL\Exception\DriverException;
 use EasyCorp\Bundle\EasyAdminBundle\Exception\EntityNotFoundException;
+use EasyCorp\Bundle\EasyAdminBundle\Exception\EntityRemoveException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -64,8 +67,10 @@ final class AdminErrorRedirectSubscriber implements EventSubscriberInterface
         $exception = $event->getThrowable();
         $status = $exception instanceof HttpExceptionInterface ? $exception->getStatusCode() : 500;
 
-        // Hors 404/403, une erreur en développement doit rester visible.
-        if ($this->debug && !\in_array($status, [403, 404], true)) {
+        // En développement, une vraie panne doit rester visible avec sa trace.
+        // Les refus « attendus » (fiche introuvable, accès refusé, suppression
+        // bloquée, valeur refusée par la base) sont redirigés partout.
+        if ($this->debug && !\in_array($status, [403, 404, 409], true) && !$this->isRefusedByDatabase($exception)) {
             return;
         }
 
@@ -88,6 +93,21 @@ final class AdminErrorRedirectSubscriber implements EventSubscriberInterface
         // 303 : après un POST (enregistrement, suppression), le navigateur
         // doit revenir en GET, et non rejouer l'envoi du formulaire.
         $event->setResponse(new RedirectResponse($target, RedirectResponse::HTTP_SEE_OTHER));
+    }
+
+    /**
+     * La base a refusé l'écriture (doublon, lien manquant, valeur trop
+     * longue…) : c'est la saisie qui est en cause, pas le code.
+     */
+    private function isRefusedByDatabase(\Throwable $exception): bool
+    {
+        for ($e = $exception; null !== $e; $e = $e->getPrevious()) {
+            if ($e instanceof ConstraintViolationException || ($e instanceof DriverException && \in_array($e->getSQLState(), ['22001', '22003', '23502', '23503', '23505'], true))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function isAdminRequest(Request $request): bool
@@ -133,6 +153,8 @@ final class AdminErrorRedirectSubscriber implements EventSubscriberInterface
         return match (true) {
             $exception instanceof EntityNotFoundException, 404 === $status => 'Cet élément n\'existe pas ou a été supprimé. Vous avez été renvoyé à la liste.',
             403 === $status => 'Vous n\'avez pas les droits pour effectuer cette action.',
+            $exception instanceof EntityRemoveException, 409 === $status => 'Suppression impossible : cet élément est encore utilisé ailleurs (réservations, avis, activités…). Retirez d\'abord ces liens, ou dépubliez-le plutôt que de le supprimer.',
+            $this->isRefusedByDatabase($exception) => 'Enregistrement refusé : une valeur saisie est en double, trop longue ou manquante. Vérifiez le formulaire et réessayez.',
             default => 'Une erreur est survenue, l\'action n\'a pas pu aboutir. Réessayez ; si le problème persiste, contactez le support technique.',
         };
     }

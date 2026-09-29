@@ -1,9 +1,13 @@
 framework:
     validation:
-        # Enables validator auto-mapping support.
-        # For instance, basic validation constraints will be inferred from Doctrine's metadata.
-        #auto_mapping:
-        #    App\Entity\: []
+        # Contraintes déduites du mapping Doctrine, sur TOUTES les entités :
+        # unicité (UniqueEntity sur les colonnes unique), longueur maximale des
+        # textes, champ obligatoire. Sans elles, un formulaire (back-office ou
+        # site) laissait passer une valeur que la base refusait ensuite : erreur
+        # 500 au lieu d'un message sous le champ. Pour exclure une propriété :
+        # #[Assert\DisableAutoMapping].
+        auto_mapping:
+            App\: []
 
 when@test:
     framework:
