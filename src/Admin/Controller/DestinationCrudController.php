@@ -26,6 +26,13 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
  */
 class DestinationCrudController extends AbstractCrudController
 {
+    use UniqueSlugCrudTrait;
+
+    protected function slugSourceField(): string
+    {
+        return 'name';
+    }
+
     public static function getEntityFqcn(): string
     {
         return Destination::class;
