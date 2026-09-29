@@ -372,3 +372,35 @@
 }
 .pl-toast--warning .pl-toast__close { filter: none; }
 .pl-toast__close { filter: brightness(0) invert(1); }
+
+/* ── Page d'erreur (templates/bundles/TwigBundle/Exception/error.html.twig) ── */
+.pl-error-page {
+    padding: var(--pl-sp-104) 0 var(--pl-sp-64);
+    text-align: center;
+}
+.pl-error-page__inner { max-width: 640px; }
+.pl-error-page__code {
+    margin-bottom: var(--pl-sp-8);
+    color: var(--pl-primary);
+    font-size: var(--pl-fs-body-sm);
+    font-weight: var(--pl-fw-semibold);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+.pl-error-page__title {
+    margin-bottom: var(--pl-sp-16);
+    color: var(--pl-text-strong);
+    font-size: var(--pl-fs-h2);
+    font-weight: var(--pl-fw-bold);
+}
+.pl-error-page__text {
+    margin-bottom: var(--pl-sp-32);
+    color: var(--pl-text-secondary);
+    font-size: var(--pl-fs-body-lg);
+}
+.pl-error-page__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--pl-sp-12);
+}
