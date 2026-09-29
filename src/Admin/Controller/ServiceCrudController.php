@@ -15,6 +15,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
@@ -136,7 +137,10 @@ class ServiceCrudController extends AbstractCrudController
         yield TextField::new('address', 'Adresse')->hideOnIndex();
         yield TextField::new('city', 'Ville')->hideOnIndex();
         yield TextField::new('postalCode', 'Code postal')->hideOnIndex();
-        yield TextField::new('country', 'Pays')->hideOnIndex();
+        // Colonne sur DEUX caracteres (code ISO : FR, IT, SN). Un champ texte
+        // laissait taper « France », trop long pour la colonne : erreur 500 a
+        // l'enregistrement. Meme correction que DestinationCrudController.
+        yield CountryField::new('country', 'Pays')->hideOnIndex();
         yield TextField::new('meetingPoint', 'Point de rendez-vous')->hideOnIndex();
         yield TextField::new('latitude', 'Latitude')
             ->setHelp('Sert à placer l\'activité sur la carte. Laissez vide si vous ne l\'avez pas.')
