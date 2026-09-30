@@ -1,8 +1,9 @@
 {#
-    Tout premier écran du flow d'authentification (maquette register01.png) :
-    « Bienvenue sur TrouveMoi Plaisirs & Loisirs » — Pro Prestataire à gauche
-    (violet), Client à droite (vert), séparés par « ou », bande sécurité bleue.
-    En-tête = navbar de l'accueil plateforme (Découvrez + langue).
+    Tout premier écran du flow d'authentification — maquette
+    assets/maquettes/choix_profil.jpeg (30/09) : « Bienvenue sur TrouveMoi
+    Plaisirs & Loisirs », Pro Prestataire à gauche (violet), Client à droite
+    (vert), séparés par « ou », puis la bande « expérience sécurisée ».
+    Styles : assets/styles/layout.css (.tm-choice).
 #}
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -10,105 +11,96 @@
 {% block title %}{{ 'Bienvenue — choix du compte'|trans }}{% endblock %}
 {% block meta_description %}{{ 'Choisissez le type de compte qui vous correspond : professionnel prestataire ou client.'|trans }}{% endblock %}
 
-{% block header %}
-    {% include '_partials/navbar_home.html.twig' %}
-{% endblock %}
-
 {% block body %}
-<div class="auth-choice-page">
-    <div class="container">
+<div class="tm-choice">
+    <h1 class="tm-choice__title">
+        {{ 'Bienvenue sur TrouveMoi'|trans }}<br>
+        <span class="is-plaisirs">Plaisirs</span> &amp; <span class="is-loisirs">Loisirs</span>
+    </h1>
+    <p class="tm-choice__subtitle">
+        {{ 'Choisissez le type de compte qui vous correspond pour accéder'|trans }}<br>
+        {{ 'aux fonctionnalités adaptées à vos besoins.'|trans }}
+    </p>
 
-        <h1 class="auth-choice-page__title">
-            {{ 'Bienvenue sur TrouveMoi'|trans }}<br>
-            <span class="is-plaisirs">Plaisirs</span> &amp; <span class="is-loisirs">Loisirs</span>
-        </h1>
-        <p class="auth-choice-page__subtitle">
-            {{ 'Choisissez le type de compte qui vous correspond pour accéder aux fonctionnalités adaptées à vos besoins.'|trans }}
-        </p>
-
-        <div class="auth-choice-card">
-
-            {# ---- Panneau Pro Prestataire (violet, à gauche) ---- #}
-            <section class="auth-choice-panel auth-choice-panel--pro">
-                <span class="auth-choice-panel__badge">{{ icon.compass(24) }}</span>
-                <h2 class="auth-choice-panel__name">{{ 'Pro Prestataire'|trans }}</h2>
-                <p class="auth-choice-panel__desc">
-                    {{ 'Vous proposez des activités, des services ou des loisirs. Créez votre compte professionnel pour développer votre visibilité et gérer vos prestations.'|trans }}
-                </p>
-                <ul class="auth-choice-feats">
-                    <li>
-                        <span class="auth-choice-feats__icon">{{ icon.compass(20) }}</span>
-                        <span><strong>{{ 'Déposez et gérez vos activités'|trans }}</strong> {{ 'Publiez vos offres et gérez vos disponibilités.'|trans }}</span>
-                    </li>
-                    <li>
-                        <span class="auth-choice-feats__icon">{{ icon.calendar_check(20) }}</span>
-                        <span><strong>{{ 'Gérez vos réservations'|trans }}</strong> {{ 'Suivez vos réservations, vos clients et vos paiements.'|trans }}</span>
-                    </li>
-                    <li>
-                        <span class="auth-choice-feats__icon">{{ icon.eye(20) }}</span>
-                        <span><strong>{{ 'Développez votre visibilité'|trans }}</strong> {{ 'Recevez plus de demandes et fidélisez vos clients.'|trans }}</span>
-                    </li>
-                </ul>
-                {# Jusqu'au 02/09 cette tuile menait au formulaire CLIENT avec un
-                   simple « ?type=pro » : le professionnel n'y declarait ni son
-                   activite, ni son siege social, ni ses pieces justificatives.
-                   Elle ouvre desormais le parcours professionnel en deux etapes. #}
-                <a class="pl-btn pl-btn--primary pl-btn--block" href="{{ path('app_pro_register') }}">
-                    {{ 'Je suis un pro prestataire'|trans }} {{ icon.chevron_right(16) }}
-                </a>
-                {# « Devenir partenaire » EST la page « en savoir plus » : elle
-                   presente l'offre professionnelle, ses etapes et son formulaire
-                   de contact. Ce lien etait un « # » mort depuis la maquette du
-                   27/07, juste sous la tuile qui, elle, ouvre l'inscription. #}
-                <a class="auth-choice-panel__more" href="{{ path('app_corporate_partner') }}">{{ "En savoir plus sur l'espace pro"|trans }}</a>
-            </section>
-
-            <div class="auth-choice-card__sep" aria-hidden="true"><span>{{ 'ou'|trans }}</span></div>
-
-            {# ---- Panneau Client (vert, à droite) ---- #}
-            <section class="auth-choice-panel auth-choice-panel--client">
-                <span class="auth-choice-panel__badge">{{ icon.compass(24) }}</span>
-                <h2 class="auth-choice-panel__name">{{ 'Client'|trans }}</h2>
-                <p class="auth-choice-panel__desc">
-                    {{ 'Vous recherchez des activités, des loisirs ou des expériences à vivre. Créez votre compte pour réserver et profiter de nos meilleures offres.'|trans }}
-                </p>
-                <ul class="auth-choice-feats">
-                    <li>
-                        <span class="auth-choice-feats__icon">{{ icon.search(20) }}</span>
-                        <span><strong>{{ 'Trouvez des activités'|trans }}</strong> {{ 'Découvrez des activités et expériences uniques.'|trans }}</span>
-                    </li>
-                    <li>
-                        <span class="auth-choice-feats__icon">{{ icon.calendar_check(20) }}</span>
-                        <span><strong>{{ 'Réservez en toute simplicité'|trans }}</strong> {{ 'Réservez facilement en quelques clics.'|trans }}</span>
-                    </li>
-                    <li>
-                        <span class="auth-choice-feats__icon">{{ icon.check_badge(20) }}</span>
-                        <span><strong>{{ 'Profitez en toute sérénité'|trans }}</strong> {{ 'Vivez vos expériences et partagez vos avis.'|trans }}</span>
-                    </li>
-                </ul>
-                <a class="pl-btn pl-btn--client pl-btn--block" href="{{ path('app_register', { type: 'client' }) }}">
-                    {{ 'Je suis un client'|trans }} {{ icon.chevron_right(16) }}
-                </a>
-                <a class="auth-choice-panel__more" href="#">{{ "En savoir plus sur l'espace client"|trans }}</a>
-            </section>
-        </div>
-
-        {# ---- Bande « expérience sécurisée » ---- #}
-        <aside class="auth-choice-band">
-            <div class="auth-choice-band__intro">
-                {{ icon.calendar_check(30) }}
-                <div>
-                    <strong>{{ 'Une expérience sécurisée pour tous'|trans }}</strong>
-                    <span>{{ 'Vos données sont protégées et votre expérience est notre priorité.'|trans }}</span>
-                </div>
-            </div>
-            <ul class="auth-choice-band__points">
-                <li>{{ icon.card(20) }} {{ 'Paiement sécurisé'|trans }}</li>
-                <li>{{ icon.lock(20) }} {{ 'Données protégées'|trans }}</li>
-                <li>{{ icon.headset(20) }} {{ 'Support dédié'|trans }}</li>
+    <div class="tm-choice__card">
+        {# ---- Pro Prestataire (violet, à gauche) ---- #}
+        <section class="tm-choice-panel tm-choice-panel--pro">
+            <span class="tm-choice-panel__badge">{{ icon.briefcase(26) }}</span>
+            <h2 class="tm-choice-panel__name">{{ 'Pro Prestataire'|trans }}</h2>
+            <p class="tm-choice-panel__desc">
+                {{ 'Vous proposez des activités, des services ou des loisirs.'|trans }}<br>
+                {{ 'Créez votre compte professionnel pour développer'|trans }}<br>
+                {{ 'votre visibilité et gérer vos prestations.'|trans }}
+            </p>
+            <ul class="tm-choice-feats">
+                <li>
+                    <span class="tm-choice-feats__icon">{{ icon.target_frame(17) }}</span>
+                    <span><strong>{{ 'Déposez et gérez vos activités'|trans }}</strong>{{ 'Publiez vos offres et gérez vos disponibilités.'|trans }}</span>
+                </li>
+                <li>
+                    <span class="tm-choice-feats__icon">{{ icon.calendar_grid(17) }}</span>
+                    <span><strong>{{ 'Gérez vos réservations'|trans }}</strong>{{ 'Suivez vos réservations, vos clients et vos paiements.'|trans }}</span>
+                </li>
+                <li>
+                    <span class="tm-choice-feats__icon">{{ icon.chart_frame(17) }}</span>
+                    <span><strong>{{ 'Développez votre visibilité'|trans }}</strong>{{ 'Recevez plus de demandes et fidélisez vos clients.'|trans }}</span>
+                </li>
             </ul>
-        </aside>
+            {# Ouvre le parcours professionnel en deux étapes (activité, siège,
+               pièces justificatives), pas le formulaire client. #}
+            <a class="tm-choice-panel__btn" href="{{ path('app_pro_register') }}">
+                {{ 'Je suis un pro prestataire'|trans }} {{ icon.arrow_right(16) }}
+            </a>
+            <a class="tm-choice-panel__more" href="{{ path('app_corporate_partner') }}">{{ "En savoir plus sur l'espace pro"|trans }}</a>
+        </section>
 
+        <div class="tm-choice__sep" aria-hidden="true"><span>{{ 'ou'|trans }}</span></div>
+
+        {# ---- Client (vert, à droite) ---- #}
+        <section class="tm-choice-panel tm-choice-panel--client">
+            <span class="tm-choice-panel__badge">{{ icon.user_round(26) }}</span>
+            <h2 class="tm-choice-panel__name">{{ 'Client'|trans }}</h2>
+            <p class="tm-choice-panel__desc">
+                {{ 'Vous recherchez des activités, des loisirs'|trans }}<br>
+                {{ 'ou des expériences à vivre.'|trans }}<br>
+                {{ 'Créez votre compte pour réserver et profiter'|trans }}<br>
+                {{ 'de nos meilleures offres.'|trans }}
+            </p>
+            <ul class="tm-choice-feats">
+                <li>
+                    <span class="tm-choice-feats__icon">{{ icon.user_pin(17) }}</span>
+                    <span><strong>{{ 'Trouvez des activités'|trans }}</strong>{{ 'Découvrez des activités et expériences uniques.'|trans }}</span>
+                </li>
+                <li>
+                    <span class="tm-choice-feats__icon">{{ icon.calendar_grid(17) }}</span>
+                    <span><strong>{{ 'Réservez en toute simplicité'|trans }}</strong>{{ 'Réservez facilement en quelques clics.'|trans }}</span>
+                </li>
+                <li>
+                    <span class="tm-choice-feats__icon">{{ icon.chat_smile(17) }}</span>
+                    <span><strong>{{ 'Profitez en toute sérénité'|trans }}</strong>{{ 'Vivez vos expériences et partagez vos avis.'|trans }}</span>
+                </li>
+            </ul>
+            <a class="tm-choice-panel__btn" href="{{ path('app_register', { type: 'client' }) }}">
+                {{ 'Je suis un client'|trans }} {{ icon.arrow_right(16) }}
+            </a>
+            {# Pas de page « espace client » dédiée : la page Activités montre
+               ce que le compte client permet de réserver. #}
+            <a class="tm-choice-panel__more" href="{{ path('app_activities') }}">{{ 'En savoir plus'|trans }}</a>
+        </section>
     </div>
+
+    {# ---- Bande « expérience sécurisée » ---- #}
+    <aside class="tm-choice-band">
+        <span class="tm-choice-band__shield">{{ icon.shield_check(32) }}</span>
+        <div class="tm-choice-band__intro">
+            <strong>{{ 'Une expérience sécurisée pour tous'|trans }}</strong>
+            <span>{{ 'Vos données sont protégées et votre expérience est notre priorité.'|trans }}</span>
+        </div>
+        <ul class="tm-choice-band__points">
+            <li>{{ icon.card_lock(18) }} {{ 'Paiement sécurisé'|trans }}</li>
+            <li>{{ icon.padlock(18) }} {{ 'Données protégées'|trans }}</li>
+            <li>{{ icon.support_cycle(18) }} {{ 'Support dédié'|trans }}</li>
+        </ul>
+    </aside>
 </div>
 {% endblock %}

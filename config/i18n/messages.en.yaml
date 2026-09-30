@@ -1669,3 +1669,47 @@
 "Retour à l'accueil": "Back to home"
 "Voir les activités entre particuliers": "See private activities"
 "Revenir à la rubrique": "Back to section"
+
+# En-tête, pied de page et choix du compte (maquette choix_profil, 30/09).
+# Les paragraphes du choix du compte sont découpés ligne par ligne, comme la
+# maquette : chaque fragment se traduit seul.
+"Album photo": "Photo album"
+"Déposer une activité": "List an activity"
+"Lancer la recherche": "Search"
+"Rechercher une activité, un loisir, une destination...": "Search for an activity, a hobby, a destination..."
+"Toutes les activités": "All activities"
+"Choisissez le type de compte qui vous correspond pour accéder": "Choose the account type that suits you to access"
+"aux fonctionnalités adaptées à vos besoins.": "features tailored to your needs."
+"Vous proposez des activités, des services ou des loisirs.": "You offer activities, services or leisure experiences."
+"Créez votre compte professionnel pour développer": "Create your professional account to grow"
+"votre visibilité et gérer vos prestations.": "your visibility and manage your services."
+"Vous recherchez des activités, des loisirs": "You are looking for activities, leisure"
+"ou des expériences à vivre.": "or experiences to enjoy."
+"Créez votre compte pour réserver et profiter": "Create your account to book and enjoy"
+"de nos meilleures offres.": "our best offers."
+
+# Connexion particulier (maquette connexion_particulier, 30/09) — textes
+# découpés ligne par ligne comme la maquette.
+"Accédez à votre compte TrouveMoi": "Access your TrouveMoi account"
+"Connectez-vous pour découvrir des activités incroyables,": "Sign in to discover amazing activities,"
+"réserver vos loisirs préférés et vivre des expériences": "book your favourite hobbies and enjoy"
+"inoubliables.": "unforgettable experiences."
+"Trouvez des activités et destinations": "Find activities and destinations"
+"qui vous ressemblent.": "that suit you."
+"Réservez facilement vos activités": "Easily book your activities"
+"en quelques clics.": "in just a few clicks."
+"Vivez des moments uniques": "Enjoy unique moments"
+"et partagez vos expériences.": "and share your experiences."
+"S'inscrire maintenant": "Sign up now"
+"votre@email.com": "your@email.com"
+
+# Écrans professionnels sur le modèle de la connexion particulier (30/09).
+"Accédez à votre espace professionnel": "Access your professional area"
+"Adresse e-mail professionnelle": "Business email address"
+"Connexion particulier": "Personal sign-in"
+"Développez votre activité avec": "Grow your business with"
+"Espace professionnel": "Professional area"
+"Publiez vos activités, gérez vos réservations": "Publish your activities, manage your bookings"
+"Vous êtes un particulier ?": "Are you an individual?"
+"et gagnez en visibilité auprès de nouveaux clients.": "and reach new customers."
+"votre@entreprise.com": "you@company.com"

@@ -1,0 +1,58 @@
+{#
+    Gabarit commun des écrans d'authentification — d'après la maquette
+    connexion_particulier.jpeg (30/09) : colonne d'accueil + illustration à
+    gauche, carte blanche à droite. Styles : assets/styles/layout.css
+    (.tm-login).
+
+    Servi par : connexion et inscription particulier (security/), et tous les
+    écrans professionnels (provider/auth/_aside et _split), qui n'ont pas
+    encore de maquette et reprennent ce modèle avec un discours pro.
+
+    Blocs :
+      - tm_variant : '' (particulier) ou 'pro' ;
+      - tm_welcome : colonne de gauche (par défaut, celle de la maquette) ;
+      - tm_card    : contenu de la carte.
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block body %}
+{% set variant = block('tm_variant') is defined ? block('tm_variant')|trim : '' %}
+<div class="tm-login{{ variant ? ' tm-login--' ~ variant }}">
+    <img class="tm-login__art" src="{{ asset('images/login-illustration.png') }}" alt="" width="1530" height="913">
+
+    <div class="tm-login__row">
+        <section class="tm-login__welcome">
+            {% block tm_welcome %}
+                <h1 class="tm-login__title">
+                    {{ 'Bienvenue sur'|trans }}<br>
+                    TrouveMoi <span class="is-plaisirs">Plaisirs</span> &amp; <span class="is-loisirs">Loisirs</span>
+                </h1>
+                <p class="tm-login__lead">
+                    {{ 'Connectez-vous pour découvrir des activités incroyables,'|trans }}<br>
+                    {{ 'réserver vos loisirs préférés et vivre des expériences'|trans }}<br>
+                    {{ 'inoubliables.'|trans }}
+                </p>
+                <ul class="tm-login__feats">
+                    <li>
+                        <span class="tm-login__feat-icon">{{ icon.compass(26) }}</span>
+                        <span><strong>{{ 'Découvrez'|trans }}</strong>{{ 'Trouvez des activités et destinations'|trans }}<br> {{ 'qui vous ressemblent.'|trans }}</span>
+                    </li>
+                    <li>
+                        <span class="tm-login__feat-icon">{{ icon.calendar_grid(26) }}</span>
+                        <span><strong>{{ 'Réservez'|trans }}</strong>{{ 'Réservez facilement vos activités'|trans }}<br> {{ 'en quelques clics.'|trans }}</span>
+                    </li>
+                    <li>
+                        <span class="tm-login__feat-icon">{{ icon.heart(26) }}</span>
+                        <span><strong>{{ 'Profitez'|trans }}</strong>{{ 'Vivez des moments uniques'|trans }}<br> {{ 'et partagez vos expériences.'|trans }}</span>
+                    </li>
+                </ul>
+            {% endblock %}
+        </section>
+
+        <section class="tm-login__card">
+            {% block tm_card %}{% endblock %}
+        </section>
+    </div>
+</div>
+{% endblock %}

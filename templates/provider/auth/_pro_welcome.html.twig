@@ -1,0 +1,29 @@
+{#
+    Colonne d'accueil des écrans professionnels (pas de maquette : repris du
+    modèle connexion_particulier.jpeg, avec les arguments de la carte
+    « Pro Prestataire » de l'écran de choix du compte).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+<p class="tm-login__eyebrow">{{ 'Espace professionnel'|trans }}</p>
+<h1 class="tm-login__title">
+    {{ 'Développez votre activité avec'|trans }}<br>
+    TrouveMoi <span class="is-plaisirs">Plaisirs</span> &amp; <span class="is-loisirs">Loisirs</span>
+</h1>
+<p class="tm-login__lead">
+    {{ 'Publiez vos activités, gérez vos réservations'|trans }}<br>
+    {{ 'et gagnez en visibilité auprès de nouveaux clients.'|trans }}
+</p>
+<ul class="tm-login__feats">
+    <li>
+        <span class="tm-login__feat-icon">{{ icon.target_frame(26) }}</span>
+        <span><strong>{{ 'Déposez et gérez vos activités'|trans }}</strong>{{ 'Publiez vos offres et gérez vos disponibilités.'|trans }}</span>
+    </li>
+    <li>
+        <span class="tm-login__feat-icon">{{ icon.calendar_grid(26) }}</span>
+        <span><strong>{{ 'Gérez vos réservations'|trans }}</strong>{{ 'Suivez vos réservations, vos clients et vos paiements.'|trans }}</span>
+    </li>
+    <li>
+        <span class="tm-login__feat-icon">{{ icon.chart_frame(26) }}</span>
+        <span><strong>{{ 'Développez votre visibilité'|trans }}</strong>{{ 'Recevez plus de demandes et fidélisez vos clients.'|trans }}</span>
+    </li>
+</ul>

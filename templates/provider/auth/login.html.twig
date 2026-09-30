@@ -1,5 +1,6 @@
 {#
-    Connexion professionnelle — Figma 955:90119.
+    Connexion professionnelle — pas de maquette dédiée : reprend le modèle
+    de la connexion particulier (30/09). Anciennement Figma 955:90119.
 
     LA MAQUETTE EN PROPOSE DEUX. Celle-ci, avec la bande latérale des
     avantages, est celle que le client a retenue ; la « proposition 1 »
@@ -13,8 +14,6 @@
         de Symfony retombe sur `login_path`) ;
       · `_csrf_token` — jeton « authenticate », attendu par form_login.
 
-    Fautes de la maquette corrigées : « Bienvenu » -> « Bienvenue »,
-    « Mot de passe oublier ? » -> « Mot de passe oublié ? ».
 #}
 {% extends 'provider/auth/_aside.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -22,62 +21,49 @@
 {% block title %}{{ 'Connexion professionnelle'|trans }}{% endblock %}
 
 {% block pa_card %}
-    <div class="pa-card pa-card--login">
-        {# Le logo est cliquable : ces écrans n'ont ni navbar ni pied de page
-           (c'est la maquette), et sans lui un visiteur égaré n'aurait aucune
-           sortie vers le site. #}
-        <div class="pa-card__logo">
-            <a href="{{ path('app_home') }}" aria-label="{{ 'Revenir sur le site'|trans }}">
-                <img src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="177" height="44">
-            </a>
+    <h2 class="tm-login__card-title">{{ 'Connexion'|trans }}</h2>
+    <p class="tm-login__card-sub">{{ 'Accédez à votre espace professionnel'|trans }}</p>
+
+    <form class="tm-login__form" method="post" action="{{ path('app_login') }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+        <input type="hidden" name="_failure_path" value="{{ path('app_pro_login') }}">
+
+        {% if error %}
+            <div class="tm-login__alert" role="alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
+
+        <label class="tm-login__label" for="proEmail">{{ 'Adresse e-mail professionnelle'|trans }}</label>
+        <div class="tm-login__input">
+            {{ icon.mail(20) }}
+            <input id="proEmail" type="email" name="_email" value="{{ last_username }}"
+                   placeholder="{{ 'votre@entreprise.com'|trans }}" autocomplete="email" required>
         </div>
 
-        <h1 class="pa-card__title">{{ 'Bienvenue sur'|trans }}<br>{{ 'Plaisirs & Loisirs'|trans }}</h1>
+        <label class="tm-login__label" for="proPassword">{{ 'Mot de passe'|trans }}</label>
+        <div class="tm-login__input" data-controller="password-toggle">
+            {{ icon.padlock(20) }}
+            <input id="proPassword" type="password" name="_password" data-password-toggle-target="input"
+                   placeholder="•••••••••••••" autocomplete="current-password" required>
+            <button type="button" class="tm-login__eye" data-action="password-toggle#toggle" aria-label="{{ 'Afficher ou masquer le mot de passe'|trans }}">
+                <span data-password-toggle-target="show">{{ icon.eye(20) }}</span>
+                <span data-password-toggle-target="hide" hidden>{{ icon.eye_off(20) }}</span>
+            </button>
+        </div>
 
-        <form class="pa-form" method="post" action="{{ path('app_login') }}">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-            <input type="hidden" name="_failure_path" value="{{ path('app_pro_login') }}">
+        <a class="tm-login__forgot" href="{{ path('app_pro_forgot_password') }}">{{ 'Mot de passe oublié ?'|trans }}</a>
 
-            {% if error %}
-                <p class="pa-alert">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
-            {% endif %}
+        <button type="submit" class="tm-login__submit">{{ 'Se connecter'|trans }}</button>
+    </form>
 
-            <div class="pa-field">
-                <label class="pa-label" for="proEmail">{{ 'Email'|trans }}</label>
-                <input id="proEmail" class="pa-input" type="email" name="_email"
-                       value="{{ last_username }}" placeholder="{{ 'Entrer votre mail'|trans }}"
-                       autocomplete="email" required>
-            </div>
+    {# Passe par l'écran de choix : le visiteur y revoit les deux profils
+       avant de s'inscrire (demande du 30/09). #}
+    <p class="tm-login__signup">
+        {{ "Vous n'avez pas encore de compte professionnel ?"|trans }}<br>
+        <a href="{{ path('app_auth_choice') }}">{{ "S'inscrire maintenant"|trans }}</a>
+    </p>
 
-            <div class="pa-field">
-                <label class="pa-label" for="proPassword">{{ 'Mot de passe'|trans }}</label>
-                <div class="pa-input-wrap" data-controller="password-toggle">
-                    <input id="proPassword" class="pa-input pa-input--eye" type="password" name="_password"
-                           data-password-toggle-target="input" placeholder="{{ 'Entrer votre mot de passe'|trans }}"
-                           autocomplete="current-password" required>
-                    <button type="button" class="pa-input__eye" data-action="password-toggle#toggle"
-                            aria-label="{{ 'Afficher ou masquer le mot de passe'|trans }}">
-                        <span data-password-toggle-target="show">{{ icon.eye() }}</span>
-                        <span data-password-toggle-target="hide" hidden>{{ icon.eye_off() }}</span>
-                    </button>
-                </div>
-                <a class="pa-forgot" href="{{ path('app_pro_forgot_password') }}">{{ 'Mot de passe oublié ?'|trans }}</a>
-            </div>
-
-            <button type="submit" class="pa-btn">{{ 'Commencer'|trans }}</button>
-        </form>
-
-        {# La maquette ne montre aucun lien vers l'inscription. Sans lui, le
-           professionnel qui arrive ici sans compte n'a aucune issue : le
-           parcours d'inscription existe mais rien n'y mène.
-
-           MÈNE À L'ÉCRAN « BIENVENUE » (choix du profil), PAS DIRECTEMENT AU
-           FORMULAIRE (signalé le 18/09) : même raison que sur la connexion
-           client, c'est désormais le seul chemin restant vers cet écran
-           depuis que l'en-tête ne propose plus qu'un choix de connexion. #}
-        <p class="pa-switch">
-            {{ "Vous n'avez pas encore de compte professionnel ?"|trans }}<br>
-            <a href="{{ path('app_auth_choice') }}">{{ 'Inscrivez-vous'|trans }}</a>
-        </p>
-    </div>
+    <p class="tm-login__switch">
+        {{ 'Vous êtes un particulier ?'|trans }}
+        <a href="{{ path('app_login') }}">{{ 'Connexion particulier'|trans }}</a>
+    </p>
 {% endblock %}

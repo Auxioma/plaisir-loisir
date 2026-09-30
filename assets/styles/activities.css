@@ -7,12 +7,7 @@
  * ============================================================================
  */
 
-/* ===========================================================================
- *  EN-TÊTE CONNECTÉ (spec §2.1)
- * ======================================================================== */
-.pl-navbar--connected .pl-nav--connected { gap: var(--pl-sp-4); }
-
-/* Boutons ronds à icône (favoris, messagerie, notifications). */
+/* Boutons ronds à icône (Partager / Favori de la fiche activité). */
 .pl-iconbtn {
     position: relative;
     width: 40px; height: 40px;
@@ -24,45 +19,6 @@
     transition: background-color .15s ease, color .15s ease;
 }
 .pl-iconbtn:hover { background: var(--pl-action-light); color: var(--pl-action); }
-
-/* Badge de non-lus (messagerie, notifications) : même couleur et même rôle
-   que .acc-menu__count sur le menu compte (account.css) — les deux
-   affichent le même compteur, voir UnreadCountsExtension. */
-.pl-iconbtn__badge {
-    position: absolute; top: 2px; right: 2px;
-    min-width: 16px; height: 16px; padding: 0 3px;
-    display: inline-flex; align-items: center; justify-content: center;
-    background: var(--pl-error); color: var(--pl-white);
-    font-size: 10px; font-weight: 700; line-height: 1;
-    border-radius: 999px;
-    border: 2px solid var(--pl-white);
-}
-
-/* Avatar utilisateur + pastille verte « en ligne ». */
-.pl-avatarbtn {
-    position: relative;
-    width: 44px; height: 44px;
-    padding: 0; border: 0; border-radius: 50%;
-    background: transparent;
-    cursor: pointer;
-}
-.pl-avatarbtn img {
-    width: 100%; height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    display: block;
-    /* Anneau en box-shadow (pas de `border`) : voir le commentaire sur
-       .acc-profile__avatar dans account.css — la photo remplit tout le
-       cercle, l'anneau se dessine par-dessus sans réduire sa boîte. */
-    box-shadow: 0 0 0 2px #b9bec7;
-}
-.pl-avatarbtn__dot {
-    position: absolute; right: 0; bottom: 2px;
-    width: 11px; height: 11px;
-    background: var(--pl-success);
-    border: 2px solid var(--pl-white);
-    border-radius: 50%;
-}
 
 /* ===========================================================================
  *  EN-TÊTE DE PAGE DU LISTING (écran C)

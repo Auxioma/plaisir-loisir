@@ -557,3 +557,77 @@
 {% macro headset_mic(size = 22) %}
     <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="2.6" y="12.6" width="4.4" height="6.4" rx="2.2"/><rect x="17" y="12.6" width="4.4" height="6.4" rx="2.2"/><path d="M20 19v.6a2.4 2.4 0 0 1-2.4 2.4H13"/></svg>
 {% endmacro %}
+
+{# ---- En-tête, pied de page et choix du compte (maquette choix_profil) ---- #}
+
+{% macro briefcase(size = 24) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 12.5h18M8 11v3M16 11v3"/></svg>
+{% endmacro %}
+
+{% macro user_round(size = 24) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c.8-3.6 3.8-5.5 7.5-5.5s6.7 1.9 7.5 5.5z"/></svg>
+{% endmacro %}
+
+{% macro arrow_right(size = 16) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+{% endmacro %}
+
+{# Cible dans un cadre : « Déposez et gérez vos activités ». #}
+{% macro target_frame(size = 18) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 19.5 8v8L12 20.5 4.5 16V8z"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5v1.5M12 14v1.5"/></svg>
+{% endmacro %}
+
+{# Calendrier à cases : « Gérez vos réservations » / « Réservez… ». #}
+{% macro calendar_grid(size = 18) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17M8 14h1.5M11.25 14h1.5M14.5 14h1.5M8 17h1.5M11.25 17h1.5"/></svg>
+{% endmacro %}
+
+{# Courbe dans un cadre : « Développez votre visibilité ». #}
+{% macro chart_frame(size = 18) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="m7 15 3.5-3.5 2.5 2.5L17 9.5"/><path d="M14 9.5h3v3"/></svg>
+{% endmacro %}
+
+{# Personne dans un repère : « Trouvez des activités ». #}
+{% macro user_pin(size = 18) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.5s-7-5.6-7-11.5a7 7 0 0 1 14 0c0 5.9-7 11.5-7 11.5z"/><circle cx="12" cy="9" r="2.3"/><path d="M8.3 15.2c.7-1.6 2.1-2.4 3.7-2.4s3 .8 3.7 2.4"/></svg>
+{% endmacro %}
+
+{# Bulle souriante : « Profitez en toute sérénité ». #}
+{% macro chat_smile(size = 18) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.4 12.7L3.5 20.5l4.3-1.1A8.5 8.5 0 1 0 12 3.5z"/><path d="M8.8 13.2a4 4 0 0 0 6.4 0"/><path d="M9 9.8h.01M15 9.8h.01"/></svg>
+{% endmacro %}
+
+{# Bouclier coché à fond teinté : bande « Une expérience sécurisée ». #}
+{% macro shield_check(size = 30) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5 4.5 5.3v6.2c0 4.6 3.2 8.6 7.5 10 4.3-1.4 7.5-5.4 7.5-10V5.3z" fill="currentColor" fill-opacity=".14"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg>
+{% endmacro %}
+
+{% macro card_lock(size = 16) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 19H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5"/><path d="M3 9.5h18"/><circle cx="18" cy="17.5" r="3"/><path d="M18 16.5v1l.7.7"/></svg>
+{% endmacro %}
+
+{% macro padlock(size = 16) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10" width="15" height="11.5" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14.5v2.5"/></svg>
+{% endmacro %}
+
+{% macro support_cycle(size = 16) %}
+    <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 0 1-13.7 5.6M4 12a8 8 0 0 1 13.7-5.6"/><path d="M17.7 2.8v3.6h-3.6M6.3 21.2v-3.6h3.6"/><path d="M9.5 12.5a2.5 2.5 0 0 0 5 0"/></svg>
+{% endmacro %}
+
+{# Cartes de paiement du pied de page : 48 × 25, sur fond sombre (Visa seul
+   sur blanc, comme la maquette). Distinctes des pay_* 35 × 24 ci-dessus. #}
+{% macro paycard_visa() %}
+    <svg width="48" height="25" viewBox="0 0 48 25" aria-label="Visa" role="img"><rect width="48" height="25" rx="3" fill="#fff"/><text x="24" y="17.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="900" font-style="italic" fill="#1a1f71">VISA</text><path d="M11.5 9.2l1.4-1.6h1.6" stroke="#f7a600" stroke-width="1.2" fill="none"/></svg>
+{% endmacro %}
+
+{% macro paycard_mastercard() %}
+    <svg width="46" height="25" viewBox="0 0 46 25" aria-label="Mastercard" role="img"><rect width="46" height="25" rx="3" fill="#15285e"/><circle cx="19" cy="11" r="7" fill="#eb001b"/><circle cx="27" cy="11" r="7" fill="#f79e1b"/><path d="M23 5.3a7 7 0 0 1 0 11.4 7 7 0 0 1 0-11.4z" fill="#ff5f00"/><text x="23" y="22.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="2.6" fill="#fff">mastercard</text></svg>
+{% endmacro %}
+
+{% macro paycard_paypal() %}
+    <svg width="53" height="25" viewBox="0 0 53 25" aria-label="PayPal" role="img"><rect width="53" height="25" rx="3" fill="#15285e"/><path d="M9.5 8h3.2c1.6 0 2.4.9 2.1 2.3-.3 1.6-1.5 2.4-3 2.4h-1l-.6 3H8.2z" fill="#fff"/><text x="31" y="16" text-anchor="middle" font-family="Arial, sans-serif" font-size="8.5" font-weight="700" font-style="italic" fill="#fff">PayPal</text></svg>
+{% endmacro %}
+
+{% macro paycard_applepay() %}
+    <svg width="52" height="25" viewBox="0 0 52 25" aria-label="Apple Pay" role="img"><rect width="52" height="25" rx="3" fill="#232a6e"/><path d="M16.6 8.3c.5-.6.8-1.3.7-2.1-.7 0-1.5.5-2 1-.4.5-.8 1.3-.7 2 .8.1 1.5-.4 2-.9zm.7 1.1c-1.1-.1-2 .6-2.5.6s-1.3-.6-2.2-.6c-1.1 0-2.1.7-2.7 1.7-1.2 2-.3 5 .8 6.6.6.8 1.2 1.7 2.1 1.6.8 0 1.2-.5 2.2-.5s1.3.5 2.2.5 1.5-.8 2-1.6c.6-.9.9-1.8.9-1.9 0 0-1.8-.7-1.8-2.7 0-1.7 1.4-2.5 1.4-2.6-.8-1.2-2-1.3-2.4-1.1z" fill="#fff"/><text x="32" y="17.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="500" fill="#fff">Pay</text></svg>
+{% endmacro %}

@@ -1,103 +1,66 @@
 {#
-    Écran de connexion.
-    Le formulaire est déjà fonctionnel : il est intercepté par le firewall
-    Symfony (voir config/packages/security.yaml, section form_login).
-    Champs attendus : _email, _password, _csrf_token (id « authenticate »),
-    _remember_me.
+    Connexion particulier — maquette assets/maquettes/connexion_particulier.jpeg
+    (30/09). Styles : assets/styles/layout.css (.tm-login).
 
-    L'attribut `autofocus` a été retiré : il posait l'anneau de focus violet sur
-    le champ e-mail dès l'ouverture, alors que la maquette montre le champ au
-    repos.
+    Mise en page commune : security/_tm_shell.html.twig.
 
-    La maquette « Connexion » ne comporte PAS de bascule Client/Professionnel
-    (retirée le 13/08 comme sur l'inscription) : l'accès professionnel passe par
-    le lien « Accéder à votre espace » vers l'écran de choix.
+    Formulaire intercepté par le firewall (security.yaml, form_login) :
+    _email, _password, _csrf_token (id « authenticate »).
+
+    Retirés parce que la maquette ne les montre pas : « Se souvenir de moi »
+    et le lien vers l'espace professionnel (joignable par « Se connecter » de
+    l'en-tête → Prestataire).
 #}
-{% extends 'security/_layout.html.twig' %}
+{% extends 'security/_tm_shell.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ 'Connexion'|trans }}{% endblock %}
 
-{% block auth_card %}
-    <div class="auth-card auth-card--login">
-        <div class="auth-card__header">
-            <h2 class="auth-card__title">{{ 'Connexion'|trans }}</h2>
-            <p class="auth-card__subtitle">{{ 'Accédez à votre TrouveMoi'|trans }}</p>
-        </div>
+{% block tm_card %}
+            <h2 class="tm-login__card-title">{{ 'Connexion'|trans }}</h2>
+            <p class="tm-login__card-sub">{{ 'Accédez à votre compte TrouveMoi'|trans }}</p>
 
-        <form class="auth-form" method="post" action="{{ path('app_login') }}">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            <form class="tm-login__form" method="post" action="{{ path('app_login') }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-            {% if error %}
-                <div class="auth-alert">
-                    {{ error.messageKey|trans(error.messageData, 'security') }}
-                    {# Compte « en attente » (AccountChecker::checkPreAuth) : seul cas où
-                       un lien est utile, l'utilisateur doit pouvoir redemander un code. #}
-                    {% if 'pas encore vérifiée' in error.messageKey %}
-                        <a class="auth-inline-link" href="{{ path('app_email_verification_request') }}">{{ 'Recevoir un nouveau code'|trans }}</a>
-                    {% endif %}
-                </div>
-            {% endif %}
-
-            <div class="auth-fields">
-                <div class="auth-field">
-                    <label class="auth-field__label" for="inputEmail">{{ 'Adresse e-mail'|trans }}</label>
-                    <div class="auth-input">
-                        <span class="auth-input__icon">{{ icon.mail() }}</span>
-                        <input id="inputEmail" class="auth-input__control" type="email" name="_email"
-                               value="{{ last_username }}" placeholder="{{ 'Votre@email.com'|trans }}"
-                               autocomplete="email" required>
+                {% if error %}
+                    <div class="tm-login__alert" role="alert">
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
+                        {# Compte « en attente » (AccountChecker::checkPreAuth) : il doit
+                           pouvoir redemander un code. #}
+                        {% if 'pas encore vérifiée' in error.messageKey %}
+                            <a href="{{ path('app_email_verification_request') }}">{{ 'Recevoir un nouveau code'|trans }}</a>
+                        {% endif %}
                     </div>
+                {% endif %}
+
+                <label class="tm-login__label" for="inputEmail">{{ 'Adresse e-mail'|trans }}</label>
+                <div class="tm-login__input">
+                    {{ icon.mail(20) }}
+                    <input id="inputEmail" type="email" name="_email" value="{{ last_username }}"
+                           placeholder="{{ 'votre@email.com'|trans }}" autocomplete="email" required>
                 </div>
 
-                <div class="auth-field">
-                    <label class="auth-field__label" for="inputPassword">{{ 'Mot de passe'|trans }}</label>
-                    <div class="auth-input" data-controller="password-toggle">
-                        <span class="auth-input__icon">{{ icon.lock() }}</span>
-                        <input id="inputPassword" class="auth-input__control" type="password" name="_password"
-                               data-password-toggle-target="input" placeholder="{{ 'Votre mot de passe'|trans }}"
-                               autocomplete="current-password" required>
-                        <button type="button" class="auth-input__eye" data-action="password-toggle#toggle" aria-label="{{ 'Afficher ou masquer le mot de passe'|trans }}">
-                            <span data-password-toggle-target="show">{{ icon.eye() }}</span>
-                            <span data-password-toggle-target="hide" hidden>{{ icon.eye_off() }}</span>
-                        </button>
-                    </div>
+                <label class="tm-login__label" for="inputPassword">{{ 'Mot de passe'|trans }}</label>
+                <div class="tm-login__input" data-controller="password-toggle">
+                    {{ icon.padlock(20) }}
+                    <input id="inputPassword" type="password" name="_password" data-password-toggle-target="input"
+                           placeholder="•••••••••••••" autocomplete="current-password" required>
+                    <button type="button" class="tm-login__eye" data-action="password-toggle#toggle" aria-label="{{ 'Afficher ou masquer le mot de passe'|trans }}">
+                        <span data-password-toggle-target="show">{{ icon.eye(20) }}</span>
+                        <span data-password-toggle-target="hide" hidden>{{ icon.eye_off(20) }}</span>
+                    </button>
                 </div>
 
-                <div class="auth-options">
-                    <label class="auth-remember">
-                        <input type="checkbox" name="_remember_me"> {{ 'Se souvenir de moi'|trans }}
-                    </label>
-                    <a class="auth-link" href="{{ path('app_forgot_password_request') }}">{{ 'Mot de passe oublié ?'|trans }}</a>
-                </div>
-            </div>
+                <a class="tm-login__forgot" href="{{ path('app_forgot_password_request') }}">{{ 'Mot de passe oublié ?'|trans }}</a>
 
-            <div class="auth-actions">
-                <button type="submit" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Se connecter'|trans }}</button>
-                {# Mène à l'écran « Bienvenue » (choix du profil), pas
-                   directement au formulaire d'inscription (signalé le 18/09) :
-                   depuis que l'en-tête ne propose plus qu'un choix de
-                   connexion, ce lien est le seul chemin restant vers cet
-                   écran qui présente les deux profils avant de choisir. #}
-                <p class="auth-switch">
-                    {{ "Vous n'avez pas de compte ?"|trans }}
-                    <a class="auth-inline-link" href="{{ path('app_auth_choice') }}">{{ 'Créer un compte'|trans }}</a>
-                </p>
+                <button type="submit" class="tm-login__submit">{{ 'Se connecter'|trans }}</button>
+            </form>
 
-                {# Maquette : l'accès professionnel passe par ce lien, sur deux
-                   lignes centrées — et non par une bascule Client/Professionnel
-                   dans le formulaire.
+            {% include 'security/_tm_socials.html.twig' %}
 
-                   IL MÈNE À LA CONNEXION PROFESSIONNELLE, PAS À L'ÉCRAN DE CHOIX.
-                   Depuis cet écran on se connecte : le pendant professionnel est
-                   /pro/connexion, qui porte la bande latérale des avantages. #}
-                <p class="auth-switch auth-switch--pro">
-                    {{ 'Vous êtes un professionnel ?'|trans }}<br>
-                    <a class="auth-inline-link" href="{{ path('app_pro_login') }}">{{ 'Accéder à votre espace'|trans }}</a>
-                </p>
-            </div>
-        </form>
-
-        {% include 'security/_social_login.html.twig' %}
-    </div>
+            <p class="tm-login__signup">
+                {{ "Vous n'avez pas de compte ?"|trans }}
+                <a href="{{ path('app_auth_choice') }}">{{ "S'inscrire maintenant"|trans }}</a>
+            </p>
 {% endblock %}

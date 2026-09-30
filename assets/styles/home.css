@@ -12,42 +12,8 @@
 /* Remplacé par la classe standard .container de Bootstrap, calée sur cette
    même grille dans assets/styles/bootstrap-theme.css. */
 
-/* ===========================================================================
- *  EN-TÊTE DE L'ACCUEIL (spécifique)
- *  « Découvrez » + sélecteur de langue, en menus déroulants natifs (<details>).
- *  Scopé à l'accueil (--home) : la navbar partagée des pages d'authentification
- *  n'est pas impactée.
- * ======================================================================== */
-/* Pas de retrait propre : la navbar suit la grille de la page. Les trois
-   maquettes (Accueil, Inscription, Activités) placent son contenu de x108 à
-   x1336, soit le padding de 103px défini sur .pl-navbar. Un retrait de 48px
-   décalait ici le logo de 55px vers la gauche et les boutons de 30px vers la
-   droite — sur toutes les pages. */
-/* Maquette : « Découvrez » commence a x305 (16px apres le logo) et le
-   selecteur de langue le suit sans ecart — les deux menus se touchent,
-   leur padding de 8 fait la separation. */
-.pl-navbar--home .pl-navbar__left { gap: 16px; }
-.pl-navbar--home .pl-nav { gap: 0; }
-
+/* Menu déroulant natif (<details>) : tri du listing d'activités. */
 .pl-dropdown { position: relative; }
-.pl-dropdown__toggle {
-    list-style: none;
-    display: inline-flex; align-items: center; gap: var(--pl-sp-4);
-    padding: 10px var(--pl-sp-8);
-    color: var(--pl-text);
-    /* Maquette : 16px — « Découvrez » y mesure 81px d'encre contre 72 en 14. */
-    font-size: 16px;
-    font-weight: var(--pl-fw-semibold);
-    line-height: var(--pl-lh-sm);
-    white-space: nowrap;
-    border-radius: var(--pl-radius-xs);
-    cursor: pointer;
-    transition: color .15s ease, background-color .15s ease;
-}
-.pl-dropdown__toggle::-webkit-details-marker { display: none; }   /* retire le triangle natif */
-.pl-dropdown__toggle:hover { color: var(--pl-action); background: var(--pl-action-light); }
-.pl-dropdown[open] > .pl-dropdown__toggle { color: var(--pl-action); }
-.pl-dropdown[open] > .pl-dropdown__toggle > .pl-icon:last-child { transform: rotate(180deg); }
 
 .pl-dropdown__menu {
     position: absolute;
@@ -64,30 +30,7 @@
     box-shadow: 0 12px 28px rgba(15, 23, 42, .14);
     z-index: 1100;
 }
-.pl-dropdown--lang .pl-dropdown__menu { min-width: 170px; }
 
-/* Bouton « Se connecter » de l'en-tête visiteur (18/09, tous les en-têtes :
-   navbar_home, navbar, navbar_corporate, navbar_events). Le sommaire garde
-   l'habillage de .pl-btn/.pl-btn--outline-dark (pas .pl-dropdown__toggle,
-   chargé après components.css et qui écraserait son padding et sa taille) :
-   cette classe n'ajoute que ce que .pl-btn ne fournit pas — le retrait du
-   triangle natif de <summary> et la rotation du chevron à l'ouverture. */
-.pl-dropdown__toggle--signin { list-style: none; }
-.pl-dropdown__toggle--signin::-webkit-details-marker { display: none; }
-.pl-dropdown--signin[open] > .pl-dropdown__toggle--signin { background: var(--pl-text); color: var(--pl-white); }
-.pl-dropdown--signin[open] > .pl-dropdown__toggle--signin > .pl-icon:last-child { transform: rotate(180deg); }
-.pl-dropdown__menu--signin { left: auto; right: 0; min-width: 170px; }
-
-/* Menu « Profil / Déconnexion » de l'avatar connecté (18/09, tous les
-   en-têtes) : même mécanique que le bouton « Se connecter » ci-dessus, sur
-   .pl-avatarbtn plutôt que .pl-btn. */
-.pl-dropdown__toggle--profile { list-style: none; }
-.pl-dropdown__toggle--profile::-webkit-details-marker { display: none; }
-/* Variante footer : chip sombre + menu ouvert vers le haut (bas de page). */
-.pl-dropdown--footer { position: relative; }
-.pl-dropdown--footer > summary { list-style: none; }
-.pl-dropdown--footer > summary::-webkit-details-marker { display: none; }
-.pl-dropdown__menu--up { top: auto; bottom: calc(100% + 10px); left: auto; right: 0; min-width: 170px; }
 .pl-dropdown__item {
     display: flex; align-items: center; gap: var(--pl-sp-8);
     width: 100%;
@@ -825,16 +768,3 @@
     .home-private__inner, .home-private__panel, .home-gift__inner, .home-pro__inner { grid-template-columns: 1fr; }
 }
 
-/* Maquette (auth-flow/Connexion.png) : les deux boutons de la navbar réduite
-   ne partagent pas la même échelle. « Déposer une annonce » fait 192 de large
-   pour 165 d'encre — c'est déjà notre CTA en 16px/500, il ne manquait que le
-   retrait interne (14 et non 16). « S'incrire » fait 104 pour un pictogramme
-   de 20 et 54 d'encre : le libellé y est en 15px et le retrait tombe à 8
-   (nous étions à 14px demi-gras et 16 de retrait, d'où 129 de large). */
-.pl-navbar .pl-btn { padding-inline: 14px; }
-.pl-navbar .pl-btn--outline-dark {
-    font-size: 15px;
-    font-weight: var(--pl-fw-medium);
-    gap: 10px;
-    padding-inline: 8px;
-}

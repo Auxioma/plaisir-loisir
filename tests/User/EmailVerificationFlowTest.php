@@ -32,7 +32,7 @@ final class EmailVerificationFlowTest extends WebTestCase
         // Tant que le compte n'est pas vérifié, il ne peut pas se connecter
         // (AccountChecker).
         $client->request('GET', '/login');
-        $form = $client->getCrawler()->filter('form')->form();
+        $form = $client->getCrawler()->filterXPath('//form[.//input[@name="_email"]]')->form();
         $form['_email'] = $email;
         $form['_password'] = 'un-mot-de-passe-solide';
         $client->submit($form);
