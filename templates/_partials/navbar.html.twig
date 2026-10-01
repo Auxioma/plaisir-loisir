@@ -97,10 +97,18 @@
         <div class="tm-header__actions">
             {% if connected %}
                 <details class="pl-dropdown tm-account">
+                    {# Maquettes profil_particulier : pastille avatar + nom + « Mon compte ». #}
                     <summary class="tm-account__toggle" aria-label="{{ 'Menu du compte'|trans }}">
-                        <img src="{{ asset(app.user.avatarPath ?? 'images/account/avatar-default.svg') }}" alt="">
-                        {% set unreadMessages = app.user ? unread_messages_count(app.user) : 0 %}
-                        {% if unreadMessages > 0 %}<span class="tm-account__dot" aria-hidden="true"></span>{% endif %}
+                        <span class="tm-account__avatar">
+                            <img src="{{ asset(app.user.avatarPath ?? 'images/account/avatar-default.svg') }}" alt="">
+                            {% set unreadMessages = app.user ? unread_messages_count(app.user) : 0 %}
+                            {% if unreadMessages > 0 %}<span class="tm-account__dot" aria-hidden="true"></span>{% endif %}
+                        </span>
+                        <span class="tm-account__id">
+                            <strong>{{ app.user ? (app.user.firstName ~ ' ' ~ app.user.lastName) : 'Thomas Martin' }}</strong>
+                            <small>{{ 'Mon compte'|trans }}</small>
+                        </span>
+                        {{ icon.chevron_down(14) }}
                     </summary>
                     <div class="tm-menu tm-menu--right">
                         <a href="{{ is_provider ? path('app_pro_dashboard') : path('app_account_dashboard') }}" class="tm-menu__item">{{ icon.person(16) }} {{ 'Profil'|trans }}</a>

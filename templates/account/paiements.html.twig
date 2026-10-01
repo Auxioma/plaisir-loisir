@@ -1,0 +1,153 @@
+{#
+    Paiements et abonnements — maquette docs/maquettes/profil_particulier/
+    profil_paiements&abonnements_particulier.jpeg (30/09).
+    Données : AccountController::payments().
+
+    Écarts assumés : le compte particulier est gratuit (aucun abonnement à
+    gérer ni à annuler) et aucune carte n'est enregistrée par la plateforme
+    (Stripe la demande à chaque paiement) ; pas encore de factures PDF.
+#}
+{% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+{% import 'account/_ui.html.twig' as ui %}
+
+{% block title %}{{ 'Paiements et abonnements'|trans }}{% endblock %}
+
+{% block account %}
+    <header class="pf-head">
+        <div>
+            <h1 class="pf-title">{{ 'Paiements et abonnements'|trans }}</h1>
+            <p class="pf-sub">{{ 'Gérez vos abonnements, moyens de paiement et consultez l’historique de vos transactions.'|trans }}</p>
+        </div>
+    </header>
+
+    <nav class="pf-tabs pf-tabs--line">
+        <a class="pf-tab is-active" href="#abonnement">{{ icon.calendar_grid(18) }} {{ 'Abonnement'|trans }}</a>
+        <a class="pf-tab" href="#moyens">{{ icon.card(18) }} {{ 'Moyens de paiement'|trans }}</a>
+        <a class="pf-tab" href="#historique">{{ icon.clock(18) }} {{ 'Historique des paiements'|trans }}</a>
+        <a class="pf-tab" href="#historique">{{ icon.receipt(18) }} {{ 'Factures'|trans }}</a>
+    </nav>
+
+    <div class="pf-pay-top" id="abonnement">
+        <section class="pf-card">
+            <h2 class="pf-card__title">{{ 'Mon abonnement actuel'|trans }}</h2>
+            <div class="pf-plan">
+                <div class="pf-plan__box">
+                    <span class="pf-plan__ico">{{ icon.user_round(30) }}</span>
+                    <div>
+                        <strong>{{ 'Compte particulier'|trans }}</strong>
+                        <span class="pf-plan__price">{{ 'Gratuit'|trans }}</span>
+                        <p>{{ 'Réservez, organisez et partagez vos activités sans abonnement.'|trans }}</p>
+                    </div>
+                </div>
+                <ul class="pf-checks">
+                    <li>{{ icon.check(14) }} {{ 'Réservation d’activités'|trans }}</li>
+                    <li>{{ icon.check(14) }} {{ 'Favoris illimités'|trans }}</li>
+                    <li>{{ icon.check(14) }} {{ 'Activités entre particuliers'|trans }}</li>
+                    <li>{{ icon.check(14) }} {{ 'Albums photo partagés'|trans }}</li>
+                    <li>{{ icon.check(14) }} {{ 'Support par e-mail'|trans }}</li>
+                </ul>
+            </div>
+            <a class="pf-btn" href="{{ path('app_corporate_partner') }}">{{ 'Découvrir l’offre professionnelle'|trans }}</a>
+        </section>
+
+        <section class="pf-card">
+            <h2 class="pf-card__title">{{ 'Détails de l’abonnement'|trans }}</h2>
+            <dl class="pf-details">
+                <div class="pf-kv"><dt>{{ 'Membre depuis'|trans }}</dt><dd>{{ account.createdAt|pf_date('d MMMM y') }}</dd></div>
+                <div class="pf-kv"><dt>{{ 'Prochain renouvellement'|trans }}</dt><dd>—</dd></div>
+                <div class="pf-kv"><dt>{{ 'Mode de facturation'|trans }}</dt><dd>{{ 'Aucun'|trans }}</dd></div>
+                <div class="pf-kv"><dt>{{ 'Statut'|trans }}</dt><dd>{{ ui.pill('Actif'|trans, 'green') }}</dd></div>
+            </dl>
+        </section>
+    </div>
+
+    <section class="pf-card" id="moyens">
+        <div class="pf-card__head">
+            <h2 class="pf-card__title">{{ 'Mes moyens de paiement'|trans }}</h2>
+        </div>
+        <div class="pf-paymethod">
+            <span class="pf-paymethod__logos">{{ icon.paycard_visa() }}{{ icon.paycard_mastercard() }}</span>
+            <div>
+                <strong>{{ 'Aucune carte enregistrée'|trans }}</strong>
+                <small>{{ 'Vos coordonnées bancaires sont saisies de façon sécurisée auprès de Stripe à chaque réservation : TrouveMoi ne les conserve jamais.'|trans }}</small>
+            </div>
+        </div>
+    </section>
+
+    <section class="pf-card" id="historique">
+        <div class="pf-card__head">
+            <h2 class="pf-card__title">{{ 'Dernières transactions'|trans }}</h2>
+            {% if payments_count > 5 %}<a class="pf-link" href="{{ path('app_account_history') }}">{{ 'Voir tout l’historique'|trans }}</a>{% endif %}
+        </div>
+        {% if payments is empty %}
+            <div class="pf-empty">
+                <strong>{{ 'Aucune transaction pour le moment.'|trans }}</strong>
+                {{ 'Vos paiements de réservations apparaîtront ici.'|trans }}
+            </div>
+        {% else %}
+            <div class="pf-transactions">
+                {% for p in payments %}
+                    {% set tone = {paid: 'green', pending: 'orange', failed: 'red', refunded: 'grey'}[p.status.value] %}
+                    {% set label = {paid: 'Payé', pending: 'En attente', failed: 'Échoué', refunded: 'Remboursé'}[p.status.value] %}
+                    <div class="pf-transaction">
+                        <div class="pf-transaction__label">
+                            <strong>{{ p.booking.service ? p.booking.service.title : 'Réservation'|trans }}</strong>
+                            <small>{{ 'Référence'|trans }} {{ p.reference ?? ('' ~ p.id)|slice(-8) }}</small>
+                        </div>
+                        <span>{{ p.createdAt|pf_date('d MMM y') }}</span>
+                        <span>{{ p.amount|pf_money(p.currency) }}</span>
+                        {{ ui.pill(label|trans, tone) }}
+                        {% if p.booking.service %}
+                            <a class="pf-iconbtn" href="{{ path('app_activity_show', {slug: p.booking.service.slug}) }}" aria-label="{{ 'Voir l’activité'|trans }}">{{ icon.eye(18) }}</a>
+                        {% else %}<span></span>{% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
+
+{% block account_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Résumé de facturation'|trans }}</h2>
+        <dl class="pf-details">
+            <div class="pf-kv"><dt>{{ 'Période actuelle'|trans }}</dt><dd>{{ month_start|pf_date('MMMM y')|capitalize }}</dd></div>
+            <div class="pf-kv"><dt>{{ 'Payé ce mois-ci'|trans }}</dt><dd>{{ month_total|pf_money }}</dd></div>
+            <div class="pf-kv pf-kv--total"><dt>{{ 'Total payé'|trans }}</dt><dd>{{ total_paid|pf_money }}</dd></div>
+        </dl>
+        <div class="pf-notice">
+            {{ icon.info(18) }}
+            <p>
+                {% if last_paid %}
+                    <strong>{{ 'Dernier paiement le %date%'|trans({'%date%': last_paid.createdAt|pf_date('d MMMM y')}) }}</strong>
+                {% else %}
+                    <strong>{{ 'Aucun prélèvement programmé'|trans }}</strong>
+                {% endif %}
+                {{ 'Vous ne payez qu’au moment de réserver, sans engagement.'|trans }}
+            </p>
+        </div>
+    </section>
+
+    <section class="pf-card pf-card--soft">
+        <h2 class="pf-card__title pf-card__title--icon"><span class="pf-star">{{ icon.star_solid(24) }}</span>{{ 'Vous êtes professionnel ?'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Proposez vos activités sur TrouveMoi et gagnez en visibilité.'|trans }}</p>
+        <ul class="pf-checks pf-checks--spaced">
+            <li>{{ icon.check(14) }} {{ 'Visibilité prioritaire'|trans }}</li>
+            <li>{{ icon.check(14) }} {{ 'Gestion des réservations'|trans }}</li>
+            <li>{{ icon.check(14) }} {{ 'Campagnes promotionnelles'|trans }}</li>
+            <li>{{ icon.check(14) }} {{ 'Support dédié'|trans }}</li>
+        </ul>
+        <a class="pf-btn pf-btn--block" href="{{ path('app_corporate_partner') }}">{{ 'Découvrir l’offre professionnelle'|trans }}</a>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Besoin d’aide ?'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Notre équipe est là pour vous accompagner.'|trans }}</p>
+        <ul class="pf-list pf-helplist">
+            <li><a class="pf-list__link" href="{{ path('app_faq') }}"><span class="pf-helplist__ico">{{ icon.help_circle(16) }}</span>{{ 'Consulter la FAQ'|trans }}</a></li>
+            <li><a class="pf-list__link" href="{{ path('app_account_contact') }}"><span class="pf-helplist__ico">{{ icon.chat_bubble(16) }}</span>{{ 'Contacter le support'|trans }}</a></li>
+            <li><a class="pf-list__link" href="{{ path('app_corporate_sales_terms') }}"><span class="pf-helplist__ico">{{ icon.book_open(16) }}</span>{{ 'Conditions générales de vente'|trans }}</a></li>
+        </ul>
+    </section>
+{% endblock %}

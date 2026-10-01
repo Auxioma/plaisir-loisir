@@ -1,63 +1,60 @@
 {#
-    <AccountSidebar> : en-tête profil (avatar, nom, email, badge membre) +
-    menu de 9 entrées. Item actif violet (rouge pour Déconnexion) ; badge
-    compteur rouge sur Messages, Notifications, Demandes reçues et Avis
-    reçus, chacun sa propre source (`item.badge` vaut 'messages',
-    'notifications', 'requests' ou 'reviews' — les deux derniers uniquement
-    sur le menu pro, ajoutés le 18/09, mêmes conditions que les deux
-    premiers). Les
-    entrées sans route (albums, activités créées, réservations, paramètres —
-    aucune entité derrière pour l'instant) s'affichent en <span>, non
-    cliquables, avec un badge « Bientôt disponible » plutôt qu'un lien mort
-    silencieux (signalé le 14/09 : un clic sans effet ni indice se lisait
-    comme un menu cassé).
+    Sidebar de l'espace compte (maquettes profil_particulier, 30/09) :
+    profil (avatar, nom, e-mail, « Membre depuis »), puis le menu par
+    groupes (`item.section` ouvre un groupe titré, voir StaticAccount).
+    Item actif sur fond violet sombre ; Déconnexion en rouge.
+    Compteurs rouges : Messages, Notifications (et, côté pro, Demandes et
+    Avis reçus).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<div class="acc-card">
-    <div class="acc-profile">
-        <img class="acc-profile__avatar" src="{{ asset(user.avatar) }}" alt="">
-        <div class="acc-profile__id">
-            <strong>{{ user.name }}</strong>
-            <span>{{ user.email }}</span>
-            <span class="acc-profile__badge">{{ 'Membre depuis'|trans }} {{ user.memberSince }}</span>
-        </div>
+<div class="pf-profile">
+    <img class="pf-profile__avatar" src="{{ asset(user.avatar) }}" alt="">
+    <div class="pf-profile__id">
+        <strong>{{ user.name }}</strong>
+        <span>{{ user.email }}</span>
+        <em>{{ 'Membre depuis'|trans }} {{ user.memberSince }}</em>
     </div>
-
-    <nav class="acc-menu" aria-label="{{ 'Menu du compte'|trans }}">
-        {% for item in menu %}
-            {% set is_active = item.title == active %}
-            {% set tag = item.route ? 'a' : 'span' %}
-            <{{ tag }}
-               {% if item.route %}href="{{ path(item.route) }}"{% endif %}
-               class="acc-menu__item{{ is_active ? (item.title == 'Déconnexion' ? ' is-active is-danger' : ' is-active') }}{{ item.route ? '' : ' is-disabled' }}"
-               {% if is_active %}aria-current="page"{% endif %}
-               {% if not item.route %}aria-disabled="true"{% endif %}>
-                <span class="acc-menu__icon">
-                    {%- if item.icon == 'grid' %}{{ icon.grid(26) }}
-                    {%- elseif item.icon == 'camera' %}{{ icon.camera(26) }}
-                    {%- elseif item.icon == 'badge_check' %}{{ icon.badge_check(26) }}
-                    {%- elseif item.icon == 'receipt' %}{{ icon.receipt(26) }}
-                    {%- elseif item.icon == 'users' %}{{ icon.users(26) }}
-                    {%- elseif item.icon == 'card' %}{{ icon.card(26) }}
-                    {%- elseif item.icon == 'heart' %}{{ icon.heart(26) }}
-                    {%- elseif item.icon == 'bell' %}{{ icon.bell(26) }}
-                    {%- elseif item.icon == 'mail' %}{{ icon.mail(26) }}
-                    {%- elseif item.icon == 'star' %}{{ icon.star(26) }}
-                    {%- elseif item.icon == 'hand_heart' %}{{ icon.hand_heart(26) }}
-                    {%- elseif item.icon == 'gear' %}{{ icon.gear(26) }}
-                    {%- else %}{{ icon.logout(26) }}
-                    {%- endif -%}
-                </span>
-                <span class="acc-menu__text">
-                    <strong>{{ item.title }}</strong>
-                    <small>{{ item.route ? item.subtitle : ('Bientôt disponible'|trans) }}</small>
-                </span>
-                {% set badge_count = item.badge == 'messages' ? user.unreadMessages : (item.badge == 'notifications' ? user.unreadNotifications : (item.badge == 'requests' ? user.pendingProviderRequests : (item.badge == 'reviews' ? user.pendingProviderReviews : 0))) %}
-                {% if item.badge and badge_count > 0 %}
-                    <span class="acc-menu__count">{{ badge_count }}</span>
-                {% endif %}
-            </{{ tag }}>
-        {% endfor %}
-    </nav>
 </div>
+
+<nav class="pf-menu" aria-label="{{ 'Menu du compte'|trans }}">
+    {% for item in menu %}
+        {% if item.section is defined %}
+            {% if item.section %}<p class="pf-menu__section">{{ item.section|trans }}</p>{% else %}<span class="pf-menu__gap"></span>{% endif %}
+        {% endif %}
+        {% set is_active = item.title == active %}
+        {% set is_logout = item.icon == 'logout' %}
+        <a href="{{ path(item.route) }}"
+           class="pf-menu__item{{ is_active ? ' is-active' }}{{ is_logout ? ' is-danger' }}"
+           {% if is_active %}aria-current="page"{% endif %}>
+            <span class="pf-menu__icon">
+                {%- if item.icon == 'grid' %}{{ icon.dashboard_frame(22) }}
+                {%- elseif item.icon == 'camera' %}{{ icon.camera(22) }}
+                {%- elseif item.icon == 'edit' %}{{ icon.edit_square(22) }}
+                {%- elseif item.icon == 'calendar' %}{{ icon.calendar_grid(22) }}
+                {%- elseif item.icon == 'person' %}{{ icon.user_round(22) }}
+                {%- elseif item.icon == 'wallet' %}{{ icon.wallet(22) }}
+                {%- elseif item.icon == 'bell' %}{{ icon.bell(22) }}
+                {%- elseif item.icon == 'heart' %}{{ icon.heart(22) }}
+                {%- elseif item.icon == 'users' %}{{ icon.users(22) }}
+                {%- elseif item.icon == 'gear' %}{{ icon.gear(22) }}
+                {%- elseif item.icon == 'mail' %}{{ icon.mail(22) }}
+                {%- elseif item.icon == 'receipt' %}{{ icon.receipt(22) }}
+                {%- elseif item.icon == 'card' %}{{ icon.card(22) }}
+                {%- elseif item.icon == 'badge_check' %}{{ icon.badge_check(22) }}
+                {%- elseif item.icon == 'star' %}{{ icon.star(22) }}
+                {%- elseif item.icon == 'hand_heart' %}{{ icon.hand_heart(22) }}
+                {%- else %}{{ icon.logout_box(22) }}
+                {%- endif -%}
+            </span>
+            <span class="pf-menu__text">
+                <strong>{{ item.title|trans }}</strong>
+                <small>{{ item.subtitle|trans }}</small>
+            </span>
+            {% set badge_count = item.badge == 'messages' ? user.unreadMessages : (item.badge == 'notifications' ? user.unreadNotifications : (item.badge == 'requests' ? user.pendingProviderRequests : (item.badge == 'reviews' ? user.pendingProviderReviews : 0))) %}
+            {% if item.badge and badge_count > 0 %}
+                <span class="pf-menu__count">{{ badge_count > 99 ? '99+' : badge_count }}</span>
+            {% endif %}
+        </a>
+    {% endfor %}
+</nav>

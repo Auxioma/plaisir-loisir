@@ -1,0 +1,26 @@
+{#
+    Pied de liste « Affichage de 1 à 8 sur 24 … » + pagination.
+    Variables : page, pages, total, per_page, noun (pluriel déjà traduit).
+    Les liens conservent les autres paramètres de la page (onglet, tri…).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+{% set route = app.request.attributes.get('_route') %}
+{% set params = app.request.attributes.get('_route_params')|merge(app.request.query.all) %}
+{% set from = total > 0 ? (page - 1) * per_page + 1 : 0 %}
+{% set to = min(total, page * per_page) %}
+<div class="pf-pager">
+    <span>{{ 'Affichage de %from% à %to% sur %total%'|trans({'%from%': from, '%to%': to, '%total%': total}) }} {{ noun }}</span>
+    {% if pages > 1 %}
+        <nav aria-label="{{ 'Pagination'|trans }}">
+            <a class="{{ page <= 1 ? 'is-off' }}" href="{{ path(route, params|merge({page: page - 1})) }}" aria-label="{{ 'Page précédente'|trans }}">{{ icon.chevron_left(16) }}</a>
+            {% for n in 1..pages %}
+                {% if n == page %}
+                    <span class="pf-pager__page is-current" aria-current="page">{{ n }}</span>
+                {% else %}
+                    <a href="{{ path(route, params|merge({page: n})) }}">{{ n }}</a>
+                {% endif %}
+            {% endfor %}
+            <a class="{{ page >= pages ? 'is-off' }}" href="{{ path(route, params|merge({page: page + 1})) }}" aria-label="{{ 'Page suivante'|trans }}">{{ icon.chevron_right(16) }}</a>
+        </nav>
+    {% endif %}
+</div>

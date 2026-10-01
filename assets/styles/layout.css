@@ -67,6 +67,8 @@
 
     /* Unité de l'en-tête : 1px à 1920, 0,75px au plus étroit (1440). */
     --tm-u: clamp(0.75px, calc(100vw / 1920), 1px);
+    /* Hauteur de l'en-tête collant : sert aux colonnes collantes du site. */
+    --tm-header-h: calc(88 * var(--tm-u));
 }
 
 /* ===========================================================================
@@ -297,20 +299,31 @@
 .tm-btn--cta { min-width: calc(175 * var(--tm-u)); background: var(--tm-orange); }
 
 .tm-account__toggle {
-    position: relative;
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: calc(12 * var(--tm-u));
+    height: calc(48 * var(--tm-u));
+    padding: 0 calc(14 * var(--tm-u)) 0 calc(6 * var(--tm-u));
+    background: var(--tm-navy-btn);
+    border-radius: calc(12 * var(--tm-u));
+    color: var(--pl-white);
     list-style: none;
     cursor: pointer;
-    line-height: 0;
 }
 .tm-account__toggle::-webkit-details-marker { display: none; }
-.tm-account__toggle img {
-    width: calc(44 * var(--tm-u));
-    height: calc(44 * var(--tm-u));
+.tm-account__toggle > .pl-icon { width: calc(14 * var(--tm-u)); height: calc(14 * var(--tm-u)); stroke-width: 2.6; transition: transform .15s ease; }
+.tm-account[open] > .tm-account__toggle > .pl-icon { transform: rotate(180deg); }
+.tm-account__avatar { position: relative; flex-shrink: 0; line-height: 0; }
+.tm-account__avatar img {
+    width: calc(38 * var(--tm-u));
+    height: calc(38 * var(--tm-u));
     border-radius: 50%;
     object-fit: cover;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, .25);
+    background: var(--pl-white);
 }
+.tm-account__id { display: flex; flex-direction: column; line-height: 1.2; white-space: nowrap; }
+.tm-account__id strong { font-size: calc(13.5 * var(--tm-u)); font-weight: 600; }
+.tm-account__id small { font-size: calc(12 * var(--tm-u)); color: #c9d1e8; }
 .tm-account__dot {
     position: absolute;
     top: 0;
@@ -318,7 +331,7 @@
     width: 10px;
     height: 10px;
     background: var(--tm-orange);
-    border: 2px solid var(--tm-navy);
+    border: 2px solid var(--tm-navy-btn);
     border-radius: 50%;
 }
 
@@ -352,7 +365,7 @@
 
 /* Moins de 1440 : burger, recherche conservée, nav dans le panneau. */
 @media (max-width: 1439.98px) {
-    :root { --tm-u: 1px; }
+    :root { --tm-u: 1px; --tm-header-h: 72px; }
     .tm-header__inner { height: 72px; padding: 0 16px; }
     .tm-header__logo { flex-basis: auto; }
     .tm-header__logo img { height: 52px; }
@@ -383,11 +396,14 @@
 }
 
 @media (max-width: 575.98px) {
+    :root { --tm-header-h: 64px; }
     .tm-header__inner { height: 64px; padding: 0 12px; }
     .tm-header__logo img { height: 42px; }
     .tm-btn { height: 38px; padding: 0 12px; font-size: 12px; }
     .tm-btn--dark, .tm-btn--cta { min-width: 0; }
     .tm-btn--cta { display: none; }
+    .tm-account__id, .tm-account__toggle > .pl-icon { display: none; }
+    .tm-account__toggle { padding: 0 4px; background: none; }
 }
 
 /* ===========================================================================
@@ -1100,3 +1116,32 @@
 .tm-login__card .pa-steps { justify-content: flex-start; margin-top: 24px; font-family: var(--tm-font); }
 .tm-login__card .pa-step.is-done .pa-step__badge { background: var(--tm-pro); color: var(--pl-white); }
 .tm-login__card .pa-step__label { color: var(--tm-ink); }
+
+/* ===========================================================================
+ *  COLONNES LATÉRALES COLLANTES — défilement indépendant (demande du 30/09)
+ *
+ *  Partout où une colonne reste à l'écran pendant que la page défile (filtres
+ *  des activités et des offres, panneau de réservation, récapitulatif du bon
+ *  cadeau, colonnes du wizard Événements), elle se cale désormais SOUS
+ *  l'en-tête collant (--tm-header-h) — plusieurs s'y glissaient dessous avec
+ *  un `top` de 20 ou 24px — et, si elle est plus haute que l'écran, défile
+ *  seule au lieu d'être coupée. La sidebar de l'espace compte suit la même
+ *  règle (profile.css, .pf-side__scroll).
+ * ======================================================================== */
+@media (min-width: 992px) {
+    .act-filters,
+    .of-filters,
+    .gift-summary,
+    .ev-col,
+    .evn-detail__side {
+        top: calc(var(--tm-header-h) + 16px);
+        max-height: calc(100vh - var(--tm-header-h) - 32px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+    }
+    /* Le panneau de réservation porte des bulles et des ombres qui
+       déborderaient d'une boîte à défilement : il garde son débordement
+       visible et ne se cale que sous l'en-tête. */
+    .act-booking { top: calc(var(--tm-header-h) + 16px); }
+}

@@ -29,6 +29,8 @@ import './styles/support.css';   // centre d'aide, FAQ et corps des textes jurid
 import './styles/app.css';
 // En-tête, pied de page et choix du compte (maquette choix_profil, 30/09).
 import './styles/layout.css';
+// Espace compte (maquettes profil_particulier, 30/09).
+import './styles/profile.css';
 
 // Adaptations telephone / tablette. Charge EN DERNIER : a specificite egale,
 // ses regles doivent l'emporter sur le CSS de bureau qu'elles degradent.

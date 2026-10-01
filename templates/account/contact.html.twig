@@ -1,0 +1,92 @@
+{#
+    Nous contacter (espace compte) — maquette docs/maquettes/profil_particulier/
+    profil_contact_particulier.jpeg (30/09). Action : AccountController::contact().
+
+    Écarts assumés : pas de pièce jointe (la boîte de réception n'en stocke
+    pas), pas de téléphone ni de chat (aucun numéro ni outil de chat n'existe
+    encore) — l'encart propose l'e-mail, le centre d'aide et la FAQ.
+#}
+{% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Nous contacter'|trans }}{% endblock %}
+
+{% block account %}
+    <header class="pf-head">
+        <div>
+            <h1 class="pf-title">{{ 'Nous contacter'|trans }}</h1>
+            <nav class="pf-crumb" aria-label="{{ 'Fil d’Ariane'|trans }}">
+                <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>{{ icon.chevron_right(12) }}
+                <a href="{{ path('app_account_dashboard') }}">{{ 'Mon compte'|trans }}</a>{{ icon.chevron_right(12) }}
+                <span aria-current="page">{{ 'Nous contacter'|trans }}</span>
+            </nav>
+        </div>
+    </header>
+
+    <div class="pf-contact-intro">
+        <h2>{{ 'Comment pouvons-nous vous aider ?'|trans }}</h2>
+        <p>{{ 'Notre équipe est là pour répondre à toutes vos questions.'|trans }}<br>{{ 'Remplissez le formulaire ou utilisez l’un des moyens de contact ci-dessous.'|trans }}</p>
+    </div>
+
+    <div class="pf-contact">
+        <section class="pf-card">
+            <h2 class="pf-card__title">{{ 'Envoyez-nous un message'|trans }}</h2>
+            <form method="post" class="pf-contact__form" data-turbo="false">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                <div class="pf-field pf-select pf-span-2">
+                    <label for="ct-subject">{{ 'Sujet de votre demande'|trans }} *</label>
+                    <select id="ct-subject" name="sujet" required>
+                        <option value="">{{ 'Sélectionnez un sujet'|trans }}</option>
+                        {% for subject in subjects %}<option value="{{ subject }}"{{ values.sujet == subject ? ' selected' }}>{{ subject|trans }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="pf-field"><label for="ct-first">{{ 'Prénom'|trans }} *</label><input id="ct-first" name="prenom" value="{{ values.prenom }}" required autocomplete="given-name"></div>
+                <div class="pf-field"><label for="ct-last">{{ 'Nom'|trans }} *</label><input id="ct-last" name="nom" value="{{ values.nom }}" required autocomplete="family-name"></div>
+                <div class="pf-field pf-span-2"><label for="ct-email">{{ 'Adresse e-mail'|trans }} *</label><input id="ct-email" type="email" name="email" value="{{ values.email }}" required autocomplete="email"></div>
+                <div class="pf-field pf-span-2"><label for="ct-phone">{{ 'Numéro de téléphone (optionnel)'|trans }}</label><input id="ct-phone" type="tel" name="telephone" value="{{ values.telephone }}" placeholder="06 12 34 56 78" autocomplete="tel"></div>
+                <div class="pf-field pf-span-2"><label for="ct-message">{{ 'Votre message'|trans }} *</label><textarea id="ct-message" name="message" rows="4" required placeholder="{{ 'Décrivez votre demande en détail...'|trans }}">{{ values.message }}</textarea></div>
+                <button type="submit" class="pf-btn pf-btn--primary pf-btn--block pf-span-2">{{ 'Envoyer le message'|trans }}</button>
+                <p class="pf-contact__privacy pf-span-2">{{ icon.padlock(14) }} {{ 'Vos données sont traitées de manière confidentielle.'|trans }}</p>
+            </form>
+        </section>
+
+        <section class="pf-card">
+            <h2 class="pf-card__title">{{ 'Autres moyens de contact'|trans }}</h2>
+            <p class="pf-card__sub">{{ 'Choisissez le canal qui vous convient le mieux'|trans }}</p>
+            <div class="pf-channels">
+                <a class="pf-channel" href="mailto:contact@trouvemoi.fr">
+                    <span class="pf-ico pf-ico--sm">{{ icon.mail(22) }}</span>
+                    <span><strong>{{ 'Par e-mail'|trans }}</strong><small>{{ 'Réponse sous 24h ouvrées'|trans }}</small><em>contact@trouvemoi.fr</em></span>
+                    {{ icon.arrow_right(16) }}
+                </a>
+                <a class="pf-channel" href="{{ path('app_help_center') }}">
+                    <span class="pf-ico pf-ico--sm pf-ico--green">{{ icon.book_open(22) }}</span>
+                    <span><strong>{{ 'Centre d’aide'|trans }}</strong><small>{{ 'Guides et réponses détaillées'|trans }}</small><em>{{ 'Consulter le centre d’aide'|trans }}</em></span>
+                    {{ icon.arrow_right(16) }}
+                </a>
+                <a class="pf-channel" href="{{ path('app_faq') }}">
+                    <span class="pf-ico pf-ico--sm pf-ico--blue">{{ icon.help_circle(22) }}</span>
+                    <span><strong>{{ 'Questions fréquentes'|trans }}</strong><small>{{ 'Trouvez des réponses à vos questions'|trans }}</small><em>{{ 'Consulter la FAQ'|trans }}</em></span>
+                    {{ icon.arrow_right(16) }}
+                </a>
+            </div>
+            <div class="pf-engagement">
+                <h3>{{ 'Notre engagement'|trans }}</h3>
+                <ul class="pf-checks">
+                    <li>{{ icon.check(14) }} {{ 'Nous vous répondons dans les meilleurs délais'|trans }}</li>
+                    <li>{{ icon.check(14) }} {{ 'Des réponses claires et personnalisées'|trans }}</li>
+                    <li>{{ icon.check(14) }} {{ 'Une équipe à votre écoute'|trans }}</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <section class="pf-card pf-card--soft pf-band">
+        <span class="pf-band__ico">{{ icon.bulb(22) }}</span>
+        <div>
+            <strong>{{ 'Besoin d’aide rapidement ?'|trans }}</strong>
+            <span>{{ 'Consultez notre Centre d’aide pour trouver des réponses aux questions les plus fréquentes.'|trans }}</span>
+        </div>
+        <a class="pf-btn" href="{{ path('app_faq') }}">{{ 'Voir la FAQ'|trans }} {{ icon.arrow_right(16) }}</a>
+    </section>
+{% endblock %}

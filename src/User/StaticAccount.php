@@ -40,41 +40,37 @@ final class StaticAccount
     }
 
     /**
-     * Menu de la sidebar. Les entrées sans maquette (route null) restent
-     * inertes — pages à concevoir (spec, « entrées non maquettées »).
+     * Menu de la sidebar client — maquettes docs/maquettes/profil_particulier
+     * (30/09) : un premier groupe sans titre, puis le groupe « COMPTE ».
      *
-     * `badge` vaut soit `false`, soit le nom du compteur à afficher
-     * (`'messages'` ou `'notifications'`, cf. `user.unreadMessages`/
-     * `user.unreadNotifications`).
+     * `section` ouvre un nouveau groupe titré avant l'entrée qui le porte.
+     * `badge` vaut `false` ou le nom du compteur (`'messages'`,
+     * `'notifications'`, cf. AccountIdentityPresenter).
      *
-     * @return list<array{icon: string, title: string, subtitle: string, route: string|null, badge: string|false}>
+     * « Messages » et « Mes demandes » n'apparaissent dans aucune maquette
+     * mais portent des fonctions réelles (messagerie, devis) : ils sont
+     * regroupés dans « ÉCHANGES » plutôt que rendus inaccessibles. Les
+     * activités privées rejointes sont suivies dans « Mes réservations », les
+     * organisées dans « Mes activités créées ».
+     *
+     * @return list<array{icon: string, title: string, subtitle: string, route: string|null, badge: string|false, section?: string}>
      */
     public static function menu(): array
     {
         return [
             ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité', 'route' => 'app_account_dashboard', 'badge' => false],
-            // Câblé le 17/09 : entités Album/Photo, AlbumController,
-            // PrivateActivityVoter::VIEW_ALBUM (voir docs/corrections-client-
-            // 2026-07-27.md §4). Aucune maquette Figma pour cet écran — UI
-            // volontairement sommaire, à reprendre visuellement plus tard.
             ['icon' => 'camera', 'title' => 'Mes albums photos', 'subtitle' => 'Gérez vos albums et photos', 'route' => 'app_account_albums', 'badge' => false],
-            ['icon' => 'badge_check', 'title' => 'Mes activités créées', 'subtitle' => 'Gérez vos activités sur Event', 'route' => 'app_account_events', 'badge' => false],
-            ['icon' => 'receipt', 'title' => 'Mes réservations', 'subtitle' => 'Suivi de vos réservations', 'route' => 'app_account_history', 'badge' => false],
-            ['icon' => 'heart', 'title' => 'Mes favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false],
-            // Nouvel item (14/09) : aucune maquette ne le prévoit, le parcours
-            // demande/devis (§10, §11 du CDC) n'existait dans aucun écran
-            // avant ce câblage. Même style que les items voisins en
-            // attendant un avis de la designer sur son emplacement définitif.
-            ['icon' => 'receipt', 'title' => 'Mes demandes', 'subtitle' => 'Devis reçus des professionnels', 'route' => 'app_account_requests', 'badge' => false],
-            // Même remarque que pour « Mes demandes » (14/09) : ajouté sans
-            // maquette, en attendant un avis de la designer.
-            ['icon' => 'users', 'title' => 'Mes activités privées', 'subtitle' => 'Sorties organisées et rejointes', 'route' => 'app_account_private_activities', 'badge' => false],
-            // Nouvel item (Lot G, §14 du CDC) : aucune maquette non plus.
-            ['icon' => 'mail', 'title' => 'Messages', 'subtitle' => 'Conversations avec les professionnels', 'route' => 'app_account_messages', 'badge' => 'messages'],
-            ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => 'notifications'],
-            ['icon' => 'hand_heart', 'title' => 'Parrainage', 'subtitle' => 'Invitez vos amis', 'route' => 'app_account_referral', 'badge' => false],
+            ['icon' => 'edit', 'title' => 'Mes activités créées', 'subtitle' => 'Gérez vos activités sur Event', 'route' => 'app_account_private_activities', 'badge' => false],
+            ['icon' => 'calendar', 'title' => 'Mes réservations', 'subtitle' => 'Suivi de vos réservations', 'route' => 'app_account_history', 'badge' => false],
+            ['icon' => 'person', 'title' => 'Informations personnelles', 'subtitle' => 'Gérez vos informations', 'route' => 'app_account_profile', 'badge' => false, 'section' => 'Compte'],
+            ['icon' => 'wallet', 'title' => 'Paiements et abonnements', 'subtitle' => 'Gérez vos paiements', 'route' => 'app_account_payments', 'badge' => false],
+            ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Paramétrez vos notifications', 'route' => 'app_account_notifications', 'badge' => 'notifications'],
+            ['icon' => 'heart', 'title' => 'Favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false],
+            ['icon' => 'users', 'title' => 'Parrainage', 'subtitle' => 'Invitez vos amis', 'route' => 'app_account_referral', 'badge' => false],
             ['icon' => 'gear', 'title' => 'Paramètres du compte', 'subtitle' => 'Supprimer ou désactiver', 'route' => 'app_account_settings', 'badge' => false],
-            ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Fermer votre session', 'route' => 'app_account_logout_confirm', 'badge' => false],
+            ['icon' => 'mail', 'title' => 'Messages', 'subtitle' => 'Conversations avec les professionnels', 'route' => 'app_account_messages', 'badge' => 'messages', 'section' => 'Échanges'],
+            ['icon' => 'receipt', 'title' => 'Mes demandes', 'subtitle' => 'Devis reçus des professionnels', 'route' => 'app_account_requests', 'badge' => false],
+            ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Se déconnecter', 'route' => 'app_account_logout_confirm', 'badge' => false, 'section' => ''],
         ];
     }
 
@@ -111,9 +107,9 @@ final class StaticAccount
             // Nouvel item (Lot H, §16.2 du CDC) : Review dépendait encore du
             // catalogue à réservation directe en pause, aucun écran ici.
             ['icon' => 'star', 'title' => 'Avis reçus', 'subtitle' => 'Ce que vos clients disent de vous', 'route' => 'app_pro_reviews', 'badge' => 'reviews'],
-            ['icon' => 'heart', 'title' => 'Mes favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false],
+            ['icon' => 'heart', 'title' => 'Favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false],
             ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => 'notifications'],
-            ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Fermer votre session', 'route' => 'app_account_logout_confirm', 'badge' => false],
+            ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Se déconnecter', 'route' => 'app_account_logout_confirm', 'badge' => false, 'section' => ''],
         ];
     }
 

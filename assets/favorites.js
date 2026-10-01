@@ -89,7 +89,8 @@ function appliquerEtat(bouton, actif) {
  */
 function repercuterDansLaListe(bouton, actif) {
     const liste = bouton.closest('[data-favorite-list]');
-    const carte = bouton.closest('.pl-card');
+    // .pf-fav : cartes de l'espace compte (maquette profil_favoris, 30/09).
+    const carte = bouton.closest('.pl-card, .pf-fav');
 
     if (!liste || !carte) {
         return;

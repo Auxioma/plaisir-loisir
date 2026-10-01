@@ -44,7 +44,7 @@ final class AccountFavoriteHeartTest extends WebTestCase
 
         self::assertSame(200, $client->getResponse()->getStatusCode());
 
-        $coeur = $crawler->filter(sprintf('.acc-grid [data-favorite-slug="%s"]', $activite->getSlug()));
+        $coeur = $crawler->filter(sprintf('.pf-favs [data-favorite-slug="%s"]', $activite->getSlug()));
 
         self::assertGreaterThan(
             0,
@@ -86,7 +86,7 @@ final class AccountFavoriteHeartTest extends WebTestCase
 
         self::assertSame(
             0,
-            $crawler->filter(sprintf('.acc-grid [data-favorite-slug="%s"]', $activite->getSlug()))->count(),
+            $crawler->filter(sprintf('.pf-favs [data-favorite-slug="%s"]', $activite->getSlug()))->count(),
             'L\'activité retirée figure encore dans la liste des favoris.',
         );
     }
@@ -120,7 +120,7 @@ final class AccountFavoriteHeartTest extends WebTestCase
 
         self::assertGreaterThan(
             0,
-            $crawler->filter(sprintf('.acc-grid [data-favorite-slug="%s"]', $activite->getSlug()))->count(),
+            $crawler->filter(sprintf('.pf-favs [data-favorite-slug="%s"]', $activite->getSlug()))->count(),
             'Annuler le retrait ne fait pas revenir l\'activité dans la liste.',
         );
     }
@@ -151,25 +151,23 @@ final class AccountFavoriteHeartTest extends WebTestCase
     }
 
     /**
-     * L'onglet Prestataires ne doit PAS proposer de cœur actif.
-     *
-     * L'entité Favorite ne connaît que les activités et les destinations : un
-     * cœur qui appellerait la route recevrait « introuvable », c'est-à-dire un
-     * bouton qui échoue silencieusement. Mieux vaut un cœur décoratif assumé.
+     * L'onglet Prestataires a disparu avec la maquette du 30/09 (on ne peut
+     * mettre en favori qu'une activité ou une destination) : une ancienne
+     * adresse qui le demande retombe sur « Toutes » au lieu d'échouer.
      */
-    public function testTheProvidersTabHasNoActionableHeart(): void
+    public function testTheFormerProvidersTabFallsBackToAllFavorites(): void
     {
         $client = static::createClient();
-        $client->loginUser($this->makeUser());
+        $user = $this->makeUser();
+        $client->loginUser($user);
+
+        $activite = $this->makeActivity();
+        $this->favorites()->toggleService($user, $activite);
 
         $crawler = $client->request('GET', '/compte/favoris?onglet=prestataires');
 
         self::assertSame(200, $client->getResponse()->getStatusCode());
-        self::assertSame(
-            0,
-            $crawler->filter('.acc-grid [data-favorite-slug]')->count(),
-            'Un cœur actif est proposé sur les prestataires, alors que la bascule ne saurait pas les traiter.',
-        );
+        self::assertSame(1, $crawler->filter(sprintf('.pf-favs [data-favorite-slug="%s"]', $activite->getSlug()))->count());
     }
 
     private function favorites(): FavoriteService

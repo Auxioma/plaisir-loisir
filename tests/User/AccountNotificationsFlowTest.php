@@ -36,7 +36,7 @@ final class AccountNotificationsFlowTest extends WebTestCase
         self::assertSelectorTextContains('body', 'Réservation confirmée');
         self::assertSelectorTextContains('body', 'Nouvel avis');
         // Badge sidebar : une seule non lue.
-        self::assertSelectorTextContains('.acc-menu__count', '1');
+        self::assertSelectorTextContains('.pf-menu__count', '1');
     }
 
     public function testUnreadFilterShowsOnlyUnreadNotifications(): void

@@ -1,0 +1,131 @@
+{#
+    Informations personnelles — maquette docs/maquettes/profil_particulier/
+    profil_infos_particulier.jpeg (30/09). Formulaire :
+    PersonalInformationFormType ; action : AccountController::profile().
+
+    Onglets : Profil (cette page), Adresse (ancre), Préférences (préférences
+    de notification), Sécurité (paramètres du compte).
+    L'e-mail n'est pas modifiable ici (il sert d'identifiant de connexion).
+    Écart assumé : pas de badge « Vérifié » sur le téléphone, aucun numéro
+    n'étant vérifié par SMS ; la double authentification n'existe pas encore.
+#}
+{% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+{% import 'account/_ui.html.twig' as ui %}
+
+{% block title %}{{ 'Informations personnelles'|trans }}{% endblock %}
+
+{% block account %}
+    <header class="pf-head">
+        <div>
+            <h1 class="pf-title">{{ 'Informations personnelles'|trans }}</h1>
+            <p class="pf-sub">{{ 'Gérez vos informations personnelles, votre contact et vos préférences.'|trans }}</p>
+        </div>
+    </header>
+
+    <nav class="pf-tabs pf-tabs--line">
+        <a class="pf-tab is-active" href="{{ path('app_account_profile') }}">{{ icon.user_round(18) }} {{ 'Profil'|trans }}</a>
+        <a class="pf-tab" href="#adresse">{{ icon.map_pin(18) }} {{ 'Adresse'|trans }}</a>
+        <a class="pf-tab" href="{{ path('app_account_notification_preferences') }}">{{ icon.calendar_grid(18) }} {{ 'Préférences'|trans }}</a>
+        <a class="pf-tab" href="{{ path('app_account_settings') }}#securite">{{ icon.padlock(18) }} {{ 'Sécurité'|trans }}</a>
+    </nav>
+
+    {{ form_start(form, { attr: { class: 'pf-stack pf-infos', 'data-turbo': 'false', novalidate: 'novalidate' } }) }}
+        {% if not form.vars.valid %}
+            <div class="tm-login__alert" role="alert">{{ 'Certaines informations sont à corriger ci-dessous.'|trans }}{{ form_errors(form) }}</div>
+        {% endif %}
+
+        <div class="pf-infos__top">
+            <section class="pf-card pf-photo">
+                <h2 class="pf-card__title">{{ 'Photo de profil'|trans }}</h2>
+                <div class="pf-photo__avatar">
+                    <img src="{{ asset(user.avatar) }}" alt="" data-avatar-preview>
+                    <label for="{{ form.photo.vars.id }}" class="pf-photo__cam" aria-label="{{ 'Changer la photo'|trans }}">{{ icon.camera(16) }}</label>
+                </div>
+                <p class="pf-photo__hint">{{ 'JPG, PNG ou WEBP. Taille max 5 Mo.'|trans }}</p>
+                <label for="{{ form.photo.vars.id }}" class="pf-btn">{{ 'Changer la photo'|trans }}</label>
+                {{ form_widget(form.photo, { attr: { class: 'pf-photo__input', accept: 'image/jpeg,image/png,image/webp', onchange: "const f=this.files[0];if(f){document.querySelector('[data-avatar-preview]').src=URL.createObjectURL(f)}" } }) }}
+                {{ form_errors(form.photo) }}
+            </section>
+
+            <section class="pf-card">
+                <h2 class="pf-card__title">{{ 'Informations générales'|trans }}</h2>
+                <div class="pf-form-grid pf-form-grid--spaced">
+                    <div class="pf-field">{{ form_label(form.firstName, 'Prénom'|trans) }}{{ form_widget(form.firstName) }}{{ form_errors(form.firstName) }}</div>
+                    <div class="pf-field">{{ form_label(form.lastName, 'Nom'|trans) }}{{ form_widget(form.lastName) }}{{ form_errors(form.lastName) }}</div>
+                    <div class="pf-field">{{ form_label(form.birthDate, 'Date de naissance'|trans) }}{{ form_widget(form.birthDate) }}{{ form_errors(form.birthDate) }}</div>
+                    <div class="pf-field pf-select">{{ form_label(form.gender, 'Genre'|trans) }}{{ form_widget(form.gender) }}</div>
+                    <div class="pf-field pf-select">{{ form_label(form.preferredLocale, 'Langue'|trans) }}{{ form_widget(form.preferredLocale) }}</div>
+                    <div class="pf-field pf-select">{{ form_label(form.country, 'Pays'|trans) }}{{ form_widget(form.country) }}</div>
+                </div>
+            </section>
+        </div>
+
+        <section class="pf-card" id="adresse">
+            <h2 class="pf-card__title">{{ 'Informations de contact'|trans }}</h2>
+            <div class="pf-contact-grid">
+                <div class="pf-field">
+                    <span>{{ 'Email'|trans }}</span>
+                    <div class="pf-field__wrap">
+                        <input type="email" value="{{ account.email }}" readonly aria-label="{{ 'Email'|trans }}">
+                        {% if account.status.value == 'active' %}{{ ui.pill('Vérifié'|trans, 'green') }}{% endif %}
+                    </div>
+                </div>
+                <div class="pf-field pf-field--phone">
+                    <span>{{ 'Téléphone'|trans }}</span>
+                    <div class="pf-phone">
+                        <span class="phone-country phone-country--prefix" data-controller="phone-country">
+                            <span class="phone-country__flag" data-phone-country-target="flag"></span>
+                            <span class="phone-country__code" data-phone-country-target="code"></span>
+                            {{ form_widget(form.phone.country, { attr: { class: 'phone-country__select', 'data-phone-country-target': 'select', 'data-action': 'change->phone-country#sync' } }) }}
+                        </span>
+                        {{ form_widget(form.phone.number, { attr: { placeholder: '06 12 34 56 78', autocomplete: 'tel' } }) }}
+                    </div>
+                    {{ form_errors(form.phone) }}
+                </div>
+                <div class="pf-field">{{ form_label(form.addressLine1, 'Adresse'|trans) }}{{ form_widget(form.addressLine1, { attr: { autocomplete: 'address-line1' } }) }}{{ form_errors(form.addressLine1) }}</div>
+                <div class="pf-field pf-contact-grid__wide">{{ form_label(form.addressLine2, 'Complément d’adresse (optionnel)'|trans) }}{{ form_widget(form.addressLine2, { attr: { placeholder: 'Appartement 12'|trans, autocomplete: 'address-line2' } }) }}</div>
+            </div>
+            <div class="pf-address-grid">
+                <div class="pf-field">{{ form_label(form.postalCode, 'Code postal'|trans) }}{{ form_widget(form.postalCode, { attr: { autocomplete: 'postal-code' } }) }}</div>
+                <div class="pf-field">{{ form_label(form.city, 'Ville'|trans) }}{{ form_widget(form.city, { attr: { autocomplete: 'address-level2' } }) }}</div>
+                <div class="pf-field pf-select">{{ form_label(form.addressCountry, 'Pays'|trans) }}{{ form_widget(form.addressCountry) }}</div>
+            </div>
+        </section>
+
+        <div><button type="submit" class="pf-btn pf-btn--primary pf-btn--lg">{{ 'Enregistrer les modifications'|trans }}</button></div>
+    {{ form_end(form) }}
+{% endblock %}
+
+{% block account_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title pf-card__title--icon"><span class="pf-shield">{{ icon.shield(24) }}</span>{{ 'Sécurité de votre compte'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Gardez votre compte sécurisé en maintenant vos informations à jour.'|trans }}</p>
+        <ul class="pf-list pf-list--lined pf-security">
+            <li>
+                <div class="pf-list__body"><strong>{{ 'Mot de passe'|trans }}</strong><small>••••••••••••</small></div>
+                <a class="pf-link" href="{{ path('app_forgot_password_request') }}">{{ 'Modifier'|trans }}</a>
+            </li>
+            <li>
+                <div class="pf-list__body"><strong>{{ 'Authentification à deux facteurs'|trans }}</strong><small>{{ 'Désactivée'|trans }}</small></div>
+                <span class="pf-muted pf-soon">{{ 'Bientôt disponible'|trans }}</span>
+            </li>
+        </ul>
+    </section>
+
+    <section class="pf-card pf-card--soft">
+        <h2 class="pf-card__title pf-card__title--icon"><span class="pf-shield">{{ icon.padlock(22) }}</span>{{ 'Votre vie privée est importante'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Nous ne partageons jamais vos informations personnelles avec des tiers.'|trans }}</p>
+        <a class="pf-link pf-arrow-link" href="{{ path('app_corporate_privacy') }}">{{ 'Voir notre politique de confidentialité'|trans }} {{ icon.chevron_right(14) }}</a>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Besoin d’aide ?'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Notre équipe est là pour vous accompagner.'|trans }}</p>
+        <ul class="pf-list pf-helplist">
+            <li><a class="pf-list__link" href="{{ path('app_faq') }}"><span class="pf-helplist__ico">{{ icon.help_circle(16) }}</span>{{ 'Consulter la FAQ'|trans }}</a></li>
+            <li><a class="pf-list__link" href="{{ path('app_account_contact') }}"><span class="pf-helplist__ico">{{ icon.chat_bubble(16) }}</span>{{ 'Contacter le support'|trans }}</a></li>
+            <li><a class="pf-list__link" href="{{ path('app_help_center') }}"><span class="pf-helplist__ico">{{ icon.book_open(16) }}</span>{{ 'Voir le guide d’utilisation'|trans }}</a></li>
+        </ul>
+    </section>
+{% endblock %}
