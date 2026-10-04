@@ -102,8 +102,22 @@ class EventFixtures extends Fixture
             $categories[$slug] = $category;
         }
 
+        // Dates glissantes (04/10) : la maquette date ses exemples de mai ;
+        // on les décale de semaines entières pour qu'ils restent « à venir »
+        // (même jour de la semaine, mêmes heures) quel que soit le chargement.
+        $reference = new \DateTimeImmutable('2026-05-10');
+        $weeks = (int) ceil(max(0, (new \DateTimeImmutable('today'))->diff($reference)->days) / 7) + 1;
+        $shift = sprintf('+%d weeks', $weeks);
+        $coordinates = [
+            'Autrans' => ['45.1750', '5.5430', '38880'], 'Toulouse' => ['43.6047', '1.4442', '31000'],
+            'Lyon' => ['45.7640', '4.8357', '69000'], 'Nantes' => ['47.2184', '-1.5536', '44000'],
+        ];
+        $types = ['sports' => 'sortie', 'randonnee' => 'sortie', 'repas' => 'repas', 'en-famille' => 'repas', 'bien-etre' => 'atelier', 'culture' => 'sortie', 'jeu' => 'rencontre', 'loisirs' => 'sortie'];
+
         foreach (self::EVENTS as $rang => $data) {
             $event = new Event();
+            $city = trim(explode(',', (string) $data['lieu'])[0]);
+            [$lat, $lng, $postcode] = $coordinates[$city] ?? [null, null, null];
             $event
                 ->setTitle((string) $data['title'])
                 ->setSlug((string) $data['slug'])
@@ -111,8 +125,16 @@ class EventFixtures extends Fixture
                 ->setImagePath((string) $data['image'])
                 ->setLocation((string) $data['lieu'])
                 ->setDescription((string) $data['description'])
-                ->setStartsAt(new \DateTimeImmutable((string) $data['debut']))
-                ->setEndsAt(new \DateTimeImmutable((string) $data['fin']))
+                ->setStartsAt((new \DateTimeImmutable((string) $data['debut']))->modify($shift))
+                ->setEndsAt((new \DateTimeImmutable((string) $data['fin']))->modify($shift))
+                ->setCity($city)
+                ->setPostalCode($postcode)
+                ->setLatitude($lat)
+                ->setLongitude($lng)
+                ->setAddress((string) $data['lieu'])
+                ->setEventType($types[$data['categorie']])
+                ->setShortDescription(mb_substr(explode('. ', (string) $data['description'])[0], 0, 120))
+                ->setCapacity(30)
                 ->setParticipantsCount((int) $data['participants'])
                 ->setPosition($rang);
 

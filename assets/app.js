@@ -35,6 +35,11 @@ import './styles/profile.css';
 import './styles/discover.css';
 // Espace professionnel (maquettes profil_professionnel, 02/10).
 import './styles/pro.css';
+// Assistant « Créer un événement » (maquettes creation_evenements, 04/10).
+import './styles/event-wizard.css';
+import './styles/event-list.css';
+// Pages institutionnelles (maquettes du 04/10).
+import './styles/pages.css';
 
 // Adaptations telephone / tablette. Charge EN DERNIER : a specificite egale,
 // ses regles doivent l'emporter sur le CSS de bureau qu'elles degradent.
@@ -45,7 +50,6 @@ import './home_header.js';
 
 // Comportements du parcours Activités (compte à rebours des offres…).
 import './activities.js';
-import './offers.js';
 
 // Barre de recherche de l'accueil connecté (panneaux déroulants, calendrier).
 import './home_search.js';
@@ -66,6 +70,8 @@ import './account.js';
 import './favorites.js';
 // Espace professionnel : dialogues, actions groupées, messagerie.
 import './pro.js';
+import './event-wizard.js';
+import './pages.js';
 
 // Suggestions pendant la frappe dans les champs de recherche (26/08).
 import './autocomplete.js';

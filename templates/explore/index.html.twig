@@ -1,0 +1,125 @@
+{#
+    « Explorer » — maquette docs/maquettes/explorer.jpeg (04/10).
+    Données : ExploreController::index(). Le panneau de filtres envoie vers
+    /activites (mêmes noms de paramètres). Styles : pages.css (.ex2-*).
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+
+{% block title %}{{ 'Explorer'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Découvrez des expériences uniques et trouvez l’inspiration pour vos prochaines aventures.'|trans }}{% endblock %}
+
+{% block body %}
+<div class="pg gc ex2">
+    <aside class="gc-filters">
+        <form method="get" action="{{ path('app_activities') }}" data-pg-form>
+            <input type="hidden" name="panneau" value="1">
+            <div class="ofm-filters__head"><h2>{{ 'Filtres'|trans }}</h2><a href="{{ path('app_explore') }}">{{ 'Réinitialiser'|trans }}</a></div>
+            <label class="ex2-field">{{ 'Où voulez-vous ?'|trans }}
+                <span class="ex2-input"><input name="lieu" placeholder="{{ 'Destination, ville, lieu…'|trans }}" maxlength="80">{{ icon.map_pin(16) }}</span></label>
+            <label class="ex2-field">{{ 'Date'|trans }}
+                <span class="ex2-input"><input type="date" name="date" min="{{ 'today'|date('Y-m-d') }}" aria-label="{{ 'Sélectionnez une date'|trans }}"></span></label>
+            <fieldset>
+                <legend>{{ 'Catégories'|trans }}</legend>
+                {% for c in categories %}<label class="ofm-check"><input type="checkbox" name="categories[]" value="{{ c.slug }}"> {{ ico.svg(c.icon, 15) }} {{ c.name|trans }}</label>{% endfor %}
+            </fieldset>
+            <fieldset>
+                <legend>{{ 'Budget (par personne)'|trans }}</legend>
+                <div class="ofm-range"><span>0 €</span><output id="ex2-budget">500 €+</output></div>
+                <input type="range" name="prix_max" min="0" max="500" step="10" value="500" data-pg-range="ex2-budget" data-ex2-budget aria-label="{{ 'Budget maximum'|trans }}">
+            </fieldset>
+            <fieldset>
+                <legend>{{ 'Note des utilisateurs'|trans }}</legend>
+                <div class="ex2-stars">{% for n in [4, 3, 2] %}<label><input type="radio" name="note[]" value="{{ n }}"><span>{{ icon.star_solid(13) }} {{ n }} {{ 'et +'|trans }}</span></label>{% endfor %}</div>
+            </fieldset>
+            <label class="ex2-field">{{ 'Langues parlées'|trans }}
+                <select name="langue"><option value="">{{ 'Toutes les langues'|trans }}</option>{% for l in languages %}<option value="{{ l }}">{{ l|trans }}</option>{% endfor %}</select></label>
+            <button class="pg-btn pg-btn--block">{{ 'Afficher les résultats'|trans }}</button>
+            <p class="ex2-total">{{ total }} {{ total > 1 ? 'activités disponibles'|trans : 'activité disponible'|trans }}</p>
+        </form>
+    </aside>
+
+    <div class="gc-main ex2-main">
+        <header class="ex2-head">
+            <h1>{{ 'Explorer'|trans }}</h1>
+            <p>{{ 'Découvrez des expériences uniques et trouvez l’inspiration pour vos prochaines aventures.'|trans }}</p>
+        </header>
+
+        <section class="gc-section ex2-collections" data-pg-carousel>
+            <div class="ex2-track" data-pg-track>
+                {% for c in collections %}
+                    <article class="ex2-col">
+                        <a href="{{ path('app_activities', c.params) }}" class="ex2-col__media"><img src="{{ asset(c.image) }}" alt="" loading="lazy"><span class="gc-cat__ico is-{{ c.tone }}">{{ ico.svg(c.icon, 20) }}</span></a>
+                        <div class="ex2-col__body">
+                            <h2>{{ c.title|trans }}</h2>
+                            <small>{{ c.subtitle|trans }}</small>
+                            <a class="pg-link" href="{{ path('app_activities', c.params) }}">{{ 'Voir les activités'|trans }} ({{ c.count }}) {{ icon.arrow_right(14) }}</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+            <button type="button" class="gc-next" data-pg-dir="1" aria-label="{{ 'Suivant'|trans }}">{{ icon.chevron_right(18) }}</button>
+        </section>
+
+        <section class="gc-section">
+            <h2 class="pg-h3">{{ 'Parcourir par catégorie'|trans }}</h2>
+            <nav class="ex2-cats">
+                {% for c in categories %}<a href="{{ path('app_activities', {categorie: c.slug}) }}">{{ ico.svg(c.icon, 22) }} {{ c.name|trans }}</a>{% endfor %}
+                <a class="pg-btn pg-btn--outline" href="{{ path('app_activities') }}">{{ 'Voir toutes les catégories'|trans }} {{ icon.arrow_right(14) }}</a>
+            </nav>
+        </section>
+
+        <div class="ex2-cols">
+            <section class="pg-card">
+                <h2 class="pg-h3">{{ 'Idées du moment'|trans }} 🔥</h2>
+                <div class="ex2-ideas">
+                    {% for a in ideas %}
+                        <article class="gc-card">
+                            <a class="gc-card__media" href="{{ path('app_activity_show', {slug: a.slug}) }}">
+                                <img src="{{ asset(a.image) }}" alt="{{ a.title }}" loading="lazy">
+                                <span class="gc-badge is-{{ ['blue', 'green', 'orange', 'blue'][loop.index0] }}">{{ (a.badge ?: ['Populaire', 'Nouveau', 'Tendance', 'Coup de cœur'][loop.index0])|trans }}</span>
+                            </a>
+                            {% include '_partials/_event_fav.html.twig' with { type: 'activite', key: a.slug, class: 'ofm-card__fav' } %}
+                            <div class="gc-card__body">
+                                <a class="gc-card__title" href="{{ path('app_activity_show', {slug: a.slug}) }}">{{ a.title }}</a>
+                                <small>{{ a.place }}</small>
+                                <div class="ofm-card__row">
+                                    <span>{% if a.rating %}<small>{{ icon.star_solid(13) }} {{ a.rating }} ({{ a.reviews }})</small>{% endif %}{% if a.duration %}<small>{{ icon.clock(12) }} {{ a.duration }}</small>{% endif %}</span>
+                                    {% if a.price %}<span class="ofm-price"><small>{{ 'À partir de'|trans }}</small><strong>{{ a.price|number_format(a.price == a.price|round ? 0 : 2, ',', ' ') }} €</strong></span>{% endif %}
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="pg-card ex2-near">
+                <h2 class="pg-h3">{{ icon.map_pin(18) }} {{ 'Autour de vous'|trans }}</h2>
+                <div class="ex2-near__body">
+                    <div class="ex2-map" data-pg-map data-geolocate data-markers="{{ nearby|map(a => {lat: a.lat, lng: a.lng, title: a.title, where: a.place, url: path('app_activity_show', {slug: a.slug})})|json_encode }}" aria-label="{{ 'Carte des activités'|trans }}"></div>
+                    <ol class="ex2-near__list" data-ex2-near>
+                        {% for a in nearby %}
+                            <li data-lat="{{ a.lat }}" data-lng="{{ a.lng }}"{{ loop.index > 3 ? ' hidden' }}>
+                                <a href="{{ path('app_activity_show', {slug: a.slug}) }}"><strong>{{ a.title }}</strong><small>{{ a.place }}</small></a>
+                                <em data-ex2-km></em>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                </div>
+                <div class="ex2-near__actions">
+                    <button type="button" class="pg-link" data-pg-locate>{{ icon.crosshair(14) }} {{ 'Utiliser ma position'|trans }}</button>
+                    <a class="pg-btn pg-btn--outline" href="{{ path('app_activities') }}" data-ex2-more>{{ 'Voir plus d’activités à proximité'|trans }}</a>
+                </div>
+            </section>
+        </div>
+
+        <ul class="ofm-features ex2-features">
+            <li>{{ icon.calendar_check(26) }}<span><strong>{{ 'Réservation facile'|trans }}</strong><small>{{ 'Réservez en quelques clics'|trans }}</small></span></li>
+            <li>{{ icon.check_badge(26) }}<span><strong>{{ 'Meilleurs prix garantis'|trans }}</strong><small>{{ 'Des offres négociées avec nos partenaires'|trans }}</small></span></li>
+            <li>{{ icon.card_lock(26) }}<span><strong>{{ 'Paiement sécurisé'|trans }}</strong><small>{{ 'Transactions 100% sécurisées'|trans }}</small></span></li>
+            <li>{{ icon.headset(26) }}<span><strong>{{ 'Support 7j/7'|trans }}</strong><small>{{ 'Notre équipe est à votre écoute'|trans }}</small></span></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

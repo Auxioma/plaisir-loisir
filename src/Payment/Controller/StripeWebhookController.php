@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Payment\Controller;
 
+use App\Catalog\Service\GiftCardService;
 use App\Payment\Enum\SubscriptionStatus;
 use App\Payment\Service\PaymentService;
 use App\Payment\Service\SubscriptionService;
@@ -26,6 +27,7 @@ final class StripeWebhookController extends AbstractController
 {
     public function __construct(
         private readonly PaymentService $paymentService,
+        private readonly GiftCardService $giftCards,
         private readonly SubscriptionService $subscriptionService,
         private readonly LoggerInterface $logger,
         private readonly string $stripeWebhookSecret,
@@ -55,7 +57,10 @@ final class StripeWebhookController extends AbstractController
             $reference = (string) ($session->id ?? '');
 
             try {
-                $this->paymentService->confirmBySessionReference($reference);
+                // Bon cadeau (04/10) : sa session ne correspond à aucun Payment.
+                if (!$this->giftCards->confirmBySessionReference($reference)) {
+                    $this->paymentService->confirmBySessionReference($reference);
+                }
             } catch (\InvalidArgumentException $e) {
                 // Paiement introuvable ou déjà traité : on journalise et on répond
                 // tout de même 200 pour que Stripe cesse de réémettre l'événement.

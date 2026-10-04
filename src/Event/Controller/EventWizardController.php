@@ -4,103 +4,179 @@ declare(strict_types=1);
 
 namespace App\Event\Controller;
 
+use App\Event\Entity\Event;
+use App\Event\Repository\EventCategoryRepository;
+use App\Event\Repository\EventRepository;
 use App\Event\Service\EventDraftService;
 use App\Event\StaticEventWizard;
 use App\User\Entity\User;
+use App\User\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Uid\Ulid;
 
 /**
- * Flow « Créer un événement » : UN layout wizard (stepper / formulaire /
- * aperçu live) décliné en 8 étapes via l'URL, + l'écran de succès.
- * L'onglet « Inviter via un lien » de l'étape 7 est un onglet client
- * (assets/events.js), pas une page.
+ * « Créer un événement » — maquettes docs/maquettes/creation_evenements
+ * (04/10) : guide (étape 0), puis 8 étapes validées côté serveur une à une,
+ * aperçu en direct, brouillon enregistrable, publication immédiate ou
+ * programmée.
  *
- * CÂBLAGE DU 21/08 : jusqu'ici les huit étapes s'enchaînaient par de simples
- * liens, sans le moindre formulaire — on remplissait, on cliquait « Suivant »,
- * et rien n'était conservé. L'écran de succès s'affichait sans qu'aucun
- * événement n'ait été créé.
- *
- * La saisie est désormais accumulée d'une étape à l'autre, et le dernier écran
- * crée réellement l'événement.
+ * Boutons d'en-tête (champ `action`) : « next » valide l'étape et avance,
+ * « prev » conserve la saisie et recule, « draft » enregistre un brouillon
+ * en base, « publish » (étape 8) publie après revalidation de tout.
  */
 final class EventWizardController extends AbstractController
 {
-    private const LAST_STEP = 8;
-
     public function __construct(
         private readonly EventDraftService $draft,
+        private readonly EventCategoryRepository $categories,
+        private readonly EventRepository $events,
+        private readonly UserRepository $users,
     ) {
     }
 
-    #[Route(path: ['fr' => '/evenements/creer/succes', 'en' => '/en/events/create/success'], name: 'app_event_create_success')]
-    public function success(): Response
+    #[Route(path: ['fr' => '/evenements/creer', 'en' => '/en/events/create'], name: 'app_event_guide', methods: ['GET'])]
+    public function guide(): Response
     {
-        return $this->render('event/succes.html.twig');
+        return $this->render('event/guide.html.twig', [
+            'steps' => StaticEventWizard::steps(),
+            'examples' => array_slice($this->events->findForListing(limit: 4), 0, 4),
+        ]);
     }
 
-    #[Route(path: ['fr' => '/evenements/creer/{etape}', 'en' => '/en/events/create/{etape}'], name: 'app_event_create', requirements: ['etape' => '[1-8]'], defaults: ['etape' => 1], methods: ['GET', 'POST'])]
+    #[Route(path: ['fr' => '/evenements/creer/succes/{slug}', 'en' => '/en/events/create/success/{slug}'], name: 'app_event_create_success')]
+    public function success(string $slug): Response
+    {
+        $event = $this->events->findOneBySlug($slug);
+        if (null === $event || $event->getOrganizer() !== $this->getUser()) {
+            throw $this->createNotFoundException();
+        }
+
+        return $this->render('event/succes.html.twig', ['event' => $event]);
+    }
+
+    #[Route(path: ['fr' => '/evenements/creer/reprendre/{slug}', 'en' => '/en/events/create/resume/{slug}'], name: 'app_event_resume')]
+    public function resume(string $slug, Request $request): Response
+    {
+        $event = $this->events->findOneBySlug($slug);
+        if (!$event instanceof Event || $event->getOrganizer() !== $this->getUser()) {
+            throw $this->createNotFoundException();
+        }
+        $this->draft->load($request->getSession(), $event);
+
+        return $this->redirectToRoute('app_event_create', ['etape' => 1]);
+    }
+
+    /** Recherche de membres à inviter (étape 7). */
+    #[Route(path: ['fr' => '/evenements/creer/contacts', 'en' => '/en/events/create/contacts'], name: 'app_event_contacts', methods: ['GET'])]
+    public function contacts(Request $request): JsonResponse
+    {
+        $me = $this->getUser();
+        $q = trim((string) $request->query->get('q', ''));
+        if (!$me instanceof User || mb_strlen($q) < 2) {
+            return new JsonResponse([]);
+        }
+
+        $rows = $this->users->createQueryBuilder('u')
+            ->andWhere('LOWER(u.firstName) LIKE :q OR LOWER(u.lastName) LIKE :q OR LOWER(u.email) LIKE :q OR LOWER(CONCAT(u.firstName, \' \', u.lastName)) LIKE :q')
+            ->andWhere('u.id != :me')
+            ->setParameter('q', '%'.mb_strtolower($q).'%')
+            ->setParameter('me', $me->getId(), 'ulid')
+            ->setMaxResults(8)
+            ->getQuery()->getResult();
+
+        return new JsonResponse(array_map(static fn (User $u): array => [
+            'id' => (string) $u->getId(),
+            'name' => trim($u->getFirstName().' '.$u->getLastName()),
+            'avatar' => $u->getAvatarPath(),
+        ], $rows));
+    }
+
+    #[Route(path: ['fr' => '/evenements/creer/{etape}', 'en' => '/en/events/create/{etape}'], name: 'app_event_create', requirements: ['etape' => '[1-8]'], methods: ['GET', 'POST'])]
     public function create(Request $request, int $etape): Response
     {
-        if ($request->isMethod('POST')) {
-            return $this->handleStep($request, $etape);
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_login');
         }
+        $session = $request->getSession();
+        $errors = [];
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('event_wizard', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Votre session a expiré, merci de recommencer cette étape.');
+
+                return $this->redirectToRoute('app_event_create', ['etape' => $etape]);
+            }
+
+            $action = (string) $request->request->get('action', 'next');
+            $errors = $this->draft->submitStep($session, $etape, $request);
+
+            if ('prev' === $action) {
+                return $this->redirectToRoute('app_event_create', ['etape' => max(1, $etape - 1)]);
+            }
+
+            if ('draft' === $action) {
+                $current = $this->draft->current($session);
+                if (mb_strlen((string) ($current['title'] ?? '')) < 3) {
+                    $errors = ['title' => 'Donnez au moins un titre pour enregistrer un brouillon.'] + $errors;
+                    $this->addFlash('error', 'Donnez au moins un titre pour enregistrer un brouillon.');
+                } else {
+                    $event = $this->draft->persist($session, $user, 'draft');
+                    $this->addFlash('success', sprintf('Brouillon « %s » enregistré : retrouvez-le dans « Mes événements ».', $event->getTitle()));
+
+                    return $this->redirectToRoute('app_event_create', ['etape' => $etape]);
+                }
+            } elseif ([] === $errors) {
+                if (EventDraftService::STEPS !== $etape) {
+                    return $this->redirectToRoute('app_event_create', ['etape' => $etape + 1]);
+                }
+
+                [$invalid, $stepErrors] = $this->draft->firstInvalidStep($this->draft->current($session));
+                if (null !== $invalid) {
+                    $this->addFlash('error', sprintf('Complétez l’étape %d avant de publier : %s', $invalid, reset($stepErrors)));
+
+                    return $this->redirectToRoute('app_event_create', ['etape' => $invalid]);
+                }
+
+                $mode = (string) $this->draft->current($session)['publish_mode'];
+                $event = $this->draft->persist($session, $user, \in_array($mode, ['now', 'scheduled', 'draft'], true) ? $mode : 'now');
+                $this->addFlash('success', match ($mode) {
+                    'draft' => sprintf('Brouillon « %s » enregistré.', $event->getTitle()),
+                    'scheduled' => sprintf('« %s » sera publié le %s.', $event->getTitle(), $event->getPublishAt()?->format('d/m/Y à H:i')),
+                    default => sprintf('Votre événement « %s » est publié !', $event->getTitle()),
+                });
+
+                return $this->redirectToRoute('app_event_create_success', ['slug' => $event->getSlug()]);
+            }
+        } elseif ($etape > $this->draft->maxReachable($session)) {
+            // On ne saute pas d'étape : retour à la première non validée.
+            return $this->redirectToRoute('app_event_create', ['etape' => $this->draft->maxReachable($session)]);
+        }
+
+        $draft = $this->draft->current($session);
+        $categories = $this->categories->findBy([], ['position' => 'ASC']);
+        $looks = StaticEventWizard::categoryLooks();
 
         return $this->render('event/creer.html.twig', [
             'step' => $etape,
             'steps' => StaticEventWizard::steps(),
             'advice' => StaticEventWizard::advice($etape),
-            'categories' => StaticEventWizard::categories(),
-            'contacts' => StaticEventWizard::contacts(),
-            // Ce qui a déjà été saisi, pour que les champs se retrouvent
-            // remplis quand on revient en arrière.
-            'draft' => $this->draft->current($request->getSession()),
-            // À partir de l'étape 2 l'aperçu a la photo ; à partir de la 7
-            // les vraies métadonnées sont propagées (spec étapes 7-8).
-            'preview_photo' => $etape >= 2,
-            'preview_filled' => $etape >= 7,
-        ]);
-    }
-
-    /**
-     * Enregistre l'étape et passe à la suivante.
-     *
-     * Redirection après envoi, jamais de rendu direct : sans cela, rafraîchir
-     * la page renverrait le formulaire et l'on créerait deux événements.
-     */
-    private function handleStep(Request $request, int $etape): Response
-    {
-        $session = $request->getSession();
-
-        if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'Votre session a expiré, merci de recommencer cette étape.');
-
-            return $this->redirectToRoute('app_event_create', ['etape' => $etape]);
-        }
-
-        $this->draft->merge($session, $request->request->all());
-
-        if (self::LAST_STEP !== $etape) {
-            // L'étape 1 porte un bouton « Publier l'événement » qui, dans la
-            // maquette, mène à l'étape 2 : on conserve ce comportement.
-            return $this->redirectToRoute('app_event_create', ['etape' => $etape + 1]);
-        }
-
-        $user = $this->getUser();
-        [$event, $erreurs] = $this->draft->publish($session, $user instanceof User ? $user : null);
-
-        if (null === $event) {
-            foreach ($erreurs as $erreur) {
-                $this->addFlash('error', $erreur);
-            }
-
-            return $this->redirectToRoute('app_event_create', ['etape' => $etape]);
-        }
-
-        $this->addFlash('success', sprintf('Votre événement « %s » a été publié.', $event->getTitle()));
-
-        return $this->redirectToRoute('app_event_create_success');
+            'types' => StaticEventWizard::types(),
+            'categories' => array_values(array_filter($categories, static fn ($c): bool => isset($looks[$c->getSlug()]))),
+            'category_looks' => $looks,
+            'reminders' => StaticEventWizard::reminders(),
+            'timezones' => StaticEventWizard::timezones(),
+            'capacities' => StaticEventWizard::capacities(),
+            'draft' => $draft,
+            'done' => (array) $draft['done'],
+            'errors' => $errors,
+            'me' => $user,
+            'invited' => array_values(array_filter(array_map(fn (string $id): ?User => Ulid::isValid($id) ? $this->users->find(Ulid::fromString($id)) : null, (array) $draft['invites']))),
+            'category' => $this->categories->findOneBy(['slug' => (string) ($draft['category'] ?? '')]),
+        ], new Response(null, [] === $errors ? 200 : 422));
     }
 }

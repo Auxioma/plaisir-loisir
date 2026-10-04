@@ -82,6 +82,9 @@ class ContactMessageCrudController extends AbstractCrudController
         yield TextareaField::new('message', 'Message')->hideOnIndex();
 
         yield TextField::new('ipAddress', 'Adresse IP')->hideOnIndex();
+        yield TextField::new('attachmentPath', 'Pièce jointe')->onlyOnDetail()
+            ->formatValue(static fn (?string $v): string => null !== $v ? sprintf('<a href="/%s" target="_blank" rel="noopener">Ouvrir la pièce jointe</a>', htmlspecialchars($v, \ENT_QUOTES)) : '—')
+            ->renderAsHtml();
     }
 
     public function configureActions(Actions $actions): Actions

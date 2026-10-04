@@ -27,37 +27,39 @@
             <h1 class="evn-participants__title">{{ 'Participants'|trans }}</h1>
             <p class="evn-participants__subtitle">{{ event.title }}</p>
 
-            {# Typo maquette corrigée : « Pertinance » → Pertinence. #}
             <div class="evn-participants__tools">
                 <label class="evn-input-search">
                     {{ icon.search(18) }}
-                    <input type="text" placeholder="{{ 'Recherche des participants'|trans }}" aria-label="{{ 'Recherche des participants'|trans }}">
+                    <input type="search" placeholder="{{ 'Recherche des participants'|trans }}" aria-label="{{ 'Recherche des participants'|trans }}" data-evn-filter>
                 </label>
-                <button type="button" class="act-tool act-tool--plain evn-sort-right">{{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ 'Pertinence'|trans }}</strong> {{ icon.chevron_down(14) }}</button>
+                <label class="act-tool act-tool--plain evn-sort-right">{{ icon.sort(16) }} {{ 'Trier par:'|trans }}
+                    <select data-evn-sort aria-label="{{ 'Trier'|trans }}">
+                        <option value="date">{{ 'Date d’inscription'|trans }}</option>
+                        <option value="name">{{ 'Nom'|trans }}</option>
+                    </select>
+                </label>
             </div>
 
-            <span class="evn-chip-count">{{ icon.check(14) }} {{ event.participants }} {{ 'participants'|trans }}</span>
+            <span class="evn-chip-count">{{ icon.check(14) }} {{ going|length }} {{ going|length > 1 ? 'participants'|trans : 'participant'|trans }}</span>
 
-            <div class="evn-plist">
-                {% for p in participants %}
-                    <div class="evn-prow">
-                        <img class="evn-prow__avatar" src="{{ asset(p.avatar) }}" alt="">
-                        <span class="evn-prow__id">
-                            <span class="evn-prow__name">{{ p.name }}</span>
-                            {% if p.role %}
-                                <span class="evn-role-badge">
-                                    {{ p.icon == 'party' ? icon.party(13) : icon.crown(13) }} {{ p.role }}
-                                </span>
-                            {% endif %}
-                        </span>
-                        <button type="button" class="evn-prow__btn">{{ 'Voir le profil'|trans }}</button>
-                    </div>
-                {% endfor %}
-            </div>
-
-            <div class="act-more">
-                <button type="button" class="pl-btn pl-btn--outline-action">{{ 'Voir plus de participant'|trans }} {{ icon.chevron_down(16) }}</button>
-            </div>
+            {% if hidden_list %}
+                <p class="evn-muted">{{ 'L’organisateur a choisi de ne pas afficher la liste des participants.'|trans }}</p>
+            {% else %}
+                <div class="evn-plist" data-evn-plist>
+                    {% for r in going %}
+                        <div class="evn-prow" data-name="{{ (r.user.firstName ~ ' ' ~ r.user.lastName)|lower }}" data-order="{{ loop.index }}">
+                            {% if r.user.avatarPath %}<img class="evn-prow__avatar" src="{{ asset(r.user.avatarPath) }}" alt="">{% else %}<span class="evn-prow__avatar evn-part__initials">{{ (r.user.firstName|first ~ r.user.lastName|first)|upper }}</span>{% endif %}
+                            <span class="evn-prow__id">
+                                <span class="evn-prow__name">{{ r.user.firstName }} {{ r.user.lastName|first }}.</span>
+                                {% if r.user == entity.organizer %}<span class="evn-role-badge">{{ icon.crown(13) }} {{ 'Organisateur'|trans }}</span>{% endif %}
+                            </span>
+                            <small class="evn-muted">{{ 'Inscrit le'|trans }} {{ r.createdAt|date('d/m/Y') }}</small>
+                        </div>
+                    {% else %}
+                        <p class="evn-muted">{{ 'Aucun participant pour le moment.'|trans }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
 
     </div>

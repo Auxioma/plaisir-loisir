@@ -103,6 +103,9 @@ security:
         # tout /pro/* hors parcours d'authentification (règle publique plus haut).
         - { path: ^/(pro|en/pro)/, roles: ROLE_PROVIDER }
 
+        # Assistant de création d'événement (le guide /evenements/creer reste public).
+        - { path: ^/(evenements/creer/|en/events/create/), roles: ROLE_USER }
+
         # Tunnel de réservation : récapitulatif, paiement, confirmation (03/10).
         - { path: ^/(reservations|en/bookings)/, roles: ROLE_USER }
 

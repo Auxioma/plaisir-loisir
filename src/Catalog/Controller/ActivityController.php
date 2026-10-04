@@ -93,6 +93,8 @@ final class ActivityController extends AbstractController
         // et un nombre de personnes, et la liste ne bougeait pas.
         $participants = $request->query->getInt('participants') ?: null;
         $date = $this->readDate($request);
+        // Langue parlée (filtre de la page Explorer, 04/10).
+        $language = trim((string) $request->query->get('langue', '')) ?: null;
         // Le tri et la page vivent dans l'URL, comme les filtres : une liste
         // triee se partage, se met en favori, et survit au bouton Precedent.
         $tri = ActivitySort::fromRequest($request->query->get('tri'));
@@ -105,7 +107,8 @@ final class ActivityController extends AbstractController
             || null !== $priceMax
             || null !== $minRating
             || null !== $participants
-            || null !== $date;
+            || null !== $date
+            || null !== $language;
 
         // DOUZE PAR PAGE : trois rangees de quatre, comme la maquette.
         $resultats = $this->services->paginateForListing(
@@ -120,6 +123,7 @@ final class ActivityController extends AbstractController
             minRating: $minRating,
             participants: $participants,
             date: $date,
+            language: $language,
         );
 
         $activities = $this->presenter->cards(

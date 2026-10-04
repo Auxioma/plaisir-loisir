@@ -1,0 +1,24 @@
+{# Mes conversations avec le support (chat de la page Contactez-nous, 04/10). #}
+{% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+{% block title %}{{ 'Mes demandes au support'|trans }}{% endblock %}
+{% block account %}
+    <header class="pf-head">
+        <div><h1 class="pf-title">{{ 'Mes demandes au support'|trans }}</h1><p class="pf-sub">{{ 'Retrouvez vos conversations avec l’équipe TrouveMoi.'|trans }}</p></div>
+        <form method="post" action="{{ path('app_support_chat') }}"><input type="hidden" name="_token" value="{{ csrf_token('submit') }}"><button class="pf-btn pf-btn--primary">{{ icon.chat_bubble(16) }} {{ 'Nouvelle conversation'|trans }}</button></form>
+    </header>
+    <section class="pf-card pf-table-wrap">
+        {% if tickets is empty %}
+            <p class="pf-empty">{{ 'Aucune demande pour le moment.'|trans }}</p>
+        {% else %}
+            <table class="pf-table">
+                <thead><tr><th>{{ 'N°'|trans }}</th><th>{{ 'Sujet'|trans }}</th><th>{{ 'Statut'|trans }}</th><th>{{ 'Dernière réponse'|trans }}</th><th></th></tr></thead>
+                <tbody>
+                    {% for t in tickets %}
+                        <tr><td>{{ t.reference }}</td><td>{{ t.subject }}</td><td><span class="pf-pill pf-pill--{{ t.status.tone }}">{{ t.status.label|trans }}</span></td><td>{{ t.lastReplyAt|date('d/m/Y H:i') }}</td><td><a class="pf-btn" href="{{ path('app_account_support_show', {number: t.number}) }}">{{ 'Ouvrir'|trans }}</a></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </section>
+{% endblock %}

@@ -61,6 +61,10 @@ class ContactMessage
     #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
     private ?\DateTimeImmutable $handledAt = null;
 
+    /** Pièce jointe facultative (formulaire « Contactez-nous », 04/10) : chemin public. */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $attachmentPath = null;
+
     public function getName(): string
     {
         return $this->name;
@@ -129,6 +133,18 @@ class ContactMessage
     public function markHandled(): static
     {
         $this->handledAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getAttachmentPath(): ?string
+    {
+        return $this->attachmentPath;
+    }
+
+    public function setAttachmentPath(?string $attachmentPath): static
+    {
+        $this->attachmentPath = $attachmentPath;
 
         return $this;
     }

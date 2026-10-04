@@ -1,0 +1,50 @@
+{#
+    Étape 7 — Inviter des personnes (maquette creation_evenement_7) :
+    recherche de membres (EventWizardController::contacts), invitations par
+    e-mail, lien de partage (actif après publication).
+#}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ew-main__title">{{ '7. Inviter des personnes (facultatif)'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Invitez vos amis, membres ou contacts à participer à votre événement.'|trans }}</p>
+
+<div class="ew-tabs" role="tablist">
+    <button type="button" class="is-active" role="tab" aria-selected="true" data-ew-tab="people">{{ 'Inviter des personnes'|trans }}</button>
+    <button type="button" role="tab" aria-selected="false" data-ew-tab="link">{{ 'Inviter via un lien'|trans }}</button>
+</div>
+
+<div data-ew-panel="people">
+    <span class="ew-search">
+        <input type="search" placeholder="{{ 'Rechercher un ami, un membre ou un contact…'|trans }}" autocomplete="off" data-ew-people-search data-url="{{ path('app_event_contacts') }}" aria-label="{{ 'Rechercher un membre'|trans }}">
+        {{ icon.search(18) }}
+    </span>
+    <div class="ew-people__head"><strong>{{ 'Résultats'|trans }}</strong><small data-ew-people-hint>{{ 'Tapez au moins 2 lettres pour rechercher un membre.'|trans }}</small></div>
+    <ul class="ew-people" data-ew-people-results></ul>
+
+    <h3 class="ew-main__label">{{ 'Invité(e)s'|trans }} (<span data-ew-invited-count>{{ invited|length }}</span>)</h3>
+    <ul class="ew-people ew-people--invited" data-ew-invited>
+        {% for u in invited %}
+            <li data-id="{{ u.id }}"><span class="ew-avatar">{{ (u.firstName|first ~ u.lastName|first)|upper }}</span><strong>{{ u.firstName }} {{ u.lastName }}</strong><input type="hidden" name="invites[]" value="{{ u.id }}"><button type="button" class="ew-link" data-ew-uninvite>{{ 'Retirer'|trans }}</button></li>
+        {% endfor %}
+    </ul>
+    <div class="ew-empty" data-ew-invited-empty{{ invited is not empty ? ' hidden' }}>
+        {{ icon.users(28) }}
+        <strong>{{ 'Aucune personne invitée'|trans }}</strong>
+        <small>{{ 'Recherchez et invitez des personnes ci-dessus.'|trans }}</small>
+    </div>
+    {{ ui.err(errors, 'invites') }}
+
+    <div class="ew-field{{ errors.invite_emails is defined ? ' has-error' }}">
+        <label for="ew-emails">{{ 'Inviter par e-mail'|trans }}</label>
+        <input id="ew-emails" name="invite_emails" value="{{ draft.invite_emails ?? '' }}" placeholder="{{ 'ami@exemple.fr, collegue@exemple.fr'|trans }}">
+        <p class="ew-hint">{{ 'Séparez les adresses par une virgule. Les membres TrouveMoi reçoivent aussi une notification.'|trans }}</p>
+        {{ ui.err(errors, 'invite_emails') }}
+    </div>
+</div>
+
+<div data-ew-panel="link" hidden>
+    <p class="ew-tip">{{ icon.link(16) }} <span>{{ 'Le lien de partage de votre événement sera disponible dès sa publication, sur la page de confirmation et sur la fiche de l’événement.'|trans }}</span></p>
+</div>
+
+<p class="ew-tip">{{ icon.bulb(16) }} <span><b>{{ 'Astuce'|trans }} :</b> {{ 'Vous pourrez toujours inviter d’autres personnes après la création de l’événement.'|trans }}</span></p>

@@ -1,0 +1,24 @@
+{#
+    Zone de texte avec barre de mise en forme (gras, italique, souligné,
+    listes, lien) : les boutons insèrent la syntaxe Markdown légère
+    (**gras**, *italique*, __souligné__, « - », « 1. », [texte](lien)),
+    rendue sur la fiche de l'événement.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+<div class="ew-editor" data-ew-editor>
+    <div class="ew-editor__bar" role="toolbar" aria-label="{{ 'Mise en forme'|trans }}">
+        <button type="button" data-ew-wrap="**" title="{{ 'Gras'|trans }}"><b>B</b></button>
+        <button type="button" data-ew-wrap="*" title="{{ 'Italique'|trans }}"><i>I</i></button>
+        <button type="button" data-ew-wrap="__" title="{{ 'Souligné'|trans }}"><u>U</u></button>
+        <span></span>
+        <button type="button" data-ew-line="- " title="{{ 'Liste à puces'|trans }}">{{ icon.list_ul(16) }}</button>
+        <button type="button" data-ew-line="1. " title="{{ 'Liste numérotée'|trans }}">{{ icon.list_ol(16) }}</button>
+        <span></span>
+        <button type="button" data-ew-link title="{{ 'Insérer un lien'|trans }}">{{ icon.link(16) }}</button>
+        <button type="button" data-ew-emoji="😊" title="{{ 'Émoji'|trans }}">{{ icon.emoji(16) }}</button>
+    </div>
+    <span class="ew-textarea ew-textarea--flat">
+        <textarea id="{{ id }}" name="{{ name }}" rows="6" maxlength="{{ max }}"{{ required ? ' required minlength=30' }} placeholder="{{ placeholder|trans }}" data-ew-count>{{ draft[name] ?? '' }}</textarea>
+        <small class="ew-count"><b>{{ (draft[name] ?? '')|length }}</b>/{{ max }}</small>
+    </span>
+</div>

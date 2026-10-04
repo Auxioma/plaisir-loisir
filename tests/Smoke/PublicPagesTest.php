@@ -55,7 +55,7 @@ final class PublicPagesTest extends WebTestCase
             '/evenements/tous',
             '/evenements/prives',
             '/evenements/calendrier',
-            '/evenements/calendrier?mois=2026-05',
+            '/evenements/calendrier?mois='.date('Y-m'),
             // Slugs repris de EventFixtures / GroupFixtures : les fiches
             // détail sont réelles depuis le 17/09, plus une seule page fixe.
             '/evenements/detail/competitions-canoe-kayak',
@@ -68,19 +68,19 @@ final class PublicPagesTest extends WebTestCase
             '/evenements/groupes/detail/cours-collectifs-de-fitness-a-lyon/discussions',
             '/evenements/groupes/detail/demande-envoyee',
             // Assistants de création
-            '/evenements/creer/1',
-            '/evenements/creer/8',
-            '/evenements/creer/succes',
+            '/evenements/creer',
             '/evenements/groupes/creer/1',
             '/evenements/groupes/creer/4',
             '/evenements/groupes/creer/succes',
             // Cadeaux et offres
             '/cadeaux',
-            '/cadeaux/ateliers-creations',
+            '/cadeaux?categorie[]=ateliers-creations&montant[]=0-25',
+            '/cadeaux?type=libre',
             '/cadeaux/offrir',
-            '/cadeaux/offrir/paiement',
+            '/cadeaux/offrir?activite=descente-en-canoe',
             '/offres',
-            '/offres/toutes',
+            '/offres?reduction[]=20&dispo[]=semaine&type[]=flash&tri=prix',
+            '/explorer',
             // Pages institutionnelles
             '/a-propos',
             '/devenir-partenaire',
@@ -91,6 +91,9 @@ final class PublicPagesTest extends WebTestCase
             '/paiement-securise',
             '/mentions-legales',
             '/conditions-generales',
+            '/conditions-generales-de-vente',
+            '/politique-de-confidentialite',
+            '/politique-de-cookies',
         ];
 
         foreach ($urls as $url) {

@@ -313,6 +313,9 @@ class CatalogFixtures extends Fixture
                 ->setLongitude((string) $data['lng'])
                 ->setCurrency('EUR')
                 ->setBookingType(BookingType::Calendar)
+                // Langues parlées (filtre de la page Explorer) : français partout,
+                // anglais une fois sur deux, espagnol une fois sur trois.
+                ->setLanguages(array_values(array_filter(['Français', 0 === $position % 2 ? 'Anglais' : null, 0 === $position % 3 ? 'Espagnol' : null])))
                 ->setStatus(ServiceStatus::Published);
 
             $service->addPackage(

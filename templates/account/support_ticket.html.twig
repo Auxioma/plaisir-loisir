@@ -1,0 +1,38 @@
+{# Fil d'une conversation avec le support (côté membre, 04/10). #}
+{% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+{% block title %}{{ ticket.reference }} — {{ 'Support'|trans }}{% endblock %}
+{% block account %}
+    <header class="pf-head">
+        <div>
+            <a class="pf-link" href="{{ path('app_account_support') }}">{{ icon.arrow_left(14) }} {{ 'Mes demandes'|trans }}</a>
+            <h1 class="pf-title">{{ ticket.reference }} · {{ ticket.subject }}</h1>
+            <p class="pf-sub">{{ ticket.category.label|trans }} · <span class="pf-pill pf-pill--{{ ticket.status.tone }}">{{ ticket.status.label|trans }}</span></p>
+        </div>
+        {% if ticket.status.value not in ['closed'] %}
+            <form method="post"><input type="hidden" name="_token" value="{{ csrf_token('submit') }}"><button class="pf-btn" name="action" value="close">{{ 'Clore la conversation'|trans }}</button></form>
+        {% endif %}
+    </header>
+    <section class="pf-card pp-inbox__thread pp-ticket">
+        <div class="pp-chat">
+            {% for m in ticket.messages %}
+                {% set mine = not m.fromStaff %}
+                <div class="pp-msg{{ mine ? ' is-mine' }}">
+                    <div class="pp-msg__bubble">
+                        {% if not mine %}<strong class="pp-msg__who">{{ 'Équipe TrouveMoi'|trans }}</strong>{% endif %}
+                        <p>{{ m.body|nl2br }}</p>
+                        <small>{{ m.createdAt|date('d/m H:i') }}</small>
+                    </div>
+                </div>
+            {% endfor %}
+            {% if ticket.messages|filter(m => m.fromStaff) is empty %}<p class="pf-muted">{{ 'Un conseiller vous répond ici, en général en moins de 2 h (lun.–ven., 9h–18h). Vous recevrez une notification.'|trans }}</p>{% endif %}
+            <span id="fin"></span>
+        </div>
+        <form method="post" class="pp-composer">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+            <label class="visually-hidden" for="sp-body">{{ 'Votre message'|trans }}</label>
+            <textarea id="sp-body" name="message" rows="1" placeholder="{{ 'Écrire un message…'|trans }}" required data-pp-autosend></textarea>
+            <button class="pp-composer__send" aria-label="{{ 'Envoyer'|trans }}">{{ icon.send(20) }}</button>
+        </form>
+    </section>
+{% endblock %}

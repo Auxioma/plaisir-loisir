@@ -1,144 +1,175 @@
+{#
+    « Offres du moment » — maquette docs/maquettes/offres_moments.jpeg (04/10).
+    Données réelles : OfferController::index() (promotions en cours des
+    professionnels via OfferCatalog). Styles : assets/styles/pages.css (.ofm-*).
+#}
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
+{% import 'provider/space/_ico.html.twig' as ico %}
 
-{% block title %}{{ 'Offres du moments'|trans }}{% endblock %}
-{% block meta_description %}{{ "Profitez des meilleures offres et promotions sur vos activités préférées : réductions jusqu'à -50%, ventes flash et dernières minutes."|trans }}{% endblock %}
+{% block title %}{{ 'Offres du moment'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Profitez des meilleures offres et promotions sur vos activités préférées.'|trans }}{% endblock %}
 
-{% block header %}
-    {% include '_partials/navbar.html.twig' with { nav_active: 'offres' } %}
-{% endblock %}
+{% macro price(v) %}{{ v is null ? '' : v|number_format(v == v|round ? 0 : 2, ',', ' ') ~ ' €' }}{% endmacro %}
 
 {% block body %}
-<div class="of-page">
-
-    {# ==================================================================
-       HERO : famille aux valises jaunes + voile blanc + blob orange -50%.
-       ================================================================ #}
-    <section class="of-hero">
-        <img class="of-hero__bg" src="{{ asset('images/offers/hero-offres.jpg') }}" alt="">
-        <div class="of-hero__overlay" aria-hidden="true"></div>
-        <div class="container of-hero__inner">
-            <h1 class="of-hero__title">{{ 'Offres du moments'|trans }}</h1>
-            <p class="of-hero__subtitle">{{ 'Profitez des meilleures offres et promotions sur vos activités préférées.'|trans }}</p>
-            <div class="of-hero__pills">
-                <span class="home-pill">{{ icon.tag(16) }} {{ 'Meilleur prix garanti'|trans }}</span>
-                <span class="home-pill">{{ icon.gift(16) }} {{ 'Offres limitées'|trans }}</span>
-                <span class="home-pill">{{ icon.calendar(16) }} {{ 'Réservation immédiate'|trans }}</span>
-                <span class="home-pill">{{ icon.ban(16) }} {{ 'Annulation facile'|trans }}</span>
-            </div>
+<div class="pg ofm">
+    <header class="ofm-hero">
+        <img class="ofm-hero__bg" src="{{ asset('images/offers/hero-offres.jpg') }}" alt="">
+        <div class="ofm-hero__text">
+            <h1>{{ 'Offres du moment'|trans }} 🔥</h1>
+            <p>{{ 'Profitez des meilleures offres et promotions sur vos activités préférées'|trans }}</p>
+            <ul class="ofm-hero__chips">
+                <li>{{ icon.check_badge(16) }} {{ 'Meilleurs prix garantis'|trans }}</li>
+                <li>{{ icon.flame(16) }} {{ 'Offres limitées'|trans }}</li>
+                <li>{{ icon.zap(16) }} {{ 'Réservation immédiate'|trans }}</li>
+                <li>{{ icon.shield_check(16) }} {{ 'Annulation facile'|trans }}</li>
+            </ul>
         </div>
-        {# Blob orange organique « Jusqu'à -50% » (décor signature). Le contour
-           et les quatre traits décoratifs sont RELEVÉS sur la maquette
-           (assets/figma/offres-du-moment.png) : forme de 260x252 posée à x1112
-           y195, traits fins de 2,2px autour. #}
-        <div class="of-hero__blob" aria-hidden="true">
-            <svg viewBox="0 0 299 252" class="of-hero__blob-shape">
-                <path fill="var(--pl-cta)" transform="translate(20 0)" d="M237.3 121.8Q240.3 126.7 243.3 132.2Q246.2 137.6 249.9 143.9Q253.5 150.2 255.9 157.1Q258.3 164.0 258.7 171.0Q259.1 178.0 256.7 184.2Q254.3 190.3 249.9 195.3Q245.5 200.3 239.8 204.1Q234.2 207.9 228.6 211.1Q223.0 214.4 216.7 216.3Q210.5 218.3 204.1 219.3Q197.8 220.2 191.5 220.2Q185.3 220.2 179.2 219.2Q173.2 218.2 167.8 217.2Q162.4 216.2 157.7 215.8Q152.9 215.5 148.5 215.9Q144.1 216.3 139.7 217.2Q135.3 218.2 130.5 220.7Q125.8 223.2 120.0 227.7Q114.3 232.1 107.2 237.3Q100.2 242.5 92.4 245.8Q84.6 249.1 76.6 250.3Q68.6 251.5 61.1 250.2Q53.6 248.9 47.2 245.4Q40.8 241.9 36.8 235.5Q32.8 229.2 32.8 220.0Q32.9 210.7 36.9 200.2Q40.9 189.7 43.8 181.9Q46.7 174.1 47.1 168.6Q47.5 163.0 47.1 158.3Q46.8 153.5 43.9 149.5Q41.1 145.4 35.0 141.3Q28.8 137.2 21.8 131.9Q14.8 126.7 10.3 120.3Q5.9 113.9 3.4 107.0Q0.9 100.0 0.9 92.9Q0.8 85.9 2.7 79.2Q4.6 72.5 8.6 66.9Q12.7 61.2 18.5 56.8Q24.3 52.5 31.1 49.6Q37.9 46.8 45.0 45.2Q52.2 43.6 59.3 43.2Q66.5 42.8 73.1 43.2Q79.7 43.5 85.6 44.1Q91.4 44.7 96.4 44.8Q101.4 44.9 105.8 44.4Q110.2 43.9 114.4 43.4Q118.6 42.8 122.7 41.7Q126.8 40.6 131.0 39.7Q135.3 38.7 139.8 37.2Q144.3 35.6 149.2 33.6Q154.2 31.6 160.2 28.2Q166.2 24.8 174.4 18.7Q182.5 12.6 192.3 7.2Q202.0 1.9 211.0 0.9Q220.0 -0.1 227.8 2.2Q235.5 4.6 240.9 10.1Q246.3 15.7 247.8 24.4Q249.3 33.1 246.3 43.8Q243.4 54.5 238.9 64.1Q234.5 73.7 231.8 80.8Q229.1 87.8 228.6 93.2Q228.1 98.5 229.3 103.2Q230.4 107.8 232.4 112.4Q234.3 116.9 237.3 121.8Z"/>
-                <g fill="none" stroke="var(--pl-cta)" stroke-width="2.2" stroke-linecap="round">
-                    <path d="M269 88Q253 80 297 160"/>
-                    <path d="M5 68Q19 31 65 26"/>
-                    <path d="M289 30Q292 45 279 64"/>
-                    <path d="M0 93Q0.5 114 11 127"/>
-                </g>
-            </svg>
-            <div class="of-hero__blob-text">
-                <span class="of-hero__blob-upto">{{ "Jusqu'à"|trans }}</span>
-                <span class="of-hero__blob-pct">-50%</span>
-                <span class="of-hero__blob-note">{{ "Sur une sélection d'activités"|trans }}</span>
-            </div>
-        </div>
-    </section>
+        {% if max_discount > 0 %}
+            <div class="ofm-hero__burst"><small>{{ 'Jusqu’à'|trans }}</small><strong>-{{ max_discount }}%</strong><small>{{ 'sur une sélection d’activités'|trans }}</small></div>
+        {% endif %}
+    </header>
 
-    <div class="container">
-        <nav class="act-breadcrumb of-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
-            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
-            <span aria-hidden="true">|</span>
-            <span aria-current="page">{{ 'Offres du moments'|trans }}</span>
-        </nav>
+    <nav class="pg-wrap ofm-tiles" aria-label="{{ 'Catégories'|trans }}">
+        <a class="ofm-tile{{ filters.categorie == '' ? ' is-active' }}" href="{{ path('app_offers', params|merge({categorie: null})) }}">
+            <span class="ofm-tile__ico is-blue">{{ icon.gift(22) }}</span><span><strong>{{ 'Toutes les offres'|trans }}</strong><small>{{ all_count }} {{ all_count > 1 ? 'offres'|trans : 'offre'|trans }}</small></span>
+        </a>
+        {% for t in tiles %}
+            <a class="ofm-tile{{ filters.categorie == t.slug ? ' is-active' }}{{ t.count == 0 ? ' is-empty' }}" href="{{ path('app_offers', params|merge({categorie: t.slug})) }}">
+                <span class="ofm-tile__ico is-{{ t.icon[1] }}">{{ ico.svg(t.icon[0], 22) }}</span><span><strong>{{ t.name|trans }}</strong><small>{{ t.count }} {{ t.count > 1 ? 'offres'|trans : 'offre'|trans }}</small></span>
+            </a>
+        {% endfor %}
+    </nav>
+
+    <div class="pg-wrap ofm-layout">
+        <aside class="ofm-filters">
+            <form method="get" action="{{ path('app_offers') }}" id="ofm-filters">
+                {% if filters.categorie %}<input type="hidden" name="categorie" value="{{ filters.categorie }}">{% endif %}
+                {% if filters.tri != 'meilleures' %}<input type="hidden" name="tri" value="{{ filters.tri }}">{% endif %}
+                <div class="ofm-filters__head"><h2>{{ 'Filtres'|trans }}</h2><a href="{{ path('app_offers') }}">{{ 'Réinitialiser'|trans }}</a></div>
+                <fieldset>
+                    <legend>{{ 'Prix'|trans }}</legend>
+                    <div class="ofm-range"><span>0 €</span><output id="ofm-prix-out">{{ filters.prix }} €</output></div>
+                    <input type="range" name="prix" min="0" max="500" step="10" value="{{ filters.prix }}" data-pg-range="ofm-prix-out" aria-label="{{ 'Prix maximum'|trans }}">
+                </fieldset>
+                <fieldset>
+                    <legend>{{ 'Réduction'|trans }}</legend>
+                    {% for r in [10, 20, 30, 40, 50] %}<label class="ofm-check"><input type="checkbox" name="reduction[]" value="{{ r }}"{{ r in filters.reduction ? ' checked' }}> -{{ r }}% {{ 'et plus'|trans }}</label>{% endfor %}
+                </fieldset>
+                <fieldset>
+                    <legend>{{ 'Disponibilité'|trans }}</legend>
+                    {% for k, label in availability %}<label class="ofm-check"><input type="checkbox" name="dispo[]" value="{{ k }}"{{ k in filters.dispo ? ' checked' }}> {{ label|trans }}</label>{% endfor %}
+                </fieldset>
+                <fieldset>
+                    <legend>{{ "Type d'offre"|trans }}</legend>
+                    {% for k, label in types %}<label class="ofm-check"><input type="checkbox" name="type[]" value="{{ k }}"{{ k in filters.type ? ' checked' }}> {{ label|trans }}</label>{% endfor %}
+                </fieldset>
+                <button class="pg-btn pg-btn--block">{{ 'Voir les'|trans }} {{ total }} {{ total > 1 ? 'offres'|trans : 'offre'|trans }}</button>
+            </form>
+        </aside>
+
+        <div class="ofm-main">
+            <div class="ofm-bar">
+                <h2 class="pg-h3">{{ 'Offres exclusives pour vous'|trans }} 🎉</h2>
+                <form method="get" class="ofm-sort">
+                    {% for k, v in params|filter((v, k) => k != 'tri') %}
+                        {% if v is iterable %}{% for x in v %}<input type="hidden" name="{{ k }}[]" value="{{ x }}">{% endfor %}{% else %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endif %}
+                    {% endfor %}
+                    <label for="ofm-tri">{{ 'Trier par'|trans }}</label>
+                    <select id="ofm-tri" name="tri" onchange="this.form.submit()">{% for k, label in sorts %}<option value="{{ k }}"{{ filters.tri == k ? ' selected' }}>{{ label|trans }}</option>{% endfor %}</select>
+                    <noscript><button class="pg-link">OK</button></noscript>
+                </form>
+            </div>
+
+            {% if offers is empty %}
+                <div class="ofm-empty">{{ icon.tag(32) }}<strong>{{ 'Aucune offre ne correspond à vos critères.'|trans }}</strong><a class="pg-btn pg-btn--outline" href="{{ path('app_offers') }}">{{ 'Voir toutes les offres'|trans }}</a></div>
+            {% else %}
+                <div class="ofm-grid">
+                    {% for o in offers %}
+                        <article class="ofm-card" id="of-{{ loop.index }}">
+                            <a class="ofm-card__media" href="{{ path('app_activity_show', {slug: o.slug, offre: o.id}) }}">
+                                <img src="{{ asset(o.image) }}" alt="{{ o.title }}" loading="lazy">
+                                <span class="ofm-badge{{ o.discount is null ? ' is-alt' }}">{{ o.badge|trans }}</span>
+                                <span class="ofm-card__timer">{{ icon.clock(13) }} {{ 'Se termine dans'|trans }} <b data-pg-countdown="{{ o.endsAt|date('c') }}"></b></span>
+                            </a>
+                            {% include '_partials/_event_fav.html.twig' with { type: 'activite', key: o.slug, class: 'ofm-card__fav' } %}
+                            <div class="ofm-card__body">
+                                <small class="ofm-card__place">{{ icon.map_pin(12) }} {{ o.place }}</small>
+                                <a class="ofm-card__title" href="{{ path('app_activity_show', {slug: o.slug, offre: o.id}) }}">{{ o.title }}</a>
+                                <small class="ofm-card__offer">{{ o.offer }}</small>
+                                <div class="ofm-card__row">
+                                    <span>
+                                        {% if o.rating %}<small>{{ icon.star_solid(13) }} {{ o.rating }} ({{ o.reviews }})</small>{% endif %}
+                                        {% if o.duration %}<small>{{ icon.clock(13) }} {{ o.duration }}</small>{% endif %}
+                                    </span>
+                                    <span class="ofm-price">{% if o.oldPrice %}<s>{{ _self.price(o.oldPrice) }}</s>{% endif %}<strong>{{ _self.price(o.price) }}</strong></span>
+                                </div>
+                                <a class="pg-btn pg-btn--outline pg-btn--block" href="{{ path('app_activity_show', {slug: o.slug, offre: o.id}) }}">{{ "Voir l'offre"|trans }}</a>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+                {% if has_more %}
+                    <a class="ofm-more" href="{{ path('app_offers', params|merge({page: page + 1})) }}#of-{{ offers|length + 1 }}">{{ "Voir plus d'offres"|trans }} {{ icon.chevron_down(16) }}</a>
+                {% endif %}
+            {% endif %}
+
+            {% if last_minute is not empty %}
+                <div class="ofm-bar ofm-bar--mt">
+                    <h2 class="pg-h3">{{ 'Dernière minute'|trans }} {{ icon.clock(18) }}</h2>
+                    <a class="pg-link" href="{{ path('app_offers', {dispo: ['derniere-minute'], tri: 'fin'}) }}">{{ 'Voir toutes les dernières minutes'|trans }} {{ icon.arrow_right(14) }}</a>
+                </div>
+                <div class="ofm-last">
+                    {% for o in last_minute %}
+                        {% set ends = o.endsAt|date('Y-m-d') %}
+                        <a class="ofm-mini" href="{{ path('app_activity_show', {slug: o.slug, offre: o.id}) }}">
+                            <span class="ofm-mini__media">
+                                <img src="{{ asset(o.image) }}" alt="" loading="lazy">
+                                <span class="ofm-badge{{ o.discount is null ? ' is-alt' }}">{{ o.badge|trans }}</span>
+                                <span class="ofm-mini__when">{{ ends == 'now'|date('Y-m-d') ? 'Aujourd’hui'|trans : (ends == '+1 day'|date('Y-m-d') ? 'Demain'|trans : 'Jusqu’au'|trans ~ ' ' ~ o.endsAt|date('d/m')) }}</span>
+                            </span>
+                            <strong>{{ o.title }}</strong>
+                            <small>{{ o.place }}</small>
+                            <span class="ofm-card__row">{% if o.rating %}<small>{{ icon.star_solid(12) }} {{ o.rating }} ({{ o.reviews }})</small>{% else %}<small></small>{% endif %}<span class="ofm-price">{% if o.oldPrice %}<s>{{ _self.price(o.oldPrice) }}</s>{% endif %}<strong>{{ _self.price(o.price) }}</strong></span></span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <aside class="ofm-side">
+            {% if flash %}
+                <section class="ofm-flash">
+                    <h2>{{ 'Vente flash'|trans }} ⚡</h2>
+                    <p>{{ 'Offres limitées à ne pas manquer !'|trans }}</p>
+                    <div class="ofm-flash__count" data-pg-countdown="{{ flash.endsAt|date('c') }}">
+                        <span><b data-unit="j">00</b>{{ 'Jours'|trans }}</span><span><b data-unit="h">00</b>{{ 'Heures'|trans }}</span><span><b data-unit="m">00</b>{{ 'Min'|trans }}</span><span><b data-unit="s">00</b>{{ 'Sec'|trans }}</span>
+                    </div>
+                    <p class="ofm-flash__big"><small>{{ flash.title }}</small><strong>{{ flash.badge|trans }}</strong>{% if flash.oldPrice %}<small><s>{{ _self.price(flash.oldPrice) }}</s> → {{ _self.price(flash.price) }}</small>{% endif %}</p>
+                    <a class="ofm-flash__btn" href="{{ path('app_activity_show', {slug: flash.slug, offre: flash.id}) }}">{{ "Profiter de l'offre"|trans }}</a>
+                </section>
+            {% endif %}
+            <section class="ofm-news">
+                <h2>{{ 'Ne manquez aucune offre !'|trans }}</h2>
+                <p>{{ 'Recevez les meilleures offres directement dans votre boîte mail.'|trans }}</p>
+                <form method="post" action="{{ path('app_newsletter_subscribe') }}" data-newsletter>
+                    <input type="hidden" name="_token" value="{{ csrf_token('newsletter') }}">
+                    <input type="hidden" name="source" value="offres">
+                    <label class="visually-hidden" for="ofm-email">{{ 'Votre email'|trans }}</label>
+                    <input id="ofm-email" type="email" name="email" placeholder="{{ 'Votre email'|trans }}" required maxlength="180" autocomplete="email">
+                    <button class="pg-btn">{{ "S'abonner"|trans }}</button>
+                </form>
+                <p class="ofm-news__msg" data-newsletter-msg role="status" hidden></p>
+            </section>
+        </aside>
     </div>
 
-    {# ==================================================================
-       CATEGORIES POPULAIRES : pastilles pleines colorées + volume.
-       ================================================================ #}
-    <section class="home-section">
-        <div class="container">
-            <div class="home-section__head">
-                <div>
-                    <h2 class="home-section__title">{{ 'Categories populaires'|trans }}</h2>
-                    <p class="home-section__subtitle">{{ "Des réductions dans toutes vos catégories préférées : trouvez l'offre qui vous ressemble."|trans }}</p>
-                </div>
-                <a href="{{ path('app_offers_all') }}" class="btn-see-all">{{ 'Voir toutes les offres'|trans }} {{ icon.arrow_up_right(16) }}</a>
-            </div>
-            <div class="of-cats">
-                {% for c in categories %}
-                    <a href="{{ path('app_offers_all') }}" class="of-cat">
-                        <span class="of-cat__icon of-cat__icon--{{ c.color }}">
-                            {%- if c.icon == 'sports' %}{{ icon.cat_sports(18) }}
-                            {%- elseif c.icon == 'crafts' %}{{ icon.cat_crafts(18) }}
-                            {%- elseif c.icon == 'wellness' %}{{ icon.cat_wellness(18) }}
-                            {%- elseif c.icon == 'culture' %}{{ icon.cat_culture(18) }}
-                            {%- elseif c.icon == 'family' %}{{ icon.cat_family(18) }}
-                            {%- else %}{{ icon.flame(18) }}
-                            {%- endif %}
-                        </span>
-                        <span class="of-cat__name">{{ c.name }}</span>
-                        <span class="of-cat__count">{{ c.count }}</span>
-                    </a>
-                {% endfor %}
-            </div>
-        </div>
-    </section>
-
-    {# ==================================================================
-       OFFRES EXCLUSIVES POUR VOUS.
-       ================================================================ #}
-    <section class="act-section">
-        <div class="container">
-            <h2 class="home-section__title of-section-title">{{ 'Offres exclusives pour vous'|trans }}</h2>
-            <div class="card-grid">
-                {% for o in exclusives %}
-                    {% include 'offer/_card.html.twig' with { o: o } %}
-                {% endfor %}
-            </div>
-        </div>
-    </section>
-
-    {# ==================================================================
-       BANNIÈRE VENTE FLASH (spec C3).
-       ================================================================ #}
-    <section class="home-section">
-        <div class="container">
-            <div class="of-flash">
-                <div class="of-flash__promo" aria-hidden="true">
-                    <svg class="of-flash__bolt of-flash__bolt--left" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-                    <div class="of-flash__panel">
-                        <span class="of-flash__upto">{{ "Jusqu'à"|trans }}</span>
-                        <span class="of-flash__pct">-50%</span>
-                        <span class="of-flash__note">{{ "Sur une sélection d'activités"|trans }}</span>
-                    </div>
-                    <svg class="of-flash__bolt of-flash__bolt--right" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-                </div>
-                <div class="of-flash__text">
-                    <h2 class="of-flash__title">{{ 'Vente Flash'|trans }}</h2>
-                    <p class="of-flash__tagline">{{ 'Offres limitées à ne pas manquer'|trans }}&nbsp;!</p>
-                    <p class="of-flash__desc">{{ 'Ne manquez pas nos meilleures offres de la saison. Profitez dès maintenant de réductions sur vos activités préférées.'|trans }}</p>
-                    <div class="of-flash__count" role="timer" aria-label="{{ 'Fin de la vente flash'|trans }}">
-                        <span class="of-flash__cell"><strong>10</strong>{{ 'Jours'|trans }}</span>
-                        <span class="of-flash__cell"><strong>08</strong>{{ 'Heures'|trans }}</span>
-                        <span class="of-flash__cell"><strong>23</strong>{{ 'Min.'|trans }}</span>
-                        <span class="of-flash__cell"><strong>47</strong>{{ 'Secondes'|trans }}</span>
-                    </div>
-                    <a href="{{ path('app_offers_all') }}" class="pl-btn pl-btn--cta">{{ 'Découvrir toutes les offres'|trans }}</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {% include 'offer/_lastminute.html.twig' with { lastMinute: lastMinute } %}
-
-    <div class="container of-news-wrap">
-        {% include 'offer/_newsletter.html.twig' %}
-    </div>
-
+    <ul class="pg-wrap ofm-features">
+        <li>{{ icon.check_badge(26) }}<span><strong>{{ 'Meilleurs prix garantis'|trans }}</strong><small>{{ 'Des offres négociées avec nos partenaires'|trans }}</small></span></li>
+        <li>{{ icon.shield_check(26) }}<span><strong>{{ 'Réservation sécurisée'|trans }}</strong><small>{{ 'Paiement 100% sécurisé'|trans }}</small></span></li>
+        <li>{{ icon.calendar_check(26) }}<span><strong>{{ 'Annulation facile'|trans }}</strong><small>{{ 'Jusqu’à 24h avant'|trans }}</small></span></li>
+        <li>{{ icon.headset(26) }}<span><strong>{{ 'Support 7j/7'|trans }}</strong><small>{{ 'Notre équipe à votre écoute'|trans }}</small></span></li>
+    </ul>
 </div>
 {% endblock %}

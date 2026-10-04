@@ -5,16 +5,24 @@ declare(strict_types=1);
 namespace App\Event\Controller;
 
 use App\Event\Entity\Event;
+use App\Event\Entity\EventRegistration;
 use App\Event\Entity\Group;
 use App\Event\Entity\GroupAlbum;
 use App\Event\Presenter\CalendarPresenter;
 use App\Event\Presenter\EventPresenter;
 use App\Event\Presenter\GroupPresenter;
+use App\Event\Repository\EventCategoryRepository;
+use App\Event\Repository\EventInvitationRepository;
+use App\Event\Repository\EventRegistrationRepository;
 use App\Event\Repository\EventRepository;
 use App\Event\Repository\GroupAlbumRepository;
 use App\Event\Repository\GroupRepository;
 use App\Event\StaticEvents;
 use App\I18n\Routing\LocaleUrlGenerator;
+use App\Notification\Enum\NotificationCategory;
+use App\Notification\Service\NotificationService;
+use App\User\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,6 +46,7 @@ final class EventsController extends AbstractController
         private readonly GroupAlbumRepository $albums,
         private readonly GroupPresenter $groupPresenter,
         private readonly CalendarPresenter $calendarPresenter,
+        private readonly EventInvitationRepository $invitations,
     ) {
     }
 
@@ -90,16 +99,62 @@ final class EventsController extends AbstractController
         return $rangee;
     }
 
+    /** Pastilles de catégories de la maquette evenements.jpeg (libellé → slug EventCategory). */
+    private const CHIPS = [
+        '' => ['Tous les événements', 'star'],
+        'sports' => ['Sport', 'zap'],
+        'randonnee' => ['Randonnée', 'cat_hiking'],
+        'repas' => ['Repas & Fête', 'cheers'],
+        'culture' => ['Culture & Loisirs', 'palette'],
+        'bien-etre' => ['Bien-être', 'leaf'],
+        'jeu' => ['Jeux & Loisirs', 'puzzle'],
+        'en-famille' => ['En famille', 'users'],
+    ];
+
+    private const PER_PAGE = 10;
+
+    /**
+     * « Événements » — maquette docs/maquettes/evenements.jpeg (04/10) :
+     * recherche (où, quand, catégorie, type), pastilles, tri, grille,
+     * « Charger plus », carte des événements et « à venir ».
+     */
     #[Route(path: ['fr' => '/evenements', 'en' => '/en/events'], name: 'app_events')]
-    public function index(): Response
+    public function index(Request $request, EventCategoryRepository $categoryRepository): Response
     {
+        $filters = [
+            'q' => trim((string) $request->query->get('q', '')),
+            'where' => trim((string) $request->query->get('ou', '')),
+            'when' => (string) $request->query->get('quand', ''),
+            'date' => (string) $request->query->get('date', ''),
+            'category' => (string) $request->query->get('categorie', ''),
+            'type' => (string) $request->query->get('type', ''),
+            'sort' => (string) $request->query->get('tri', 'date'),
+        ];
+        $page = max(1, $request->query->getInt('page', 1));
+        [$events, $total] = $this->events->searchPublic($filters, self::PER_PAGE * $page);
+        [$upcoming] = $this->events->searchPublic(['sort' => 'date'], 4);
+        [$all] = $this->events->searchPublic([], 300);
+
+        $markers = [];
+        foreach ($this->presenter->cards($all) as $card) {
+            if (null !== $card['lat'] && null !== $card['lng']) {
+                $markers[] = ['lat' => $card['lat'], 'lng' => $card['lng'], 'title' => $card['title'], 'url' => $this->generateUrl('app_events_detail', ['slug' => $card['slug']]), 'date' => $card['day'].' '.$card['month'], 'where' => $card['where']];
+            }
+        }
+
         return $this->render('event/nav/index.html.twig', [
-            'events' => $this->presenter->cards($this->events->findForListing()),
-            // Pastilles de navigation : une liste editoriale avec ses icones,
-            // sans equivalent en base et sans compteur. Distincte des
-            // categories qui colorent le badge des cartes.
-            'categories' => StaticEvents::categories(),
-            // Vignettes de visages decoratives, sans utilisateur derriere.
+            'events' => $this->presenter->cards($events),
+            'total' => $total,
+            'page' => $page,
+            'has_more' => $total > \count($events),
+            'filters' => $filters,
+            // Mêmes filtres sous leurs noms d'URL, pour les liens et formulaires.
+            'params' => array_filter(['q' => $filters['q'], 'ou' => $filters['where'], 'quand' => $filters['when'], 'date' => $filters['date'], 'categorie' => $filters['category'], 'type' => $filters['type'], 'tri' => 'date' !== $filters['sort'] ? $filters['sort'] : '']),
+            'chips' => self::CHIPS,
+            'categories' => $categoryRepository->findBy([], ['position' => 'ASC']),
+            'types' => \App\Event\StaticEventWizard::types(),
+            'upcoming' => $this->presenter->cards($upcoming),
+            'markers' => $markers,
             'avatars' => StaticEvents::avatars(),
         ]);
     }
@@ -182,7 +237,9 @@ final class EventsController extends AbstractController
             // listing sur cet onglet. On le conserve tel quel plutot que
             // d'afficher une page vide, le temps que la creation d'evenements
             // prives existe.
-            'events' => $this->presenter->cards($this->events->findForListing()),
+            // Événements privés : seulement ceux que le membre organise ou
+            // auxquels il est invité (04/10) ; rien pour un visiteur.
+            'events' => $this->presenter->cards($this->getUser() instanceof User ? $this->events->findPrivateFor($this->getUser()) : []),
             'avatars' => StaticEvents::avatars(),
             'selections' => StaticEvents::selections(),
             'cities' => StaticEvents::cities(),
@@ -190,35 +247,151 @@ final class EventsController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/evenements/detail/{slug}', 'en' => '/en/events/detail/{slug}'], name: 'app_events_detail')]
-    public function detail(string $slug): Response
+    public function detail(string $slug, EventRegistrationRepository $registrations): Response
     {
-        $event = $this->findEventOrFail($slug);
+        $event = $this->viewableOrFail($slug);
+        $user = $this->getUser();
+        $going = $registrations->findGoing($event);
 
         return $this->render('event/nav/detail.html.twig', [
             'event' => $this->presenter->card($event),
-            // Roster decoratif : aucune entite d'inscription a un evenement
-            // n'existe encore (voir Group::membersCount, meme situation), le
-            // compte reel (event.participants) l'accompagne deja sur la fiche.
-            'participants' => StaticEvents::participants(),
-            // « Vous aimerez peut-etre aussi » : d'autres evenements reels,
-            // le present exclu, plutot que la selection figee de la maquette.
-            'similar' => $this->presenter->cards(array_filter(
-                $this->events->findForListing(limit: 4 + 1),
+            'entity' => $event,
+            'registration' => $user instanceof User ? $registrations->findOneFor($event, $user) : null,
+            'is_organizer' => $user instanceof User && $event->getOrganizer() === $user,
+            'going' => $going,
+            'waitlist_count' => $registrations->count(['event' => $event, 'status' => EventRegistration::WAITLIST]),
+            'similar' => $this->presenter->cards(array_slice(array_filter(
+                $this->events->findForListing(limit: 5),
                 static fn (Event $e): bool => $e !== $event,
-            )),
+            ), 0, 4)),
             'avatars' => StaticEvents::avatars(),
         ]);
     }
 
-    #[Route(path: ['fr' => '/evenements/detail/{slug}/participants', 'en' => '/en/events/detail/{slug}/participants'], name: 'app_events_participants')]
-    public function participants(string $slug): Response
+    /**
+     * « Je participe » / « Me désinscrire » (04/10) : inscription réelle,
+     * liste d'attente quand l'événement est complet, promotion du premier en
+     * attente quand une place se libère.
+     */
+    #[Route(path: ['fr' => '/evenements/detail/{slug}/participer', 'en' => '/en/events/detail/{slug}/join'], name: 'app_events_join', methods: ['POST'])]
+    public function join(string $slug, Request $request, EventRegistrationRepository $registrations, EntityManagerInterface $em, NotificationService $notifications): Response
     {
-        $event = $this->findEventOrFail($slug);
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            $this->addFlash('info', 'Connectez-vous pour participer à cet événement.');
+
+            return $this->redirectToRoute('app_login');
+        }
+        $event = $this->viewableOrFail($slug);
+        if (!$this->isCsrfTokenValid('event_join', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+            return $this->redirectToRoute('app_events_detail', ['slug' => $slug]);
+        }
+
+        $existing = $registrations->findOneFor($event, $user);
+        if (null !== $existing) {
+            if ($event->getOrganizer() === $user) {
+                $this->addFlash('info', 'Vous êtes l’organisateur de cet événement.');
+
+                return $this->redirectToRoute('app_events_detail', ['slug' => $slug]);
+            }
+            $wasGoing = EventRegistration::GOING === $existing->getStatus();
+            $em->remove($existing);
+            $em->flush();
+            if ($wasGoing && null !== ($next = $registrations->findOneBy(['event' => $event, 'status' => EventRegistration::WAITLIST], ['createdAt' => 'ASC']))) {
+                $next->setStatus(EventRegistration::GOING);
+                $notifications->notify($next->getUser(), NotificationCategory::Activity, 'Une place s’est libérée', sprintf('Vous participez désormais à « %s ».', $event->getTitle()));
+            }
+            $this->addFlash('success', 'Votre participation a été annulée.');
+        } elseif ($event->getStartsAt() < new \DateTimeImmutable()) {
+            $this->addFlash('error', 'Cet événement a déjà commencé.');
+
+            return $this->redirectToRoute('app_events_detail', ['slug' => $slug]);
+        } else {
+            $full = null !== $event->getCapacity() && $registrations->countGoing($event) >= $event->getCapacity();
+            if ($full && !$event->isWaitlist()) {
+                $this->addFlash('error', 'Cet événement est complet.');
+
+                return $this->redirectToRoute('app_events_detail', ['slug' => $slug]);
+            }
+            $em->persist(new EventRegistration($event, $user, $full ? EventRegistration::WAITLIST : EventRegistration::GOING));
+            $this->addFlash('success', $full ? 'Événement complet : vous êtes sur la liste d’attente, nous vous préviendrons si une place se libère.' : sprintf('C’est noté, vous participez à « %s » !', $event->getTitle()));
+            if (null !== ($organizer = $event->getOrganizer()) && $organizer !== $user) {
+                $notifications->notify($organizer, NotificationCategory::Activity, $full ? 'Nouvelle personne en liste d’attente' : 'Nouveau participant', sprintf('%s %s · « %s »', $user->getFirstName(), $user->getLastName(), $event->getTitle()));
+            }
+        }
+
+        $em->flush();
+        $event->setParticipantsCount($registrations->countGoing($event));
+        $em->flush();
+
+        return $this->redirectToRoute('app_events_detail', ['slug' => $slug]);
+    }
+
+    /** « Ajouter à votre agenda » : fichier iCalendar de l'événement. */
+    #[Route(path: ['fr' => '/evenements/detail/{slug}/agenda.ics', 'en' => '/en/events/detail/{slug}/calendar.ics'], name: 'app_events_ics')]
+    public function ics(string $slug): Response
+    {
+        $event = $this->viewableOrFail($slug);
+        $utc = new \DateTimeZone('UTC');
+        $fmt = static fn (\DateTimeImmutable $d): string => $d->setTimezone($utc)->format('Ymd\THis\Z');
+        $esc = static fn (?string $t): string => str_replace(['\\', ';', ',', "\n", "\r"], ['\\\\', '\\;', '\\,', '\\n', ''], (string) $t);
+        $lines = [
+            'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//TrouveMoi//Evenements//FR', 'BEGIN:VEVENT',
+            'UID:'.$event->getSlug().'@trouvemoi.eu',
+            'DTSTAMP:'.$fmt(new \DateTimeImmutable()),
+            'DTSTART:'.$fmt($event->getStartsAt()),
+            'DTEND:'.$fmt($event->getEndsAt() ?? $event->getStartsAt()->modify('+2 hours')),
+            'SUMMARY:'.$esc($event->getTitle()),
+            'LOCATION:'.$esc($event->getAddress() ?? $event->getLocation()),
+            'DESCRIPTION:'.$esc($event->getShortDescription()),
+            'URL:'.$this->generateUrl('app_events_detail', ['slug' => $event->getSlug()], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL),
+            'END:VEVENT', 'END:VCALENDAR',
+        ];
+
+        return new Response(implode("\r\n", $lines)."\r\n", 200, [
+            'Content-Type' => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => sprintf('attachment; filename="%s.ics"', $event->getSlug()),
+        ]);
+    }
+
+    #[Route(path: ['fr' => '/evenements/detail/{slug}/participants', 'en' => '/en/events/detail/{slug}/participants'], name: 'app_events_participants')]
+    public function participants(string $slug, EventRegistrationRepository $registrations): Response
+    {
+        $event = $this->viewableOrFail($slug);
+        $user = $this->getUser();
+        $canSee = $event->isShowParticipants() || ($user instanceof User && $event->getOrganizer() === $user);
 
         return $this->render('event/nav/participants.html.twig', [
             'event' => $this->presenter->card($event),
-            'participants' => StaticEvents::participants(),
+            'entity' => $event,
+            'going' => $canSee ? $registrations->findGoing($event) : [],
+            'hidden_list' => !$canSee,
         ]);
+    }
+
+    /**
+     * Fiche consultable : publiée (ou programmée et arrivée à échéance) ;
+     * un brouillon ou un événement privé ne l'est que par son organisateur
+     * et ses invités.
+     */
+    private function viewableOrFail(string $slug): Event
+    {
+        $event = $this->findEventOrFail($slug);
+        $user = $this->getUser();
+        $isOrganizer = $user instanceof User && $event->getOrganizer() === $user;
+        if (!$isOrganizer && !$event->isPublished()) {
+            throw new NotFoundHttpException('Cet événement est introuvable.');
+        }
+        if (!$isOrganizer && $event->isPrivate()) {
+            $invited = $user instanceof User && $this->invitations->isInvited($event, $user);
+            if (!$invited) {
+                throw $user instanceof User ? $this->createAccessDeniedException('Cet événement est réservé aux personnes invitées.') : new NotFoundHttpException('Cet événement est introuvable.');
+            }
+        }
+
+        return $event;
     }
 
     #[Route(path: ['fr' => '/evenements/groupes', 'en' => '/en/events/groups'], name: 'app_groups')]

@@ -47,31 +47,53 @@ final class StateChangingRequestsTest extends WebTestCase
             'post',
             strtolower((string) $form->attr('method')),
             "Le tunnel cadeau est repassé en GET : le nom, l'e-mail, le téléphone et le "
-            ."message privé se retrouveraient dans l'adresse de la page de paiement.",
+            .'message privé se retrouveraient dans l\'adresse de la page de paiement.',
         );
 
         self::assertGreaterThan(
             0,
-            $form->filter('input[name="gift_offer_form[_token]"]')->count(),
+            $form->filter('input[name="_token"]')->count(),
             'Le jeton anti-CSRF manque au formulaire cadeau.',
         );
 
-        // Et la page de paiement s'ouvre bien quand le formulaire est envoyé
-        // avec des informations valides.
+        // Le bon est créé et payé (paiement simulé en test), puis l'acheteur
+        // arrive sur son bon — sans ses données dans l'adresse.
         $client->submit($form->form([
-            'gift_offer_form[fullName]' => 'Martin Thomas',
-            'gift_offer_form[email]' => 'martin@example.com',
-            'gift_offer_form[phone][country]' => 'FR',
-            'gift_offer_form[phone][number]' => '0612345678',
-            'gift_offer_form[agreeTerms]' => '1',
+            'amount' => '40',
+            'recipient_name' => 'Léa',
+            'delivery' => 'email',
+            'recipient_email' => 'lea@example.com',
+            'message' => 'Joyeux anniversaire !',
+            'buyer_name' => 'Martin Thomas',
+            'buyer_email' => 'martin@example.com',
+            'buyer_phone' => '0612345678',
+            'accept_terms' => '1',
         ]));
 
+        self::assertResponseRedirects();
+        $client->followRedirect();
         self::assertSame(200, $client->getResponse()->getStatusCode());
         self::assertStringNotContainsString(
             'martin@example.com',
             (string) $client->getRequest()->getUri(),
-            "L'adresse de la page de paiement contient encore l'e-mail saisi.",
+            "L'adresse de la page du bon contient l'e-mail saisi.",
         );
+        self::assertSelectorTextContains('.gc-voucher__amount', '40,00');
+        self::assertSelectorExists('.gc-voucher__code strong');
+    }
+
+    public function testTheGiftFormRefusesMissingInformation(): void
+    {
+        $client = static::createClient();
+        $crawler = $client->request('GET', '/cadeaux/offrir?activite=descente-en-canoe');
+
+        $client->submit($crawler->filter('#gift-form')->form([
+            'recipient_name' => '',
+            'buyer_email' => 'pas-un-email',
+        ]));
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorTextContains('.gc-err', 'bénéficiaire');
     }
 
     /**

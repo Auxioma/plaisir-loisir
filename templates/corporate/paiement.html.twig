@@ -1,106 +1,70 @@
 {#
-    Écran 7 du flow corporate — « Paiement sécurisé » (/paiement-securise).
-    Maquette : assets/corporate/Paiement sécurisé.png (1440 x 2360).
-
-    Héros, « Comment nous protégeons vos paiements » (4 cartes), « Moyens de
-    paiement acceptés » et la bannière « Besoin d'aide ? ».
-
-    Préfixe des classes propres à cet écran : py-.
+    « Paiement sécurisé » — maquette docs/maquettes/paiements_securises.jpeg (04/10).
+    Styles : assets/styles/pages.css (.pg-*).
 #}
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ 'Paiement sécurisé'|trans }}{% endblock %}
-{% block meta_description %}{{ 'Toutes les transactions TrouveMoi sont 100% sécurisées : cryptage SSL, conformité PCI DSS, aucune donnée bancaire stockée.'|trans }}{% endblock %}
-
-{% block header %}
-    {% include '_partials/navbar_corporate.html.twig' %}
-{% endblock %}
+{% block meta_description %}{{ 'Sur TrouveMoi Plaisirs & Loisirs, toutes les transactions sont 100% sécurisées.'|trans }}{% endblock %}
 
 {% block body %}
-<div class="cor-page">
-
-    <section class="cor-hero cor-hero--payment">
-        <img class="cor-hero__photo" src="{{ asset('images/corporate/payment-hero.jpg') }}" alt="">
-        <div class="container cor-hero__inner">
-            {# Coquille de la maquette conservée : « Paiment ». #}
-            <h1 class="cor-hero__title py-hero__title">{{ 'Paiment sécurisé'|trans }}</h1>
-            <p class="py-hero__claim">{{ 'Votre sécurité est notre priorité'|trans }}</p>
-            <p class="cor-hero__text">{{ 'Sur TrouveMoi Plaisirs & Loisirs, toutes les transactions sont 100% sécurisées. Vos données bancaires sont protégées et ne sont jamais stockées sur nos serveurs.'|trans }}</p>
-            <ul class="py-badges">
-                <li>{{ icon.lock(20) }} <span><strong>{{ 'Transaction'|trans }}</strong>{{ '100% sécurisées'|trans }}</span></li>
-                <li>{{ icon.card(20) }} <span><strong>{{ 'Données bancaires'|trans }}</strong>{{ '100% cryptées'|trans }}</span></li>
-                <li>{{ icon.check_badge(20) }} <span><strong>{{ 'Conformitée'|trans }}</strong>{{ 'Normes bancaires les plus strictes'|trans }}</span></li>
+<div class="pg">
+    <header class="pg-hero">
+        <div class="pg-hero__text">
+            <h1>{{ 'Paiement sécurisé'|trans }}</h1>
+            <p class="pg-hero__sub">{{ 'Votre sécurité est notre priorité'|trans }}</p>
+            <p class="pg-hero__lead">{{ 'Sur TrouveMoi Plaisirs & Loisirs, toutes les transactions sont 100% sécurisées. Vos données bancaires sont protégées et ne sont jamais stockées sur nos serveurs.'|trans }}</p>
+            <ul class="pg-hero__badges">
+                <li>{{ icon.shield_check(28) }} {{ 'Transactions 100% sécurisées'|trans }}</li>
+                <li>{{ icon.padlock(28) }} {{ 'Données bancaires cryptées'|trans }}</li>
+                <li>{{ icon.check_badge(28) }} {{ 'Conforme aux normes bancaires les plus strictes'|trans }}</li>
             </ul>
         </div>
-    </section>
+        <img class="pg-hero__img" src="{{ asset('images/corporate/payment-hero.jpg') }}" alt="">
+        <aside class="pg-hero__float">
+            <span class="pg-ico is-green">{{ icon.shield_check(22) }}</span>
+            <div><strong>{{ 'Achetez en toute confiance'|trans }}</strong>{{ 'Profitez de vos activités et expériences en toute sérénité grâce à notre système de paiement sécurisé.'|trans }}</div>
+        </aside>
+    </header>
 
-    <div class="container">
-        <nav class="act-breadcrumb cr-crumb" aria-label="{{ "Fil d'Ariane"|trans }}">
-            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
-            <span aria-hidden="true">|</span>
-            <span aria-current="page">{{ 'Paiement Sécurisé'|trans }}</span>
-        </nav>
-    </div>
-
-    <section class="py-protect">
-        <div class="container">
-            <h2 class="pw-section__title ct-title">{{ 'Comment nous protégeons'|trans }}<br>{{ 'vos paiements'|trans }}</h2>
-            <div class="py-grid">
-                {% for c in cards %}
-                    <article class="pw-card py-card">
-                        <span class="pw-card__icon pw-card__icon--{{ c.tone }} py-card__icon">
-                            {%- if c.icon == 'card' %}{{ icon.card(26) }}
-                            {%- elseif c.icon == 'handshake_solid' %}{{ icon.handshake_solid(26) }}
-                            {%- elseif c.icon == 'shield' %}{{ icon.shield(26) }}
-                            {%- else %}{{ icon.eye_off(26) }}
-                            {%- endif -%}
-                        </span>
-                        <h3 class="py-card__title">{{ c.title|trans }}</h3>
-                        <p class="py-card__text">{{ c.text|trans }}</p>
-                    </article>
-                {% endfor %}
-            </div>
+    <section class="pg-wrap pg-section">
+        <h2 class="pg-h2 pg-h2--center">{{ 'Comment nous protégeons vos paiements'|trans }}</h2>
+        <div class="pg-features">
+            <article class="pg-card pg-feature"><span class="pg-ico">{{ icon.card_lock(24) }}</span><div><h3>{{ 'Cryptage SSL 256 bits'|trans }}</h3><p>{{ 'Toutes les données échangées entre votre navigateur et notre site sont cryptées avec la technologie SSL 256 bits.'|trans }}</p></div></article>
+            <article class="pg-card pg-feature"><span class="pg-ico is-green">{{ icon.padlock(24) }}</span><div><h3>{{ 'Partenaires de confiance'|trans }}</h3><p>{{ 'Nous collaborons avec des prestataires de paiement reconnus et certifiés pour garantir la sécurité de vos transactions.'|trans }}</p></div></article>
+            <article class="pg-card pg-feature"><span class="pg-ico is-orange">{{ icon.shield_check(24) }}</span><div><h3>{{ 'Conformité PCI DSS'|trans }}</h3><p>{{ 'Notre plateforme est conforme à la norme PCI DSS, la référence mondiale en matière de sécurité des données de paiement.'|trans }}</p></div></article>
+            <article class="pg-card pg-feature"><span class="pg-ico">{{ icon.eye_off(24) }}</span><div><h3>{{ 'Aucune donnée stockée'|trans }}</h3><p>{{ 'Nous ne stockons jamais vos informations bancaires sur nos serveurs.'|trans }}</p></div></article>
         </div>
     </section>
 
-    {# ================= MOYENS DE PAIEMENT ================= #}
-    <section class="py-means">
-        <div class="container">
-            <div class="py-means__panel">
-                <h2 class="py-means__title">{{ 'Moyens de paiement acceptés'|trans }}</h2>
-                <div class="py-means__cols">
-                    {% for col in [['pay_visa', 'pay_mastercard', 'pay_applepay', 'pay_applepay'], ['pay_paypal', 'pay_applepay']] %}
-                        <div class="py-means__col">
-                            <p class="py-means__label">{{ icon.lock(16) }} {{ 'Cartes bancaires'|trans }}</p>
-                            <ul class="py-logos">
-                                {% for logo in col %}
-                                    <li>
-                                        {%- if logo == 'pay_visa' %}{{ icon.pay_visa(46) }}
-                                        {%- elseif logo == 'pay_mastercard' %}{{ icon.pay_mastercard(46) }}
-                                        {%- elseif logo == 'pay_paypal' %}{{ icon.pay_paypal(46) }}
-                                        {%- else %}{{ icon.pay_applepay(46) }}
-                                        {%- endif -%}
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    {% endfor %}
+    <section class="pg-wrap pg-pay">
+        <div class="pg-card pg-pay__methods">
+            <h2 class="pg-h2 pg-h2--center">{{ 'Moyens de paiement acceptés'|trans }}</h2>
+            <div class="pg-pay__cols">
+                <div>
+                    <p>{{ icon.padlock(16) }} {{ 'Cartes bancaires'|trans }}</p>
+                    <ul class="pg-logos">
+                        <li>{{ icon.paycard_visa(64) }}</li>
+                        <li>{{ icon.paycard_mastercard(64) }}</li>
+                        <li class="pg-logo-cb">CB</li>
+                        <li class="pg-logo-amex">AMEX</li>
+                    </ul>
+                </div>
+                <div>
+                    <p>{{ icon.padlock(16) }} {{ 'Paiements en ligne'|trans }}</p>
+                    <ul class="pg-logos">
+                        <li>{{ icon.paycard_paypal(80) }}</li>
+                        <li>{{ icon.paycard_applepay(80) }}</li>
+                    </ul>
                 </div>
             </div>
         </div>
+        <aside class="pg-card pg-help">
+            <h2><span class="pg-ico">{{ icon.shield_check(22) }}</span>{{ 'Besoin d’aide ?'|trans }}</h2>
+            <p>{{ 'Notre service client est à votre disposition pour toute question concernant le paiement de vos réservations.'|trans }}</p>
+            <a class="pg-btn pg-btn--block" href="{{ path('app_corporate_contact', {sujet: 'Paiement'}) }}">{{ 'Nous contacter'|trans }} {{ icon.arrow_right(16) }}</a>
+        </aside>
     </section>
-
-    {# ================= BESOIN D'AIDE ================= #}
-    <section class="py-help">
-        <div class="container">
-            <div class="py-help__panel">
-                <h2 class="py-help__title">{{ "Besoin d'aide ?"|trans }}</h2>
-                <p class="py-help__text">{{ 'Notre service client est à votre disposition pour toute question concernant la paiement de vos réservations.'|trans }}</p>
-                <a href="{{ path('app_corporate_contact') }}" class="pl-btn pl-btn--primary py-help__btn">{{ 'Nous contacter'|trans }}</a>
-            </div>
-        </div>
-    </section>
-
 </div>
 {% endblock %}
