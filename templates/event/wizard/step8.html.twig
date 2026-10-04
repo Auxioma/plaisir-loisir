@@ -1,0 +1,62 @@
+{# Étape 8 — Publier (maquette creation_evenement_8). #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ew-main__title">{{ '8. Publier votre événement'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Vérifiez les informations de votre événement avant de le publier.'|trans }}</p>
+
+<div class="ew-summary">
+    <div>
+        <h3>{{ 'Résumé de votre événement'|trans }}</h3>
+        <dl>
+            <div><dt>{{ icon.edit_square(15) }} {{ 'Titre'|trans }}</dt><dd>{{ draft.title ?? '—' }}</dd></div>
+            <div><dt>{{ icon.calendar(15) }} {{ 'Date et heure'|trans }}</dt><dd>
+                {% if draft.start_date ?? '' %}{{ date(draft.start_date)|pf_date('d MMMM y') }}{% if draft.all_day == '1' %} · {{ 'toute la journée'|trans }}{% elseif draft.start_time ?? '' %} {{ 'de'|trans }} {{ draft.start_time }}{% if draft.end_time ?? '' %} {{ 'à'|trans }} {{ draft.end_time }}{% endif %}{% endif %}{% else %}—{% endif %}
+            </dd></div>
+            <div><dt>{{ icon.map_pin(15) }} {{ 'Lieu'|trans }}</dt><dd>{% if draft.location_type == 'online' %}{{ 'En ligne'|trans }}{% elseif draft.location_type == 'tbd' %}{{ 'À définir'|trans }}{% else %}{{ draft.address ?? '—' }}{% endif %}</dd></div>
+            <div><dt>{{ icon.tag(15) }} {{ 'Catégorie'|trans }}</dt><dd>{{ category ? category.name|trans : '—' }}</dd></div>
+            <div><dt>{{ icon.person(15) }} {{ 'Organisé par'|trans }}</dt><dd>{{ 'Vous'|trans }}</dd></div>
+            <div><dt>{{ icon.users(15) }} {{ 'Participants'|trans }}</dt><dd>{{ invited|length }} {{ invited|length > 1 ? 'invités'|trans : 'invité'|trans }}{% if draft.capacity != 'unlimited' %} · {{ 'max.'|trans }} {{ draft.capacity }}{% endif %}</dd></div>
+        </dl>
+    </div>
+    {% if draft.cover ?? '' %}<img src="{{ asset(draft.cover) }}" alt="">{% endif %}
+</div>
+
+<h3 class="ew-main__label">{{ 'Options de publication'|trans }}</h3>
+<div class="ew-publish" role="radiogroup" data-ew-publish>
+    <label class="ew-pubopt">
+        <input type="radio" name="publish_mode" value="now"{{ draft.publish_mode == 'now' ? ' checked' }} required>
+        <span><strong>{{ 'Publier maintenant'|trans }}</strong><small>{{ 'Votre événement sera visible immédiatement.'|trans }}</small></span>
+        <i>{{ icon.globe(18) }}</i>
+    </label>
+    <label class="ew-pubopt">
+        <input type="radio" name="publish_mode" value="scheduled"{{ draft.publish_mode == 'scheduled' ? ' checked' }}>
+        <span><strong>{{ 'Programmer la publication'|trans }}</strong><small>{{ 'Choisissez une date et une heure pour publier votre événement plus tard.'|trans }}</small></span>
+        <i>{{ icon.clock(18) }}</i>
+    </label>
+    <div class="ew-row ew-schedule" data-ew-schedule{{ draft.publish_mode != 'scheduled' ? ' hidden' }}>
+        <div class="ew-field{{ errors.publish_date is defined ? ' has-error' }}"><label for="ew-pub-date">{{ 'Date de publication'|trans }}</label><input id="ew-pub-date" type="date" name="publish_date" value="{{ draft.publish_date ?? '' }}" min="{{ 'today'|date('Y-m-d') }}"></div>
+        <div class="ew-field"><label for="ew-pub-time">{{ 'Heure'|trans }}</label><input id="ew-pub-time" type="time" name="publish_time" value="{{ draft.publish_time ?? '09:00' }}"></div>
+    </div>
+    {{ ui.err(errors, 'publish_date') }}
+    <label class="ew-pubopt">
+        <input type="radio" name="publish_mode" value="draft"{{ draft.publish_mode == 'draft' ? ' checked' }}>
+        <span><strong>{{ 'Enregistrer en brouillon'|trans }}</strong><small>{{ 'Votre événement sera enregistré et restera privé jusqu’à sa publication.'|trans }}</small></span>
+        <i>{{ icon.padlock(18) }}</i>
+    </label>
+</div>
+{{ ui.err(errors, 'publish_mode') }}
+
+<p class="ew-tip">{{ icon.padlock(16) }} <span>
+    {% if draft.visibility == 'private' %}{{ 'Votre événement sera visible uniquement par les personnes que vous invitez.'|trans }}
+    {% elseif draft.visibility == 'group' %}{{ 'Votre événement sera visible par les membres de votre groupe et vos invités.'|trans }}
+    {% else %}{{ 'Votre événement sera visible par tous les membres de la communauté.'|trans }}{% endif %}
+</span></p>
+
+<label class="ew-check ew-terms{{ errors.accept_terms is defined ? ' has-error' }}">
+    <input type="checkbox" name="accept_terms" value="1"{{ draft.accept_terms ?? '' ? ' checked' }}>
+    {{ 'J’accepte les'|trans }} <a href="{{ path('app_corporate_terms') }}" target="_blank" rel="noopener">{{ 'Conditions d’utilisation'|trans }}</a>
+</label>
+{{ ui.err(errors, 'accept_terms') }}
+
+<button type="submit" name="action" value="next" class="ew-btn ew-btn--primary ew-btn--wide">{{ icon.send(18) }} {{ 'Publier l’événement'|trans }}</button>

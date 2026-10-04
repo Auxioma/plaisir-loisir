@@ -1,15 +1,7 @@
 {#
-    17/09 : fiche événement réelle (EventsController::detail(), route
-    /evenements/detail/{slug}). Auparavant figée sur « Compétitions Canoë /
-    Kayak » quel que soit l'événement cliqué (signalement du 15 septembre).
-
-    La carte « groupe associé » a été retirée : aucun lien Event <-> Group
-    n'existe en base (voir EventsController::groupDetail(), même limite),
-    l'inventer aurait associé l'événement à un groupe au hasard. Le bloc
-    réservation (prix, voyageurs, « Réservez maintenant ») reste décoratif :
-    aucun modèle de paiement n'existe pour les événements communautaires
-    (le modèle réel du site est Catalog/Booking, voir CLAUDE.md) — non
-    touché ici, ce n'était pas ce que le signalement du 15 septembre visait.
+    Fiche d'un événement (04/10) : inscriptions réelles (EventRegistration),
+    participants, photos (couverture + galerie de l'assistant), lieu, accès,
+    agenda (.ics). Données : EventsController::detail().
 #}
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -49,7 +41,7 @@
                 <h1 class="evn-detail__title">{{ event.title }}</h1>
 
                 <p class="evn-organizer">
-                    <img src="{{ asset('images/events/avatar-thomas.jpg') }}" alt="">
+                    <img src="{{ asset(entity.organizer and entity.organizer.avatarPath ? entity.organizer.avatarPath : 'images/account/avatar-default.svg') }}" alt="">
                     {{ 'Organisé par'|trans }} <strong>{{ event.organizer }}</strong>
                     {# Suivre l'organisateur : il apparaît dans « Mes favoris » (01/10). #}
                     {% if app.user and event.organizerId and event.organizerId != app.user.id ~ '' %}
@@ -57,45 +49,60 @@
                     {% endif %}
                 </p>
 
+                {% if entity.shortDescription %}<p class="evn-detail__lead">{{ entity.shortDescription }}</p>{% endif %}
                 {% if event.description %}
                     <h2 class="evn-h2">{{ 'Détails'|trans }}</h2>
-                    <p class="evn-detail__text">{{ event.description }}</p>
+                    <div class="evn-detail__text">{{ event.description|e|replace({'**': ''})|nl2br }}</div>
+                {% endif %}
+
+                <h2 class="evn-h2">{{ 'Infos pratiques'|trans }}</h2>
+                <ul class="evn-facts">
+                    <li>{{ icon.calendar(16) }} <span>{{ entity.startsAt|pf_date('EEEE d MMMM y')|capitalize }} · {{ event.hours }}{% if entity.recurrence %} · {{ entity.recurrence == 'weekly' ? 'toutes les semaines'|trans : 'tous les mois'|trans }}{% endif %}</span></li>
+                    {% if entity.arrivalTime %}<li>{{ icon.clock(16) }} <span>{{ 'Arrivée conseillée à'|trans }} {{ entity.arrivalTime }}</span></li>{% endif %}
+                    <li>{{ icon.map_pin(16) }} <span>{% if entity.locationType == 'online' %}{{ 'En ligne'|trans }}{% if registration and registration.status == 'going' or is_organizer %} — <a href="{{ entity.onlineUrl }}" target="_blank" rel="noopener">{{ 'Lien de connexion'|trans }}</a>{% else %} — {{ 'le lien est visible une fois inscrit'|trans }}{% endif %}{% elseif entity.locationType == 'tbd' %}{{ 'Lieu à définir'|trans }}{% else %}{{ entity.address ?? event.location }}{% if entity.locationType == 'approx' %} ({{ 'zone approximative'|trans }}){% endif %}{% endif %}</span></li>
+                    {% if entity.meetingPoint %}<li>{{ icon.users(16) }} <span>{{ 'Rendez-vous :'|trans }} {{ entity.meetingPoint }}</span></li>{% endif %}
+                    {% if entity.accessInstructions %}<li>{{ icon.info(16) }} <span>{{ entity.accessInstructions }}</span></li>{% endif %}
+                    <li>{{ icon.users(16) }} <span>{{ entity.capacity ? entity.participantsCount ~ ' / ' ~ entity.capacity ~ ' ' ~ 'participants'|trans : entity.participantsCount ~ ' ' ~ 'participants'|trans }}{% if waitlist_count > 0 %} · {{ waitlist_count }} {{ 'en liste d’attente'|trans }}{% endif %}</span></li>
+                </ul>
+                {% if entity.latitude and entity.longitude %}
+                    <div class="evn-detail__map" data-evl-map data-markers="{{ [{lat: entity.latitude + 0, lng: entity.longitude + 0, title: entity.title, url: path('app_events_detail', {slug: entity.slug}), date: event.day ~ ' ' ~ event.month, where: event.where}]|json_encode }}"></div>
+                    <a class="evn-maplink" href="https://www.google.com/maps/search/?api=1&query={{ entity.latitude }},{{ entity.longitude }}" target="_blank" rel="noopener">{{ 'Itinéraire Google Maps'|trans }} {{ icon.arrow_up_right(14) }}</a>
                 {% endif %}
 
                 <div class="evn-parts__head">
-                    <h2 class="evn-h2">{{ 'Participants'|trans }} <span class="evn-count-chip">{{ event.participants }}</span></h2>
-                    <a href="{{ path('app_events_participants', { slug: event.slug }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
+                    <h2 class="evn-h2">{{ 'Participants'|trans }} <span class="evn-count-chip">{{ going|length }}</span></h2>
+                    {% if entity.showParticipants or is_organizer %}<a href="{{ path('app_events_participants', { slug: event.slug }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>{% endif %}
                 </div>
-                {# Aucune entité d'inscription à un événement n'existe encore
-                   (voir Group::membersCount, même situation) : le compte
-                   ci-dessus est réel, ce détail de rôles reste décoratif. #}
-                <div class="evn-parts">
-                    {% for p in participants[1:4] %}
-                        <div class="evn-part">
-                            <span class="evn-part__avatar">
-                                <img src="{{ asset(p.avatar) }}" alt="">
-                                {% if loop.first %}<span class="evn-part__tag">{{ 'Hôte'|trans }}</span>{% endif %}
-                            </span>
-                            <span class="evn-part__name">{{ p.name }}</span>
-                            <span class="evn-part__role">{{ loop.first ? ('Assistant organisateur'|trans) : ('Membre'|trans) }}</span>
-                        </div>
-                    {% endfor %}
-                    <a href="{{ path('app_events_participants', { slug: event.slug }) }}" class="evn-part evn-part--more">
-                        <span class="evn-part__cluster">
-                            {% for a in avatars[:3] %}<img src="{{ asset(a) }}" alt="">{% endfor %}
-                            <span class="evn-part__plus">+8</span>
-                        </span>
-                        <span class="evn-part__name">{{ '+8 de plus'|trans }}</span>
-                    </a>
-                </div>
+                {% if entity.showParticipants or is_organizer %}
+                    <div class="evn-parts">
+                        {% for r in going|slice(0, 5) %}
+                            <div class="evn-part">
+                                <span class="evn-part__avatar">
+                                    {% if r.user.avatarPath %}<img src="{{ asset(r.user.avatarPath) }}" alt="">{% else %}<span class="evn-part__initials">{{ (r.user.firstName|first ~ r.user.lastName|first)|upper }}</span>{% endif %}
+                                    {% if r.user == entity.organizer %}<span class="evn-part__tag">{{ 'Hôte'|trans }}</span>{% endif %}
+                                </span>
+                                <span class="evn-part__name">{{ r.user.firstName }} {{ r.user.lastName|first }}.</span>
+                                <span class="evn-part__role">{{ r.user == entity.organizer ? 'Organisateur'|trans : 'Membre'|trans }}</span>
+                            </div>
+                        {% else %}
+                            <p class="evn-muted">{{ 'Soyez le premier à participer !'|trans }}</p>
+                        {% endfor %}
+                        {% if going|length > 5 %}
+                            <a href="{{ path('app_events_participants', { slug: event.slug }) }}" class="evn-part evn-part--more"><span class="evn-part__plus">+{{ going|length - 5 }}</span><span class="evn-part__name">{{ 'de plus'|trans }}</span></a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="evn-muted">{{ 'L’organisateur a choisi de ne pas afficher la liste des participants.'|trans }}</p>
+                {% endif %}
 
                 {# Photo de l'événement : sa propre couverture (Event::imagePath,
                    la même que sur les cartes) — un seul cliché réel plutôt
                    qu'une photo sans rapport, faute d'album propre à Event. #}
-                <h2 class="evn-h2">{{ 'Photos'|trans }} <span class="evn-count-chip">{{ event.image ? '01' : '00' }}</span></h2>
-                {% if event.image %}
+                {% set photos = (event.image ? [event.image] : [])|merge(entity.gallery) %}
+                <h2 class="evn-h2">{{ 'Photos'|trans }} <span class="evn-count-chip">{{ '%02d'|format(photos|length) }}</span></h2>
+                {% if photos is not empty %}
                     <div class="evn-photos">
-                        <img src="{{ asset(event.image) }}" alt="{{ 'Photo de l\'événement'|trans }}">
+                        {% for p in photos %}<a href="{{ asset(p) }}" target="_blank" rel="noopener"><img src="{{ asset(p) }}" alt="{{ 'Photo de l’événement'|trans }} {{ loop.index }}" loading="lazy"></a>{% endfor %}
                     </div>
                 {% endif %}
 
@@ -109,34 +116,42 @@
             <aside class="evn-detail__side">
                 <div class="evn-cover">
                     <img src="{{ asset(event.image ?? 'images/events/ev-raft-clean.jpg') }}" alt="">
-                    <button type="button" class="evn-cover__flyer">{{ icon.image(16) }} {{ 'Partager un flyer'|trans }}</button>
+                    <button type="button" class="evn-cover__flyer" data-share-url="{{ url('app_events_detail', {slug: event.slug}) }}" data-share-title="{{ event.title }}" data-share-done="{{ 'Lien copié !'|trans }}">{{ icon.share(16) }} {{ 'Partager l’événement'|trans }}</button>
                 </div>
 
                 <div class="evn-book">
-                    <p class="evn-book__price"><strong>{{ 'À partir de 29€'|trans }}</strong> {{ '/ personne'|trans }}</p>
+                    <p class="evn-book__price"><strong>{{ 'Gratuit'|trans }}</strong> {{ '· entre membres'|trans }}</p>
                     <div class="evn-book__sep" aria-hidden="true"></div>
-                    <p class="evn-book__label">{{ 'Voyageurs'|trans }}</p>
-                    <div class="evn-book__row">
-                        <span>{{ 'Adulte (18 et + )'|trans }}</span>
-                        <span class="evn-stepper" data-evn-stepper data-min="1">
-                            <button type="button" data-step="-1" aria-label="{{ "Moins d'adultes"|trans }}">{{ icon.minus(14) }}</button>
-                            <output>2</output>
-                            <button type="button" data-step="1" aria-label="{{ "Plus d'adultes"|trans }}">{{ icon.plus(14) }}</button>
-                        </span>
-                    </div>
-                    <div class="evn-book__row">
-                        <span>{{ 'Enfants (0 à 17 ans )'|trans }}</span>
-                        <span class="evn-stepper" data-evn-stepper data-min="0">
-                            <button type="button" data-step="-1" aria-label="{{ "Moins d'enfants"|trans }}">{{ icon.minus(14) }}</button>
-                            <output>0</output>
-                            <button type="button" data-step="1" aria-label="{{ "Plus d'enfants"|trans }}">{{ icon.plus(14) }}</button>
-                        </span>
-                    </div>
-                    <div class="evn-book__total">
-                        <span>{{ 'Total'|trans }}</span>
-                        <strong>29€</strong>
-                    </div>
-                    <button type="button" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Réservez maintenant'|trans }}</button>
+                    <p class="evn-book__label">{{ event.date }} · {{ event.hours }}</p>
+                    <p class="evn-book__places">
+                        {% if entity.capacity %}
+                            {% set left = entity.capacity - entity.participantsCount %}
+                            {{ left > 0 ? left ~ ' ' ~ (left > 1 ? 'places restantes'|trans : 'place restante'|trans) : 'Complet'|trans }}
+                        {% else %}{{ 'Places illimitées'|trans }}{% endif %}
+                        {% if not entity.registrationRequired %}<small>{{ 'Inscription facultative : vous pouvez aussi venir directement.'|trans }}</small>{% endif %}
+                    </p>
+                    {% if is_organizer %}
+                        <p class="evn-book__state">{{ icon.check_badge(16) }} {{ 'Vous organisez cet événement.'|trans }}</p>
+                        <a class="pl-btn pl-btn--primary pl-btn--block" href="{{ path('app_event_resume', {slug: event.slug}) }}">{{ 'Modifier l’événement'|trans }}</a>
+                    {% elseif entity.startsAt < date() %}
+                        <p class="evn-book__state">{{ 'Cet événement a déjà eu lieu.'|trans }}</p>
+                    {% else %}
+                        <form method="post" action="{{ path('app_events_join', {slug: event.slug}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('event_join') }}">
+                            {% if registration and registration.status == 'going' %}
+                                <p class="evn-book__state">{{ icon.check_badge(16) }} {{ 'Vous participez à cet événement.'|trans }}</p>
+                                <button class="pl-btn evn-btn-ghost pl-btn--block" data-confirm="{{ 'Annuler votre participation ?'|trans }}">{{ 'Me désinscrire'|trans }}</button>
+                            {% elseif registration %}
+                                <p class="evn-book__state">{{ icon.clock(16) }} {{ 'Vous êtes sur la liste d’attente.'|trans }}</p>
+                                <button class="pl-btn evn-btn-ghost pl-btn--block">{{ 'Quitter la liste d’attente'|trans }}</button>
+                            {% elseif entity.capacity and entity.participantsCount >= entity.capacity %}
+                                {% if entity.waitlist %}<button class="pl-btn pl-btn--primary pl-btn--block">{{ 'Rejoindre la liste d’attente'|trans }}</button>
+                                {% else %}<button class="pl-btn pl-btn--block" disabled>{{ 'Complet'|trans }}</button>{% endif %}
+                            {% else %}
+                                <button class="pl-btn pl-btn--primary pl-btn--block">{{ 'Je participe'|trans }}</button>
+                            {% endif %}
+                        </form>
+                    {% endif %}
                 </div>
 
                 <div class="evn-gift">
@@ -145,10 +160,10 @@
                     <a href="{{ path('app_gifts') }}" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Offrir maintenant'|trans }}</a>
                 </div>
 
-                <div class="evn-agenda">
+                <a class="evn-agenda" href="{{ path('app_events_ics', {slug: event.slug}) }}">
                     <p class="evn-agenda__title">{{ 'Ajouter à votre agenda'|trans }} {{ icon.calendar(18) }}</p>
                     <p class="evn-agenda__date">{{ event.date }} {{ event.hours }}</p>
-                </div>
+                </a>
             </aside>
         </div>
 

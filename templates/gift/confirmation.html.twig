@@ -1,0 +1,45 @@
+{#
+    Bon cadeau acheté (GiftController::confirmation()) : le code, à imprimer
+    ou à transférer. Lien reçu par e-mail par l'acheteur.
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Votre bon cadeau'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Votre bon cadeau TrouveMoi.'|trans }}{% endblock %}
+
+{% block body %}
+<div class="pg gc-done">
+    <div class="pg-wrap">
+        {% if card.paid %}
+            <p class="gc-done__ok">{{ icon.check_badge(28) }} {{ 'Merci ! Votre bon cadeau est prêt.'|trans }}</p>
+            <article class="gc-voucher">
+                <header><span>TrouveMoi <small>Plaisirs &amp; Loisirs</small></span><strong>{{ 'Bon cadeau'|trans }}</strong></header>
+                <p class="gc-voucher__for">{{ 'Pour'|trans }} <strong>{{ card.recipientName }}</strong>, {{ 'de la part de'|trans }} <strong>{{ card.buyerName }}</strong></p>
+                <p class="gc-voucher__what">{{ card.label }}</p>
+                <p class="gc-voucher__amount">{{ card.amount|number_format(2, ',', ' ') }} €</p>
+                {% if card.message %}<blockquote>« {{ card.message }} »</blockquote>{% endif %}
+                <p class="gc-voucher__code">{{ 'Code'|trans }} <strong>{{ card.code }}</strong></p>
+                <small>{{ 'Valable jusqu’au'|trans }} {{ card.expiresAt|date('d/m/Y') }} · {{ 'à utiliser sur trouvemoi.eu'|trans }}</small>
+            </article>
+            <p class="gc-done__info">
+                {% if card.delivery == 'email' %}{{ 'Le bon a été envoyé par e-mail à'|trans }} {{ card.recipientEmail }}. {{ 'Une copie vous a été adressée.'|trans }}
+                {% elseif card.delivery == 'postal' %}{{ 'Le bon sera envoyé par courrier sous 3 à 5 jours ouvrés.'|trans }}
+                {% else %}{{ 'Imprimez-le ou enregistrez-le en PDF pour l’offrir de la main à la main.'|trans }}{% endif %}
+            </p>
+            <div class="gc-done__actions">
+                <button type="button" class="pg-btn" onclick="window.print()">{{ icon.download(16) }} {{ 'Imprimer / PDF'|trans }}</button>
+                {% if activity %}<a class="pg-btn pg-btn--outline" href="{{ path('app_activity_show', {slug: activity.slug}) }}">{{ 'Voir l’activité'|trans }}</a>{% endif %}
+                <a class="pg-btn pg-btn--outline" href="{{ path('app_gifts') }}">{{ 'Offrir un autre bon'|trans }}</a>
+            </div>
+        {% else %}
+            <div class="ofm-empty">
+                {{ icon.hourglass(32) }}
+                <strong>{{ 'Paiement en cours de validation…'|trans }}</strong>
+                <span>{{ 'Votre bon cadeau apparaîtra ici dès la confirmation du paiement. Vous le recevrez aussi par e-mail.'|trans }}</span>
+                <a class="pg-btn pg-btn--outline" href="{{ app.request.uri }}">{{ 'Actualiser'|trans }}</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

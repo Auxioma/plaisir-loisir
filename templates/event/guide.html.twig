@@ -1,0 +1,95 @@
+{#
+    Guide « Créer un événement » (étape 0) — maquette
+    creation_evenements/creation_evenement_0.jpeg (04/10).
+    Données : EventWizardController::guide().
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+
+{% block title %}{{ 'Guide : créer un événement'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Suivez notre guide pas à pas pour créer et partager vos événements en toute simplicité.'|trans }}{% endblock %}
+
+{% block body %}
+<div class="ew">
+    <header class="ew-head">
+        <div>
+            <h1 class="ew-head__title"><span class="ew-head__ico">{{ icon.calendar_grid(30) }}</span>{{ 'Guide : Créer un événement'|trans }}</h1>
+            <p class="ew-head__sub">{{ 'Suivez notre guide pas à pas pour créer et partager vos événements en toute simplicité.'|trans }}</p>
+        </div>
+        <div class="ew-head__actions">
+            <a class="ew-btn ew-btn--primary" href="{{ path('app_event_create', {etape: 1}) }}">{{ 'Commencer'|trans }} {{ icon.arrow_right(16) }}</a>
+        </div>
+    </header>
+
+    <div class="ew-grid">
+        <div class="ew-col">
+            <nav class="ew-card ew-steps" aria-label="{{ 'Dans ce guide'|trans }}">
+                <h2 class="ew-steps__title">{{ 'Dans ce guide'|trans }}</h2>
+                <span class="ew-step is-active" aria-current="step"><span class="ew-step__dot">{{ icon.check(14) }}</span><span class="ew-step__text"><strong>{{ 'Vue d’ensemble'|trans }}</strong><small>{{ 'Les étapes clés'|trans }}</small></span></span>
+                {% for s in steps %}
+                    <a class="ew-step" href="#etape-{{ loop.index }}"><span class="ew-step__dot">{{ loop.index }}</span><span class="ew-step__text"><strong>{{ s.title|trans }}</strong><small>{{ s.subtitle|trans }}</small></span></a>
+                {% endfor %}
+            </nav>
+            <aside class="ew-card ew-pdf">
+                <span>{{ icon.receipt(26) }}</span>
+                <div>
+                    <strong>{{ 'Guide complet (PDF)'|trans }}</strong>
+                    <small>{{ 'Téléchargez le guide détaillé'|trans }}</small>
+                    <button type="button" class="ew-btn ew-btn--outline ew-btn--sm" onclick="window.print()">{{ 'Télécharger'|trans }}</button>
+                </div>
+            </aside>
+        </div>
+
+        <section class="ew-card ew-main ew-guide">
+            <div class="ew-welcome">
+                <span class="ew-welcome__art" aria-hidden="true">🎉</span>
+                <div>
+                    <strong>{{ 'Bienvenue dans votre guide de création d’événement !'|trans }}</strong>
+                    <p>{{ 'En quelques étapes simples, créez un événement qui rassemble vos proches autour d’activités, sorties ou rencontres. Ce guide vous accompagne pas à pas.'|trans }}</p>
+                </div>
+            </div>
+
+            <h2 class="ew-main__title">{{ 'Vue d’ensemble des étapes'|trans }}</h2>
+            <p class="ew-main__lead">{{ '8 étapes simples pour créer un événement réussi'|trans }}</p>
+            <ol class="ew-timeline">
+                {% for s in steps %}
+                    <li id="etape-{{ loop.index }}"><a href="{{ path('app_event_create', {etape: 1}) }}"><span class="ew-timeline__ico is-{{ ['green', 'orange', 'blue', 'red', 'violet', 'teal', 'orange', 'green'][loop.index0] }}">{{ ico.svg(s.icon, 22) }}</span><b>{{ loop.index }}</b><span>{{ s.title|trans }}</span></a></li>
+                {% endfor %}
+            </ol>
+
+            <h3 class="ew-main__label">{{ 'Conseils pour un événement réussi'|trans }}</h3>
+            <div class="ew-advice-grid">
+                <div><span>{{ icon.calendar_grid(22) }}</span><strong>{{ 'Soyez précis'|trans }}</strong><small>{{ 'Donnez toutes les informations importantes : date, lieu, heure et activités prévues.'|trans }}</small></div>
+                <div><span>{{ icon.image_frame(22) }}</span><strong>{{ 'Une belle présentation'|trans }}</strong><small>{{ 'Ajoutez une image attractive et une description détaillée pour attirer plus de participants.'|trans }}</small></div>
+                <div><span>{{ icon.users(22) }}</span><strong>{{ 'Invitez vos proches'|trans }}</strong><small>{{ 'Plus vous invitez de personnes, plus votre événement a de chances de réussir.'|trans }}</small></div>
+                <div class="is-yellow"><span>{{ icon.bell(22) }}</span><strong>{{ 'Vérifiez avant de publier'|trans }}</strong><small>{{ 'Relisez bien toutes les informations avant de publier votre événement.'|trans }}</small></div>
+            </div>
+
+            <div class="ew-faqband">
+                {{ icon.bulb(22) }}
+                <div><strong>{{ 'Besoin d’aide ?'|trans }}</strong><small>{{ 'Notre équipe est là pour vous accompagner. Consultez notre FAQ ou'|trans }} <a href="{{ path('app_corporate_contact') }}">{{ 'contactez-nous'|trans }}</a>.</small></div>
+                <a class="ew-btn ew-btn--outline ew-btn--sm" href="{{ path('app_faq') }}">{{ 'Voir la FAQ'|trans }}</a>
+            </div>
+        </section>
+
+        <div class="ew-col">
+            <aside class="ew-card ew-links">
+                <h2>{{ 'Besoin d’aide ?'|trans }}</h2>
+                <p>{{ 'Consultez nos ressources ou contactez notre équipe d’assistance.'|trans }}</p>
+                <a href="{{ path('app_faq') }}"><span>{{ icon.help_circle(18) }}</span><span><strong>{{ 'FAQ – Questions fréquentes'|trans }}</strong><small>{{ 'Trouvez des réponses rapides'|trans }}</small></span>{{ icon.chevron_right(16) }}</a>
+                <a href="{{ path('app_help_center') }}"><span>{{ icon.info(18) }}</span><span><strong>{{ 'Centre d’aide'|trans }}</strong><small>{{ 'Des guides et articles détaillés'|trans }}</small></span>{{ icon.chevron_right(16) }}</a>
+                <a href="{{ path('app_corporate_contact') }}"><span>{{ icon.mail(18) }}</span><span><strong>{{ 'Contacter le support'|trans }}</strong><small>{{ 'Nous sommes là pour vous aider'|trans }}</small></span>{{ icon.chevron_right(16) }}</a>
+            </aside>
+            <aside class="ew-card ew-examples">
+                <h2>{{ 'Exemples d’événements'|trans }}</h2>
+                <p>{{ 'Laissez-vous inspirer par ces idées'|trans }}</p>
+                {% for e in examples %}
+                    <a href="{{ path('app_events_detail', {slug: e.slug}) }}"><img src="{{ asset(e.imagePath ?? 'images/events/ev-rando-clean.jpg') }}" alt=""><span><strong>{{ e.title }}</strong><small>{{ e.category ? e.category.name|trans }}</small></span></a>
+                {% endfor %}
+                <a class="ew-btn ew-btn--outline ew-btn--block" href="{{ path('app_events') }}">{{ 'Découvrir plus d’événements'|trans }}</a>
+            </aside>
+        </div>
+    </div>
+</div>
+{% endblock %}

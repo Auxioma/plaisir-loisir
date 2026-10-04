@@ -1,192 +1,169 @@
+{#
+    « Événements » — maquette docs/maquettes/evenements.jpeg (04/10).
+    Données : EventsController::index(). Styles : assets/styles/event-list.css (.evl-*).
+#}
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
+{% import 'provider/space/_ico.html.twig' as ico %}
 
 {% block title %}{{ 'Événements'|trans }}{% endblock %}
-{% block meta_description %}{{ 'Trouvez, rejoignez et partagez des moments uniques : événements privés et gratuits près de chez vous ou partout en France.'|trans }}{% endblock %}
-
-{% block header %}
-    {# Captures 1-2 : landing en DÉCONNECTÉ (bouton S'inscrire). #}
-    {% include '_partials/navbar_events.html.twig' with { nav_active: 'evenements' } %}
-{% endblock %}
+{% block meta_description %}{{ 'Trouvez, rejoignez et partagez des moments uniques : événements entre membres partout en France.'|trans }}{% endblock %}
 
 {% block body %}
-<div class="evn-page evn-landing">
-
-    {# ==================================================================
-       HERO (spec A.1) : photo d'amis qui trinquent, fond navy, titre 2
-       lignes (2ᵉ orange), 3 pills d'arguments. Typos corrigées :
-       privivés → privés, Activivtés → Activités, Conviviabilité →
-       Convivialité.
-       ================================================================ #}
-    <section class="evn-hero">
-        <img class="evn-hero__img" src="{{ asset('images/events/hero-friends-right.jpg') }}" alt="">
-        <div class="container evn-hero__inner">
-            <h1 class="evn-hero__title">{{ 'Trouvez, rejoignez et partagez'|trans }}<br><span>{{ 'des moments uniques.'|trans }}</span></h1>
-            <p class="evn-hero__subtitle">{{ 'Découvrez des événements privés près de chez vous ou partout en France.'|trans }}<br>{{ 'Activités entre amis, en famille ou entre passionnées'|trans }}</p>
-            <div class="evn-hero__pills">
-                <span class="evn-hero-pill">{{ icon.lock(16) }} {{ '100% privées'|trans }}</span>
-                <span class="evn-hero-pill">{{ icon.card(16) }} {{ 'Gratuit & sans prestataire'|trans }}</span>
-                <span class="evn-hero-pill">{{ icon.emoji(16) }} {{ 'Partage & Convivialité'|trans }}</span>
+<div class="evl">
+    <div class="evl-main">
+        <section class="evl-hero">
+            <img class="evl-hero__bg" src="{{ asset('images/events/banner-explore.jpg') }}" alt="">
+            <div class="evl-hero__text">
+                <h1>{{ 'Événements'|trans }}</h1>
+                <p class="evl-hero__lead">{{ 'Trouvez, rejoignez et partagez des moments uniques'|trans }}</p>
+                <p>{{ 'Découvrez des événements privés près de chez vous ou partout en France. Activités entre amis, en famille ou entre passionnés.'|trans }}</p>
             </div>
-        </div>
-    </section>
+            <ul class="evl-hero__badges">
+                <li><span>{{ icon.users(18) }}</span><strong>{{ '100% privés'|trans }}</strong><small>{{ 'Entre membres'|trans }}</small></li>
+                <li><span>{{ icon.shield_check(18) }}</span><strong>{{ 'Gratuit & sans prestataire'|trans }}</strong><small>{{ 'Aucun frais'|trans }}</small></li>
+                <li><span>{{ icon.calendar_grid(18) }}</span><strong>{{ 'Partage & convivialité'|trans }}</strong><small>{{ 'Ces liens authentiques'|trans }}</small></li>
+            </ul>
+        </section>
 
-    {# Recherche multi-critères à cheval sur le bas du hero (spec A.2).
-       La maquette pose le MÊME pictogramme « épingle » sur les quatre champs. #}
-    <div class="container container--evsearch">
-        <form class="evn-search" role="search" action="{{ path('app_events_all') }}" method="get">
-            <div class="evn-search__inner">
-            <label class="evn-search__field">
-                {{ icon.map_pin(18) }}
-                <span class="evn-search__labels">
-                    <strong>{{ 'Où voulez-vous aller ?'|trans }}</strong>
-                    <input type="text" placeholder="{{ 'Destination, ville, lieu...'|trans }}" aria-label="{{ 'Destination'|trans }}">
-                </span>
-                <span class="evn-search__chev">{{ icon.chevron_down(16) }}</span>
+        <form class="evl-search" method="get" action="{{ path('app_events') }}" role="search">
+            {% if filters.sort != 'date' %}<input type="hidden" name="tri" value="{{ filters.sort }}">{% endif %}
+            <label class="evl-search__cell">
+                <span class="evl-search__ico">{{ icon.map_pin(20) }}</span>
+                <span><strong>{{ 'Où ?'|trans }}</strong><input name="ou" value="{{ filters.where }}" placeholder="{{ 'Toute la France'|trans }}" aria-label="{{ 'Ville ou code postal'|trans }}"></span>
             </label>
-            <span class="evn-search__sep" aria-hidden="true"></span>
-            <label class="evn-search__field">
-                {{ icon.map_pin(18) }}
-                <span class="evn-search__labels">
-                    <strong>{{ 'Quand'|trans }}</strong>
-                    <input type="text" placeholder="{{ 'Toutes les dates'|trans }}" readonly aria-label="{{ 'Dates'|trans }}">
+            <label class="evl-search__cell">
+                <span class="evl-search__ico">{{ icon.calendar_grid(20) }}</span>
+                <span><strong>{{ 'Quand ?'|trans }}</strong>
+                    <select name="quand" aria-label="{{ 'Période'|trans }}">
+                        {% for key, label in {'': 'Toutes les dates', aujourdhui: 'Aujourd’hui', demain: 'Demain', weekend: 'Ce week-end', semaine: 'Cette semaine', mois: 'Ce mois-ci'} %}
+                            <option value="{{ key }}"{{ filters.when == key ? ' selected' }}>{{ label|trans }}</option>
+                        {% endfor %}
+                    </select>
                 </span>
-                <span class="evn-search__chev">{{ icon.chevron_down(16) }}</span>
             </label>
-            <span class="evn-search__sep" aria-hidden="true"></span>
-            <label class="evn-search__field">
-                {{ icon.map_pin(18) }}
-                <span class="evn-search__labels">
-                    <strong>{{ 'Catégories'|trans }}</strong>
-                    <input type="text" placeholder="{{ 'Toutes les catégories'|trans }}" readonly aria-label="{{ 'Catégories'|trans }}">
+            <label class="evl-search__cell">
+                <span class="evl-search__ico">{{ icon.grid(20) }}</span>
+                <span><strong>{{ 'Catégorie'|trans }}</strong>
+                    <select name="categorie" aria-label="{{ 'Catégorie'|trans }}">
+                        <option value="">{{ 'Toutes les catégories'|trans }}</option>
+                        {% for c in categories %}<option value="{{ c.slug }}"{{ filters.category == c.slug ? ' selected' }}>{{ c.name|trans }}</option>{% endfor %}
+                    </select>
                 </span>
-                <span class="evn-search__chev">{{ icon.chevron_down(16) }}</span>
             </label>
-            <span class="evn-search__sep" aria-hidden="true"></span>
-            <label class="evn-search__field">
-                {{ icon.map_pin(18) }}
-                <span class="evn-search__labels">
-                    <strong>{{ "Type d'événement"|trans }}</strong>
-                    <input type="text" placeholder="{{ 'Tous les types'|trans }}" readonly aria-label="{{ "Type d'événement"|trans }}">
+            <label class="evl-search__cell">
+                <span class="evl-search__ico">{{ icon.users(20) }}</span>
+                <span><strong>{{ "Type d'événement"|trans }}</strong>
+                    <select name="type" aria-label="{{ "Type d'événement"|trans }}">
+                        <option value="">{{ 'Tous les types'|trans }}</option>
+                        {% for key, t in types %}<option value="{{ key }}"{{ filters.type == key ? ' selected' }}>{{ t.label|trans }}</option>{% endfor %}
+                    </select>
                 </span>
-                <span class="evn-search__chev">{{ icon.chevron_down(16) }}</span>
             </label>
-            <button type="submit" class="evn-search__submit">{{ 'Recherche'|trans }} {{ icon.search(18) }}</button>
-            </div>
+            <button class="evl-search__submit">{{ 'Rechercher'|trans }}</button>
+            <a class="evl-search__reset" href="{{ path('app_events') }}">{{ 'Réinitialiser'|trans }} {{ icon.support_cycle(16) }}</a>
+            {% if filters.q %}<input type="hidden" name="q" value="{{ filters.q }}">{% endif %}
         </form>
+
+        <nav class="evl-chips" aria-label="{{ 'Catégories'|trans }}">
+            {% for slug, chip in chips %}
+                <a class="evl-chip{{ filters.category == slug ? ' is-active' }}" href="{{ path('app_events', params|merge({categorie: slug ?: null})) }}">{{ ico.svg(chip[1], 16) }} {{ chip[0]|trans }}</a>
+            {% endfor %}
+            <details class="evl-advanced">
+                <summary>{{ 'Filtres avancés'|trans }} {{ icon.sliders(16) }}</summary>
+                <form method="get" class="evl-advanced__panel">
+                    {% for k, v in params|filter((v, k) => k not in ['date', 'q']) %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+                    <label>{{ 'Mot-clé'|trans }}<input name="q" value="{{ filters.q }}" placeholder="{{ 'Randonnée, barbecue…'|trans }}"></label>
+                    <label>{{ 'Date précise'|trans }}<input type="date" name="date" value="{{ filters.date }}" min="{{ 'today'|date('Y-m-d') }}"></label>
+                    <button class="evl-search__submit">{{ 'Appliquer'|trans }}</button>
+                </form>
+            </details>
+        </nav>
+
+        <div class="evl-bar">
+            <strong>{{ total }} {{ total > 1 ? 'événements trouvés'|trans : 'événement trouvé'|trans }}</strong>
+            <form method="get" class="evl-sort">
+                {% for k, v in params|filter((v, k) => k != 'tri') %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+                <label for="evl-sort">{{ 'Trier par :'|trans }}</label>
+                <select id="evl-sort" name="tri" onchange="this.form.submit()">
+                    {% for key, label in {date: 'Date (prochainement)', populaires: 'Les plus populaires', recents: 'Ajoutés récemment'} %}<option value="{{ key }}"{{ filters.sort == key ? ' selected' }}>{{ label|trans }}</option>{% endfor %}
+                </select>
+            </form>
+        </div>
+
+        {% if events is empty %}
+            <div class="evl-empty">
+                {{ icon.calendar_grid(36) }}
+                <strong>{{ 'Aucun événement ne correspond à votre recherche.'|trans }}</strong>
+                <span>{{ 'Élargissez vos critères ou créez le vôtre !'|trans }}</span>
+                <div><a class="evl-btn evl-btn--ghost" href="{{ path('app_events') }}">{{ 'Réinitialiser'|trans }}</a> <a class="evl-btn" href="{{ path('app_event_guide') }}">{{ 'Créer un événement'|trans }}</a></div>
+            </div>
+        {% else %}
+            <div class="evl-grid">
+                {% for e in events %}
+                    <article class="evl-card" id="ev-{{ loop.index }}">
+                        <a class="evl-card__media" href="{{ path('app_events_detail', {slug: e.slug}) }}">
+                            <img src="{{ asset(e.image ?? 'images/events/ev-raft-clean.jpg') }}" alt="{{ e.title }}" loading="lazy">
+                            <span class="evl-badge evl-badge--{{ e.color }}">{{ e.category|trans }}</span>
+                            <span class="evl-card__date"><b>{{ e.day }}</b>{{ e.month }}</span>
+                        </a>
+                        {% include '_partials/_event_fav.html.twig' with { type: 'evenement', key: e.slug, class: 'evl-card__fav' } %}
+                        <div class="evl-card__body">
+                            <a class="evl-card__title" href="{{ path('app_events_detail', {slug: e.slug}) }}">{{ e.title }}</a>
+                            <span class="evl-card__meta">{{ icon.map_pin(13) }} {{ e.where }}</span>
+                            <span class="evl-card__meta">{{ icon.clock(13) }} {{ e.hours }}</span>
+                            <span class="evl-card__foot">
+                                <span>{{ e.participants }} {{ e.participants > 1 ? 'participants'|trans : 'participant'|trans }}</span>
+                                <span class="evl-avatars">{% for a in avatars|slice(0, 4) %}<img src="{{ asset(a) }}" alt="">{% endfor %}</span>
+                            </span>
+                            <a class="evl-btn evl-btn--ghost evl-btn--block" href="{{ path('app_events_detail', {slug: e.slug}) }}">{{ "Voir l'événement"|trans }}</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+            {% if has_more %}
+                <a class="evl-more" href="{{ path('app_events', params|merge({page: page + 1})) }}#ev-{{ events|length + 1 }}">{{ "Charger plus d'événements"|trans }} {{ icon.chevron_down(16) }}</a>
+            {% endif %}
+        {% endif %}
     </div>
 
-    {# ==================================================================
-       CATEGORIES POPULAIRES : carousel d'icônes rondes violettes.
-       ================================================================ #}
-    <section class="evn-section">
-        <div class="container">
-            <div class="evn-section__head">
-                <div>
-                    <h2 class="evn-section__title">{{ 'Categories populaires'|trans }}</h2>
-                    <p class="evn-section__lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat.<br>Nunc dictum facilisis dolor ac luctus.</p>
-                </div>
-                <a href="{{ path('app_events_all') }}" class="evn-btn-dark">{{ 'Voir tous les  événements'|trans }} {{ icon.arrow_up_right(15) }}</a>
-            </div>
-            <div class="evn-cats">
-                <button type="button" class="evn-cats__nav" aria-label="{{ 'Catégories précédentes'|trans }}">{{ icon.chevron_left(16) }}</button>
-                {% for c in categories %}
-                    <a href="{{ path('app_events_all') }}" class="evn-cat">
-                        <span class="evn-cat__icon">
-                            {%- if c.icon == 'cat_canoe' %}{{ icon.cat_canoe(24) }}
-                            {%- elseif c.icon == 'cat_bike' %}{{ icon.cat_bike(24) }}
-                            {%- elseif c.icon == 'cat_hiking' %}{{ icon.cat_hiking(24) }}
-                            {%- elseif c.icon == 'cat_sports' %}{{ icon.cat_sports(24) }}
-                            {%- elseif c.icon == 'cat_culture' %}{{ icon.cat_culture(24) }}
-                            {%- elseif c.icon == 'cat_crafts' %}{{ icon.cat_crafts(24) }}
-                            {%- elseif c.icon == 'cat_wellness' %}{{ icon.cat_wellness(24) }}
-                            {%- else %}{{ icon.cat_family(24) }}
-                            {%- endif %}
-                        </span>
-                        <span class="evn-cat__label">{{ c.label }}</span>
-                    </a>
+    <aside class="evl-side">
+        <section class="evl-panel">
+            <h2>{{ 'Carte des événements'|trans }}</h2>
+            <div class="evl-map" data-evl-map data-markers="{{ markers|json_encode }}" aria-label="{{ 'Carte des événements'|trans }}"></div>
+            <a class="evl-maplink" href="#" data-evl-map-fit>{{ 'Voir les événements sur la carte'|trans }} {{ icon.map_pin(16) }}</a>
+        </section>
+
+        <section class="evl-panel">
+            <div class="evl-panel__head"><h2>{{ 'Événements à venir'|trans }}</h2><a href="{{ path('app_events', {tri: 'date'}) }}">{{ 'Voir tout'|trans }}</a></div>
+            <ul class="evl-upcoming">
+                {% for e in upcoming %}
+                    <li><a href="{{ path('app_events_detail', {slug: e.slug}) }}">
+                        <img src="{{ asset(e.image ?? 'images/events/ev-raft-clean.jpg') }}" alt="">
+                        <span><strong>{{ e.title }}</strong><small>{{ e.where }}</small><small>{{ e.startsAt|pf_date('d MMM')|trim('.') }} • {{ e.startsAt|date('H\\hi') }}</small></span>
+                        <em>{{ icon.users(13) }} {{ e.participants }}</em>
+                    </a></li>
+                {% else %}
+                    <li class="evl-muted">{{ 'Aucun événement à venir pour le moment.'|trans }}</li>
                 {% endfor %}
-                <button type="button" class="evn-cats__nav" aria-label="{{ 'Catégories suivantes'|trans }}">{{ icon.chevron_right(16) }}</button>
-            </div>
-        </div>
-    </section>
+            </ul>
+        </section>
 
-    {# ==================================================================
-       EVÉNEMENTS DE VOS GROUPES (spec A.3) : état vide + dropdown
-       mini-calendrier « Aujourd'hui » (capture 2, events.js). Typo
-       corrigée : « Aujourd'h'ui » → Aujourd'hui.
-       ================================================================ #}
-    <section class="evn-section">
-        <div class="container">
-            <div class="evn-section__head">
-                <h2 class="evn-section__title">{{ 'Evénements de vos groupes'|trans }}</h2>
-                <div class="evn-today">
-                    <button type="button" class="evn-btn-dark" id="evn-today-toggle" aria-expanded="false" aria-controls="evn-today-cal">{{ "Aujourd'hui"|trans }} {{ icon.chevron_down(15) }}</button>
-                    <div class="evn-today__cal" id="evn-today-cal" role="dialog" aria-label="{{ 'Choisir une date'|trans }}" hidden>
-                        <div class="evn-today__nav">
-                            <button type="button" aria-label="{{ 'Mois précédent'|trans }}">{{ icon.chevron_left(16) }}</button>
-                            <strong>{{ 'Juillet 2026'|trans }}</strong>
-                            <button type="button" aria-label="{{ 'Mois suivant'|trans }}">{{ icon.chevron_right(16) }}</button>
-                        </div>
-                        <div class="evn-today__days" aria-hidden="true">
-                            <span>{{ 'lun.'|trans }}</span><span>{{ 'mar.'|trans }}</span><span>{{ 'mer.'|trans }}</span><span>{{ 'jeu.'|trans }}</span><span>{{ 'ven.'|trans }}</span><span>{{ 'sam'|trans }}</span><span>{{ 'dim.'|trans }}</span>
-                        </div>
-                        <div class="evn-today__grid">
-                            {% for d in [29, 30] %}<span class="is-out">{{ d }}</span>{% endfor %}
-                            {% for d in 1..31 %}<span class="{{ d == 16 ? 'is-today' }}">{{ d }}</span>{% endfor %}
-                            {% for d in [1, 2] %}<span class="is-out">{{ d }}</span>{% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% include 'event/nav/_empty.html.twig' with {
-                image: 'images/events/empty-doc.jpg',
-                title: "Vos groupes sont calmes pour l'instant"|trans,
-                text: ('Explorez de nouveaux événements et restez connecté à'|trans) ~ '<br>' ~ ('ce qui se passe autour de vous.'|trans),
-                cta: 'Découvrez les événements'|trans,
-                cta_href: path('app_events_all'),
-            } %}
-        </div>
-    </section>
-
-    {# ==================================================================
-       ÉVÉNEMENTS À VENIR : grille 4×3 <EventCard>.
-       ================================================================ #}
-    <section class="evn-section">
-        <div class="container">
-            <div class="evn-section__head">
-                <div>
-                    <h2 class="evn-section__title">{{ 'Événements à venir'|trans }}</h2>
-                    <p class="evn-section__lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat.<br>Nunc dictum facilisis dolor ac luctus.</p>
-                </div>
-                <a href="{{ path('app_events_all') }}" class="evn-btn-dark">{{ 'Voir tous les  événements'|trans }} {{ icon.arrow_up_right(15) }}</a>
-            </div>
-            <div class="evn-grid">
-                {% for e in events %}
-                    {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
-                {% endfor %}
-            </div>
-        </div>
-    </section>
-
-    {# ==================================================================
-       VOS GROUPES (0) : état vide « À la recherche de votre communauté ? ».
-       ================================================================ #}
-    <section class="evn-section evn-section--last">
-        <div class="container">
-            <div class="evn-section__head">
-                <h2 class="evn-section__title">{{ 'Vos groupes (0)'|trans }}</h2>
-                <a href="{{ path('app_groups') }}" class="evn-btn-dark">{{ 'Voir tout'|trans }} {{ icon.arrow_up_right(15) }}</a>
-            </div>
-            {% include 'event/nav/_empty.html.twig' with {
-                image: 'images/events/empty-community.jpg',
-                title: 'À la recherche de votre communauté ?'|trans,
-                text: ('Rejoignez un groupe qui partage vos passions et'|trans) ~ '<br>' ~ ("commencez à vous connecter dès aujourd'hui."|trans),
-                cta: 'Explorez les groupes'|trans,
-                cta_href: path('app_groups'),
-            } %}
-        </div>
-    </section>
-
+        <section class="evl-panel evl-create">
+            <h2>{{ 'Créez votre événement'|trans }}</h2>
+            <p>{{ 'Organisez facilement vos activités et invitez vos proches.'|trans }}</p>
+            <a class="evl-btn" href="{{ path('app_event_guide') }}">{{ 'Créer un événement'|trans }} {{ icon.calendar_grid(16) }}</a>
+            <span class="evl-create__art" aria-hidden="true">🎉</span>
+        </section>
+    </aside>
 </div>
+
+<ul class="evl-features">
+    <li>{{ icon.check_badge(22) }}<span><strong>{{ '100% Gratuit'|trans }}</strong><small>{{ 'Aucun frais, jamais'|trans }}</small></span></li>
+    <li>{{ icon.shield_check(22) }}<span><strong>{{ 'Sans prestataire'|trans }}</strong><small>{{ 'Entre particuliers uniquement'|trans }}</small></span></li>
+    <li>{{ icon.padlock(22) }}<span><strong>{{ 'Sécurisé'|trans }}</strong><small>{{ 'Vos données sont protégées'|trans }}</small></span></li>
+    <li>{{ icon.bell(22) }}<span><strong>{{ 'Convivial'|trans }}</strong><small>{{ 'Entre membres bienveillants'|trans }}</small></span></li>
+    <li>{{ icon.share(22) }}<span><strong>{{ 'Partage facile'|trans }}</strong><small>{{ 'Photos, discussions, souvenirs'|trans }}</small></span></li>
+    <li>{{ icon.monitor(22) }}<span><strong>{{ 'Accessible partout'|trans }}</strong><small>{{ 'Sur mobile et ordinateur'|trans }}</small></span></li>
+</ul>
 {% endblock %}

@@ -1,157 +1,116 @@
+{#
+    « Offrir un bon cadeau » — saisie puis paiement (GiftController::offer()).
+    Prolonge la maquette bons_cadeaux.jpeg : récapitulatif à droite, champs
+    obligatoires contrôlés côté serveur (422 + message sous le champ) et
+    côté navigateur (assets/gifts.js).
+#}
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}{{ 'Offrir un cadeau — Vos informations'|trans }}{% endblock %}
-{% block meta_description %}{{ 'Offrez une carte cadeau TrouveMoi : saisissez vos informations et personnalisez votre message.'|trans }}{% endblock %}
+{% block title %}{{ 'Offrir un bon cadeau'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Personnalisez et offrez un bon cadeau TrouveMoi, valable 12 mois.'|trans }}{% endblock %}
 
-{% block header %}
-    {% include '_partials/navbar.html.twig' with { nav_active: 'cadeaux' } %}
-{% endblock %}
+{% macro err(errors, key) %}{% if errors[key] is defined %}<span class="gc-err" role="alert">{{ errors[key]|trans }}</span>{% endif %}{% endmacro %}
 
 {% block body %}
-<div class="gift-page gift-tunnel-page">
-    <div class="container">
+<div class="pg gc-buy">
+    <div class="pg-wrap">
+        <nav class="act-breadcrumb gc-crumb" aria-label="{{ "Fil d'Ariane"|trans }}"><a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a> <span aria-hidden="true">|</span> <a href="{{ path('app_gifts') }}">{{ 'Cadeaux'|trans }}</a> <span aria-hidden="true">|</span> <span aria-current="page">{{ 'Offrir'|trans }}</span></nav>
+        <h1 class="gc-buy__title">{{ icon.gift(28) }} {{ 'Offrir un bon cadeau'|trans }}</h1>
 
-        <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
-            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
-            <span aria-hidden="true">|</span>
-            <a href="{{ path('app_gifts') }}">{{ 'Cadeaux'|trans }}</a>
-            <span aria-hidden="true">|</span>
-            <span aria-current="page">{{ 'Offrir un cadeau'|trans }}</span>
-        </nav>
+        {% if errors._token is defined %}<p class="gc-alert" role="alert">{{ errors._token|trans }}</p>{% endif %}
 
-        <div class="gift-tunnel">
-            {# POST, ET NON GET — corrigé le 25/08.
+        <form id="gift-form" class="gc-buy__cols" method="post" action="{{ path('app_gifts_offer') }}" novalidate data-gc-form data-unit="{{ unit }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('gift_offer') }}">
+            {% if activity %}<input type="hidden" name="activite" value="{{ activity.slug }}">{% endif %}
 
-               Ce formulaire recueille des données personnelles : nom, adresse
-               e-mail, téléphone, nom du destinataire et message privé. En GET,
-               elles partaient dans l'adresse de la page suivante :
+            <div class="gc-buy__main">
+                <section class="pg-card">
+                    <h2 class="pg-h3">1. {{ 'Le bon cadeau'|trans }}</h2>
+                    {% if activity %}
+                        <label class="gc-field{{ errors.people is defined ? ' is-invalid' }}">{{ 'Nombre de personnes'|trans }} *
+                            <select name="people" required data-gc-people>{% for n in 1..limits.people %}<option value="{{ n }}"{{ data.people == n ? ' selected' }}>{{ n }}</option>{% endfor %}</select>
+                            {{ _self.err(errors, 'people') }}</label>
+                    {% else %}
+                        <label class="gc-field{{ errors.amount is defined ? ' is-invalid' }}">{{ 'Montant du bon (en €)'|trans }} *
+                            <input type="number" name="amount" min="{{ limits.min }}" max="{{ limits.max }}" step="1" value="{{ data.amount }}" required data-gc-amount>
+                            <small class="pg-muted">{{ 'Entre'|trans }} {{ limits.min }} € {{ 'et'|trans }} {{ limits.max }} €.</small>
+                            {{ _self.err(errors, 'amount') }}</label>
+                        <div class="gc-pills">{% for v in [25, 50, 100, 150] %}<button type="button" class="gc-pill" data-gc-preset="{{ v }}">{{ v }} €</button>{% endfor %}</div>
+                    {% endif %}
+                </section>
 
-                   /cadeaux/offrir/paiement?fullName=…&email=…&message=…
-
-               Une URL n'est pas un endroit discret. Elle est conservée dans
-               l'historique du navigateur, écrite en clair dans les journaux
-               d'accès du serveur, et transmise dans l'en-tête « Referer » à
-               tout service tiers que la page de paiement viendrait à charger.
-
-               Le jeton accompagne le reste du site (contact, partenaire,
-               assistants) : le contrôleur le vérifie avant d'afficher l'écran
-               de paiement. #}
-            {# data-turbo="false" : réponse 200 (pas de redirection) sur erreur, pour
-               réafficher ce même écran avec ses erreurs — le formulaire poste vers
-               GiftController::payment(), qui réaffiche ce template en cas d'échec.
-               Même correctif que security/register.html.twig. #}
-            {{ form_start(giftForm, {
-                attr: { class: 'gift-steps', id: 'gift-form', novalidate: 'novalidate', 'data-turbo': 'false' },
-                action: path('app_gifts_offer_payment'), method: 'post',
-            }) }}
-
-                {# ==========================================================
-                   CARTE 1 : VOS INFORMATIONS (états vide / erreur / rempli
-                   gérés au blur et à la soumission — spec écrans 5-7).
-                   ======================================================== #}
-                <section class="gift-formcard">
-                    <h1 class="gift-formcard__title">{{ 'Vos informations'|trans }}</h1>
-                    <p class="gift-formcard__lead">{{ 'Saisissez vos informations ici'|trans }}</p>
-                    <p class="gift-formcard__required">{{ 'Champ obligatoire'|trans }}<span>*</span></p>
-
-                    <div class="gift-field">
-                        <label class="gift-field__label" for="giftFullName">{{ 'Nom & prénom'|trans }}</label>
-                        <div class="gift-input">
-                            <span class="gift-input__icon">{{ icon.person(18) }}</span>
-                            {{ form_widget(giftForm.fullName, {
-                                id: 'giftFullName',
-                                attr: { placeholder: 'martinthomas', autocomplete: 'name', required: true, 'data-gift-required': true, 'data-sync': 'name' }
-                            }) }}
+                <section class="pg-card">
+                    <h2 class="pg-h3">2. {{ 'Pour qui ?'|trans }}</h2>
+                    <label class="gc-field{{ errors.recipient_name is defined ? ' is-invalid' }}">{{ 'Prénom du bénéficiaire'|trans }} *
+                        <input name="recipient_name" value="{{ data.recipient_name }}" required minlength="2" maxlength="120">
+                        {{ _self.err(errors, 'recipient_name') }}</label>
+                    <fieldset class="gc-field{{ errors.delivery is defined ? ' is-invalid' }}">
+                        <legend>{{ 'Mode d’envoi'|trans }} *</legend>
+                        <div class="gc-radios">
+                            {% for k, label in deliveries %}
+                                <label class="gc-radio"><input type="radio" name="delivery" value="{{ k }}"{{ data.delivery == k ? ' checked' }} required data-gc-delivery> {{ (k == 'email' ? icon.mail(18) : (k == 'print' ? icon.receipt(18) : icon.send(18))) }} {{ label|trans }}</label>
+                            {% endfor %}
                         </div>
-                        <p class="gift-field__error" hidden>{{ '*Champ obligatoire'|trans }}</p>
+                        {{ _self.err(errors, 'delivery') }}
+                    </fieldset>
+                    <label class="gc-field{{ errors.recipient_email is defined ? ' is-invalid' }}" data-gc-show="email">{{ 'E-mail du bénéficiaire'|trans }} *
+                        <input type="email" name="recipient_email" value="{{ data.recipient_email }}" maxlength="180">
+                        <small class="pg-muted">{{ 'Le bon lui est envoyé dès le paiement validé.'|trans }}</small>
+                        {{ _self.err(errors, 'recipient_email') }}</label>
+                    <label class="gc-field{{ errors.postal_address is defined ? ' is-invalid' }}" data-gc-show="postal">{{ 'Adresse postale du bénéficiaire'|trans }} *
+                        <textarea name="postal_address" rows="3" maxlength="400" placeholder="{{ 'N°, rue, code postal, ville'|trans }}">{{ data.postal_address }}</textarea>
+                        {{ _self.err(errors, 'postal_address') }}</label>
+                    <label class="gc-field{{ errors.message is defined ? ' is-invalid' }}">{{ 'Votre message (facultatif)'|trans }}
+                        <textarea name="message" rows="3" maxlength="300" data-gc-message placeholder="{{ 'Joyeux anniversaire ! Profite bien…'|trans }}">{{ data.message }}</textarea>
+                        <small class="pg-muted"><span data-gc-count>{{ data.message|length }}</span>/300</small>
+                        {{ _self.err(errors, 'message') }}</label>
+                </section>
+
+                <section class="pg-card">
+                    <h2 class="pg-h3">3. {{ 'Vos coordonnées'|trans }}</h2>
+                    <div class="pg-form__row">
+                        <label class="gc-field{{ errors.buyer_name is defined ? ' is-invalid' }}">{{ 'Nom et prénom'|trans }} *
+                            <input name="buyer_name" value="{{ data.buyer_name }}" required minlength="2" maxlength="200" autocomplete="name">
+                            {{ _self.err(errors, 'buyer_name') }}</label>
+                        <label class="gc-field{{ errors.buyer_email is defined ? ' is-invalid' }}">{{ 'E-mail'|trans }} *
+                            <input type="email" name="buyer_email" value="{{ data.buyer_email }}" required maxlength="180" autocomplete="email">
+                            {{ _self.err(errors, 'buyer_email') }}</label>
                     </div>
-
-                    <div class="gift-row">
-                        <div class="gift-field">
-                            <label class="gift-field__label" for="giftEmail">{{ 'Adresse e-mail'|trans }}</label>
-                            <div class="gift-input">
-                                <span class="gift-input__icon">{{ icon.mail(18) }}</span>
-                                {{ form_widget(giftForm.email, {
-                                    id: 'giftEmail',
-                                    attr: { placeholder: 'Votre@email.com'|trans, autocomplete: 'email', required: true, 'data-gift-required': true, 'data-sync': 'email' }
-                                }) }}
-                            </div>
-                            <p class="gift-field__hint">{{ 'Votre bon cadeau sera envoyé à cette adresse'|trans }}</p>
-                            <p class="gift-field__error" hidden>{{ '*Champ obligatoire'|trans }}</p>
-                        </div>
-                        <div class="gift-field">
-                            <label class="gift-field__label" for="giftPhone">{{ 'Numéro de téléphone'|trans }}</label>
-                            {# Indicateur pays compact en préfixe interne, comme l'icône
-                               statique qu'il remplace visuellement (icon.phone) — voir
-                               assets/controllers/phone_country_controller.js. #}
-                            <div class="gift-input gift-input--phone">
-                                <span class="phone-country phone-country--prefix" data-controller="phone-country">
-                                    <span class="phone-country__flag" data-phone-country-target="flag"></span>
-                                    <span class="phone-country__code" data-phone-country-target="code"></span>
-                                    {{ form_widget(giftForm.phone.country, {
-                                        attr: { class: 'phone-country__select', 'data-phone-country-target': 'select', 'data-action': 'change->phone-country#sync' }
-                                    }) }}
-                                </span>
-                                {{ form_widget(giftForm.phone.number, {
-                                    id: 'giftPhone',
-                                    attr: { placeholder: '06 12 34 56 78', autocomplete: 'tel' }
-                                }) }}
-                            </div>
-                            <p class="gift-field__error" hidden>{{ '*Champ obligatoire'|trans }}</p>
-                        </div>
-                    </div>
-
-                    <label class="gift-consent">
-                        {{ form_widget(giftForm.agreeTerms, { attr: { required: true, 'data-gift-required': true } }) }}
-                        <span>{{ "J'accepte les"|trans }} <a class="auth-inline-link" href="{{ path('app_corporate_terms') }}">{{ 'conditions générales'|trans }}</a> {{ 'et la'|trans }} <a class="auth-inline-link" href="{{ path('app_corporate_privacy') }}">{{ 'politique de confidentialité'|trans }}</a></span>
+                    <label class="gc-field{{ errors.buyer_phone is defined ? ' is-invalid' }}">{{ 'Téléphone (facultatif)'|trans }}
+                        <input type="tel" name="buyer_phone" value="{{ data.buyer_phone }}" maxlength="20" autocomplete="tel" pattern="\+?[0-9 .()\-]{6,20}">
+                        {{ _self.err(errors, 'buyer_phone') }}</label>
+                    <label class="gc-check{{ errors.accept_terms is defined ? ' is-invalid' }}">
+                        <input type="checkbox" name="accept_terms" value="1" required{{ data.accept_terms == '1' ? ' checked' }}>
+                        <span>{{ 'J’accepte les'|trans }} <a href="{{ path('app_corporate_sales_terms') }}" target="_blank">{{ 'conditions générales de vente'|trans }}</a> {{ 'et la'|trans }} <a href="{{ path('app_corporate_privacy') }}" target="_blank">{{ 'politique de confidentialité'|trans }}</a>. *</span>
                     </label>
+                    {{ _self.err(errors, 'accept_terms') }}
                 </section>
+            </div>
 
-                {# ==========================================================
-                   CARTE 2 : A QUI VOUS L'OFFREZ.
-                   ======================================================== #}
-                <section class="gift-formcard gift-formcard--recipient">
-                    {# Maquette : la seconde carte n'a pas de gros titre — son intitulé est
-                       au même corps que « Saisissez vos informations ici ». #}
-                    <h2 class="gift-formcard__lead gift-formcard__lead--head">{{ "A qui vous l'offrez"|trans }}</h2>
-                    <p class="gift-formcard__required">{{ 'Champ obligatoire'|trans }}<span>*</span></p>
-
-                    <div class="gift-field">
-                        <label class="gift-field__label" for="giftSender">{{ "Nom & Prénom de l'expéditeur"|trans }}</label>
-                        <div class="gift-input">
-                            <span class="gift-input__icon">{{ icon.person(18) }}</span>
-                            <input id="giftSender" type="text" name="senderName" placeholder="martinthomas" data-sync="sender">
-                        </div>
-                    </div>
-
-                    <div class="gift-field">
-                        <label class="gift-field__label" for="giftRecipient">{{ 'Nom & Prénom du destinataire'|trans }}</label>
-                        <div class="gift-input">
-                            <span class="gift-input__icon">{{ icon.person(18) }}</span>
-                            <input id="giftRecipient" type="text" name="recipientName" placeholder="martinthomas" data-sync="recipient">
-                        </div>
-                    </div>
-
-                    <div class="gift-field">
-                        <div class="gift-textarea">
-                            <textarea id="giftMessage" name="message" maxlength="150" rows="4"
-                                      placeholder="{{ 'Un petit message avec le cadeau ?'|trans }}" data-sync="message"
-                                      aria-label="{{ 'Un petit message avec le cadeau ?'|trans }}"></textarea>
-                        </div>
-                        <p class="gift-field__counter"><span data-gift-counter>0</span>/150</p>
-                    </div>
+            <aside class="gc-buy__side">
+                <section class="pg-card gc-summary">
+                    {% if activity %}
+                        <img src="{{ asset(activity.image) }}" alt="">
+                        <strong>{{ activity.title }}</strong>
+                        <small>{{ activity.place }}</small>
+                        <p class="gc-summary__line">{{ unit|number_format(unit == unit|round ? 0 : 2, ',', ' ') }} € × <span data-gc-people-out>{{ data.people }}</span> {{ 'pers.'|trans }}</p>
+                    {% else %}
+                        <img src="{{ asset('images/gifts/giftcards-stack.jpg') }}" alt="">
+                        <strong>{{ 'Bon cadeau libre'|trans }}</strong>
+                        <small>{{ 'Le bénéficiaire choisit son activité parmi tout le catalogue.'|trans }}</small>
+                    {% endif %}
+                    <p class="gc-summary__total">{{ 'Total'|trans }} <strong data-gc-total>{{ total|number_format(2, ',', ' ') }} €</strong></p>
+                    <ul class="gc-summary__perks">
+                        <li>{{ icon.check(14) }} {{ 'Valable 12 mois'|trans }}</li>
+                        <li>{{ icon.check(14) }} {{ 'Échange gratuit'|trans }}</li>
+                        <li>{{ icon.check(14) }} {{ 'Paiement 100% sécurisé'|trans }}</li>
+                    </ul>
+                    <button class="pg-btn pg-btn--block">{{ icon.padlock(16) }} {{ 'Payer et offrir'|trans }}</button>
+                    {% if activity %}<a class="pg-link" href="{{ path('app_gifts_offer') }}">{{ 'Préférer un montant libre'|trans }}</a>{% endif %}
                 </section>
-
-                <div class="gift-tunnel__foot">
-                    <p class="gift-tunnel__total">{{ 'Total :'|trans }} <strong>160€</strong></p>
-                    <button type="submit" class="pl-btn pl-btn--outline-action gift-next">{{ 'Suivant'|trans }} {{ icon.chevron_right(16) }}</button>
-                </div>
-            {{ form_end(giftForm) }}
-
-            {% include 'gift/_order_summary.html.twig' %}
-        </div>
-
+            </aside>
+        </form>
     </div>
 </div>
 {% endblock %}

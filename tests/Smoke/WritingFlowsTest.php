@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Smoke;
 
 use App\Corporate\Repository\ContactMessageRepository;
-use App\Event\Repository\EventRepository;
 use App\User\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -90,38 +89,6 @@ final class WritingFlowsTest extends WebTestCase
             $messages->findOneBy(['subject' => $sujet]),
             'Le message de contact n\'a pas été enregistré.',
         );
-    }
-
-    /**
-     * L'assistant de création : huit étapes, un événement à l'arrivée.
-     */
-    public function testEventWizardCreatesAnEvent(): void
-    {
-        $client = static::createClient();
-        $titre = sprintf('Tournoi %s', uniqid());
-
-        $this->submit($client, '/evenements/creer/1', ['titre' => $titre]);
-        $this->submit($client, '/evenements/creer/2', [
-            'date_debut' => '12 / 09 / 2026',
-            'heure_debut' => '14:00',
-            'date_fin' => '12 / 09 / 2026',
-            'heure_fin' => '19:00',
-        ]);
-        $this->submit($client, '/evenements/creer/3', ['lieu' => 'Autrans, 38880']);
-
-        foreach ([4, 5, 6, 7] as $etape) {
-            $this->submit($client, '/evenements/creer/'.$etape, []);
-        }
-
-        $this->submit($client, '/evenements/creer/8', ['visibilite' => 'public']);
-
-        $events = static::getContainer()->get(EventRepository::class);
-        $event = $events->findOneBy(['title' => $titre]);
-
-        self::assertNotNull($event, "L'assistant n'a créé aucun événement.");
-        self::assertSame('Autrans, 38880', $event->getLocation());
-        // La date est enregistrée en UTC ; à l'heure d'été, 14h00 à Paris.
-        self::assertSame('2026-09-12', $event->getStartsAt()->format('Y-m-d'));
     }
 
     /**

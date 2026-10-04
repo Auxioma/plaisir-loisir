@@ -1,17 +1,15 @@
 {#
-    <JobCard> — carte d'offre d'emploi (Carrières et listing).
-    Variable : job.
+    <JobCard> — carte d'offre d'emploi (Carrières et listing). Maquette carrieres.jpeg.
+    Variable : job (StaticCorporate::jobs()).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
+{% import 'provider/space/_ico.html.twig' as ico %}
 
-<article class="cr-job">
-    <h3 class="cr-job__title">{{ job.title }}</h3>
-    <p class="cr-job__text">{{ job.text }}</p>
-    <ul class="cr-job__meta">
-        <li>{{ icon.map_pin(16) }} {{ job.city }}</li>
-        <li>{{ icon.receipt(16) }} {{ job.contract }}</li>
-        <li>{{ icon.calendar(16) }} {{ job.time }}</li>
-        <li>{{ icon.users(16) }} {{ job.dept }}</li>
-    </ul>
-    <a href="{{ path('app_corporate_jobs', { offre: 1 }) }}" class="cr-job__link">{{ "Voir l'offre"|trans }} {{ icon.chevron_right(14) }}</a>
+<article class="pg-card pg-job">
+    <div class="pg-job__head">
+        <span class="pg-ico is-{{ job.tone }}">{{ ico.svg(job.icon, 22) }}</span>
+        <span><h3>{{ job.title }}</h3><small>{{ job.city }}</small></span>
+    </div>
+    <ul class="pg-tags"><li>{{ job.contract }}</li><li>{{ job.dept|trans }}</li></ul>
+    <a href="{{ path('app_corporate_jobs', { offre: job.slug }) }}" class="pg-link">{{ "Voir l'offre"|trans }} {{ icon.arrow_right(14) }}</a>
 </article>

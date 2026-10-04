@@ -1,0 +1,7 @@
+{# Encart de chiffres clés posé sur la photo d'en-tête (Carrières, Devenir partenaire). items : [icône, ton, valeur, libellé]. #}
+{% import 'provider/space/_ico.html.twig' as ico %}
+<ul class="pg-hero__stats">
+    {% for it in items %}
+        <li><span class="pg-ico is-{{ it[1] }}">{{ ico.svg(it[0], 20) }}</span><span><strong>{{ it[2] }}</strong><small>{{ it[3]|trans }}</small></span></li>
+    {% endfor %}
+</ul>

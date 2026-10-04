@@ -102,6 +102,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Réservations');
         yield MenuItem::linkTo(BookingCrudController::class, 'Réservations', 'fa fa-calendar-check');
         yield MenuItem::linkTo(PaymentCrudController::class, 'Paiements', 'fa fa-money-bill');
+        yield MenuItem::linkTo(GiftCardCrudController::class, 'Bons cadeaux', 'fa fa-gift');
 
         yield MenuItem::section('Classement');
         yield MenuItem::linkTo(DestinationCrudController::class, 'Destinations', 'fa fa-map-location-dot');
@@ -124,6 +125,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(PartnerApplicationCrudController::class, 'Candidatures partenaires', 'fa fa-handshake');
         yield MenuItem::linkTo(ContactMessageCrudController::class, 'Messages de contact', 'fa fa-envelope');
         yield MenuItem::linkTo(SupportTicketCrudController::class, 'Tickets support', 'fa fa-headset');
+        yield MenuItem::linkTo(NewsletterSubscriberCrudController::class, 'Abonnés newsletter', 'fa fa-paper-plane');
 
         // Demande du CTO le 29/08 : les textes juridiques et l'aide se gèrent
         // en base, parce qu'ils évoluent dans le temps et qu'une évolution ne

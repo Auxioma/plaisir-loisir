@@ -118,12 +118,13 @@ class ServiceRepository extends ServiceEntityRepository
         ?float $minRating = null,
         ?int $participants = null,
         ?\DateTimeImmutable $date = null,
+        ?string $language = null,
     ): array {
         $sort ??= ActivitySort::default();
         $perPage = max(1, $perPage);
 
         $filtres = fn (): \Doctrine\ORM\QueryBuilder => $this->listingQueryBuilder(
-            $keywords, $place, $categorySlugs, $priceMin, $priceMax, $minRating, $participants, $date,
+            $keywords, $place, $categorySlugs, $priceMin, $priceMax, $minRating, $participants, $date, $language,
         );
 
         $total = (int) $filtres()
@@ -280,6 +281,7 @@ class ServiceRepository extends ServiceEntityRepository
         ?float $minRating,
         ?int $participants,
         ?\DateTimeImmutable $date,
+        ?string $language = null,
     ): \Doctrine\ORM\QueryBuilder {
         $qb = $this->createQueryBuilder('s')
             ->leftJoin('s.category', 'c')
@@ -315,6 +317,20 @@ class ServiceRepository extends ServiceEntityRepository
             // partages.
             $qb->andWhere('c.slug IN (:categories)')
                 ->setParameter('categories', $categorySlugs);
+        }
+
+        // Langue parlée (filtre de la page Explorer, 04/10). La liste est un
+        // JSON : le test d'appartenance passe par PostgreSQL (jsonb_exists).
+        if (null !== $language && '' !== trim($language)) {
+            $ids = $this->getEntityManager()->getConnection()->fetchFirstColumn(
+                'SELECT id FROM service WHERE jsonb_exists(languages::jsonb, :langue)',
+                ['langue' => trim($language)],
+            );
+            if ([] === $ids) {
+                $qb->andWhere('1 = 0');
+            } else {
+                $qb->andWhere('s.id IN (:langueIds)')->setParameter('langueIds', $ids, \Doctrine\DBAL\ArrayParameterType::STRING);
+            }
         }
 
         if (null !== $minRating) {
@@ -688,5 +704,20 @@ class ServiceRepository extends ServiceEntityRepository
             ->orderBy('s.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Langues parlées sur au moins une activité publiée (filtre Explorer).
+     *
+     * @return list<string>
+     */
+    public function distinctLanguages(): array
+    {
+        /** @var list<string> $langues */
+        $langues = $this->getEntityManager()->getConnection()->fetchFirstColumn(
+            "SELECT DISTINCT jsonb_array_elements_text(languages::jsonb) AS l FROM service WHERE status = 'published' AND deleted_at IS NULL ORDER BY l",
+        );
+
+        return $langues;
     }
 }

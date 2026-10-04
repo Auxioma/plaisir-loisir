@@ -1,0 +1,36 @@
+{#
+    Aperçu de l'événement (colonne de droite) : rendu côté serveur depuis le
+    brouillon, puis mis à jour en direct par assets/event-wizard.js
+    (attributs data-ew-preview).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+{% set start = draft.start_date ?? '' %}
+<aside class="ew-card ew-preview" aria-label="{{ 'Aperçu de l’événement'|trans }}">
+    <h2 class="ew-preview__title">{{ 'Aperçu de l’événement'|trans }}</h2>
+    <div class="ew-preview__cover{{ draft.cover ?? '' ? '' : ' is-empty' }}">
+        <img src="{{ asset((draft.cover ?? '') ?: 'images/events/preview-yoga.jpg') }}" alt="" data-ew-preview="cover">
+        {% if step == 5 %}<label class="ew-preview__add" for="ew-cover">{{ icon.camera(16) }} {{ 'Ajouter une image'|trans }}</label>
+        {% else %}<span class="ew-preview__add">{{ icon.camera(16) }} {{ (draft.cover ?? '') ? 'Image ajoutée'|trans : 'Image à l’étape 5'|trans }}</span>{% endif %}
+    </div>
+    <p class="ew-preview__name" data-ew-preview="title">{{ (draft.title ?? '') ?: 'Titre de votre événement'|trans }}</p>
+    <div class="ew-preview__pills">
+        <span>{{ icon.calendar(13) }} <b data-ew-preview="date">{{ start ? start|date('d/m/Y') : 'Date'|trans }}</b></span>
+        <span>{{ icon.clock(13) }} <b data-ew-preview="time">{% if draft.all_day == '1' %}{{ 'Toute la journée'|trans }}{% elseif draft.start_time ?? '' %}{{ draft.start_time }}{% if draft.end_time ?? '' %} - {{ draft.end_time }}{% endif %}{% else %}{{ 'Heure'|trans }}{% endif %}</b></span>
+        <span>{{ icon.map_pin(13) }} <b data-ew-preview="place">{% if draft.location_type == 'online' %}{{ 'En ligne'|trans }}{% elseif draft.location_type == 'tbd' %}{{ 'À définir'|trans }}{% else %}{{ (draft.address ?? '') ?: 'Lieu'|trans }}{% endif %}</b></span>
+        {% if category %}<span>{{ icon.tag(13) }} <b>{{ category.name|trans }}</b></span>{% endif %}
+    </div>
+    <div class="ew-preview__people">
+        <div>
+            <small>{{ 'Organisé par'|trans }}</small>
+            <span class="ew-preview__org">
+                {% if me.avatarPath %}<img src="{{ asset(me.avatarPath) }}" alt="">{% else %}<i>{{ (me.firstName|first ~ me.lastName|first)|upper }}</i>{% endif %}
+                {{ me.firstName }} {{ me.lastName|first }}.
+            </span>
+        </div>
+        <div>
+            <small>{{ 'Participants'|trans }}</small>
+            <span class="ew-preview__count">{{ icon.users(14) }} {{ (draft.invites|length) + 1 }}{% if (draft.capacity ?? '') and draft.capacity != 'unlimited' %} / {{ draft.capacity }}{% endif %}</span>
+        </div>
+    </div>
+    <p class="ew-preview__desc" data-ew-preview="summary">{{ (draft.summary ?? '') ?: 'Courte description de votre événement apparaîtra ici…'|trans }}</p>
+</aside>

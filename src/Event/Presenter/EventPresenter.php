@@ -38,6 +38,15 @@ final class EventPresenter
             'description' => $event->getDescription(),
             'organizer' => $this->organizerName($event),
             'organizerId' => null !== $event->getOrganizer()?->getId() ? (string) $event->getOrganizer()->getId() : null,
+            // Page « Événements » (maquette evenements.jpeg, 04/10).
+            'day' => $this->local($event->getStartsAt())->format('d'),
+            'month' => mb_strtoupper(rtrim((string) \IntlDateFormatter::formatObject($this->local($event->getStartsAt()), 'MMM', \Locale::getDefault()), '.')),
+            'where' => null !== $event->getCity() ? trim($event->getCity().', '.$event->getPostalCode(), ', ') : $event->getLocation(),
+            'startsAt' => $event->getStartsAt(),
+            'summary' => $event->getShortDescription(),
+            'lat' => null !== $event->getLatitude() ? (float) $event->getLatitude() : null,
+            'lng' => null !== $event->getLongitude() ? (float) $event->getLongitude() : null,
+            'categorySlug' => $event->getCategory()?->getSlug(),
         ];
     }
 
@@ -104,6 +113,9 @@ final class EventPresenter
      */
     private function hours(Event $event): string
     {
+        if ($event->isAllDay()) {
+            return 'Toute la journée';
+        }
         $debut = $this->local($event->getStartsAt())->format('G\hi');
         $fin = $event->getEndsAt();
 

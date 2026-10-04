@@ -1,108 +1,80 @@
 {#
-    Écran 4 du flow corporate — « Carrières » (/carrieres).
-    Maquette : assets/corporate/Carrières.png (1440 x 4124).
-
-    Héros, « Nos offres d'emploi » (barre de recherche + 3 cartes), bannière
-    « Envoyez-nous votre candidature spontanée ! », « Nos valeurs au coeur de
-    notre quotidien » (6 cartes numérotées), « Ils nous font confiance » (les
-    deux avis de l'écran partenaire) et « Pourquoi postuler chez nous ? ».
-
-    Préfixe des classes propres à cet écran : cr-.
+    « Carrières » — maquette docs/maquettes/carrieres.jpeg (04/10).
+    Données : CorporateController::careers() (StaticCorporate). Styles : pages.css (.pg-*).
+    « Postuler » mène au formulaire de contact pré-rempli (CV en pièce jointe).
 #}
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
+{% import 'provider/space/_ico.html.twig' as ico %}
 
 {% block title %}{{ 'Carrières'|trans }}{% endblock %}
-{% block meta_description %}{{ 'Rejoignez l’aventure TrouveMoi Plaisirs & Loisirs : découvrez nos offres d’emploi et nos valeurs.'|trans }}{% endblock %}
-
-{% block header %}
-    {% include '_partials/navbar_corporate.html.twig' with { nav_active: 'carrieres' } %}
-{% endblock %}
+{% block meta_description %}{{ 'Rejoignez l’aventure TrouveMoi Plaisirs & Loisirs.'|trans }}{% endblock %}
 
 {% block body %}
-<div class="cor-page">
-
-    {% include 'corporate/_partials/_careers_hero.html.twig' %}
-
-    <div class="container">
-        <nav class="act-breadcrumb cr-crumb" aria-label="{{ "Fil d'Ariane"|trans }}">
-            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
-            <span aria-hidden="true">|</span>
-            <span aria-current="page">{{ 'Carrières'|trans }}</span>
-        </nav>
-    </div>
-
-    {# ================= NOS OFFRES D'EMPLOI ================= #}
-    <section class="cr-jobs">
-        <div class="container">
-            <div class="cr-jobs__head">
-                <div>
-                    <h2 class="pw-section__title cr-jobs__title">{{ "Nos offres d'emploi"|trans }}</h2>
-                    <p class="cr-jobs__lead">{{ 'Nous sommes toujours à la recherche de personnes talentueuses pour rejoindres notre famille TrouveMoi Plaisirs & Loisirs'|trans }}</p>
-                </div>
-                <a href="{{ path('app_corporate_jobs') }}" class="cr-alloffers">{{ 'Voir toutes les offres'|trans }} {{ icon.arrow_up_right(16) }}</a>
+<div class="pg">
+    <header class="pg-hero">
+        <div class="pg-hero__text">
+            <h1>{{ 'Carrières'|trans }}</h1>
+            <p class="pg-hero__sub"><strong>{{ 'Rejoignez l’aventure TrouveMoi Plaisirs & Loisirs'|trans }}</strong></p>
+            <p class="pg-hero__lead">{{ 'Nous construisons chaque jour la meilleure plateforme pour inspirer les loisirs et créer des expériences inoubliables. Et si vous faisiez partie de l’histoire ?'|trans }}</p>
+            <div class="pg-hero__actions">
+                <a class="pg-btn" href="{{ path('app_corporate_jobs') }}">{{ 'Voir nos offres d’emploi'|trans }}</a>
+                <a class="pg-btn pg-btn--outline" href="#culture">{{ 'Notre culture'|trans }}</a>
             </div>
+            <ul class="pg-hero__checks pg-mt"><li>{{ icon.users(20) }} {{ 'Rejoignez une équipe passionnée et bienveillante'|trans }}</li></ul>
+        </div>
+        <img class="pg-hero__img" src="{{ asset('images/corporate/careers-hero.jpg') }}" alt="">
+        {% include 'corporate/_partials/_hero_stats.html.twig' with { items: [
+            ['users', 'blue', '+2,5 millions', 'd’utilisateurs conquis'],
+            ['trend', 'green', '+10 000', 'activités disponibles'],
+            ['pin', 'orange', '+350', 'destinations en France'],
+            ['star', 'yellow', '4,8/5', 'note moyenne des utilisateurs'],
+        ] } %}
+    </header>
 
-            {% include 'corporate/_partials/_jobs_search.html.twig' %}
+    <section class="pg-wrap pg-section" id="culture">
+        <h2 class="pg-title">{{ 'Nos valeurs au cœur de notre quotidien'|trans }}</h2>
+        <div class="pg-values pg-values--6">
+            {% for v in values %}
+                <article class="pg-card pg-value">
+                    <h3><span class="pg-ico is-{{ ['red', 'green', 'orange', 'blue', 'red', 'blue'][loop.index0] }}">{{ ico.svg(v.icon, 22) }}</span>{{ v.title|trans }}</h3>
+                    <p>{{ v.text|trans }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
 
-            <div class="cr-jobs__grid">
-                {% for j in jobs %}
-                    {% include 'corporate/_partials/_job_card.html.twig' with { job: j } %}
+    <section class="pg-wrap pg-careers">
+        <div>
+            <div class="pg-rowhead"><h2 class="pg-h3">{{ 'Nos offres d’emploi'|trans }}</h2><a class="pg-link" href="{{ path('app_corporate_jobs') }}">{{ 'Voir toutes nos offres'|trans }} {{ icon.arrow_right(14) }}</a></div>
+            <div class="pg-jobs">
+                {% for j in jobs %}{% include 'corporate/_partials/_job_card.html.twig' with { job: j } %}{% endfor %}
+            </div>
+        </div>
+        <aside class="pg-card pg-quotes" data-pg-carousel>
+            <h2 class="pg-h3">{{ 'Ils parlent de leur aventure chez TrouveMoi'|trans }}</h2>
+            <div class="pg-quotes__track" data-pg-track>
+                {% for t in testimonials %}
+                    <figure class="pg-quote">
+                        <blockquote>« {{ t.quote|trans }} »</blockquote>
+                        <figcaption><img src="{{ asset(t.photo) }}" alt=""><span><strong>{{ t.author }}</strong><small>{{ t.role|trans }}</small></span></figcaption>
+                    </figure>
                 {% endfor %}
             </div>
-        </div>
+            <div class="pg-quotes__nav"><button type="button" data-pg-dir="-1" aria-label="{{ 'Précédent'|trans }}">{{ icon.chevron_left(16) }}</button><button type="button" data-pg-dir="1" aria-label="{{ 'Suivant'|trans }}">{{ icon.chevron_right(16) }}</button></div>
+        </aside>
+        <aside class="pg-card pg-spont">
+            <img src="{{ asset('images/corporate/careers-candidature.png') }}" alt="">
+            <h2>{{ 'Envoyez-nous votre candidature spontanée !'|trans }}</h2>
+            <p>{{ 'Vous ne trouvez pas l’offre qui vous correspond ?'|trans }}</p>
+            <a class="pg-btn" href="{{ path('app_corporate_contact', {sujet: 'Candidature spontanée'}) }}">{{ 'Postuler spontanément'|trans }}</a>
+        </aside>
     </section>
 
-    {# ================= CANDIDATURE SPONTANÉE ================= #}
-    <section class="cr-spontaneous">
-        <div class="container">
-            <div class="cr-spont">
-                <div class="cr-spont__body">
-                    <h2 class="cr-spont__title">{{ 'Envoyez-nous votre'|trans }}<br>{{ 'candidature spontanée !'|trans }}</h2>
-                    <p class="cr-spont__text">{{ "Vous ne trouvez pas l'offre qui vous correspond?"|trans }}</p>
-                    <a href="{{ path('app_corporate_contact') }}" class="pl-btn cr-spont__btn">{{ 'Postuler spontanément'|trans }}</a>
-                </div>
-                <img class="cr-spont__illu" src="{{ asset('images/corporate/careers-candidature.png') }}" alt="" aria-hidden="true">
-            </div>
-        </div>
-    </section>
-
-    {# ================= NOS VALEURS ================= #}
-    <section class="cr-values">
-        <div class="container">
-            <h2 class="pw-section__title">{{ 'Nos valeurs au coeur de notre quotidien'|trans }}</h2>
-            <div class="cr-values__grid">
-                {% for v in values %}
-                    <article class="cor-card cr-value{{ v.featured ? ' cr-value--featured' }}">
-                        <span class="cor-card__num cr-value__num--{{ v.tone }}">{{ v.num }}</span>
-                        <h3 class="cor-card__title cr-value__title">{{ v.title|trans }}</h3>
-                        <p class="cor-card__text cr-value__text">{{ v.text|trans }}</p>
-                    </article>
-                {% endfor %}
-            </div>
-        </div>
-    </section>
-
-    {# ================= ILS NOUS FONT CONFIANCE ================= #}
-    {% include 'corporate/_partials/_testimonials.html.twig' with { reviews_variant: 'soft' } %}
-
-    {# ================= POURQUOI POSTULER ================= #}
-    <section class="cr-why">
-        <div class="container">
-            <div class="cr-why__grid">
-                <div class="cr-why__head">
-                    <h2 class="cr-why__title">{{ 'Pourquoi postuler chez nous?'|trans }}</h2>
-                </div>
-                {% for r in reasons %}
-                    <article class="cor-card cr-reason{{ r.featured ? ' cr-reason--featured' }}">
-                        <span class="cor-card__num cr-reason__num">{{ r.num }}</span>
-                        <h3 class="cr-reason__title">{{ r.title|trans }}</h3>
-                        <p class="cr-reason__text">{{ r.text|trans }}</p>
-                    </article>
-                {% endfor %}
-            </div>
-        </div>
-    </section>
-
+    <ul class="pg-wrap pg-band pg-band--5">
+        {% for r in reasons %}
+            <li><span class="pg-ico is-{{ r.tone }}">{{ ico.svg(r.icon, 22) }}</span><span><strong>{{ r.title|trans }}</strong><small>{{ r.text|trans }}</small></span></li>
+        {% endfor %}
+    </ul>
 </div>
 {% endblock %}

@@ -1,0 +1,75 @@
+{# Étape 2 — Date et heure (maquette creation_evenement_2). #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ew-main__title">{{ '2. Date et heure'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Définissez quand aura lieu votre événement.'|trans }}</p>
+
+<h3 class="ew-main__label">{{ "Date de l'événement"|trans }}</h3>
+<div class="ew-choices ew-choices--3" role="radiogroup" data-ew-datemode>
+    {{ ui.choice('date_mode', 'precise', draft.date_mode, 'Date précise', 'Choisissez un jour spécifique', null, 'ew-choice--center') }}
+    {{ ui.choice('date_mode', 'periode', draft.date_mode, 'Période', 'Sur plusieurs jours', null, 'ew-choice--center') }}
+    {{ ui.choice('date_mode', 'recurrent', draft.date_mode, 'Récurrent', 'À répétition (tous les…)', null, 'ew-choice--center') }}
+</div>
+{{ ui.err(errors, 'date_mode') }}
+
+<div class="ew-field ew-recurrence" data-ew-show="recurrent"{{ draft.date_mode != 'recurrent' ? ' hidden' }}>
+    <label for="ew-recurrence">{{ 'Fréquence'|trans }} <em>*</em></label>
+    <span class="ew-select"><select id="ew-recurrence" name="recurrence">
+        <option value="">{{ 'Choisir…'|trans }}</option>
+        <option value="weekly"{{ (draft.recurrence ?? '') == 'weekly' ? ' selected' }}>{{ 'Toutes les semaines'|trans }}</option>
+        <option value="monthly"{{ (draft.recurrence ?? '') == 'monthly' ? ' selected' }}>{{ 'Tous les mois'|trans }}</option>
+    </select></span>
+    {{ ui.err(errors, 'recurrence') }}
+</div>
+
+<div class="ew-row">
+    <div class="ew-field{{ errors.start_date is defined ? ' has-error' }}">
+        <label for="ew-start-date">{{ 'Date de début'|trans }} <em>*</em></label>
+        <input id="ew-start-date" type="date" name="start_date" value="{{ draft.start_date ?? '' }}" min="{{ 'today'|date('Y-m-d') }}" required data-ew-bind="date">
+        {{ ui.err(errors, 'start_date') }}
+    </div>
+    <div class="ew-field{{ errors.start_time is defined ? ' has-error' }}" data-ew-hours>
+        <label for="ew-start-time">{{ 'Heure de début'|trans }} <em>*</em></label>
+        <input id="ew-start-time" type="time" name="start_time" value="{{ draft.start_time ?? '' }}" data-ew-bind="start_time">
+        {{ ui.err(errors, 'start_time') }}
+    </div>
+</div>
+<div class="ew-row ew-row--end">
+    <div class="ew-field{{ errors.end_date is defined ? ' has-error' }}">
+        <label for="ew-end-date">{{ 'Date de fin'|trans }} <span data-ew-optional>({{ 'optionnel'|trans }})</span></label>
+        <input id="ew-end-date" type="date" name="end_date" value="{{ draft.end_date ?? '' }}" min="{{ 'today'|date('Y-m-d') }}">
+        {{ ui.err(errors, 'end_date') }}
+    </div>
+    <div class="ew-field{{ errors.end_time is defined ? ' has-error' }}" data-ew-hours>
+        <label for="ew-end-time">{{ 'Heure de fin'|trans }}</label>
+        <span class="ew-inline">
+            <input id="ew-end-time" type="time" name="end_time" value="{{ draft.end_time ?? '' }}"{{ draft.no_end == '1' ? ' disabled' }} data-ew-bind="end_time">
+            <label class="ew-check"><input type="checkbox" name="no_end" value="1"{{ draft.no_end == '1' ? ' checked' }} data-ew-noend> {{ 'Pas d’heure de fin'|trans }}</label>
+        </span>
+        {{ ui.err(errors, 'end_time') }}
+    </div>
+</div>
+
+<div class="ew-field ew-field--half">
+    <label for="ew-timezone">{{ 'Fuseau horaire'|trans }}</label>
+    <span class="ew-select"><select id="ew-timezone" name="timezone">
+        {% for tz, label in timezones %}<option value="{{ tz }}"{{ draft.timezone == tz ? ' selected' }}>{{ label }}</option>{% endfor %}
+    </select></span>
+    {{ ui.err(errors, 'timezone') }}
+</div>
+
+<hr class="ew-sep">
+<h3 class="ew-main__label">{{ 'Options supplémentaires'|trans }}</h3>
+<div class="ew-settings">
+    {{ ui.selectRow('reminder', reminders, draft.reminder, 'Ajouter un rappel', 'Les participants recevront un rappel avant l’événement.', 'bell', 'violet') }}
+    {{ ui.toggle('in_calendar', draft.in_calendar == '1', 'Afficher l’événement dans le calendrier', 'Votre événement sera visible dans le calendrier de la communauté.', 'calendar', 'red') }}
+    {{ ui.toggle('all_day', draft.all_day == '1', 'Événement toute la journée', 'Cochez cette option si l’événement dure toute la journée.', 'sun', 'green') }}
+    <div class="ew-setting">
+        <span class="ew-setting__ico is-blue">{{ icon.clock(18) }}</span>
+        <label class="ew-setting__text" for="ew-arrival"><strong>{{ 'Heure d’arrivée suggérée'|trans }}</strong><small>{{ 'Indiquez l’heure à laquelle les participants peuvent arriver.'|trans }}</small></label>
+        <input id="ew-arrival" class="ew-time-sm" type="time" name="arrival" value="{{ draft.arrival ?? '' }}">
+    </div>
+    {{ ui.err(errors, 'arrival') }}
+</div>
+<p class="ew-tip">{{ icon.info(16) }} <span><b>{{ 'Astuce'|trans }} :</b> {{ 'Vous pourrez toujours modifier la date et l’heure après la création de l’événement.'|trans }}</span></p>

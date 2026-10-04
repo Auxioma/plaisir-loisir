@@ -21,30 +21,27 @@ final class StaticCorporate
     public static function stats(): array
     {
         return [
-            ['icon' => 'book_open', 'tone' => 'violet', 'value' => '+10.000', 'label' => 'Activités disponibles'],
-            ['icon' => 'users', 'tone' => 'blue', 'value' => '+2,5 millions', 'label' => 'Utilisateurs satisfaits'],
-            ['icon' => 'handshake', 'tone' => 'orange', 'value' => '+50.000', 'label' => 'Partenaires & prestataires'],
-            ['icon' => 'map_pin', 'tone' => 'green', 'value' => '+350', 'label' => 'Destinations en France'],
-            ['icon' => 'map_pin', 'tone' => 'green', 'value' => '4.8/5', 'label' => 'Note moyenne'],
+            ['icon' => 'users', 'tone' => 'blue', 'value' => '+10 000', 'label' => 'Activités disponibles'],
+            ['icon' => 'users', 'tone' => 'violet', 'value' => '+2,5 millions', 'label' => 'Utilisateurs satisfaits'],
+            ['icon' => 'store', 'tone' => 'orange', 'value' => '+50 000', 'label' => 'Partenaires & prestataires'],
+            ['icon' => 'map_pin', 'tone' => 'green', 'value' => '+350', 'label' => 'Destinations partout en France'],
+            ['icon' => 'star', 'tone' => 'yellow', 'value' => '4,8/5', 'label' => 'Note moyenne des utilisateurs'],
         ];
     }
 
     /**
      * « Pourquoi Nous Choisir ? » — 5 cartes numérotées, la 2e mise en avant.
      *
-     * @return list<array{num: string, title: string, text: string, featured: bool}>
+     * @return list<array{icon: string, tone: string, title: string, text: string}>
      */
     public static function values(): array
     {
-        $partage = "Nous croyons au partage d'expériences et à la création de souvenirs inoubliables.";
-        $equipe = "Notre équipe est passionnée par les loisirs et s'engage à vous faire vivre le meilleur.";
-
         return [
-            ['num' => '01', 'title' => 'La confiance', 'text' => $partage, 'featured' => false],
-            ['num' => '02', 'title' => 'Le partage', 'text' => $partage, 'featured' => true],
-            ['num' => '03', 'title' => "L'authenticité", 'text' => $equipe, 'featured' => false],
-            ['num' => '04', 'title' => 'La passion', 'text' => $equipe, 'featured' => false],
-            ['num' => '05', 'title' => 'La qualité', 'text' => 'Nous sélectionnons les meilleures activités pour vous garantir le meilleur rapport qualité-prix.', 'featured' => false],
+            ['icon' => 'shield_check', 'tone' => 'blue', 'title' => 'Confiance', 'text' => 'Des partenaires vérifiés et des avis authentiques pour des expériences en toute sérénité.'],
+            ['icon' => 'users', 'tone' => 'orange', 'title' => 'Partage', 'text' => "Nous croyons au partage d'expériences et à la création de souvenirs inoubliables."],
+            ['icon' => 'leaf', 'tone' => 'green', 'title' => 'Authenticité', 'text' => 'Nous mettons en avant des activités locales, authentiques et respectueuses.'],
+            ['icon' => 'star', 'tone' => 'yellow', 'title' => 'Qualité', 'text' => 'Nous sélectionnons les meilleures activités pour vous garantir le meilleur rapport qualité-prix.'],
+            ['icon' => 'heart', 'tone' => 'red', 'title' => 'Passion', 'text' => "Notre équipe est passionnée par les loisirs et s'engage à vous faire vivre le meilleur."],
         ];
     }
 
@@ -55,56 +52,29 @@ final class StaticCorporate
      */
     public static function team(): array
     {
-        $members = [
-            ['Thomas Martin', 'Cofondateur & CEO'],
-            ['Maxime', 'Cofondateur & COO'],
-            ['Charlotte', 'Créatrice de contenus'],
-            ['Ferdinand', 'Head of Brand & communications'],
-            ['Sophie Bernard', 'Directrice Marketing'],
-            ['Julien Petit', 'Chargé de Partenariats'],
-            ['Charlotte Alice', 'Responsable Partenaires'],
-            ['Ferdinand', 'Head of Brand & communications'],
-            ['Camille Durand', 'Responsable Expérience Client'],
-            ['Alexandre Leroy', 'Développeur Produits'],
-            ['Charlotte', 'Créatrice de contenus'],
-            ['Bernard', 'Event Manager B2B'],
-            ['Thomas', 'Cofondateur & CEO'],
-            ['Maxime', 'Cofondateur & COO'],
-            ['Charlotte', 'Créatrice de contenus'],
-            ['Ferdinand', 'Head of Brand & communications'],
+        return [
+            ['name' => 'Thomas Martin', 'role' => 'Fondateur & CEO', 'photo' => 'images/corporate/team-1.jpg'],
+            ['name' => 'Sophie Bernard', 'role' => 'Directrice Marketing', 'photo' => 'images/corporate/team-5.jpg'],
+            ['name' => 'Julien Petit', 'role' => 'Responsable Partenariats', 'photo' => 'images/corporate/team-6.jpg'],
+            ['name' => 'Camille Durand', 'role' => 'Responsable Expérience Client', 'photo' => 'images/corporate/team-9.jpg'],
+            ['name' => 'Alexandre Leroy', 'role' => 'Développeur Produits', 'photo' => 'images/corporate/team-10.jpg'],
         ];
-
-        $out = [];
-        foreach ($members as $i => [$name, $role]) {
-            $out[] = [
-                'name' => $name,
-                'role' => $role,
-                'photo' => sprintf('images/corporate/team-%d.jpg', $i + 1),
-            ];
-        }
-
-        return $out;
     }
 
     /**
      * « Pourquoi devenir partenaire ? » — grille de 4 colonnes qui alterne
      * cartes de texte et photos, dans l'ordre exact de la maquette.
      *
-     * @return list<array{type: string, icon?: string, tone?: string, title?: string, text?: string, photo?: string}>
+     * @return list<array{icon: string, tone: string, title: string, text: string}>
      */
     public static function partnerBenefits(): array
     {
-        $audience = "Sublimez votre activité auprès d'une audience qualifiée et passionnée.";
-
         return [
-            ['type' => 'card', 'icon' => 'rocket', 'tone' => 'violet', 'title' => 'Boostez votre visibilité', 'text' => $audience],
-            ['type' => 'card', 'icon' => 'megaphone', 'tone' => 'orange', 'title' => 'Gérez simplement', 'text' => 'Un espace partenaire intuitif pour gérer vos offres, disponibilités et réservations.'],
-            ['type' => 'photo', 'photo' => 'images/corporate/partner-p1.jpg'],
-            ['type' => 'card', 'icon' => 'chart_up', 'tone' => 'orange', 'title' => 'Suivez vos performances', 'text' => 'Accédez à des statistiques détaillées pour suivre et développer votre activité.'],
-            ['type' => 'card', 'icon' => 'calendar_check', 'tone' => 'blue', 'title' => 'Augmentez vos réservations', 'text' => $audience],
-            ['type' => 'photo', 'photo' => 'images/corporate/partner-p2.jpg'],
-            ['type' => 'card', 'icon' => 'handshake_solid', 'tone' => 'green', 'title' => 'Un partenariat de confiance', 'text' => 'Une équipe à votre écoute et un accompagnement personnalisé.'],
-            ['type' => 'photo', 'photo' => 'images/corporate/partner-p3.jpg'],
+            ['icon' => 'rocket', 'tone' => 'violet', 'title' => 'Boostez votre visibilité', 'text' => "Sublimez votre activité auprès d'une audience qualifiée et passionnée."],
+            ['icon' => 'calendar_check', 'tone' => 'blue', 'title' => 'Augmentez vos réservations', 'text' => 'Recevez plus de demandes et de réservations en ligne, facilement.'],
+            ['icon' => 'megaphone', 'tone' => 'orange', 'title' => 'Gérez simplement', 'text' => 'Un espace partenaire intuitif pour gérer vos offres, disponibilités et réservations.'],
+            ['icon' => 'chart', 'tone' => 'blue', 'title' => 'Suivez vos performances', 'text' => 'Accédez à des statistiques détaillées pour suivre et développer votre activité.'],
+            ['icon' => 'handshake', 'tone' => 'red', 'title' => 'Un partenariat de confiance', 'text' => 'Une équipe à votre écoute et un accompagnement personnalisé.'],
         ];
     }
 
@@ -116,11 +86,11 @@ final class StaticCorporate
     public static function partnerSteps(): array
     {
         return [
-            ['icon' => 'user_plus', 'title' => 'Inscrivez-vous', 'text' => 'Créez votre compte partenaire gratuitement.'],
+            ['icon' => 'user_plus', 'title' => 'Inscription', 'text' => 'Créez votre compte partenaire gratuitement.'],
             ['icon' => 'store', 'title' => 'Ajoutez vos offres', 'text' => 'Présentez vos activités, services et disponibilités.'],
             ['icon' => 'calendar_check', 'title' => 'Recevez des réservations', 'text' => 'Vos clients réservent en ligne 24/7.'],
-            ['icon' => 'banknote', 'title' => 'Soyez payé', 'text' => 'Nous nous occupons des paiements sécurisés.'],
-            ['icon' => 'chart_up', 'title' => 'Développez votre activité', 'text' => 'Fidélisez vos clients et faites grandir votre business.'],
+            ['icon' => 'card', 'title' => 'Soyez payé', 'text' => 'Nous nous occupons des paiements sécurisés.'],
+            ['icon' => 'chart', 'title' => 'Développez votre activité', 'text' => 'Fidélisez vos clients et faites grandir votre business.'],
         ];
     }
 
@@ -128,29 +98,43 @@ final class StaticCorporate
      * « Ils nous font confiance » — deux témoignages (texte lorem de la
      * maquette, repris tel quel).
      *
-     * @return list<array{rating: string, reviews: string, quote: string, author: string, role: string}>
+     * @return list<array{rating: string, reviews: string, quote: string, author: string, role: string, photo: string}>
      */
     public static function testimonials(): array
     {
-        $quote = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.';
-
         return [
-            ['rating' => '4.5', 'reviews' => '14 évaluations', 'quote' => $quote, 'author' => 'Laure Petrini', 'role' => 'Gérante - Aventure Nature à Lyon'],
-            ['rating' => '4.5', 'reviews' => '14 évaluations', 'quote' => $quote, 'author' => 'Laure Petrini', 'role' => 'Atelier pâtisserie à Paris'],
+            ['rating' => '4.9', 'reviews' => '32 évaluations', 'quote' => 'Grâce à TrouveMoi, notre activité a gagné en visibilité et nos réservations ont augmenté de 40% en 6 mois !', 'author' => 'Laura Petrini', 'role' => 'Gérante – Aventure Nature', 'photo' => 'images/corporate/team-9.jpg'],
+            ['rating' => '4.8', 'reviews' => '21 évaluations', 'quote' => 'L’espace partenaire est simple : je gère mes créneaux en quelques minutes et je suis payé sans relance.', 'author' => 'Marc Delorme', 'role' => 'Atelier pâtisserie à Paris', 'photo' => 'images/corporate/team-2.jpg'],
+            ['rating' => '4.7', 'reviews' => '18 évaluations', 'quote' => 'Une équipe à l’écoute et des clients qui arrivent dès la première semaine. Je recommande.', 'author' => 'Inès Carpentier', 'role' => 'Kayak & paddle à Annecy', 'photo' => 'images/corporate/team-7.jpg'],
+        ];
+    }
+
+    /**
+     * Témoignages des collaborateurs (page Carrières).
+     *
+     * @return list<array{quote: string, author: string, role: string, photo: string}>
+     */
+    public static function employeeTestimonials(): array
+    {
+        return [
+            ['quote' => 'Une équipe bienveillante, des projets stimulants et un vrai impact au quotidien. J’adore !', 'author' => 'Anne-Sophie', 'role' => 'Chef de projet', 'photo' => 'images/corporate/team-5.jpg'],
+            ['quote' => 'On livre vite, on écoute les utilisateurs et on apprend tous les jours.', 'author' => 'Julien', 'role' => 'Développeur', 'photo' => 'images/corporate/team-6.jpg'],
+            ['quote' => 'Travailler sur les loisirs des gens, c’est une source de motivation incroyable.', 'author' => 'Camille', 'role' => 'Expérience client', 'photo' => 'images/corporate/team-9.jpg'],
+            ['quote' => 'Le télétravail est vraiment respecté, et les séminaires sont mémorables.', 'author' => 'Alexandre', 'role' => 'Data', 'photo' => 'images/corporate/team-10.jpg'],
         ];
     }
 
     /**
      * Bannière crème de bas de page : les trois arguments.
      *
-     * @return list<array{title: string, text: string}>
+     * @return list<array{icon: string, title: string, text: string}>
      */
     public static function partnerArguments(): array
     {
         return [
-            ['title' => 'Inscription gratuite', 'text' => "Sans frais d'entrée"],
-            ['title' => 'Sans engagement', 'text' => 'Résiliez à tout moment'],
-            ['title' => 'Accompagnement dédié', 'text' => 'Une équipe à votre écoute'],
+            ['icon' => 'edit', 'title' => 'Inscription gratuite', 'text' => "Sans frais d'entrée"],
+            ['icon' => 'check', 'title' => 'Sans engagement', 'text' => 'Résiliez à tout moment'],
+            ['icon' => 'person', 'title' => 'Accompagnement dédié', 'text' => 'Une équipe à votre écoute'],
         ];
     }
 
@@ -158,16 +142,15 @@ final class StaticCorporate
      * Offres d'emploi (Carrières). Le texte de description est le lorem de la
      * maquette, repris tel quel.
      *
-     * @return list<array{title: string, text: string, city: string, contract: string, time: string, dept: string}>
+     * @return list<array{slug: string, icon: string, tone: string, title: string, text: string, city: string, contract: string, time: string, dept: string}>
      */
     public static function jobs(): array
     {
-        $lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.';
-
         return [
-            ['title' => 'Développeur Full Stack (H/F)', 'text' => $lorem, 'city' => 'Lyon, Rue5892', 'contract' => 'CDD', 'time' => 'Temps complet', 'dept' => 'Technique'],
-            ['title' => 'Responsable Marketing Digital (H/F)', 'text' => $lorem, 'city' => 'Lyon, Rue5892', 'contract' => 'CDD', 'time' => 'Temps complet', 'dept' => 'Marketing'],
-            ['title' => 'Chargé(e) Expériences client (H/F)', 'text' => $lorem, 'city' => 'Lyon, Rue5892', 'contract' => 'CDI', 'time' => 'Temps complet', 'dept' => 'Relation client'],
+            ['slug' => 'developpeur-full-stack', 'icon' => 'monitor', 'tone' => 'blue', 'title' => 'Développeur Full Stack (H/F)', 'text' => 'Concevez et faites évoluer la plateforme TrouveMoi (Symfony, PostgreSQL, Twig) au sein d’une équipe produit à taille humaine.', 'city' => 'Lyon ou télétravail', 'contract' => 'CDI', 'time' => 'Temps complet', 'dept' => 'Tech'],
+            ['slug' => 'responsable-marketing-digital', 'icon' => 'megaphone', 'tone' => 'green', 'title' => 'Responsable Marketing Digital (H/F)', 'text' => 'Pilotez l’acquisition et la notoriété de TrouveMoi : SEO, réseaux sociaux, campagnes et partenariats de contenu.', 'city' => 'Paris', 'contract' => 'CDI', 'time' => 'Temps complet', 'dept' => 'Marketing'],
+            ['slug' => 'charge-experience-client', 'icon' => 'headset', 'tone' => 'orange', 'title' => 'Chargé(e) Expérience Client (H/F)', 'text' => 'Accompagnez nos membres et nos partenaires au quotidien et faites de chaque échange une expérience réussie.', 'city' => 'Bordeaux', 'contract' => 'CDI', 'time' => 'Temps complet', 'dept' => 'Relation client'],
+            ['slug' => 'data-analyst', 'icon' => 'chart', 'tone' => 'violet', 'title' => 'Data Analyst (H/F)', 'text' => 'Transformez nos données d’usage en décisions : tableaux de bord, études et recommandations pour toutes les équipes.', 'city' => 'Nantes ou télétravail', 'contract' => 'CDI', 'time' => 'Temps complet', 'dept' => 'Data'],
         ];
     }
 
@@ -175,17 +158,17 @@ final class StaticCorporate
      * « Nos valeurs au coeur de notre quotidien » — 6 cartes numérotées, la 2e
      * mise en avant ; les numéros changent de couleur (maquette).
      *
-     * @return list<array{num: string, tone: string, title: string, text: string, featured: bool}>
+     * @return list<array{icon: string, num: string, tone: string, title: string, text: string, featured: bool}>
      */
     public static function careerValues(): array
     {
         return [
-            ['num' => '01', 'tone' => 'violet', 'title' => 'Passion', 'text' => 'Nous aimons les loisirs et les expériences inoubliables.', 'featured' => false],
-            ['num' => '02', 'tone' => 'green', 'title' => "Esprit d'équipe", 'text' => 'Nous avançons ensemble, dans la confiance et la bienveillance.', 'featured' => true],
-            ['num' => '03', 'tone' => 'orange', 'title' => 'Innovation', 'text' => 'Nous croyons en de nouvelles idées pour améliorer chaque jour l’expérience utilisateur.', 'featured' => false],
-            ['num' => '04', 'tone' => 'blue', 'title' => 'Impact positif', 'text' => 'Nous valorisons le tourisme et les activités locales durablement.', 'featured' => false],
-            ['num' => '05', 'tone' => 'amber', 'title' => 'Confiance', 'text' => 'Nous agissons avec transparence et responsabilité.', 'featured' => false],
-            ['num' => '06', 'tone' => 'navy', 'title' => 'Ambition', 'text' => 'Nous visons l’excellence pour devenir la référence des loisirs en France.', 'featured' => false],
+            ['num' => '01', 'tone' => 'violet', 'icon' => 'heart', 'title' => 'Passion', 'text' => 'Nous aimons les loisirs et les expériences inoubliables.', 'featured' => false],
+            ['num' => '02', 'tone' => 'green', 'icon' => 'users', 'title' => "Esprit d'équipe", 'text' => 'Nous avançons ensemble, dans la confiance et la bienveillance.', 'featured' => true],
+            ['num' => '03', 'tone' => 'orange', 'icon' => 'bulb', 'title' => 'Innovation', 'text' => 'Nous croyons en de nouvelles idées pour améliorer chaque jour l’expérience utilisateur.', 'featured' => false],
+            ['num' => '04', 'tone' => 'blue', 'icon' => 'leaf', 'title' => 'Impact positif', 'text' => 'Nous valorisons le tourisme et les activités locales durablement.', 'featured' => false],
+            ['num' => '05', 'tone' => 'amber', 'icon' => 'shield_check', 'title' => 'Confiance', 'text' => 'Nous agissons avec transparence et responsabilité.', 'featured' => false],
+            ['num' => '06', 'tone' => 'navy', 'icon' => 'rocket', 'title' => 'Ambition', 'text' => 'Nous visons l’excellence pour devenir la référence des loisirs en France.', 'featured' => false],
         ];
     }
 
@@ -193,90 +176,66 @@ final class StaticCorporate
      * « Pourquoi postuler chez nous ? » — 5 cartes numérotées, la 2e en violet
      * plein ; le bloc de titre occupe la première case de la grille.
      *
-     * @return list<array{num: string, title: string, text: string, featured: bool}>
+     * @return list<array{icon: string, tone: string, num: string, title: string, text: string, featured: bool}>
      */
     public static function careerReasons(): array
     {
         return [
-            ['num' => '01', 'title' => 'Télétravail flexible', 'text' => 'Organisation du travail adaptée à votre quotidien', 'featured' => false],
-            ['num' => '02', 'title' => 'Évolution & formation', 'text' => 'Des opportunités pour grandir et apprendre', 'featured' => true],
-            ['num' => '03', 'title' => 'Équilibre vie pro/perso', 'text' => 'Nous respectons votre équilibre et votre bien-être', 'featured' => false],
-            ['num' => '04', 'title' => 'Avantages', 'text' => 'Tickets restaurant, mutuelle, avantages loisirs…', 'featured' => false],
-            ['num' => '05', 'title' => "Événements d'équipe", 'text' => 'éminaires, activités et bons moments garantis !', 'featured' => false],
+            ['num' => '01', 'icon' => 'person', 'tone' => 'blue', 'title' => 'Télétravail flexible', 'text' => 'Organisation du travail adaptée à votre quotidien', 'featured' => false],
+            ['num' => '02', 'icon' => 'megaphone', 'tone' => 'green', 'title' => 'Évolution & formation', 'text' => 'Des opportunités pour grandir et apprendre', 'featured' => true],
+            ['num' => '03', 'icon' => 'hand_heart', 'tone' => 'orange', 'title' => 'Équilibre vie pro/perso', 'text' => 'Nous respectons votre équilibre et votre bien-être', 'featured' => false],
+            ['num' => '04', 'icon' => 'shield_check', 'tone' => 'red', 'title' => 'Avantages', 'text' => 'Tickets restaurant, mutuelle, avantages loisirs…', 'featured' => false],
+            ['num' => '05', 'icon' => 'party', 'tone' => 'blue', 'title' => "Événements d'équipe", 'text' => 'Séminaires, activités et bons moments garantis !', 'featured' => false],
         ];
     }
 
     /**
      * Détail d'une offre (modale de l'écran « Toutes les offres »).
      *
-     * @return array{title: string, place: string, note: string, manager: string, division: string, mission: list<string>, description: list<string>, education: list<string>, experience: list<string>}
-     */
-    public static function jobDetail(): array
-    {
-        $a = 'Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consecteturNeque';
-        $b = 'porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur';
-        $c = 'Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur';
-        $court = [
-            'Neque porro quisquam est qui dolorem ipsu',
-            'porro quisquam est qui dolorem ipsum quia dolo',
-            'Neque porro quisquam est qui dolorem ipsum quia',
-        ];
-
-        return [
-            'title' => 'Développeur Full Stack (H/F)',
-            'place' => 'Pays de la Loire ,Nantes France',
-            'note' => 'Soyez le premier à postuler',
-            'manager' => 'Responsable senior - IT,Design et communication',
-            'division' => 'IT, Design et communication',
-            'mission' => [$a, $b, $c],
-            'description' => [$a, $b, $c, $a, $b, $c, $a, $b, $c, $a, $b, $c],
-            'education' => $court,
-            'experience' => $court,
-        ];
-    }
-
-    /**
-     * « Contactez-nous » — les trois moyens de contact de la colonne droite.
+     * Fiche d'une offre d'emploi, ou null si le slug est inconnu.
      *
-     * @return list<array{icon: string, tone: string, title: string, text: string, link: string, strong: string, sub: string}>
+     * @return array{slug: string, icon: string, tone: string, title: string, text: string, city: string, contract: string, time: string, dept: string, manager: string, division: string, mission: list<string>, description: list<string>, education: list<string>, experience: list<string>, place: string, note: string}|null
      */
-    public static function contactMethods(): array
+    public static function jobDetail(string $slug): ?array
     {
-        return [
-            ['icon' => 'rocket', 'tone' => 'blue', 'title' => 'FAQ', 'text' => 'Trouvez des réponses à vos questions courantes', 'link' => 'Voir la FAQ', 'strong' => '', 'sub' => ''],
-            ['icon' => 'phone', 'tone' => 'green', 'title' => 'Par Téléphone', 'text' => '', 'link' => '', 'strong' => 'Contact@trouvemoi.fr', 'sub' => 'Lun. - Vend. 9h - 18h'],
-            ['icon' => 'comment', 'tone' => 'orange', 'title' => 'Chat en ligne', 'text' => 'Discutez avec notre équipe en direct', 'link' => 'Démarrez le chat', 'strong' => '', 'sub' => ''],
+        $details = [
+            'developpeur-full-stack' => [
+                'manager' => 'CTO', 'division' => 'Produit & Technique',
+                'mission' => ['Développer de nouvelles fonctionnalités de bout en bout (Symfony 8, Twig, Stimulus).', 'Garantir la qualité : tests automatisés, revues de code, analyse statique.', 'Participer aux choix d’architecture et à l’amélioration continue de la plateforme.'],
+                'description' => ['Vous rejoignez une équipe de 6 personnes qui livre chaque semaine.', 'Vous travaillez en lien direct avec le produit, le design et le support.', 'Deux jours de présence par mois à Lyon, le reste en télétravail si vous le souhaitez.'],
+                'education' => ['Bac+3 à Bac+5 en informatique ou parcours équivalent.'],
+                'experience' => ['3 ans minimum en PHP / Symfony.', 'À l’aise avec SQL (PostgreSQL) et le HTML/CSS.'],
+            ],
+            'responsable-marketing-digital' => [
+                'manager' => 'Directrice Marketing', 'division' => 'Marketing & Communication',
+                'mission' => ['Définir et piloter le plan d’acquisition (SEO, SEA, social, e-mailing).', 'Animer les communautés et les campagnes saisonnières.', 'Suivre les indicateurs et optimiser le coût d’acquisition.'],
+                'description' => ['Vous encadrez un chargé de communication et travaillez avec des agences.', 'Poste basé à Paris, deux jours de télétravail par semaine.'],
+                'education' => ['Bac+5 école de commerce ou université (marketing digital).'],
+                'experience' => ['5 ans d’expérience en marketing digital B2C.', 'Une première expérience dans le tourisme ou les loisirs est un plus.'],
+            ],
+            'charge-experience-client' => [
+                'manager' => 'Responsable Expérience Client', 'division' => 'Relation client',
+                'mission' => ['Répondre aux demandes des membres et des partenaires (chat, e-mail, téléphone).', 'Suivre les réservations sensibles et les remboursements.', 'Remonter les irritants à l’équipe produit.'],
+                'description' => ['Vous rejoignez une équipe de 4 conseillers, du lundi au vendredi.', 'Formation complète à la plateforme assurée à l’arrivée.'],
+                'education' => ['Bac+2 minimum (relation client, tourisme, commerce).'],
+                'experience' => ['Une première expérience en service client.', 'Excellente expression écrite.'],
+            ],
+            'data-analyst' => [
+                'manager' => 'CTO', 'division' => 'Produit & Données',
+                'mission' => ['Construire et maintenir les tableaux de bord de l’entreprise.', 'Mener des analyses ponctuelles (conversion, rétention, offres).', 'Fiabiliser la collecte et la qualité des données.'],
+                'description' => ['Vous travaillez avec toutes les équipes, en autonomie.', 'Poste ouvert au télétravail complet.'],
+                'education' => ['Bac+5 en statistiques, data ou école d’ingénieur.'],
+                'experience' => ['2 ans en analyse de données, SQL avancé.', 'Python ou un outil de BI (Metabase, Looker…).'],
+            ],
         ];
-    }
 
-    /**
-     * Les quatre arguments en pied de « Contactez-nous ».
-     *
-     * @return list<array{icon: string, title: string, text: string}>
-     */
-    public static function contactArguments(): array
-    {
-        return [
-            ['icon' => 'calendar_check', 'title' => 'Support 7j/7', 'text' => 'Notre équipe est disponible tous les jours'],
-            ['icon' => 'headset_mic', 'title' => 'Une équipe à votre écoute', 'text' => 'Des conseillers passionnés pour vous aider'],
-            ['icon' => 'clock', 'title' => 'Réponse rapide', 'text' => 'Nous nous engageons à vous répondre sous 24h'],
-            ['icon' => 'thumbs_up', 'title' => 'Votre satisfaction', 'text' => 'Votre satisfaction est notre priorité'],
-        ];
-    }
+        foreach (self::jobs() as $job) {
+            if ($job['slug'] === $slug && isset($details[$slug])) {
+                return $job + $details[$slug] + ['place' => $job['city'], 'note' => 'Soyez parmi les premiers à postuler'];
+            }
+        }
 
-    /**
-     * « Comment nous protégeons vos paiements » — 4 cartes.
-     *
-     * @return list<array{icon: string, tone: string, title: string, text: string}>
-     */
-    public static function paymentCards(): array
-    {
-        return [
-            ['icon' => 'card', 'tone' => 'blue', 'title' => 'Cryptage SSL 256 bits', 'text' => 'Toutes les données échangées entre votre navigateur et notre site sont cryptées avec la technologie SSL 256 bits.'],
-            ['icon' => 'handshake_solid', 'tone' => 'violet', 'title' => 'Partenaires de confiance', 'text' => 'Nous collaborons avec des prestataires de paiement reconnus et certifiés pour garantir la sécurité de vos transactions.'],
-            ['icon' => 'shield', 'tone' => 'orange', 'title' => 'Conformité PCI DSS', 'text' => 'Notre plateforme est conforme à la norme PCI DSS, la référence mondiale en matière de sécurité des données de paiement.'],
-            ['icon' => 'eye_off', 'tone' => 'green', 'title' => 'Aucune donnée stockée', 'text' => 'Nous ne stockons jamais vos informations bancaires sur nos serveurs.'],
-        ];
+        return null;
     }
 
     /**

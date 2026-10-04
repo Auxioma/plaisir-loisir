@@ -53,7 +53,10 @@ final class BreadcrumbTest extends WebTestCase
     public function testTheGiftCategoryPageSaysGifts(): void
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '/cadeaux/ateliers-creations');
+        // L'ancienne page catégorie redirige vers le filtre de /cadeaux (04/10).
+        $client->request('GET', '/cadeaux/ateliers-creations');
+        self::assertResponseRedirects();
+        $crawler = $client->followRedirect();
         self::assertSame(200, $client->getResponse()->getStatusCode());
 
         $fil = $crawler->filter('nav.act-breadcrumb')->first();

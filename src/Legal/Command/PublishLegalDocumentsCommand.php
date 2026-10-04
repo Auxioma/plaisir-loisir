@@ -7,6 +7,7 @@ namespace App\Legal\Command;
 use App\Corporate\StaticCorporate;
 use App\Legal\Enum\LegalDocumentType;
 use App\Legal\InitialLegalTexts;
+use App\Legal\LegalDefaults;
 use App\Legal\Repository\LegalDocumentRepository;
 use App\Legal\Service\LegalDocumentService;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -75,13 +76,13 @@ final class PublishLegalDocumentsCommand extends Command
             [
                 'type' => LegalDocumentType::TermsOfService,
                 'titre' => 'Conditions générales d\'utilisation',
-                'contenu' => $this->renderSections(StaticCorporate::cguSections()),
+                'contenu' => LegalDefaults::content(LegalDocumentType::TermsOfService),
                 'resume' => 'Première mise en base du texte déjà publié sur le site.',
             ],
             [
                 'type' => LegalDocumentType::LegalNotice,
                 'titre' => 'Mentions légales',
-                'contenu' => $this->renderSections(StaticCorporate::legalSections()),
+                'contenu' => LegalDefaults::content(LegalDocumentType::LegalNotice),
                 'resume' => 'Première mise en base du texte déjà publié sur le site.',
             ],
             // Les trois suivants n'avaient aucun texte : ils sont écrits, pas
@@ -153,73 +154,5 @@ final class PublishLegalDocumentsCommand extends Command
         $io->success(sprintf('%d document(s) publié(s).', $publies));
 
         return Command::SUCCESS;
-    }
-
-    /**
-     * Convertit les sections de StaticCorporate en HTML.
-     *
-     * POURQUOI DU HTML ET NON DU TEXTE
-     * Quand cette commande a été écrite, rien ne relisait le contenu : elle
-     * produisait un format à tirets, pratique à écrire, que personne n'avait
-     * jamais eu à afficher. Depuis le 31/08 les pages légales lisent la base,
-     * et le back-office fait saisir ce texte dans un éditeur de texte riche,
-     * qui produit du HTML. Deux formats en base auraient signifié deux rendus
-     * à maintenir, et une page dont l'apparence dépendrait de la façon dont sa
-     * version a été créée. On n'en garde donc qu'un.
-     *
-     * Chaque titre de niveau 2 ouvre un article : c'est la seule convention,
-     * et c'est elle qui fabrique le sommaire « Sur cette page » à l'affichage.
-     *
-     * Le texte est échappé au passage. Il vient de StaticCorporate, donc de
-     * nous, mais une esperluette dans « Plaisirs & Loisirs » suffirait à
-     * produire du HTML invalide.
-     *
-     * @param list<array<string, mixed>> $sections
-     */
-    private function renderSections(array $sections): string
-    {
-        $morceaux = [];
-
-        foreach ($sections as $section) {
-            $titre = (string) ($section['title'] ?? '');
-            $bloc = '' !== $titre ? '<h2>'.htmlspecialchars($titre, \ENT_QUOTES).'</h2>' : '';
-
-            if (isset($section['intro']) && \is_string($section['intro'])) {
-                $bloc .= $this->paragraphe($section['intro']);
-            }
-
-            if (isset($section['paragraphs']) && \is_array($section['paragraphs'])) {
-                foreach ($section['paragraphs'] as $paragraphe) {
-                    if (\is_string($paragraphe)) {
-                        $bloc .= $this->paragraphe($paragraphe);
-                    }
-                }
-            }
-
-            if (isset($section['items']) && \is_array($section['items'])) {
-                $puces = '';
-
-                foreach ($section['items'] as $item) {
-                    if (\is_string($item)) {
-                        $puces .= '<li>'.htmlspecialchars($item, \ENT_QUOTES).'</li>';
-                    }
-                }
-
-                if ('' !== $puces) {
-                    $bloc .= '<ul>'.$puces.'</ul>';
-                }
-            }
-
-            if ('' !== $bloc) {
-                $morceaux[] = $bloc;
-            }
-        }
-
-        return implode("\n", $morceaux);
-    }
-
-    private function paragraphe(string $texte): string
-    {
-        return '<p>'.htmlspecialchars($texte, \ENT_QUOTES).'</p>';
     }
 }

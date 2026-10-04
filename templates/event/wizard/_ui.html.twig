@@ -1,0 +1,39 @@
+{# Briques de l'assistant « Créer un événement » (.ew-*). #}
+
+{% macro err(errors, key) %}{% if errors[key] is defined %}<p class="ew-error" role="alert">{{ errors[key]|trans }}</p>{% endif %}{% endmacro %}
+
+{# Interrupteur : une valeur « 0 » est envoyée quand la case est décochée. #}
+{% macro toggle(name, on, label, text, iconName, tone) %}
+    {%- import 'provider/space/_ico.html.twig' as ico -%}
+    <label class="ew-setting">
+        <span class="ew-setting__ico is-{{ tone }}">{{ ico.svg(iconName, 18) }}</span>
+        <span class="ew-setting__text"><strong>{{ label|trans }}</strong><small>{{ text|trans }}</small></span>
+        <span class="ew-switch"><input type="checkbox" name="{{ name }}" value="1"{{ on ? ' checked' }}><i></i></span>
+    </label>
+{% endmacro %}
+
+{# Ligne de réglage avec liste déroulante. #}
+{% macro selectRow(name, options, current, label, text, iconName, tone) %}
+    {%- import 'provider/space/_ico.html.twig' as ico -%}
+    <div class="ew-setting">
+        <span class="ew-setting__ico is-{{ tone }}">{{ ico.svg(iconName, 18) }}</span>
+        <label class="ew-setting__text" for="ew-{{ name }}"><strong>{{ label|trans }}</strong><small>{{ text|trans }}</small></label>
+        <span class="ew-select ew-select--sm">
+            <select id="ew-{{ name }}" name="{{ name }}">
+                {% for value, optionLabel in options %}<option value="{{ value }}"{{ current == value ~ '' ? ' selected' }}>{{ optionLabel|trans }}</option>{% endfor %}
+            </select>
+        </span>
+    </div>
+{% endmacro %}
+
+{# Carte de choix (radio) : visibilité, type de lieu, mode de date… #}
+{% macro choice(name, value, current, title, text, iconName, extra = '') %}
+    {%- import 'provider/space/_ico.html.twig' as ico -%}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    <label class="ew-choice{{ extra ? ' ' ~ extra }}">
+        <input type="radio" name="{{ name }}" value="{{ value }}"{{ current == value ? ' checked' }} required>
+        {% if iconName %}<span class="ew-choice__ico">{{ ico.svg(iconName, 22) }}</span>{% endif %}
+        <span class="ew-choice__text"><strong>{{ title|trans }}</strong><small>{{ text|trans }}</small></span>
+        <span class="ew-choice__check" aria-hidden="true">{{ icon.check(12) }}</span>
+    </label>
+{% endmacro %}

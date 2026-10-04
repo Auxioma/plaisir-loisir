@@ -1,0 +1,22 @@
+{# Étape 4 — Catégorie (maquette creation_evenement_4). #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ew-main__title">{{ '4. Catégorie'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Choisissez la catégorie qui correspond le mieux à votre événement.'|trans }}</p>
+<h3 class="ew-main__label">{{ 'Catégories populaires'|trans }}</h3>
+<div class="ew-cats{{ errors.category is defined ? ' has-error' }}" role="radiogroup" aria-label="{{ 'Catégorie'|trans }}">
+    {% for c in categories %}
+        {% set look = category_looks[c.slug] %}
+        <label class="ew-cat">
+            <input type="radio" name="category" value="{{ c.slug }}"{{ (draft.category ?? '') == c.slug ? ' checked' }} required>
+            <span class="ew-cat__ico is-{{ look.tone }}">{{ ico.svg(look.icon, 28) }}</span>
+            <strong>{{ c.name|trans }}</strong>
+            <small>{{ look.text|trans }}</small>
+            <span class="ew-choice__check" aria-hidden="true">{{ icon.check(12) }}</span>
+        </label>
+    {% endfor %}
+</div>
+{{ ui.err(errors, 'category') }}
+<p class="ew-tip ew-tip--soft">{{ icon.sparkle_tip(18) }} <span><b>{{ 'Vous ne trouvez pas la bonne catégorie ?'|trans }}</b><br>{{ 'Choisissez « Autre » et précisez le type d’événement dans la description.'|trans }}</span></p>

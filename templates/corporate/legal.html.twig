@@ -1,135 +1,116 @@
 {#
-    Écrans 8 et 9 du flow corporate — pages légales (/mentions-legales et
-    /conditions-generales).
-    Maquettes : assets/corporate/mentions légales.png (1440 x 2707) et
-    « Politiques de confidentialités.png » (1440 x 3220 — la planche porte ce
-    nom mais son contenu est bien celui des CGU, voir la note de conformité).
+    Pages juridiques — maquettes docs/maquettes/cgu.jpeg,
+    mentions_legales.jpeg et politique_de_confidentialite.jpeg (04/10).
 
-    Gabarit commun : sommaire « Sur cette page » en colonne de gauche, contenu
-    numéroté à droite.
+    Le contenu vient de la base (LegalDocument, versionné, géré dans le
+    back-office) ; chaque titre de niveau 2 devient une carte numérotée et une
+    entrée du sommaire. Sans version publiée, le texte initial
+    (App\Legal\LegalDefaults) s'affiche.
 
-    DEPUIS LE 31/08, LE CONTENU VIENT DE LA BASE et non plus de PHP. Chaque
-    section est un titre de niveau 2 du texte saisi en back-office ; le
-    sommaire, la numérotation et les ancres en sont déduits. Personne n'a donc
-    de sommaire à tenir à jour, ni à renuméroter en insérant un article.
-
-    Le HTML des sections est affiché sans échappement, ce qui n'est acceptable
-    que parce qu'il a été filtré en amont par LegalContentRenderer : la liste
-    des balises autorisées est dans config/packages/html_sanitizer.yaml.
-
-    Variables : page_title, intro, sections (title|null + html), document|null.
-    Préfixe des classes propres à ces écrans : lg-.
+    Le HTML des sections est affiché sans échappement parce qu'il est filtré
+    en amont par LegalContentRenderer (config/packages/html_sanitizer.yaml).
+    Variables : page_title, intro, sections, document|null, type.
 #}
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
+{% import 'provider/space/_ico.html.twig' as ico %}
 
 {% block title %}{{ page_title|trans }}{% endblock %}
 {% block meta_description %}{{ intro|trans }}{% endblock %}
 
-{% block header %}
-    {% include '_partials/navbar_corporate.html.twig' %}
-{% endblock %}
+{% macro sectionIcon(title) %}
+    {%- import 'provider/space/_ico.html.twig' as ico -%}
+    {%- set t = title|lower -%}
+    {%- set name = 'doc' -%}
+    {%- for key, value in {'objet': 'doc', 'éditeur': 'briefcase', 'heberg': 'monitor', 'accès': 'lock', 'utilisation de la': 'monitor', 'compte': 'person', 'contenu': 'star', 'propriété': 'doc', 'réservation': 'calendar', 'paiement': 'card', 'responsab': 'shield', 'données': 'person', 'sécurité': 'lock', 'droit': 'shield', 'cookie': 'globe', 'contact': 'mail', 'lien': 'link', 'modification': 'edit', 'partage': 'share', 'utilisation des': 'chart'} -%}
+        {%- if key in t and name == 'doc' -%}{%- set name = value -%}{%- endif -%}
+    {%- endfor -%}
+    {{ ico.svg(name, 24) }}
+{% endmacro %}
 
 {% block body %}
-<div class="cor-page lg-page">
-    <div class="container">
-        <div class="lg-cols">
+{% set numbered = sections|filter(s => s.title) %}
+{% set preamble = sections|filter(s => not s.title) %}
+<div class="lg2">
+    <header class="lg2-hero">
+        <div class="lg2-hero__text">
+            <nav class="lg2-crumb act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}"><a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a> <span>/</span> <span aria-current="page">{{ page_title|trans }}</span></nav>
+            <h1>{{ page_title|trans }}</h1>
+            <p class="lg2-hero__date">
+                {% if document %}{{ 'Dernière mise à jour :'|trans }} {{ (document.publishedAt ?? document.createdAt)|pf_date('d MMMM y') }} · {{ 'version'|trans }} {{ document.version }}
+                {% else %}{{ 'Texte en vigueur'|trans }}{% endif %}
+            </p>
+            <p class="lg2-hero__intro">{{ intro|trans }}</p>
+        </div>
+        <img class="lg2-hero__img" src="{{ asset('images/events/ev-rando-clean.jpg') }}" alt="">
+    </header>
 
-            {# ---- Sommaire ---- #}
-            <aside class="lg-toc">
-                <h2 class="lg-toc__title">{{ 'Sur cette page'|trans }}</h2>
-                {# Un préambule sans titre n'entre pas au sommaire : il n'a
-                   pas de numéro d'article et n'est donc pas citable. #}
-                <ol class="lg-toc__list">
-                    {% for s in sections|filter(section => section.title) %}
-                        <li>
-                            <span class="lg-toc__num">{{ loop.index }}</span>
-                            <a href="#lg-{{ loop.index }}">{{ s.title }}</a>
+    <div class="lg2-body">
+        <div class="lg2-main">
+            {% if not document %}
+                {# Aucune version publiée en base : on affiche le texte de référence, en le disant. #}
+                <p class="lg-pending">{{ icon.info(16) }} {{ 'La version officielle de ce texte est en cours de préparation ; voici le texte de référence actuellement appliqué. Une question ?'|trans }} <a href="{{ path('app_corporate_contact', {sujet: page_title}) }}">{{ 'Contactez-nous'|trans }}</a></p>
+            {% endif %}
+            {% for s in preamble %}<div class="lg2-preamble">{{ s.html|raw }}</div>{% endfor %}
+            {% if numbered is empty %}
+                <p class="lg2-empty">{{ 'Ce document est en cours de rédaction.'|trans }}</p>
+            {% elseif type == 'privacy_policy' %}
+                <ol class="lg2-list">
+                    {% for s in numbered %}
+                        <li id="lg-{{ loop.index }}">
+                            <details{{ loop.first ? ' open' }}>
+                                <summary>
+                                    <span class="lg2-num">{{ loop.index }}</span>
+                                    <span class="lg2-ico">{{ _self.sectionIcon(s.title) }}</span>
+                                    <span class="lg2-list__title">{{ s.title }}</span>
+                                    {{ icon.chevron_right(18) }}
+                                </summary>
+                                <div class="lg2-text">{{ s.html|raw }}</div>
+                            </details>
                         </li>
                     {% endfor %}
                 </ol>
-            </aside>
-
-            {# ---- Contenu ---- #}
-            <div class="lg-main">
-                {# FIL D'ARIANE CORRIGÉ LE 26/08, EN S'ÉCARTANT DE LA MAQUETTE.
-
-                   Il annonçait « Accueil | Destinations | Destination
-                   populaires » — sur la page des mentions légales. La maquette
-                   d'Agnès porte exactement ce texte, coquille « Acceuil »
-                   comprise : c'est un report du parcours Destinations resté
-                   dans cet écran. Reproduit fidèlement, il envoyait le lecteur
-                   vers une page sans rapport avec celle qu'il lisait.
-
-                   L'écart est assumé et validé par le client le 26/08 : le fil
-                   d'Ariane décrit désormais le vrai chemin. Ce gabarit sert
-                   aussi aux conditions générales, d'où le titre variable. #}
-                <nav class="act-breadcrumb lg-crumb" aria-label="{{ "Fil d'Ariane"|trans }}">
-                    <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
-                    <span aria-hidden="true">|</span>
-                    <span aria-current="page">{{ page_title|trans }}</span>
-                </nav>
-
-                <h1 class="lg-title">{{ page_title|trans }}</h1>
-                <p class="lg-intro">{{ intro|trans }}</p>
-                {# La date était écrite en dur : elle annonçait mai 2024 quel
-                   que soit le texte affiché. Elle vient maintenant de la
-                   version en vigueur, et la version est rappelée à côté :
-                   c'est elle que citera un utilisateur en cas de litige. #}
-                {% if document %}
-                    <p class="lg-date">
-                        {{ 'Dernière mise à jour :'|trans }}
-                        {# Format numérique adapté à la langue : « 31/08/2026 »
-                           lu par un anglophone signifierait le 8 mars. Sur une
-                           page juridique, la date d'entrée en vigueur ne peut
-                           pas prêter à confusion. #}
-                        {{ (document.effectiveAt ?? document.publishedAt)|date(app.request.locale == 'en' ? 'm/d/Y' : 'd/m/Y') }}
-                        <span class="lg-date__version">{{ 'version'|trans }} {{ document.version }}</span>
-                    </p>
-                {% endif %}
-
-                {% if sections is empty %}
-                    {# AUCUNE VERSION PUBLIÉE POUR CE DOCUMENT.
-                       On n'envoie pas une 404 : cette adresse est citée dans le
-                       pied de page de tout le site et dans les cases à cocher
-                       de l'inscription. Une 404 y remettrait le lien mort qu'on
-                       vient de supprimer. On dit donc l'état réel — le texte
-                       est attendu du client, pas du code — et on laisse une
-                       porte de sortie utile. #}
-                    <div class="lg-pending">
-                        <p class="lg-p">{{ "Ce texte est en cours de rédaction et sera publié ici dès qu'il nous aura été transmis."|trans }}</p>
-                        <p class="lg-p">{{ "En attendant, notre équipe répond à toute question sur ce sujet."|trans }}</p>
-                        <a class="pl-btn pl-btn--primary" href="{{ path('app_corporate_contact') }}">{{ 'Nous contacter'|trans }}</a>
-                    </div>
-                {% else %}
-                    {# `numero` compte les articles, `loop.index` compterait
-                       aussi le préambule et décalerait tout le sommaire d'un
-                       cran dès qu'un texte en comporte un. #}
-                    {% set numero = 0 %}
-                    {% for s in sections %}
-                        {% if s.title %}
-                            {% set numero = numero + 1 %}
-                            <section class="lg-section" id="lg-{{ numero }}">
-                                <h2 class="lg-h2">{{ numero }}. {{ s.title }}</h2>
-                                <div class="lg-body">{{ s.html|raw }}</div>
-                            </section>
-                        {% else %}
-                            <div class="lg-body lg-body--preamble">{{ s.html|raw }}</div>
-                        {% endif %}
+            {% else %}
+                <div class="lg2-grid">
+                    {% for s in numbered %}
+                        <article class="lg2-card" id="lg-{{ loop.index }}">
+                            <span class="lg2-num">{{ loop.index }}</span>
+                            <span class="lg2-ico is-{{ ['blue', 'violet', 'green', 'orange', 'red', 'teal'][loop.index0 % 6] }}">{{ _self.sectionIcon(s.title) }}</span>
+                            <div>
+                                <h2>{{ type == 'legal_notice' ? loop.index ~ '. ' }}{{ s.title }}</h2>
+                                <div class="lg2-text">{{ s.html|raw }}</div>
+                            </div>
+                        </article>
                     {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <aside class="lg2-side">
+            {% if numbered is not empty %}
+                <nav class="lg2-toc" aria-label="{{ 'Dans cette page'|trans }}">
+                    <h2>{{ 'Dans cette page'|trans }}</h2>
+                    <ol class="lg-toc__list">{% for s in numbered %}<li><a href="#lg-{{ loop.index }}">{{ s.title }}</a></li>{% endfor %}</ol>
+                </nav>
+            {% endif %}
+            <section class="lg2-engage">
+                <span class="lg2-engage__ico">{{ type == 'legal_notice' ? icon.headset(26) : icon.shield_check(26) }}</span>
+                {% if type == 'legal_notice' %}
+                    <h2>{{ 'Une question ?'|trans }}</h2>
+                    <p>{{ 'Notre équipe est à votre disposition pour toute question relative aux mentions légales.'|trans }}</p>
+                {% elseif type == 'privacy_policy' %}
+                    <h2>{{ 'Notre engagement'|trans }}</h2>
+                    <p>{{ 'Nous nous engageons à respecter la confidentialité de vos données et à être transparents sur leur utilisation. Votre confiance est essentielle pour nous.'|trans }}</p>
+                {% else %}
+                    <h2>{{ 'Notre engagement'|trans }}</h2>
+                    <p>{{ 'Chez TrouveMoi Plaisirs & Loisirs, la transparence et la confiance sont au cœur de notre relation avec vous. Nous nous engageons à vous offrir une expérience sécurisée et fiable.'|trans }}</p>
                 {% endif %}
-
-            </div>
-        </div>
-
-        {# Maquette : bannière violette d'arcs concentriques en pied de page,
-           identique sur les deux écrans légaux ; elle occupe toute la grille
-           d'images et non la seule colonne de contenu. #}
-        <div class="py-help__panel lg-engage">
-            <h2 class="py-help__title lg-engage__title">{{ 'Notre engagement'|trans }}</h2>
-            <p class="py-help__text">{{ 'Chez TrouveMoi Plaisirs & Loisirs, la transparence et la confiance sont au cœur de notre relation avec vous. Nous nous engageons à vous offrir une expérience sécurisée et fiable.'|trans }}</p>
-            <a href="{{ path('app_corporate_contact') }}" class="pl-btn pl-btn--primary py-help__btn">{{ 'Nous contacter'|trans }}</a>
-        </div>
+                <a class="lg2-btn" href="{{ path('app_corporate_contact', {sujet: page_title}) }}">{{ 'Nous contacter'|trans }} {{ icon.arrow_right(16) }}</a>
+            </section>
+            {% if document %}
+                <a class="lg2-print" href="#" onclick="window.print(); return false;">{{ icon.download(16) }} {{ 'Imprimer / enregistrer en PDF'|trans }}</a>
+            {% endif %}
+        </aside>
     </div>
 </div>
 {% endblock %}

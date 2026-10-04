@@ -9,7 +9,9 @@ use App\Booking\Entity\Booking;
 use App\Booking\Entity\BookingItem;
 use App\Catalog\Entity\Service;
 use App\Catalog\Entity\ServicePackage;
+use App\Catalog\Enum\PromotionKind;
 use App\Catalog\Enum\ServiceStatus;
+use App\Catalog\Repository\PromotionRepository;
 use App\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -20,6 +22,7 @@ final class BookingService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly ?PromotionRepository $promotions = null,
     ) {
     }
 
@@ -44,11 +47,22 @@ final class BookingService
             throw new \InvalidArgumentException('Seule une activité publiée peut être réservée.');
         }
 
+        // Offre du moment (04/10) : une réduction en % en cours sur l'activité
+        // s'applique au prix unitaire — la page « Offres du moment » affiche
+        // le prix remisé, la réservation doit le facturer.
+        $unitPrice = $package->getPrice();
+        $label = $package->getName();
+        $promotion = $this->promotions?->findRunningForService($service);
+        if (null !== $promotion && PromotionKind::Reduction === $promotion->getKind() && ($promotion->getDiscountPercent() ?? 0) > 0) {
+            $unitPrice = self::discount($unitPrice, (int) $promotion->getDiscountPercent());
+            $label .= sprintf(' (offre -%d %%)', $promotion->getDiscountPercent());
+        }
+
         // Snapshot : on fige le libellé et le prix de la formule au moment de l'achat.
         $item = (new BookingItem())
             ->setServicePackage($package)
-            ->setLabel($package->getName())
-            ->setUnitPrice($package->getPrice())
+            ->setLabel($label)
+            ->setUnitPrice($unitPrice)
             ->setQuantity($quantity)
             ->setCurrency($package->getCurrency());
 
@@ -71,7 +85,7 @@ final class BookingService
             ->setParticipants($quantity)
             ->setStartsAt($startsAt)
             ->setCurrency($package->getCurrency())
-            ->setTotalPrice($this->multiply($package->getPrice(), $quantity));
+            ->setTotalPrice($this->multiply($unitPrice, $quantity));
         $booking->addItem($item);
 
         $this->entityManager->persist($booking);
@@ -84,6 +98,16 @@ final class BookingService
      * Multiplie un montant décimal (ex. "49.90") par une quantité entière sans
      * passer par les float : calcul en centimes pour éviter les erreurs d'arrondi.
      */
+    /** Prix remisé de $percent %, arrondi au centime (calcul en centimes entiers). */
+    public static function discount(string $amount, int $percent): string
+    {
+        [$whole, $fraction] = array_pad(explode('.', $amount, 2), 2, '0');
+        $cents = (int) $whole * 100 + (int) substr(str_pad($fraction, 2, '0'), 0, 2);
+        $cents = intdiv($cents * (100 - max(0, min(100, $percent))) + 50, 100);
+
+        return sprintf('%d.%02d', intdiv($cents, 100), $cents % 100);
+    }
+
     private function multiply(string $amount, int $quantity): string
     {
         [$whole, $fraction] = array_pad(explode('.', $amount, 2), 2, '0');

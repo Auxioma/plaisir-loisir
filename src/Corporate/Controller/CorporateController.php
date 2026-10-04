@@ -10,6 +10,7 @@ use App\Corporate\Form\PartnerApplicationFormType;
 use App\Corporate\Service\CorporateInboxService;
 use App\Corporate\StaticCorporate;
 use App\Legal\Enum\LegalDocumentType;
+use App\Legal\LegalDefaults;
 use App\Legal\Service\LegalContentRenderer;
 use App\Legal\Service\LegalDocumentService;
 use App\Shared\Controller\FlashesFormErrorsTrait;
@@ -27,6 +28,8 @@ use Symfony\Component\Routing\Attribute\Route;
 final class CorporateController extends AbstractController
 {
     use FlashesFormErrorsTrait;
+    /** Sujets proposés par « Contactez-nous » (maquette contactez_nous.jpeg, 04/10). */
+    public const CONTACT_SUBJECTS = ['Question générale', 'Réservation', 'Paiement', 'Bon cadeau', 'Devenir partenaire', 'Presse', 'Signaler un problème', 'Autre'];
 
     #[Route(path: ['fr' => '/a-propos', 'en' => '/en/about-us'], name: 'app_corporate_about')]
     public function about(): Response
@@ -111,7 +114,7 @@ final class CorporateController extends AbstractController
             'jobs' => StaticCorporate::jobs(),
             'values' => StaticCorporate::careerValues(),
             'reasons' => StaticCorporate::careerReasons(),
-            'testimonials' => StaticCorporate::testimonials(),
+            'testimonials' => StaticCorporate::employeeTestimonials(),
         ]);
     }
 
@@ -123,9 +126,18 @@ final class CorporateController extends AbstractController
     #[Route(path: ['fr' => '/carrieres/offres', 'en' => '/en/careers/jobs'], name: 'app_corporate_jobs')]
     public function jobs(Request $request): Response
     {
+        $dept = (string) $request->query->get('service', '');
+        $slug = (string) $request->query->get('offre', '');
+        $detail = '' !== $slug ? StaticCorporate::jobDetail($slug) : null;
+        if ('' !== $slug && null === $detail) {
+            throw $this->createNotFoundException();
+        }
+
         return $this->render('corporate/offres.html.twig', [
-            'jobs' => StaticCorporate::jobs(),
-            'detail' => null !== $request->query->get('offre') ? StaticCorporate::jobDetail() : null,
+            'jobs' => array_values(array_filter(StaticCorporate::jobs(), static fn (array $j): bool => '' === $dept || $j['dept'] === $dept)),
+            'depts' => array_values(array_unique(array_column(StaticCorporate::jobs(), 'dept'))),
+            'dept' => $dept,
+            'detail' => $detail,
         ]);
     }
 
@@ -139,7 +151,16 @@ final class CorporateController extends AbstractController
     #[Route(path: ['fr' => '/contactez-nous', 'en' => '/en/contact-us'], name: 'app_corporate_contact', methods: ['GET', 'POST'])]
     public function contact(Request $request, CorporateInboxService $inbox): Response
     {
+        $values = ['nom' => '', 'email' => '', 'sujet' => (string) $request->query->get('sujet', ''), 'message' => ''];
+        if ($this->getUser() instanceof \App\User\Entity\User) {
+            $values['nom'] = trim($this->getUser()->getFirstName().' '.$this->getUser()->getLastName());
+            $values['email'] = $this->getUser()->getEmail();
+        }
+
         if ($request->isMethod('POST')) {
+            foreach (array_keys($values) as $key) {
+                $values[$key] = trim((string) $request->request->get($key, ''));
+            }
             if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
                 $this->addFlash('error', 'Votre session a expiré, merci de renvoyer le formulaire.');
 
@@ -148,16 +169,31 @@ final class CorporateController extends AbstractController
 
             $message = new ContactMessage();
             $message
-                ->setName((string) $request->request->get('nom'))
-                ->setEmail((string) $request->request->get('email'))
-                ->setSubject((string) $request->request->get('sujet'))
-                ->setMessage((string) $request->request->get('message'))
+                ->setName($values['nom'])
+                ->setEmail($values['email'])
+                ->setSubject($values['sujet'])
+                ->setMessage($values['message'])
                 ->setIpAddress($request->getClientIp());
 
-            $errors = $inbox->submitContact($message);
+            $errors = [];
+            $file = $request->files->get('piece_jointe');
+            if ($file instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+                $allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+                if (!$file->isValid() || $file->getSize() > 5 * 1024 * 1024) {
+                    $errors[] = 'La pièce jointe dépasse 5 Mo ou n’a pas pu être reçue.';
+                } elseif (!\in_array((string) $file->getMimeType(), $allowed, true)) {
+                    $errors[] = 'La pièce jointe doit être un PDF ou une image (JPEG, PNG, WebP).';
+                } else {
+                    $name = bin2hex(random_bytes(16)).'.'.($file->guessExtension() ?: 'bin');
+                    $file->move($this->getParameter('kernel.project_dir').'/public/uploads/contact', $name);
+                    $message->setAttachmentPath('uploads/contact/'.$name);
+                }
+            }
+
+            $errors = [...$errors, ...([] === $errors ? $inbox->submitContact($message) : [])];
 
             if ([] === $errors) {
-                $this->addFlash('success', 'Votre message a bien été envoyé. Nous vous répondrons au plus vite.');
+                $this->addFlash('success', 'Votre message a bien été envoyé. Nous vous répondrons sous 24 h.');
 
                 return $this->redirectToRoute('app_corporate_contact');
             }
@@ -168,17 +204,16 @@ final class CorporateController extends AbstractController
         }
 
         return $this->render('corporate/contact.html.twig', [
-            'methods' => StaticCorporate::contactMethods(),
-            'arguments' => StaticCorporate::contactArguments(),
-        ]);
+            'values' => $values,
+            'subjects' => self::CONTACT_SUBJECTS,
+            'contact' => ['email' => \App\Legal\InitialLegalTexts::CONTACT, 'phone' => \App\Legal\InitialLegalTexts::TELEPHONE],
+        ], new Response(null, $request->isMethod('POST') ? 422 : 200));
     }
 
     #[Route(path: ['fr' => '/paiement-securise', 'en' => '/en/secure-payment'], name: 'app_corporate_payment')]
     public function payment(): Response
     {
-        return $this->render('corporate/paiement.html.twig', [
-            'cards' => StaticCorporate::paymentCards(),
-        ]);
+        return $this->render('corporate/paiement.html.twig');
     }
 
     /**
@@ -290,8 +325,10 @@ final class CorporateController extends AbstractController
         return $this->render('corporate/legal.html.twig', [
             'page_title' => $type->label(),
             'intro' => $introDefaut,
-            'sections' => null !== $document ? $renderer->sections($document->getContent()) : [],
+            // Repli sur le texte initial tant qu'aucune version n'est publiée.
+            'sections' => $renderer->sections(null !== $document ? $document->getContent() : LegalDefaults::content($type)),
             'document' => $document,
+            'type' => $type->value,
         ]);
     }
 }

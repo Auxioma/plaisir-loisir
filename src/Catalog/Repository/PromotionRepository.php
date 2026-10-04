@@ -58,4 +58,30 @@ class PromotionRepository extends ServiceEntityRepository
 
         return $rows[0] ?? null;
     }
+
+    /**
+     * Offres en cours visibles du public (page « Offres du moment », 04/10) :
+     * non suspendues, dans leur période, d'un professionnel dont l'activité
+     * (ou au moins une activité, pour une offre « toutes activités ») est publiée.
+     *
+     * @return list<Promotion>
+     */
+    public function findRunningPublic(?\DateTimeImmutable $now = null): array
+    {
+        /** @var list<Promotion> $rows */
+        $rows = $this->createQueryBuilder('p')
+            ->leftJoin('p.service', 's')->addSelect('s')
+            ->join('p.provider', 'pr')->addSelect('pr')
+            ->andWhere('p.deletedAt IS NULL')
+            ->andWhere('p.paused = false')
+            ->andWhere('p.startsAt <= :now AND p.endsAt >= :now')
+            ->andWhere('s.id IS NULL OR (s.status = :published AND s.deletedAt IS NULL)')
+            ->setParameter('now', $now ?? new \DateTimeImmutable())
+            ->setParameter('published', \App\Catalog\Enum\ServiceStatus::Published)
+            ->orderBy('p.endsAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $rows;
+    }
 }

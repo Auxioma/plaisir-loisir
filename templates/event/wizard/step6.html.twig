@@ -1,0 +1,38 @@
+{# Étape 6 — Options et paramètres (maquette creation_evenement_6). #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+
+<h2 class="ew-main__title">{{ '6. Options et paramètres'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Personnalisez les paramètres de votre événement selon vos besoins.'|trans }}</p>
+
+<h3 class="ew-main__label">{{ "Type d'événement"|trans }}</h3>
+<div class="ew-choices ew-choices--3" role="radiogroup">
+    {{ ui.choice('visibility', 'private', draft.visibility, 'Événement privé', 'Sur invitation uniquement', 'lock') }}
+    {{ ui.choice('visibility', 'public', draft.visibility, 'Événement public', 'Ouvert à tous les membres', 'globe') }}
+    {{ ui.choice('visibility', 'group', draft.visibility, 'Groupe / Club', 'Réservé aux membres du groupe ou club', 'users') }}
+</div>
+{{ ui.err(errors, 'visibility') }}
+
+{% set capacity_options = {'unlimited': 'Illimité'} %}
+{% for n in capacities %}{% set capacity_options = capacity_options|merge({(n ~ ''): n ~ ' participants'}) %}{% endfor %}
+
+<h3 class="ew-main__label">{{ 'Paramètres d’inscription'|trans }}</h3>
+<div class="ew-settings">
+    {{ ui.toggle('registration', draft.registration == '1', 'Inscription requise', 'Les participants doivent s’inscrire pour participer.', 'edit', 'violet') }}
+    {{ ui.selectRow('capacity', capacity_options, draft.capacity, 'Limite de participants', 'Définissez le nombre maximum de participants.', 'users', 'green') }}
+    {{ ui.toggle('waitlist', draft.waitlist == '1', 'Liste d’attente', 'Activer automatiquement une liste d’attente si l’événement est complet.', 'clock', 'grey') }}
+</div>
+{{ ui.err(errors, 'capacity') }}
+
+<h3 class="ew-main__label">{{ 'Visibilité et confidentialité'|trans }}</h3>
+<div class="ew-settings">
+    {{ ui.toggle('show_participants', draft.show_participants == '1', 'Afficher la liste des participants', 'Permettre aux participants de voir la liste des inscrits.', 'users', 'blue') }}
+    {{ ui.toggle('allow_invites', draft.allow_invites == '1', 'Autoriser les invités', 'Les participants peuvent inviter d’autres personnes.', 'share', 'violet') }}
+    {{ ui.toggle('comments', draft.comments == '1', 'Commentaires', 'Autoriser les participants à commenter l’événement.', 'comment', 'red') }}
+</div>
+
+<h3 class="ew-main__label">{{ 'Rappels et communications'|trans }}</h3>
+<div class="ew-settings">
+    {{ ui.selectRow('reminder', reminders, draft.reminder, 'Envoyer un rappel avant l’événement', 'Les participants recevront un rappel avant le début.', 'bell', 'blue') }}
+    {{ ui.toggle('email_updates', draft.email_updates == '1', 'Mises à jour par email', 'Envoyer les mises à jour et changements par email.', 'mail', 'green') }}
+</div>
+{{ ui.err(errors, 'reminder') }}

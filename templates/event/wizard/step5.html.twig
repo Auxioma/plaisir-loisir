@@ -1,0 +1,50 @@
+{# Étape 5 — Image et description (maquette creation_evenement_5). #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ew-main__title">{{ '5. Image et description'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Ajoutez une image de couverture attrayante et décrivez votre événement.'|trans }}</p>
+
+<div class="ew-field{{ errors.cover is defined ? ' has-error' }}">
+    <label for="ew-cover">{{ 'Image de couverture'|trans }} <em>*</em></label>
+    <p class="ew-hint">{{ 'Cette image représentera votre événement sur TrouveMoi Event.'|trans }}</p>
+    <label class="ew-drop{{ (draft.cover ?? '') ? ' has-image' }}" data-ew-drop>
+        {% if draft.cover ?? '' %}<img src="{{ asset(draft.cover) }}" alt="" data-ew-drop-img>{% else %}<img alt="" data-ew-drop-img hidden>{% endif %}
+        <span class="ew-drop__body">
+            {{ icon.download(30) }}
+            <span>{{ 'Glissez-déposez une image ici'|trans }}</span>
+            <small>{{ 'ou'|trans }}</small>
+            <span class="ew-btn ew-btn--primary ew-btn--sm">{{ (draft.cover ?? '') ? 'Changer l’image'|trans : 'Choisir une image'|trans }}</span>
+        </span>
+        <input id="ew-cover" type="file" name="cover" accept="image/jpeg,image/png,image/webp" data-ew-cover{{ not (draft.cover ?? '') ? ' required' }}>
+    </label>
+    <p class="ew-hint ew-hint--center">{{ 'Formats acceptés : JPG, PNG, WebP • Taille max : 6 Mo • Recommandé : 1200 x 630 px'|trans }}</p>
+    {{ ui.err(errors, 'cover') }}
+</div>
+
+<div class="ew-field{{ errors.gallery is defined ? ' has-error' }}">
+    <label>{{ 'Galerie d’images'|trans }} ({{ 'optionnel'|trans }})</label>
+    <p class="ew-hint">{{ 'Ajoutez jusqu’à 5 images supplémentaires pour présenter votre événement.'|trans }}</p>
+    <div class="ew-gallery" data-ew-gallery data-max="5">
+        {% for path in draft.gallery %}
+            <span class="ew-gallery__item">
+                <img src="{{ asset(path) }}" alt="">
+                <label class="ew-gallery__remove" title="{{ 'Retirer'|trans }}"><input type="checkbox" name="remove_gallery[]" value="{{ path }}"> {{ icon.x(12) }}</label>
+            </span>
+        {% endfor %}
+        {% for i in 1..(5 - draft.gallery|length) %}
+            <label class="ew-gallery__add" data-ew-gallery-slot>
+                <input type="file" name="gallery[]" accept="image/jpeg,image/png,image/webp">
+                <span>{{ icon.plus(18) }}</span>
+            </label>
+        {% endfor %}
+    </div>
+    {{ ui.err(errors, 'gallery') }}
+</div>
+
+<div class="ew-field{{ errors.description is defined ? ' has-error' }}">
+    <label for="ew-description">{{ 'Description détaillée'|trans }} <em>*</em></label>
+    <p class="ew-hint">{{ 'Présentez votre événement en détail pour donner envie aux gens de participer.'|trans }}</p>
+    {% include 'event/wizard/_editor.html.twig' with {id: 'ew-description', name: 'description', max: 3000, placeholder: 'Décrivez votre événement, le programme, les activités prévues, ce qu’il faut apporter, etc…', required: true} %}
+    {{ ui.err(errors, 'description') }}
+</div>

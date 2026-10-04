@@ -81,8 +81,9 @@ php bin/check-css-tokens.php     # une var CSS --pl-* non déclarée casse la mi
 
 ## Pièges
 
-- **E-mails** : routés vers le transport async. Sans `php bin/console messenger:consume async`,
-  aucun mail ne part (reste dans `messenger_messages`). En local `--limit=N` suffit.
+- **E-mails** : envoyés en **synchrone** depuis le 27/09 (aucun worker ne tourne sur le serveur ;
+  routage async commenté dans `config/packages/messenger.yaml`). Pour repasser en async, décommenter
+  le routage ET faire tourner `messenger:consume async`.
 - **i18n maison FR/EN** : la langue vit **dans l'URL** (`/en/...`), pas en session ; le FR n'a
   pas de préfixe. Source de vérité runtime = table `translation` ; `config/i18n/messages.en.yaml`
   = graine + filet de secours (`app:i18n:import`). Les règles `access_control` de `security.yaml`
@@ -134,12 +135,23 @@ sinon horaires d'ouverture) → récapitulatif → `BookingCheckout` (Stripe si 
 commence par `sk_`, sinon paiement simulé) → confirmation. Fuseau applicatif forcé à
 Europe/Paris (`Kernel::TIMEZONE` + `SessionTimezoneMiddleware` côté PostgreSQL).
 
-**Reste** : Stripe réel (clés), pages encore statiques — « Offres du moment » (`StaticOffers`,
-pas branchée sur `Promotion`), Cadeaux, sous-pages Destinations, domaine `Event/` ; liens
-réseaux sociaux officiels à confirmer (variables `SOCIAL_*_URL` du `.env`, global Twig
-`social_links`),
-vérif d'email, pages politique de confidentialité / CGV / cookies. Détail : fin de
-`docs/cablage-back-front.md`.
+**Maquettes du 04/10** (`docs/maquettes/`) intégrées et branchées :
+- Événements : assistant `/evenements/creer` (guide + 8 étapes validées côté serveur, brouillon
+  en session, `EventDraftService`), liste filtrée + carte, fiche, participation / liste d'attente
+  (`EventRegistration`), invitations, agenda `.ics`.
+- Pages corporate (`assets/styles/pages.css`, préfixes `.pg-* .lg2-*`) : juridiques (texte en
+  base, repli `LegalDefaults`), contact (pièce jointe, chat → ticket `/aide/chat`, suivi
+  `/compte/support`), carrières (offres + candidature via contact), partenaire, paiement, à propos.
+- **Offres du moment** = promotions réelles en cours (`OfferCatalog`) ; la remise est aussi
+  facturée à la réservation (`BookingService::discount`). Newsletter réelle (`NewsletterSubscriber`).
+- **Bons cadeaux** réels (`GiftCard`, `GiftCardService` : Stripe si clé `sk_`, sinon simulé ; code
+  + e-mails acheteur/bénéficiaire ; page `/cadeaux/bon/{id}` ; webhook Stripe géré).
+- **Explorer** (`/explorer`) : filtres → `/activites` (paramètre `langue` ajouté).
+
+**Reste** : Stripe réel (clés), sous-pages Destinations ; liens réseaux sociaux officiels à
+confirmer (variables `SOCIAL_*_URL` du `.env`, global Twig `social_links`), vérif d'email,
+utilisation d'un bon cadeau au paiement (aujourd'hui : statut « utilisé » posé dans le
+back-office). Détail : fin de `docs/cablage-back-front.md`.
 
 ### Chantier en cours : spec « employé / employeur » (agents de sécurité)
 

@@ -1,0 +1,59 @@
+{# Étape 1 — Détails de l'événement (maquette creation_evenement_1). #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ew-main__title">{{ "1. Détails de l'événement"|trans }}</h2>
+
+<div class="ew-row">
+    <div class="ew-field{{ errors.title is defined ? ' has-error' }}">
+        <label for="ew-title">{{ "Titre de l'événement"|trans }} <em>*</em></label>
+        <input id="ew-title" name="title" value="{{ draft.title ?? '' }}" maxlength="120" minlength="3" required placeholder="{{ 'Ex : Pique-nique au bord du lac'|trans }}" data-ew-bind="title">
+        {{ ui.err(errors, 'title') }}
+    </div>
+    <div class="ew-field{{ errors.type is defined ? ' has-error' }}">
+        <label for="ew-type">{{ "Type d'événement"|trans }} <em>*</em></label>
+        <span class="ew-select">
+            <select id="ew-type" name="type" required data-ew-sync="type">
+                <option value="">{{ 'Sélectionnez le type'|trans }}</option>
+                {% for key, t in types %}<option value="{{ key }}"{{ (draft.type ?? '') == key ? ' selected' }}>{{ t.label|trans }}</option>{% endfor %}
+            </select>
+        </span>
+        {{ ui.err(errors, 'type') }}
+    </div>
+</div>
+
+<div class="ew-field{{ errors.summary is defined ? ' has-error' }}">
+    <label for="ew-summary">{{ 'Courte description'|trans }} <em>*</em></label>
+    <span class="ew-textarea">
+        <textarea id="ew-summary" name="summary" rows="3" maxlength="120" minlength="10" required placeholder="{{ 'Décrivez votre événement en quelques mots…'|trans }}" data-ew-count data-ew-bind="summary">{{ draft.summary ?? '' }}</textarea>
+        <small class="ew-count"><b>{{ (draft.summary ?? '')|length }}</b>/120</small>
+    </span>
+    {{ ui.err(errors, 'summary') }}
+</div>
+
+<div class="ew-field{{ errors.description is defined ? ' has-error' }}">
+    <label for="ew-description">{{ 'Description complète'|trans }}</label>
+    {% include 'event/wizard/_editor.html.twig' with {id: 'ew-description', name: 'description', max: 2000, placeholder: 'Donnez plus de détails sur votre événement, le programme, ce qu’il faut prévoir…', required: false} %}
+    {{ ui.err(errors, 'description') }}
+</div>
+
+<div class="ew-visibility{{ errors.visibility is defined ? ' has-error' }}" role="radiogroup" aria-label="{{ 'Visibilité'|trans }}">
+    {{ ui.choice('visibility', 'private', draft.visibility, 'Événement privé', 'Seulement sur invitation ou personnes invitées', 'lock') }}
+    {{ ui.choice('visibility', 'public', draft.visibility, 'Événement public', 'Ouvert à tous les membres de la communauté', 'globe') }}
+    {{ ui.choice('visibility', 'group', draft.visibility, 'Groupe / Club', 'Réservé aux membres du groupe ou club', 'users') }}
+</div>
+{{ ui.err(errors, 'visibility') }}
+
+<h3 class="ew-main__sub">{{ "Type d'événement"|trans }}</h3>
+<p class="ew-main__lead">{{ 'Choisissez le format qui correspond le mieux à votre événement'|trans }}</p>
+<div class="ew-types" role="radiogroup" aria-label="{{ "Type d'événement"|trans }}">
+    {% for key, t in types %}
+        <label class="ew-type">
+            <input type="radio" name="type_card" value="{{ key }}"{{ (draft.type ?? '') == key ? ' checked' }} data-ew-sync-target="type">
+            <span class="ew-type__ico is-{{ t.tone }}">{{ ico.svg(t.icon, 24) }}</span>
+            <strong>{{ t.label|trans }}</strong>
+            <small>{{ t.text|trans }}</small>
+        </label>
+    {% endfor %}
+</div>
