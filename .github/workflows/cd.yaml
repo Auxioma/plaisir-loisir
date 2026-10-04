@@ -81,7 +81,13 @@ jobs:
             # et échoue sur toute nouvelle variable (CD #16, 04/10).
             composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
             composer dump-env prod
-            composer run-script --no-dev auto-scripts
+
+            # La CLI PHP du serveur est limitée à 128 Mo : la précompilation
+            # des ~200 templates Twig dépasse (CD #17, 04/10). On fixe donc la
+            # limite pour les commandes de la console, sans toucher au php.ini.
+            PHP="php -d memory_limit=512M"
+            $PHP bin/console cache:clear --no-interaction
+            $PHP bin/console assets:install public --no-interaction
 
             # Base créée hors migrations (schema:create) : aucune migration
             # enregistrée alors que le schéma est déjà à jour. On les marque
@@ -91,8 +97,8 @@ jobs:
             if [ "${executed:-0}" = 0 ] && php bin/console doctrine:schema:validate --skip-mapping -q; then
               php bin/console doctrine:migrations:version --add --all --no-interaction
             fi
-            php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
-            php bin/console importmap:install --no-interaction
-            php bin/console asset-map:compile
-            php bin/console cache:clear --no-interaction
+            $PHP bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+            $PHP bin/console importmap:install --no-interaction
+            $PHP bin/console asset-map:compile
+            $PHP bin/console cache:clear --no-interaction
           EOF
