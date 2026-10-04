@@ -1,0 +1,44 @@
+{#
+    Récapitulatif avant paiement (tunnel de réservation, 03/10).
+    Données : BookingController::summary().
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Récapitulatif de votre réservation'|trans }}{% endblock %}
+
+{% block body %}
+<main class="bk container">
+    <ol class="bk-steps" aria-label="{{ 'Étapes'|trans }}">
+        <li class="is-done">{{ 'Sélection'|trans }}</li>
+        <li class="is-current" aria-current="step">{{ 'Récapitulatif'|trans }}</li>
+        <li>{{ 'Paiement'|trans }}</li>
+        <li>{{ 'Confirmation'|trans }}</li>
+    </ol>
+    <h1 class="bk-title">{{ 'Récapitulatif de votre réservation'|trans }}</h1>
+
+    <div class="bk-grid">
+        <section class="bk-card">
+            {% include 'booking/_recap.html.twig' %}
+            <a class="bk-link" href="{{ path('app_activity_show', {slug: service.slug}) }}#reserver">{{ icon.arrow_left(14) }} {{ 'Modifier ma sélection'|trans }}</a>
+        </section>
+
+        <aside class="bk-card bk-pay">
+            <h2>{{ 'Paiement sécurisé'|trans }}</h2>
+            <p>{{ 'Vous allez régler'|trans }} <strong>{{ booking.totalPrice|number_format(2, ',', ' ') }} €</strong>.</p>
+            {% if not stripe %}
+                <p class="bk-note">{{ 'Mode démonstration : le paiement est simulé, aucune carte n’est débitée.'|trans }}</p>
+            {% endif %}
+            <form method="post" action="{{ path('app_booking_pay', {id: booking.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">
+                <button class="pl-btn pl-btn--primary pl-btn--block">{{ icon.card_lock(18) }} {{ 'Confirmer et payer'|trans }}</button>
+            </form>
+            <p class="bk-note">✓ {{ 'Annulation gratuite'|trans }} {{ "Jusqu'à 7 jours avant"|trans }}</p>
+            <form method="post" action="{{ path('app_booking_abandon', {id: booking.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">
+                <button class="bk-link bk-link--btn">{{ 'Abandonner cette réservation'|trans }}</button>
+            </form>
+        </aside>
+    </div>
+</main>
+{% endblock %}

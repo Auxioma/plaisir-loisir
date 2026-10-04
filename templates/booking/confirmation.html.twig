@@ -1,0 +1,53 @@
+{#
+    Confirmation de réservation (après paiement simulé ou retour Stripe).
+    Données : BookingController::confirmation().
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Votre réservation'|trans }}{% endblock %}
+
+{% block body %}
+{% set paid = payment and payment.status.value == 'paid' %}
+{% set failed = payment and payment.status.value == 'failed' %}
+<main class="bk container">
+    <ol class="bk-steps" aria-label="{{ 'Étapes'|trans }}">
+        <li class="is-done">{{ 'Sélection'|trans }}</li>
+        <li class="is-done">{{ 'Récapitulatif'|trans }}</li>
+        <li class="is-done">{{ 'Paiement'|trans }}</li>
+        <li class="is-current" aria-current="step">{{ 'Confirmation'|trans }}</li>
+    </ol>
+
+    <section class="bk-card bk-done">
+        {% if booking.status.value == 'cancelled' %}
+            <span class="bk-done__ico is-red">{{ icon.x(30) }}</span>
+            <h1 class="bk-title">{{ 'Réservation annulée'|trans }}</h1>
+        {% elseif failed %}
+            <span class="bk-done__ico is-red">{{ icon.x(30) }}</span>
+            <h1 class="bk-title">{{ 'Le paiement n’a pas abouti'|trans }}</h1>
+            <p>{{ 'Aucune somme n’a été prélevée. Vous pouvez réessayer depuis la fiche de l’activité.'|trans }}</p>
+        {% elseif paid %}
+            <span class="bk-done__ico">{{ icon.check(30) }}</span>
+            <h1 class="bk-title">{{ 'Merci, votre réservation est confirmée !'|trans }}</h1>
+            <p>{{ 'Référence'|trans }} <strong>#{{ booking.reference }}</strong> · {{ 'L’organisateur a été prévenu. Retrouvez-la à tout moment dans « Mes réservations ».'|trans }}</p>
+        {% else %}
+            <span class="bk-done__ico is-orange">{{ icon.clock(30) }}</span>
+            <h1 class="bk-title">{{ 'Paiement en cours de confirmation'|trans }}</h1>
+            <p>{{ 'Nous attendons la confirmation de votre banque : vous recevrez une notification dans quelques instants.'|trans }}</p>
+        {% endif %}
+
+        {% include 'booking/_recap.html.twig' %}
+
+        <div class="bk-actions">
+            <a class="pl-btn pl-btn--primary" href="{{ path('app_account_history') }}">{{ 'Voir mes réservations'|trans }}</a>
+            {% if service.provider and service.provider.slug and service.provider.status.value == 'verified' %}
+                <form method="post" action="{{ path('app_account_messages_start', {slug: service.provider.slug}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                    <button class="pl-btn pl-btn--outline-dark">{{ icon.mail(16) }} {{ 'Écrire à l’organisateur'|trans }}</button>
+                </form>
+            {% endif %}
+            <a class="pl-btn pl-btn--outline-dark" href="{{ path('app_activities') }}">{{ 'Découvrir d’autres activités'|trans }}</a>
+        </div>
+    </section>
+</main>
+{% endblock %}

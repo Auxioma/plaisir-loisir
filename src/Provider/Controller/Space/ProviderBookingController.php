@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Provider\Controller\Space;
 
+use App\Availability\Repository\AvailabilityRepository;
 use App\Booking\Entity\Booking;
 use App\Booking\Enum\BookingStatus;
 use App\Booking\Repository\BookingRepository;
@@ -50,6 +51,7 @@ final class ProviderBookingController extends AbstractProviderSpaceController
         private readonly BookingRepository $bookingRepository,
         private readonly NotificationService $notifications,
         private readonly EntityManagerInterface $entityManager,
+        private readonly AvailabilityRepository $availabilities,
         #[Target('booking')]
         private readonly WorkflowInterface $bookingWorkflow,
     ) {
@@ -169,6 +171,10 @@ final class ProviderBookingController extends AbstractProviderSpaceController
         }
 
         $this->bookingWorkflow->apply($booking, $transition);
+        // Annulation : les places du créneau redeviennent réservables.
+        if ('cancel' === $transition && null !== $booking->getStartsAt() && null !== $booking->getService()) {
+            $this->availabilities->findOneByServiceAndStart($booking->getService(), $booking->getStartsAt())?->release($booking->getParticipants());
+        }
         $this->entityManager->flush();
 
         if ('start' === $transition && null !== $client = $booking->getClient()) {

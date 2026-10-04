@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Booking\Service;
 
+use App\Availability\Entity\Availability;
 use App\Booking\Entity\Booking;
 use App\Booking\Entity\BookingItem;
 use App\Catalog\Entity\Service;
@@ -29,7 +30,7 @@ final class BookingService
      *                                   n'appartient pas à l'activité, ou si l'activité
      *                                   n'est pas publiée
      */
-    public function createBooking(User $client, Service $service, ServicePackage $package, int $quantity = 1): Booking
+    public function createBooking(User $client, Service $service, ServicePackage $package, int $quantity = 1, ?\DateTimeImmutable $startsAt = null, ?Availability $slot = null): Booking
     {
         if ($quantity < 1) {
             throw new \InvalidArgumentException('La quantité doit être au moins 1.');
@@ -51,9 +52,24 @@ final class BookingService
             ->setQuantity($quantity)
             ->setCurrency($package->getCurrency());
 
+        if (null !== $startsAt && $startsAt < new \DateTimeImmutable()) {
+            throw new \InvalidArgumentException('Choisissez une date et une heure à venir.');
+        }
+
+        // Places prises sur le créneau choisi (contrôle de capacité par l'entité).
+        if (null !== $slot) {
+            if ($slot->getService() !== $service) {
+                throw new \InvalidArgumentException('Ce créneau n\'appartient pas à l\'activité choisie.');
+            }
+            $slot->reserve($quantity);
+            $startsAt = $slot->getStartsAt();
+        }
+
         $booking = (new Booking())
             ->setClient($client)
             ->setService($service)
+            ->setParticipants($quantity)
+            ->setStartsAt($startsAt)
             ->setCurrency($package->getCurrency())
             ->setTotalPrice($this->multiply($package->getPrice(), $quantity));
         $booking->addItem($item);

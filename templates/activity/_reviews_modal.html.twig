@@ -28,22 +28,27 @@
                 <h2 class="reviews-modal__title" id="reviews-modal-title">{{ 'Avis clients'|trans }}</h2>
                 <div class="reviews-modal__score">
                     <span class="reviews-modal__score-label">{{ 'Note globale'|trans }}</span>
-                    <span class="reviews-modal__score-value">{{ detail.reviewsSummary.score }} <span>/{{ detail.reviewsSummary.outOf }}</span></span>
+                    <span class="reviews-modal__score-value">{{ review_score is not null ? review_score|number_format(1, ',') : '—' }} <span>/5</span></span>
                     <span class="reviews-modal__stars" aria-hidden="true">
                         {% for i in 1..5 %}{{ icon.star(20) }}{% endfor %}
                     </span>
-                    <span class="reviews-modal__count">{{ "D'après"|trans }} {{ detail.reviewsSummary.total }} {{ 'avis'|trans }}</span>
+                    <span class="reviews-modal__count">{{ "D'après"|trans }} {{ review_total }} {{ 'avis'|trans }}</span>
                 </div>
             </div>
 
             {# En-tête contextualisé, affiché au défilement (G.2). #}
             <div class="reviews-modal__context" data-modal-context hidden>
                 <h2 class="reviews-modal__context-title">{{ detail.modalTitle }}</h2>
-                <span class="reviews-modal__context-note">{{ icon.star(14) }} {{ detail.reviewsSummary.score }} ({{ detail.reviewsSummary.total }} {{ 'avis'|trans }})</span>
+                <span class="reviews-modal__context-note">{{ icon.star(14) }} {{ review_score is not null ? review_score|number_format(1, ',') : '—' }} ({{ review_total }} {{ 'avis'|trans }})</span>
             </div>
 
             <div class="reviews-modal__tools">
-                <button type="button" class="act-tool">{{ icon.sliders(16) }} {{ 'Filtre'|trans }}</button>
+                <label class="act-tool reviews-filter">{{ icon.sliders(16) }}
+                    <select data-review-filter aria-label="{{ 'Filtrer par note'|trans }}">
+                        <option value="">{{ 'Toutes les notes'|trans }}</option>
+                        {% for n in 5..1 %}<option value="{{ n }}">{{ n }} ★</option>{% endfor %}
+                    </select>
+                </label>
                 <div class="reviews-sort">
                     <button type="button" class="act-tool" data-sort-toggle aria-haspopup="listbox" aria-expanded="false">
                         {{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong data-sort-label>{{ 'Les plus récents'|trans }}</strong> {{ icon.chevron_down(14) }}

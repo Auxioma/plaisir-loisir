@@ -46,33 +46,93 @@ function initOfferCountdowns(root = document) {
  */
 function initBookingPanel(root = document) {
     const panel = root.querySelector('[data-booking]');
-    if (!panel) return;
+    if (!panel || panel.dataset.bookingReady) return;
+    panel.dataset.bookingReady = '1';
 
-    const price = parseInt(panel.dataset.price, 10) || 0;
+    const price = parseFloat(panel.dataset.price) || 0;
+    const capacity = parseInt(panel.dataset.capacity, 10) || 0;
+    const slots = JSON.parse(panel.dataset.slots || '{}');
+    const hasSlots = !Array.isArray(slots) && Object.keys(slots).length > 0;
     const totalEl = panel.querySelector('[data-booking-total]');
+    const seatsEl = panel.querySelector('[data-booking-seats]');
+    const dateEl = panel.querySelector('[data-booking-date]');
+    const timeEl = panel.querySelector('[data-booking-time]');
     const steppers = [...panel.querySelectorAll('[data-stepper]')];
+    const format = (n) => `${Number.isInteger(n) ? n : n.toFixed(2).replace('.', ',')}€`;
+
+    // Places restantes sur le créneau choisi (ou capacité de l'activité).
+    const limit = () => {
+        if (hasSlots && dateEl?.value && timeEl?.value) {
+            const slot = (slots[dateEl.value] || []).find((s) => s.time === timeEl.value);
+            if (slot) return slot.remaining;
+        }
+        return capacity || 99;
+    };
+
+    const travellers = () => steppers.reduce((sum, s) => sum + parseInt(s.dataset.count, 10), 0);
 
     const refresh = () => {
-        const travellers = steppers.reduce((sum, s) => sum + parseInt(s.dataset.count, 10), 0);
-        if (totalEl) totalEl.textContent = `${price * travellers}€`;
+        const max = limit();
+        const total = travellers();
+        if (totalEl) totalEl.textContent = format(price * total);
         steppers.forEach((s) => {
             const min = parseInt(s.dataset.min, 10);
             const count = parseInt(s.dataset.count, 10);
             s.querySelector('[data-step="-1"]').disabled = count <= min;
+            s.querySelector('[data-step="1"]').disabled = total >= max;
             s.querySelector('[data-stepper-value]').textContent = count;
+            const input = s.querySelector('[data-stepper-input]');
+            if (input) input.value = count;
         });
+        if (seatsEl) {
+            seatsEl.hidden = !(hasSlots && timeEl?.value);
+            seatsEl.textContent = `${max} place${max > 1 ? 's' : ''} restante${max > 1 ? 's' : ''} sur ce créneau`;
+        }
     };
+
+    // Heures du jour choisi (créneaux ouverts par le professionnel).
+    const fillTimes = () => {
+        if (!hasSlots || !timeEl) return;
+        const wanted = timeEl.value || timeEl.dataset.selected;
+        timeEl.querySelectorAll('option:not([value=""])').forEach((o) => o.remove());
+        (slots[dateEl.value] || []).forEach((s) => {
+            const option = new Option(`${s.time.replace(':', 'h')} · ${s.remaining} place${s.remaining > 1 ? 's' : ''}`, s.time);
+            option.selected = s.time === wanted;
+            timeEl.add(option);
+        });
+        timeEl.disabled = !dateEl.value;
+    };
+
+    dateEl?.addEventListener('change', () => { if (timeEl) timeEl.value = ''; fillTimes(); refresh(); });
+    timeEl?.addEventListener('change', () => {
+        // Trop de voyageurs pour le créneau : on ramène au maximum possible.
+        let excess = travellers() - limit();
+        [...steppers].reverse().forEach((s) => {
+            const min = parseInt(s.dataset.min, 10);
+            const count = parseInt(s.dataset.count, 10);
+            const cut = Math.min(excess, count - min);
+            if (cut > 0) { s.dataset.count = count - cut; excess -= cut; }
+        });
+        refresh();
+    });
 
     steppers.forEach((s) => {
         s.querySelectorAll('[data-step]').forEach((btn) => {
             btn.addEventListener('click', () => {
                 const min = parseInt(s.dataset.min, 10);
-                const next = parseInt(s.dataset.count, 10) + parseInt(btn.dataset.step, 10);
-                s.dataset.count = Math.max(min, next);
+                const step = parseInt(btn.dataset.step, 10);
+                if (step > 0 && travellers() >= limit()) return;
+                s.dataset.count = Math.max(min, parseInt(s.dataset.count, 10) + step);
                 refresh();
             });
         });
     });
+
+    panel.addEventListener('submit', (event) => {
+        if (travellers() < 1) { event.preventDefault(); }
+    });
+
+    fillTimes();
     refresh();
 }
 
@@ -81,12 +141,72 @@ function initBookingPanel(root = document) {
  */
 function initReviewFormStars(root = document) {
     const stars = [...root.querySelectorAll('.act-review-form__star')];
+    const note = root.querySelector('[data-review-note]');
     stars.forEach((star) => {
         star.addEventListener('click', () => {
             const rate = parseInt(star.dataset.rate, 10);
             stars.forEach((s) => s.classList.toggle('is-on', parseInt(s.dataset.rate, 10) <= rate));
+            if (note) note.value = String(rate);
         });
     });
+    // Une note est obligatoire avant l'envoi.
+    note?.form.addEventListener('submit', (event) => {
+        if (!note.value) {
+            event.preventDefault();
+            stars[0]?.focus();
+            note.form.querySelector('.act-review-form__stars')?.classList.add('is-invalid');
+        }
+    });
+}
+
+/*
+ * 3 bis. Partage de la fiche, « Cet avis m'a aidé », filtre de la modale
+ *        d'avis (04/10).
+ */
+function initActivityExtras(root = document) {
+    root.querySelectorAll('[data-share-url]').forEach((btn) => {
+        if (btn.dataset.shareReady) return;
+        btn.dataset.shareReady = '1';
+        btn.addEventListener('click', async () => {
+            const { shareUrl: url, shareTitle: title, shareDone: done } = btn.dataset;
+            if (navigator.share) {
+                try { await navigator.share({ title, url }); } catch (e) { /* partage annulé */ }
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(url);
+                btn.setAttribute('title', done);
+                btn.classList.add('is-active');
+                setTimeout(() => btn.classList.remove('is-active'), 1500);
+            } catch (e) {
+                window.prompt(title, url);
+            }
+        });
+    });
+
+    root.querySelectorAll('[data-helpful]').forEach((btn) => {
+        if (btn.dataset.helpfulReady) return;
+        btn.dataset.helpfulReady = '1';
+        const key = `tm-helpful-${btn.dataset.helpful}`;
+        const read = () => { try { return localStorage.getItem(key) === '1'; } catch (e) { return false; } };
+        const paint = (on) => { btn.classList.toggle('is-active', on); btn.setAttribute('aria-pressed', String(on)); };
+        paint(read());
+        btn.addEventListener('click', () => {
+            const on = !read();
+            try { localStorage.setItem(key, on ? '1' : '0'); } catch (e) { /* stockage indisponible */ }
+            paint(on);
+        });
+    });
+
+    const filter = root.querySelector('[data-review-filter]');
+    if (filter && !filter.dataset.ready) {
+        filter.dataset.ready = '1';
+        filter.addEventListener('change', () => {
+            root.querySelectorAll('#reviews-modal [data-review]').forEach((item) => {
+                item.hidden = filter.value !== '' && item.dataset.stars !== filter.value;
+            });
+        });
+    }
 }
 
 /*
@@ -421,6 +541,7 @@ const start = () => {
     initBookingPanel();
     initReviewFormStars();
     initReviewsModal();
+    initActivityExtras();
     initListingToggles();
     initExplore();
 };

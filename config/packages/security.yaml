@@ -103,6 +103,9 @@ security:
         # tout /pro/* hors parcours d'authentification (règle publique plus haut).
         - { path: ^/(pro|en/pro)/, roles: ROLE_PROVIDER }
 
+        # Tunnel de réservation : récapitulatif, paiement, confirmation (03/10).
+        - { path: ^/(reservations|en/bookings)/, roles: ROLE_USER }
+
         # « Mes favoris » du menu principal (01/10).
         - { path: ^/(mes-favoris|en/my-favourites), roles: ROLE_USER }
 

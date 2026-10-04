@@ -777,6 +777,19 @@ a.act-popup__title:hover { color: var(--pl-action); }
     cursor: pointer;
 }
 .act-booking__input .pl-icon:last-child { margin-left: auto; }
+/* Panneau réel (03/10) : champ natif (date, liste) dans la boîte maquettée. */
+.act-booking__input--control { padding: 0 12px; }
+.act-booking__input--control:focus-within { border-color: var(--pl-action); }
+.act-booking__input--control select,
+.act-booking__input--control input {
+    flex: 1; min-width: 0; height: 42px;
+    padding: 0; border: 0; background: transparent;
+    font: inherit; font-size: var(--pl-fs-body-sm); color: var(--pl-text);
+    cursor: pointer; outline: none;
+}
+.act-booking__input--control select:disabled { cursor: not-allowed; color: var(--pl-text-secondary); }
+.act-booking__hint { margin: -4px 0 var(--pl-sp-12); font-size: 12.5px; color: var(--pl-text-secondary); }
+.act-stepper__controls button:disabled { opacity: .4; cursor: not-allowed; }
 .act-booking__travellers { display: flex; flex-direction: column; gap: var(--pl-sp-8); margin-bottom: var(--pl-sp-12); }
 .act-stepper {
     display: flex; align-items: center; justify-content: space-between;
@@ -1044,3 +1057,56 @@ a.act-popup__title:hover { color: var(--pl-action); }
     text-align: center;
     color: var(--pl-text-secondary);
 }
+
+/* ===========================================================================
+ *  Tunnel de réservation (03/10) : récapitulatif, paiement, confirmation.
+ * ======================================================================== */
+.bk { padding-block: 32px 64px; max-width: 1100px; }
+.bk-title { margin: 0 0 20px; color: var(--pl-text); font-size: 28px; font-weight: 700; }
+.bk-steps { display: flex; gap: 8px; margin: 0 0 24px; padding: 0; list-style: none; counter-reset: bk; font-size: 13.5px; color: var(--pl-text-secondary); }
+.bk-steps li { display: flex; align-items: center; gap: 8px; counter-increment: bk; }
+.bk-steps li::before { content: counter(bk); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--pl-border); color: var(--pl-text); font-weight: 700; font-size: 12px; }
+.bk-steps li + li::after { order: -1; content: ""; width: 28px; height: 1px; background: var(--pl-border); }
+.bk-steps .is-done::before { content: "✓"; background: #16a34a; color: #fff; }
+.bk-steps .is-current { color: var(--pl-text); font-weight: 700; }
+.bk-steps .is-current::before { background: var(--pl-action); color: #fff; }
+.bk-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+.bk-card { padding: 24px; background: var(--pl-white); border: 1px solid var(--pl-border); border-radius: 12px; box-shadow: 0 2px 12px rgba(11, 20, 55, .05); }
+.bk-recap { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 20px; }
+.bk-recap > img { width: 160px; height: 120px; border-radius: 10px; object-fit: cover; }
+.bk-recap h2 { margin: 0 0 10px; color: var(--pl-text); font-size: 20px; font-weight: 700; }
+.bk-recap ul { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; color: var(--pl-text-secondary); font-size: 14px; }
+.bk-recap li { display: flex; align-items: center; gap: 8px; }
+.bk-recap__price { grid-column: 1 / -1; margin: 8px 0 0; padding-top: 14px; border-top: 1px solid var(--pl-border); font-size: 14px; }
+.bk-recap__price > div { display: flex; justify-content: space-between; padding: 4px 0; }
+.bk-recap__price dd { margin: 0; color: var(--pl-text); font-weight: 600; }
+.bk-recap__total { margin-top: 6px; padding-top: 10px !important; border-top: 1px dashed var(--pl-border); font-size: 17px; }
+.bk-recap__total dt, .bk-recap__total dd { color: var(--pl-text); font-weight: 700; }
+.bk-pay h2 { margin: 0 0 10px; font-size: 18px; font-weight: 700; color: var(--pl-text); }
+.bk-pay form { margin: 14px 0 0; }
+.bk-note { margin: 10px 0 0; color: var(--pl-text-secondary); font-size: 13px; }
+.bk-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; color: var(--pl-action); font-size: 13.5px; font-weight: 600; text-decoration: none; }
+.bk-link--btn { padding: 0; background: none; border: 0; cursor: pointer; color: var(--pl-text-secondary); font-weight: 500; text-decoration: underline; }
+.bk-done { display: flex; flex-direction: column; gap: 14px; text-align: center; align-items: center; }
+.bk-done .bk-recap { width: 100%; text-align: left; margin-top: 8px; }
+.bk-done__ico { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; background: #e4f8e8; color: #16a34a; }
+.bk-done__ico.is-red { background: #fde8eb; color: #e5324b; }
+.bk-done__ico.is-orange { background: #fdf0e0; color: #f08a00; }
+.bk-done p { margin: 0; color: var(--pl-text-secondary); }
+.bk-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 8px; }
+.bk-actions form { margin: 0; }
+@media (max-width: 991.98px) { .bk-grid { grid-template-columns: 1fr; } }
+@media (max-width: 575.98px) { .bk-recap { grid-template-columns: 1fr; } .bk-recap > img { width: 100%; height: 180px; } .bk-steps { flex-wrap: wrap; } .bk-steps li + li::after { display: none; } }
+
+/* Fiche activité : avis réels, galerie complète, formulaire d'avis (04/10). */
+.act-noreview { grid-column: 1 / -1; margin: 0; color: var(--pl-text-secondary); }
+.act-review-form--locked { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.act-review-form__stars.is-invalid { outline: 2px solid #e5324b; outline-offset: 4px; border-radius: 8px; }
+.review-card__reply { margin: 8px 0 0; padding: 8px 12px; background: var(--pl-surface-alt, #f6f7fb); border-left: 3px solid var(--pl-action); border-radius: 6px; font-size: 13.5px; }
+.review-card__menu-panel form { margin: 0; }
+.review-card__menu-panel button.review-card__menu-item { width: 100%; background: none; border: 0; text-align: left; font: inherit; cursor: pointer; }
+.review-card__helpful.is-active { color: var(--pl-action); }
+.reviews-filter select { border: 0; background: transparent; font: inherit; cursor: pointer; }
+.act-gallery-all { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.act-gallery-all img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; }
+.pl-iconbtn.is-active { color: #e5324b; }

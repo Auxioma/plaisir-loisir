@@ -58,6 +58,8 @@ final class FavoriteExtension extends AbstractExtension
         foreach ($this->favorites->findBy(['user' => $user]) as $favorite) {
             /* @var Favorite $favorite */
             match (true) {
+                null !== $favorite->getDestination() => $this->keys['destination'][$favorite->getDestination()->getSlug()] = true,
+                null !== $favorite->getService() => $this->keys['activite'][$favorite->getService()->getSlug()] = true,
                 null !== $favorite->getEvent() => $this->keys['evenement'][$favorite->getEvent()->getSlug()] = true,
                 null !== $favorite->getGroup() => $this->keys['groupe'][$favorite->getGroup()->getSlug()] = true,
                 null !== $favorite->getPrivateActivity() => $this->keys['activite-privee'][(string) $favorite->getPrivateActivity()->getId()] = true,

@@ -1,5 +1,14 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        # Pages officielles de la plateforme (pied de page, Support pro).
+        # À confirmer par le client : surchargeables par variables d'environnement.
+        social_links:
+            facebook: '%env(SOCIAL_FACEBOOK_URL)%'
+            instagram: '%env(SOCIAL_INSTAGRAM_URL)%'
+            tiktok: '%env(SOCIAL_TIKTOK_URL)%'
+            youtube: '%env(SOCIAL_YOUTUBE_URL)%'
+            linkedin: '%env(SOCIAL_LINKEDIN_URL)%'
 
 when@test:
     twig:

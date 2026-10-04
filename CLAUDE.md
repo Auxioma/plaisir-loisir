@@ -129,10 +129,15 @@ réservations (workflow), calendrier/créneaux, messagerie + notes clients, avis
 (commission 12 %), offres (`Promotion`), statistiques (`Stats\PageView`), paramètres, documents,
 tickets support (`SupportTicket`, réponse depuis EasyAdmin). Démo : `ProviderSpaceFixtures`.
 
-**Reste** : tunnel réservation + Stripe réel (la date de séance `Booking::startsAt` doit y être
-saisie), page publique « Offres du moment » encore statique (`StaticOffers`, pas branchée sur
-`Promotion`), domaine `Event/` (encore statique), liens réseaux sociaux officiels à confirmer
-(`ProviderSupportController::SOCIALS`, pied de page),
+**Tunnel de réservation** (04/10) : fiche activité → `BookingController` (créneaux `Availability`,
+sinon horaires d'ouverture) → récapitulatif → `BookingCheckout` (Stripe si `STRIPE_SECRET_KEY`
+commence par `sk_`, sinon paiement simulé) → confirmation. Fuseau applicatif forcé à
+Europe/Paris (`Kernel::TIMEZONE` + `SessionTimezoneMiddleware` côté PostgreSQL).
+
+**Reste** : Stripe réel (clés), pages encore statiques — « Offres du moment » (`StaticOffers`,
+pas branchée sur `Promotion`), Cadeaux, sous-pages Destinations, domaine `Event/` ; liens
+réseaux sociaux officiels à confirmer (variables `SOCIAL_*_URL` du `.env`, global Twig
+`social_links`),
 vérif d'email, pages politique de confidentialité / CGV / cookies. Détail : fin de
 `docs/cablage-back-front.md`.
 

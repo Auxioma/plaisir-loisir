@@ -32,13 +32,6 @@ final class ProviderSupportController extends AbstractProviderSpaceController
 {
     private const PER_PAGE = 5;
 
-    public const SOCIALS = [
-        'facebook' => 'https://www.facebook.com/trouvemoi.eu',
-        'instagram' => 'https://www.instagram.com/trouvemoi.eu',
-        'linkedin' => 'https://www.linkedin.com/company/trouvemoi',
-        'youtube' => 'https://www.youtube.com/@trouvemoi',
-    ];
-
     public function __construct(
         private readonly SupportTicketRepository $tickets,
         private readonly FaqEntryRepository $faq,
@@ -76,7 +69,6 @@ final class ProviderSupportController extends AbstractProviderSpaceController
             'subject' => (string) $request->query->get('sujet', ''),
             'faq' => \array_slice($faq, 0, 5),
             'contact' => ['email' => InitialLegalTexts::CONTACT, 'phone' => InitialLegalTexts::TELEPHONE],
-            'socials' => self::SOCIALS,
             'promo' => ['title' => 'Besoin d’aide ?', 'text' => 'Notre équipe est là pour vous accompagner à chaque étape.', 'cta' => 'Nous contacter', 'href' => $this->generateUrl('app_pro_support').'#ticket'],
         ]);
     }

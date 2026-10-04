@@ -204,7 +204,7 @@
                         <div class="pl-card__media">
                             <img src="{{ asset('images/home/' ~ a.img) }}" alt="{{ a.title }}">
                             {% if a.tag %}<span class="pl-card__tag pl-card__tag--bestseller">{{ a.tag }}</span>{% endif %}
-                            <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(18) }}</button>
+                            {% include '_partials/_event_fav.html.twig' with { type: 'activite', key: a.slug, class: 'pl-card__fav' } %}
                         </div>
                         <div class="pl-card__body">
                             <div class="pl-card__title">{{ a.title }}</div>
@@ -246,7 +246,7 @@
                         <div class="pl-card__media">
                             <img src="{{ asset('images/home/' ~ d.img) }}" alt="{{ d.title }}">
                             {% if d.tag %}<span class="pl-card__tag {{ d.tag == 'Bestseller' ? 'pl-card__tag--bestseller' : 'pl-card__tag--popular' }}">{{ d.tag }}</span>{% endif %}
-                            <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(18) }}</button>
+                            {% include '_partials/_event_fav.html.twig' with { type: 'destination', key: d.slug, class: 'pl-card__fav' } %}
                         </div>
                         <div class="pl-card__body">
                             <div class="pl-card__title">{{ d.title }}</div>
@@ -322,7 +322,7 @@
                         <div class="pl-card__media">
                             <img src="{{ asset('images/home/' ~ e.img) }}" alt="{{ e.title }}">
                             <span class="pl-card__tag pl-card__tag--cat">{{ e.cat }}</span>
-                            <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(18) }}</button>
+                            {% include '_partials/_event_fav.html.twig' with { type: 'evenement', key: e.slug, class: 'pl-card__fav' } %}
                             <span class="pl-card__date">{{ e.date }}</span>
                         </div>
                         <div class="pl-card__body">
@@ -358,7 +358,7 @@
                         <div class="home-reviews__stars">{{ icon.star(18) }}{{ icon.star(18) }}{{ icon.star(18) }}{{ icon.star(18) }}{{ icon.star(18) }}</div>
                         <div class="home-reviews__score-count">{{ 'Basé sur %count% avis'|trans({'%count%': '8955'}) }}</div>
                     </div>
-                    <a href="#" class="btn-see-all">{{ "Voir plus d'avis"|trans }} {{ icon.arrow_up_right(16) }}</a>
+                    <a href="{{ path('app_activities', {tri: 'note'}) }}" class="btn-see-all">{{ "Voir plus d'avis"|trans }} {{ icon.arrow_up_right(16) }}</a>
                 </div>
             </div>
             <div class="home-reviews__grid">
@@ -381,7 +381,7 @@
                         </div>
                         <div class="review-card__foot">
                             <span>{{ 'Est-ce que ça vous a aidé ?'|trans }} {{ icon.thumbs_up(16) }}</span>
-                            <a href="#">{{ 'Traduire'|trans }}</a>
+                            <a href="https://translate.google.com/?sl=auto&tl={{ app.request.locale == 'en' ? 'fr' : 'en' }}&op=translate&text={{ r.text|url_encode }}" target="_blank" rel="noopener">{{ 'Traduire'|trans }}</a>
                         </div>
                     </article>
                 {% endfor %}
