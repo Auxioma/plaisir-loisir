@@ -17,7 +17,7 @@
                         </span>
                         <strong class="pw-review__rating">{{ t.rating }}</strong>
                         <span class="pw-review__dot" aria-hidden="true"></span>
-                        <a href="#" class="pw-review__count">{{ t.reviews }}</a>
+                        <span class="pw-review__count">{{ t.reviews }}</span>
                     </div>
                     <p class="pw-review__quote">"{{ t.quote }}"</p>
                     <div class="pw-review__author">
@@ -32,11 +32,11 @@
         </div>
 
         <nav class="pw-pager" aria-label="{{ 'Pagination des avis'|trans }}">
-            <a href="#" class="pw-pager__arrow" aria-label="{{ 'Page précédente'|trans }}">{{ icon.chevron_left(16) }}</a>
-            {% for p in 1..4 %}
-                <a href="#" class="pw-pager__page{{ p == 1 ? ' is-active' }}"{{ p == 1 ? ' aria-current="page"' : '' }}>{{ p }}</a>
+            <span class="pw-pager__arrow is-disabled" aria-label="{{ 'Page précédente'|trans }}">{{ icon.chevron_left(16) }}</span>
+            {% for p in 1..1 %}
+                <span class="pw-pager__page{{ p == 1 ? ' is-active' }}"{{ p == 1 ? ' aria-current="page"' : '' }}>{{ p }}</span>
             {% endfor %}
-            <a href="#" class="pw-pager__arrow" aria-label="{{ 'Page suivante'|trans }}">{{ icon.chevron_right(16) }}</a>
+            <span class="pw-pager__arrow is-disabled" aria-label="{{ 'Page suivante'|trans }}">{{ icon.chevron_right(16) }}</span>
         </nav>
     </div>
 </section>

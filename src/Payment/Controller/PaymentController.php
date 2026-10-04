@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Payment\Controller;
 
+use App\Payment\Repository\PaymentRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -21,15 +23,36 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class PaymentController extends AbstractController
 {
+    public function __construct(
+        private readonly PaymentRepository $payments,
+    ) {
+    }
+
+    /**
+     * Retour de Stripe : on renvoie vers la confirmation de la réservation,
+     * qui affiche « en cours de confirmation » tant que le webhook n'a pas
+     * réglé le paiement.
+     */
     #[Route(path: ['fr' => '/paiement/succes', 'en' => '/en/payment/success'], name: 'payment_success', methods: ['GET'])]
-    public function success(): Response
+    public function success(Request $request): Response
     {
-        return new Response('Merci, votre paiement est en cours de confirmation.');
+        $payment = $this->payments->findOneByReference((string) $request->query->get('session_id', ''));
+        $booking = $payment?->getBooking();
+
+        if (null !== $booking && $booking->getClient() === $this->getUser()) {
+            return $this->redirectToRoute('app_booking_confirmation', ['id' => (string) $booking->getId()]);
+        }
+
+        $this->addFlash('info', 'Merci, votre paiement est en cours de confirmation.');
+
+        return $this->redirectToRoute('app_account_history');
     }
 
     #[Route(path: ['fr' => '/paiement/annule', 'en' => '/en/payment/canceled'], name: 'payment_cancel', methods: ['GET'])]
     public function cancel(): Response
     {
-        return new Response('Paiement annulé.');
+        $this->addFlash('info', 'Paiement annulé : aucune somme n’a été prélevée. Votre réservation reste en attente dans « Mes réservations ».');
+
+        return $this->redirectToRoute($this->getUser() ? 'app_account_history' : 'app_activities');
     }
 }

@@ -20,10 +20,10 @@
                 <img class="tm-footer__logo" src="{{ asset('images/logo-trouvemoi.png') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="130" height="36">
                 <p class="tm-footer__text">{{ 'La plateforme qui vous aide à trouver les meilleures activités et loisirs partout en France.'|trans }}</p>
                 <div class="tm-footer__socials">
-                    <a href="#" aria-label="Facebook">{{ icon.facebook(12) }}</a>
-                    <a href="#" aria-label="Instagram">{{ icon.instagram(12) }}</a>
-                    <a href="#" aria-label="TikTok">{{ icon.tiktok(12) }}</a>
-                    <a href="#" aria-label="YouTube">{{ icon.youtube(12) }}</a>
+                    <a href="{{ social_links.facebook }}" target="_blank" rel="noopener" aria-label="Facebook">{{ icon.facebook(12) }}</a>
+                    <a href="{{ social_links.instagram }}" target="_blank" rel="noopener" aria-label="Instagram">{{ icon.instagram(12) }}</a>
+                    <a href="{{ social_links.tiktok }}" target="_blank" rel="noopener" aria-label="TikTok">{{ icon.tiktok(12) }}</a>
+                    <a href="{{ social_links.youtube }}" target="_blank" rel="noopener" aria-label="YouTube">{{ icon.youtube(12) }}</a>
                 </div>
             </div>
 
@@ -41,7 +41,7 @@
                 <a href="{{ path('app_corporate_about') }}">{{ 'Qui sommes-nous ?'|trans }}</a>
                 <a href="{{ path('app_corporate_partner') }}">{{ 'Devenir partenaire'|trans }}</a>
                 <a href="{{ path('app_corporate_careers') }}">{{ 'Carrières'|trans }}</a>
-                <a href="#">{{ 'Presse'|trans }}</a>
+                <a href="{{ path('app_corporate_contact', {sujet: 'presse'}) }}">{{ 'Presse'|trans }}</a>
                 <a href="{{ path('app_corporate_contact') }}">{{ 'Contact'|trans }}</a>
             </nav>
 

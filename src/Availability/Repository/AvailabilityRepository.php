@@ -29,10 +29,25 @@ class AvailabilityRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('a')
             ->andWhere('a.service = :service')
             ->andWhere('a.startsAt >= :from')
-            ->setParameter('service', $service)
+            ->setParameter('service', $service->getId(), 'ulid')
             ->setParameter('from', $from)
             ->orderBy('a.startsAt', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Créneau d'une activité qui commence exactement à cette date-heure.
+     */
+    public function findOneByServiceAndStart(Service $service, \DateTimeImmutable $startsAt): ?Availability
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.service = :service')
+            ->andWhere('a.startsAt = :start')
+            ->setParameter('service', $service->getId(), 'ulid')
+            ->setParameter('start', $startsAt)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

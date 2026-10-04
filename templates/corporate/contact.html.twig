@@ -105,7 +105,7 @@
                                     <p class="ct-method__strong">{{ m.strong|trans }}</p>
                                     <p class="ct-method__sub">{{ m.sub|trans }}</p>
                                 {% endif %}
-                                {% if m.link %}<a href="#" class="ct-method__link">{{ m.link|trans }} {{ icon.chevron_right(14) }}</a>{% endif %}
+                                {% if m.link %}<a href="{{ m.title == 'FAQ' ? path('app_faq') : (app.user ? path('app_account_contact') : 'mailto:contact@trouvemoi.fr') }}" class="ct-method__link">{{ m.link|trans }} {{ icon.chevron_right(14) }}</a>{% endif %}
                             </div>
                         </article>
                     {% endfor %}

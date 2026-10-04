@@ -9,6 +9,8 @@
 {% endblock %}
 
 {% block body %}
+{% set review_total = reviews|length %}
+{% set review_score = review_total > 0 ? (reviews|reduce((c, r) => c + r.stars, 0) / review_total)|round(1) : null %}
 <div class="act-detail">
 
     {# ==================================================================
@@ -32,8 +34,8 @@
 
             <h1 class="act-head__title">{{ detail.title }}</h1>
             <div class="act-detail__subline">
-                <span class="act-rating">{{ icon.star(12) }} {{ detail.rating }}</span>
-                <a class="act-detail__reviews-link" href="#avis">{{ detail.reviewsCount }} {{ 'avis'|trans }}</a>
+                {% if review_score is not null %}<span class="act-rating">{{ icon.star(12) }} {{ review_score|number_format(1, ',') }}</span>{% endif %}
+                <a class="act-detail__reviews-link" href="#avis">{{ review_total }} {{ 'avis'|trans }}</a>
                 <span class="act-detail__organizer">{{ "Organisateur de l'activité :"|trans }} <strong>{{ detail.organizer }}</strong></span>
             </div>
         </div>
@@ -51,7 +53,7 @@
                     <figure class="act-gallery__item {{ loop.first ? 'act-gallery__item--big' }}">
                         <img src="{{ asset(img) }}" alt="{{ detail.title }} — photo {{ loop.index }}">
                         {% if loop.last %}
-                            <button type="button" class="act-gallery__all">{{ icon.grid(16) }} {{ 'Voir toutes les photos'|trans }}</button>
+                            <button type="button" class="act-gallery__all" data-bs-toggle="modal" data-bs-target="#gallery-modal">{{ icon.grid(16) }} {{ 'Voir toutes les photos'|trans }}</button>
                         {% endif %}
                     </figure>
                 {% endfor %}
@@ -62,8 +64,8 @@
                 <span class="act-detail__place">{{ icon.map_pin(18) }} {{ detail.place }}</span>
                 <a href="#logistique" class="act-detail__maplink">{{ 'voir sur la carte'|trans }} {{ icon.arrow_up_right(14) }}</a>
                 <span class="act-detail__placebar-actions">
-                    <button type="button" class="pl-iconbtn pl-iconbtn--bordered" aria-label="{{ 'Partager'|trans }}">{{ icon.share(18) }}</button>
-                    <button type="button" class="pl-iconbtn pl-iconbtn--bordered" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(18) }}</button>
+                    <button type="button" class="pl-iconbtn pl-iconbtn--bordered" aria-label="{{ 'Partager'|trans }}" data-share-url="{{ url('app_activity_show', {slug: activity.slug}) }}" data-share-title="{{ detail.title }}" data-share-done="{{ 'Lien copié !'|trans }}">{{ icon.share(18) }}</button>
+                    {% include '_partials/_event_fav.html.twig' with { type: 'activite', key: activity.slug, class: 'pl-iconbtn pl-iconbtn--bordered' } %}
                 </span>
             </div>
 
@@ -179,47 +181,85 @@
 
         {# --- Panneau de réservation sticky (spec §F). --- #}
         <aside class="act-booking" aria-label="{{ 'Réserver cette activité'|trans }}">
-            <div class="act-booking__panel" data-booking data-price="{{ detail.price }}">
+            {#
+                Panneau de réservation (03/10) : vrai formulaire. Dates et
+                heures = créneaux ouverts par le professionnel (data-slots) ;
+                sans créneau, date libre et horaires d'ouverture. Envoi vers
+                BookingController::create → récapitulatif → paiement.
+            #}
+            {% set draft = booking.draft %}
+            {% set adults = draft.adults ?? 2 %}
+            {% set children = draft.children ?? 0 %}
+            {% set unit = booking.price ?? detail.price %}
+            <form class="act-booking__panel" id="reserver" method="post" action="{{ path('app_booking_create', {slug: activity.slug}) }}"
+                  data-booking data-price="{{ unit }}" data-slots="{{ booking.slots|json_encode }}" data-times="{{ booking.times|json_encode }}" data-capacity="{{ booking.capacity }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">
                 {# Offre en cours du professionnel (espace pro « Offres & Promotions », 02/10). #}
                 {% if promotion is defined and promotion %}
                     <p class="act-booking__promo"><b>{{ promotion.badge }}</b> {{ promotion.title }}{% if promotion.subtitle %} — {{ promotion.subtitle }}{% endif %}<small>{{ 'Jusqu’au'|trans }} {{ promotion.endsAt|date('d/m/Y') }}</small></p>
                 {% endif %}
-                <p class="act-booking__price">{{ 'À partir de'|trans }} <strong>{{ detail.price }}€</strong> / {{ 'personne'|trans }}</p>
+                <p class="act-booking__price">{{ 'À partir de'|trans }} <strong>{{ unit|number_format(unit == unit|round ? 0 : 2, ',', ' ') }}€</strong> / {{ 'personne'|trans }}</p>
 
-                <label class="act-booking__field">
+                <label class="act-booking__field" for="booking-date">
                     <span>{{ 'Date'|trans }}</span>
-                    <span class="act-booking__input">{{ icon.calendar(18) }} {{ 'choisissez une date'|trans }} {{ icon.chevron_down(14) }}</span>
+                    <span class="act-booking__input act-booking__input--control">
+                        {{ icon.calendar(18) }}
+                        {% if booking.slots is not empty %}
+                            <select id="booking-date" name="date" required data-booking-date>
+                                <option value="">{{ 'choisissez une date'|trans }}</option>
+                                {% for day, times in booking.slots %}
+                                    <option value="{{ day }}"{{ draft.date is defined and draft.date == day ? ' selected' }}>{{ day|date('d/m/Y') }}</option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <input id="booking-date" type="date" name="date" required min="{{ 'tomorrow'|date('Y-m-d') }}" max="{{ '+1 year'|date('Y-m-d') }}" value="{{ draft.date ?? '' }}" data-booking-date>
+                        {% endif %}
+                    </span>
                 </label>
-                <label class="act-booking__field">
+                <label class="act-booking__field" for="booking-time">
                     <span>{{ 'Heure'|trans }}</span>
-                    <span class="act-booking__input">{{ icon.clock(18) }} {{ 'Sélectionner une heure'|trans }} {{ icon.chevron_down(14) }}</span>
+                    <span class="act-booking__input act-booking__input--control">
+                        {{ icon.clock(18) }}
+                        <select id="booking-time" name="time" required data-booking-time data-selected="{{ draft.time ?? '' }}">
+                            <option value="">{{ 'Sélectionner une heure'|trans }}</option>
+                            {% if booking.slots is empty %}
+                                {% for t in booking.times %}<option value="{{ t }}"{{ (draft.time ?? '') == t ? ' selected' }}>{{ t|replace({':': 'h'}) }}</option>{% endfor %}
+                            {% endif %}
+                        </select>
+                    </span>
                 </label>
+                {% if booking.slots is empty %}
+                    <p class="act-booking__hint">{{ 'L’organisateur confirme votre créneau après la réservation.'|trans }}</p>
+                {% endif %}
 
                 <div class="act-booking__travellers">
                     <span class="act-booking__field-label">{{ 'Voyageurs'|trans }}</span>
-                    <div class="act-stepper" data-stepper data-min="1" data-count="2">
+                    <div class="act-stepper" data-stepper data-min="1" data-count="{{ adults }}">
                         <span>{{ 'Adulte'|trans }} <small>{{ '(18 et +)'|trans }}</small></span>
                         <span class="act-stepper__controls">
                             <button type="button" data-step="-1" aria-label="{{ "Moins d'adultes"|trans }}">{{ icon.minus(14) }}</button>
-                            <output data-stepper-value>2</output>
+                            <output data-stepper-value>{{ adults }}</output>
                             <button type="button" data-step="1" aria-label="{{ "Plus d'adultes"|trans }}">{{ icon.plus(14) }}</button>
                         </span>
+                        <input type="hidden" name="adults" value="{{ adults }}" data-stepper-input>
                     </div>
-                    <div class="act-stepper" data-stepper data-min="0" data-count="0">
+                    <div class="act-stepper" data-stepper data-min="0" data-count="{{ children }}">
                         <span>{{ 'Enfants'|trans }} <small>{{ '(0 à 17 ans)'|trans }}</small></span>
                         <span class="act-stepper__controls">
                             <button type="button" data-step="-1" aria-label="{{ "Moins d'enfants"|trans }}">{{ icon.minus(14) }}</button>
-                            <output data-stepper-value>0</output>
+                            <output data-stepper-value>{{ children }}</output>
                             <button type="button" data-step="1" aria-label="{{ "Plus d'enfants"|trans }}">{{ icon.plus(14) }}</button>
                         </span>
+                        <input type="hidden" name="children" value="{{ children }}" data-stepper-input>
                     </div>
+                    <p class="act-booking__hint" data-booking-seats hidden></p>
                 </div>
 
-                <p class="act-booking__total">{{ 'Total'|trans }} <strong data-booking-total>{{ detail.price * 2 }}€</strong></p>
+                <p class="act-booking__total">{{ 'Total'|trans }} <strong data-booking-total>{{ unit * (adults + children) }}€</strong></p>
 
-                <button type="button" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Réservez maintenant'|trans }}</button>
+                <button type="submit" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Réservez maintenant'|trans }}</button>
                 <p class="act-booking__note"><span aria-hidden="true">✓</span> <strong>{{ 'Annulation gratuite'|trans }}</strong> {{ "Jusqu'à 7 jours avant"|trans }}</p>
-            </div>
+            </form>
 
             <div class="act-booking__gift">
                 <h3>{{ "C'est pour offrir ?"|trans }}</h3>
@@ -243,16 +283,18 @@
                     <h2 class="home-section__title dest-reviews__title">{{ 'Ce que disent nos clients'|trans }}</h2>
                     <div class="dest-reviews__score">
                         <span class="dest-reviews__score-label">{{ 'Note globale'|trans }}</span>
-                        <span class="home-reviews__score-value">{{ detail.reviewsSummary.score }}<span>/{{ detail.reviewsSummary.outOf }}</span></span>
-                        <span class="home-reviews__stars" aria-hidden="true">{% for i in 1..5 %}<span class="{{ i <= 4 ? 'is-on' : 'is-off' }}">{{ icon.star(18) }}</span>{% endfor %}</span>
-                        <span class="home-reviews__score-count">{{ 'Basé sur'|trans }} {{ detail.reviewsSummary.total }} {{ 'avis'|trans }}</span>
+                        <span class="home-reviews__score-value">{{ review_score is not null ? review_score|number_format(1, ',') : '—' }}<span>/5</span></span>
+                        <span class="home-reviews__stars" aria-hidden="true">{% for i in 1..5 %}<span class="{{ review_score is not null and i <= review_score|round ? 'is-on' : 'is-off' }}">{{ icon.star(18) }}</span>{% endfor %}</span>
+                        <span class="home-reviews__score-count">{{ 'Basé sur'|trans }} {{ review_total }} {{ 'avis'|trans }}</span>
                     </div>
                 </div>
-                <button type="button" class="btn-see-all" data-bs-toggle="modal" data-bs-target="#reviews-modal">{{ "Voir plus d'avis"|trans }}</button>
+                {% if review_total > 2 %}<button type="button" class="btn-see-all" data-bs-toggle="modal" data-bs-target="#reviews-modal">{{ "Voir plus d'avis"|trans }}</button>{% endif %}
             </div>
             <div class="home-reviews__grid">
                 {% for r in reviews|slice(0, 2) %}
                     {% include 'activity/_review_card.html.twig' with { r: r } %}
+                {% else %}
+                    <p class="act-noreview">{{ 'Pas encore d’avis sur cette activité : soyez le premier à partager votre expérience après votre participation.'|trans }}</p>
                 {% endfor %}
             </div>
         </div>
@@ -263,20 +305,28 @@
        ================================================================ #}
     <section class="act-section">
         <div class="container">
-            <form class="act-review-form" action="#" method="post">
-                <div class="act-review-form__stars" role="radiogroup" aria-label="{{ 'Votre note'|trans }}">
-                    {% for i in 1..5 %}
-                        <button type="button" class="act-review-form__star" data-rate="{{ i }}" aria-label="{{ i }} {{ (i > 1 ? 'étoiles' : 'étoile')|trans }}">{{ icon.star(28) }}</button>
-                    {% endfor %}
+            {# Seule une participation terminée ouvre le formulaire (avis vérifiés). #}
+            {% if reviewable %}
+                <form class="act-review-form" action="{{ path('app_account_booking_review', {id: reviewable.id}) }}" method="post">
+                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                    <input type="hidden" name="note" value="" data-review-note>
+                    <div class="act-review-form__stars" role="radiogroup" aria-label="{{ 'Votre note'|trans }}">
+                        {% for i in 1..5 %}
+                            <button type="button" class="act-review-form__star" data-rate="{{ i }}" aria-label="{{ i }} {{ (i > 1 ? 'étoiles' : 'étoile')|trans }}">{{ icon.star(28) }}</button>
+                        {% endfor %}
+                    </div>
+                    <h2 class="home-section__title">{{ 'Ajouter un avis'|trans }}</h2>
+                    <p class="act-noreview">{{ 'Votre séance du'|trans }} {{ reviewable.startsAt ? reviewable.startsAt|pf_date('d MMMM y') : reviewable.createdAt|pf_date('d MMMM y') }}</p>
+                    <textarea name="commentaire" rows="7" maxlength="2000" placeholder="{{ 'Écrivez votre commentaire'|trans }}" aria-label="{{ 'Votre commentaire'|trans }}"></textarea>
+                    <button type="submit" class="pl-btn pl-btn--primary">{{ 'Envoyer un avis'|trans }}</button>
+                </form>
+            {% else %}
+                <div class="act-review-form act-review-form--locked">
+                    <h2 class="home-section__title">{{ 'Ajouter un avis'|trans }}</h2>
+                    <p class="act-noreview">{{ 'Les avis sont réservés aux participants : après votre séance, vous pourrez noter cette activité ici ou depuis « Mes réservations ».'|trans }}</p>
+                    <a class="pl-btn pl-btn--primary" href="#reserver">{{ 'Réserver cette activité'|trans }}</a>
                 </div>
-                <h2 class="home-section__title">{{ 'Ajouter un avis'|trans }}</h2>
-                <div class="act-review-form__row">
-                    <input type="text" name="name" placeholder="{{ 'Saisissez votre nom'|trans }}" aria-label="{{ 'Votre nom'|trans }}">
-                    <input type="email" name="email" placeholder="{{ 'Email'|trans }}" aria-label="{{ 'Votre email'|trans }}">
-                </div>
-                <textarea name="comment" rows="7" placeholder="{{ 'Écrivez votre commentaire'|trans }}" aria-label="{{ 'Votre commentaire'|trans }}"></textarea>
-                <button type="submit" class="pl-btn pl-btn--primary">{{ 'Envoyer un avis'|trans }}</button>
-            </form>
+            {% endif %}
         </div>
     </section>
 
@@ -296,6 +346,21 @@
             </div>
         </div>
     </section>
+
+    {# Modale « Toutes les photos ». #}
+    <div class="modal fade" id="gallery-modal" tabindex="-1" aria-label="{{ 'Toutes les photos'|trans }}">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5">{{ detail.title }}</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'Fermer'|trans }}"></button>
+                </div>
+                <div class="modal-body act-gallery-all">
+                    {% for img in detail.gallery %}<img src="{{ asset(img) }}" alt="{{ detail.title }} — photo {{ loop.index }}" loading="lazy">{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
 
     {# Modale « Tous les avis » (écran G). #}
     {% include 'activity/_reviews_modal.html.twig' %}

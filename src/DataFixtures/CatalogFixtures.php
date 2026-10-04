@@ -373,6 +373,23 @@ class CatalogFixtures extends Fixture
      */
     private function openDays(ObjectManager $manager, Service $service, int $position): void
     {
+        // Créneaux réservables depuis la fiche (tunnel de réservation, 03/10) :
+        // glissants à partir du chargement, pour qu'une démo ait toujours des
+        // dates à venir. Deux séances par jour ouvert, un jour sur deux.
+        $demain = new \DateTimeImmutable('tomorrow');
+        for ($jour = 0; $jour < 45; $jour += 2) {
+            $date = $demain->modify(sprintf('+%d days', $jour + ($position % 2)));
+            foreach ([[10, 0], [15, 0]] as [$h, $m]) {
+                $manager->persist(
+                    (new Availability())
+                        ->setService($service)
+                        ->setStartsAt($date->setTime($h, $m))
+                        ->setEndsAt($date->setTime($h + 2, $m))
+                        ->setCapacity((int) $service->getCapacity())
+                );
+            }
+        }
+
         $depart = new \DateTimeImmutable('2026-07-01 00:00:00');
 
         for ($semaine = 0; $semaine < 12; ++$semaine) {

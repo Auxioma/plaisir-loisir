@@ -1,0 +1,20 @@
+{# Carte récapitulative d'une réservation (récapitulatif et confirmation). #}
+{% import '_partials/_icons.html.twig' as icon %}
+<div class="bk-recap">
+    <img src="{{ asset(service|pp_cover) }}" alt="">
+    <div class="bk-recap__body">
+        <h2>{{ service.title }}</h2>
+        <ul>
+            <li>{{ icon.calendar(16) }} {{ booking.startsAt ? booking.startsAt|pf_date('EEEE d MMMM y')|capitalize ~ ' · ' ~ booking.startsAt|date('H\\hi') : 'Date à convenir'|trans }}</li>
+            {% if service.city or service.placeLabel %}<li>{{ icon.map_pin(16) }} {{ service.city ?? service.placeLabel }}</li>{% endif %}
+            <li>{{ icon.users(16) }} {{ booking.participants }} {{ booking.participants > 1 ? 'voyageurs'|trans : 'voyageur'|trans }}</li>
+            {% if service.provider %}<li>{{ icon.person(16) }} {{ 'Organisé par'|trans }} {{ service.provider.displayName }}</li>{% endif %}
+        </ul>
+    </div>
+    <dl class="bk-recap__price">
+        {% for item in booking.items %}
+            <div><dt>{{ item.label }} × {{ item.quantity }}</dt><dd>{{ (item.unitPrice * item.quantity)|number_format(2, ',', ' ') }} €</dd></div>
+        {% endfor %}
+        <div class="bk-recap__total"><dt>{{ 'Total'|trans }}</dt><dd>{{ booking.totalPrice|number_format(2, ',', ' ') }} €</dd></div>
+    </dl>
+</div>

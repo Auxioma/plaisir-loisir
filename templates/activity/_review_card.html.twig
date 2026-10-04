@@ -17,22 +17,35 @@
             <summary class="review-card__more" aria-label="{{ "Options de l'avis"|trans }}">{{ icon.dots(20) }}</summary>
             {% if r.reportable %}
                 <div class="review-card__menu-panel">
-                    <button type="button" class="review-card__menu-item">{{ 'Signaler cet avis'|trans }}</button>
+                    {% if app.user and r.id is defined %}
+                        <form method="post" action="{{ path('app_report_submit') }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                            <input type="hidden" name="subject_type" value="review">
+                            <input type="hidden" name="subject_id" value="{{ r.id }}">
+                            <input type="hidden" name="subject_label" value="{{ 'Avis de'|trans }} {{ r.author }}">
+                            <input type="hidden" name="reason" value="other">
+                            <input type="hidden" name="redirect" value="{{ app.request.uri }}">
+                            <button class="review-card__menu-item" data-confirm="{{ 'Signaler cet avis à la modération ?'|trans }}">{{ 'Signaler cet avis'|trans }}</button>
+                        </form>
+                    {% else %}
+                        <a class="review-card__menu-item" href="{{ path('app_login') }}">{{ 'Connectez-vous pour signaler'|trans }}</a>
+                    {% endif %}
                 </div>
             {% endif %}
         </details>
     </div>
     <h3 class="review-card__title">{{ r.title }}</h3>
     <p class="review-card__text">{{ r.text }}</p>
+    {% if r.reply is defined and r.reply %}<p class="review-card__reply"><strong>{{ 'Réponse de l’organisateur'|trans }}</strong> {{ r.reply }}</p>{% endif %}
     <div class="review-card__author">
         <img class="review-card__avatar" src="{{ asset(r.avatar) }}" alt="">
         <div>
             <div class="review-card__name">{{ r.author }}</div>
-            <div class="review-card__meta">{{ r.meta }} · {{ r.date }}</div>
+            <div class="review-card__meta">{{ r.meta }} · {{ r.date.timestamp is defined ? r.date|pf_date('d MMMM y') : r.date }}</div>
         </div>
     </div>
     <div class="review-card__foot">
-        <span>{{ 'Est-ce que ça vous a aidé ?'|trans }} <button type="button" class="review-card__helpful" aria-label="{{ "Cet avis m'a aidé"|trans }}">{{ icon.thumbs_up(16) }}</button></span>
-        <a href="#">{{ 'Traduire'|trans }}</a>
+        <span>{{ 'Est-ce que ça vous a aidé ?'|trans }} <button type="button" class="review-card__helpful" aria-label="{{ "Cet avis m'a aidé"|trans }}" aria-pressed="false" data-helpful="{{ r.id ?? r.author ~ r.title }}">{{ icon.thumbs_up(16) }}</button></span>
+        <a href="https://translate.google.com/?sl=auto&tl={{ app.request.locale == 'en' ? 'fr' : 'en' }}&op=translate&text={{ r.text|url_encode }}" target="_blank" rel="noopener">{{ 'Traduire'|trans }}</a>
     </div>
 </article>

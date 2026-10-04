@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Catalog\Controller;
 
+use App\Availability\Repository\AvailabilityRepository;
+use App\Booking\Controller\BookingController;
+use App\Booking\Entity\Booking;
+use App\Booking\Enum\BookingStatus;
+use App\Catalog\Entity\Service;
 use App\Catalog\Enum\ActivitySort;
 use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Repository\CategoryRepository;
@@ -11,7 +16,10 @@ use App\Catalog\Repository\PromotionRepository;
 use App\Catalog\Repository\ServiceRepository;
 use App\Catalog\StaticCatalog;
 use App\Favorite\Service\CurrentUserFavorites;
+use App\Review\Enum\ReviewStatus;
+use App\Review\Repository\ReviewRepository;
 use App\Stats\Service\PageViewRecorder;
+use App\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -225,8 +233,89 @@ final class ActivityController extends AbstractController
         return [] !== $valeurs ? (float) min($valeurs) : null;
     }
 
+    /**
+     * Données du panneau de réservation (03/10) : prix réellement facturé
+     * (formule la moins chère), créneaux ouverts groupés par jour, ou à
+     * défaut les horaires d'ouverture, et la sélection en cours (conservée
+     * pendant la connexion d'un visiteur).
+     *
+     * @return array{price: float|null, capacity: int|null, slots: array<string, list<array{time: string, remaining: int}>>, times: list<string>, draft: array<string, mixed>}
+     */
+    private function bookingPanel(Service $service, Request $request, AvailabilityRepository $availabilities): array
+    {
+        $price = null;
+        foreach ($service->getPackages() as $package) {
+            $price = null === $price ? (float) $package->getPrice() : min($price, (float) $package->getPrice());
+        }
+
+        $slots = [];
+        foreach ($availabilities->findUpcomingByService($service, new \DateTimeImmutable('+1 hour')) as $slot) {
+            if ($slot->isBookable()) {
+                $slots[$slot->getStartsAt()->format('Y-m-d')][] = ['time' => $slot->getStartsAt()->format('H:i'), 'remaining' => $slot->getRemainingSeats()];
+            }
+        }
+
+        $draft = $request->hasSession() ? (array) $request->getSession()->get(BookingController::SESSION_KEY, []) : [];
+
+        return [
+            'price' => $price,
+            'capacity' => $service->getCapacity(),
+            'slots' => $slots,
+            'times' => BookingController::DEFAULT_TIMES,
+            'draft' => ($draft['slug'] ?? null) === $service->getSlug() ? $draft : [],
+        ];
+    }
+
+    /**
+     * Réservation terminée et pas encore notée du visiteur connecté : seule
+     * une vraie participation ouvre le formulaire « Ajouter un avis ».
+     */
+    private function reviewableBooking(Service $service, ReviewRepository $reviewRepository, EntityManagerInterface $entityManager): ?Booking
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return null;
+        }
+
+        foreach ($entityManager->getRepository(Booking::class)->findBy(['client' => $user, 'service' => $service, 'status' => BookingStatus::Completed], ['startsAt' => 'DESC']) as $booking) {
+            if (null === $reviewRepository->findOneBy(['booking' => $booking])) {
+                return $booking;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Avis publiés sur l'activité, au format de la carte d'avis.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function reviewCards(Service $service, ReviewRepository $reviewRepository): array
+    {
+        $cards = [];
+        foreach ($reviewRepository->findBy(['service' => $service, 'status' => ReviewStatus::Published], ['createdAt' => 'DESC']) as $review) {
+            $author = $review->getAuthor();
+            $comment = (string) $review->getComment();
+            $cards[] = [
+                'id' => (string) $review->getId(),
+                'stars' => $review->getRating(),
+                'title' => mb_strlen($comment) > 48 ? rtrim(mb_substr($comment, 0, 46)).'…' : ($comment ?: 'Avis vérifié'),
+                'text' => $comment,
+                'author' => trim($author?->getFirstName().' '.mb_substr((string) $author?->getLastName(), 0, 1).'.'),
+                'meta' => $author?->getMainAddress()?->getCity() ?? 'Client vérifié',
+                'date' => $review->getCreatedAt(),
+                'avatar' => $author?->getAvatarPath() ?? 'images/account/avatar-default.svg',
+                'reportable' => true,
+                'reply' => $review->getProviderReply(),
+            ];
+        }
+
+        return $cards;
+    }
+
     #[Route(path: ['fr' => '/activites/{slug}', 'en' => '/en/activities/{slug}'], name: 'app_activity_show')]
-    public function show(string $slug, Request $request, PageViewRecorder $pageViews, PromotionRepository $promotions, EntityManagerInterface $entityManager): Response
+    public function show(string $slug, Request $request, PageViewRecorder $pageViews, PromotionRepository $promotions, EntityManagerInterface $entityManager, AvailabilityRepository $availabilities, ReviewRepository $reviewRepository): Response
     {
         $service = $this->services->findPublishedBySlug($slug);
 
@@ -263,7 +352,12 @@ final class ActivityController extends AbstractController
             'activity' => $this->presenter->card($service, favoriteSlugs: $this->favorites->activitySlugs()),
             'detail' => $detail,
             'promotion' => $promotion,
-            'reviews' => StaticCatalog::reviews(),
+            'booking' => $this->bookingPanel($service, $request, $availabilities),
+            // Avis réels de l'activité (réservations terminées, 04/10) : les
+            // avis figés de la maquette (StaticCatalog::reviews) ne sont plus
+            // affichés — ils donnaient une note que personne n'a donnée.
+            'reviews' => $this->reviewCards($service, $reviewRepository),
+            'reviewable' => $this->reviewableBooking($service, $reviewRepository, $entityManager),
             // « Activites similaires » : la maquette y montrait deux activites
             // qui n'existent pas au catalogue, et surtout une premiere carte
             // qui renvoyait vers la page en cours de lecture. Ce sont
