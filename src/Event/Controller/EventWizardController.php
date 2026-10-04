@@ -170,7 +170,7 @@ final class EventWizardController extends AbstractController
             'category_looks' => $looks,
             'reminders' => StaticEventWizard::reminders(),
             'timezones' => StaticEventWizard::timezones(),
-            'capacities' => StaticEventWizard::capacities(),
+            'capacity_options' => StaticEventWizard::capacityOptions(),
             'draft' => $draft,
             'done' => (array) $draft['done'],
             'errors' => $errors,

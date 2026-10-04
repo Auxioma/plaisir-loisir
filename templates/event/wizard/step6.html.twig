@@ -12,9 +12,6 @@
 </div>
 {{ ui.err(errors, 'visibility') }}
 
-{% set capacity_options = {'unlimited': 'Illimité'} %}
-{% for n in capacities %}{% set capacity_options = capacity_options|merge({(n ~ ''): n ~ ' participants'}) %}{% endfor %}
-
 <h3 class="ew-main__label">{{ 'Paramètres d’inscription'|trans }}</h3>
 <div class="ew-settings">
     {{ ui.toggle('registration', draft.registration == '1', 'Inscription requise', 'Les participants doivent s’inscrire pour participer.', 'edit', 'violet') }}
