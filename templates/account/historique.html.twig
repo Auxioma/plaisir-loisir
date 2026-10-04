@@ -110,6 +110,9 @@
                                             {% if r.kind == 'participation' and r.status in ['upcoming', 'past'] %}
                                                 <a class="tm-menu__item" href="{{ path('app_account_album_show', {id: r.routeParams.id}) }}">{{ 'Voir l’album'|trans }}</a>
                                             {% endif %}
+                                            {% if r.kind == 'booking' and r.status == 'past' %}
+                                                <a class="tm-menu__item" href="{{ path('app_account_booking_review', {id: r.id}) }}">{{ 'Donner mon avis'|trans }}</a>
+                                            {% endif %}
                                             <a class="tm-menu__item" href="{{ path('app_account_contact') }}">{{ 'Signaler un problème'|trans }}</a>
                                         </div>
                                     </details>

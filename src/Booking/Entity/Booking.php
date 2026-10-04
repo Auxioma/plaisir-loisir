@@ -48,6 +48,17 @@ class Booking
     private string $currency = 'EUR';
 
     /**
+     * Date et heure de la séance réservée (espace pro : réservations,
+     * calendrier). Nullable : les réservations antérieures au 02/10 n'en ont pas.
+     */
+    #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
+    private ?\DateTimeImmutable $startsAt = null;
+
+    /** Nombre de participants couverts par la réservation. */
+    #[ORM\Column(options: ['default' => 1])]
+    private int $participants = 1;
+
+    /**
      * @var Collection<int, BookingItem>
      */
     #[ORM\OneToMany(targetEntity: BookingItem::class, mappedBy: 'booking', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -161,5 +172,35 @@ class Booking
     public function setMarking(string $marking, array $context = []): void
     {
         $this->status = BookingStatus::from($marking);
+    }
+
+    public function getStartsAt(): ?\DateTimeImmutable
+    {
+        return $this->startsAt;
+    }
+
+    public function setStartsAt(?\DateTimeImmutable $startsAt): static
+    {
+        $this->startsAt = $startsAt;
+
+        return $this;
+    }
+
+    public function getParticipants(): int
+    {
+        return $this->participants;
+    }
+
+    public function setParticipants(int $participants): static
+    {
+        $this->participants = max(1, $participants);
+
+        return $this;
+    }
+
+    /** Référence lisible (« R » + fin de l'identifiant), affichée côté pro et client. */
+    public function getReference(): string
+    {
+        return 'R'.strtoupper(substr((string) $this->getId(), -6));
     }
 }

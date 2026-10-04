@@ -295,9 +295,9 @@ final class AccountActivityPresenter
         $service = $booking->getService();
         $card = null !== $service ? $this->activityPresenter->card($service) : null;
 
-        $participants = 0;
+        $participants = $booking->getParticipants();
         foreach ($booking->getItems() as $item) {
-            $participants += $item->getQuantity();
+            $participants = max($participants, $item->getQuantity());
         }
 
         [$status, $label, $note] = match ($booking->getStatus()) {
@@ -314,7 +314,7 @@ final class AccountActivityPresenter
             'title' => $service?->getTitle() ?? 'Activité',
             'place' => (string) ($service?->getPlaceLabel() ?? ''),
             'image' => $card['image'] ?? self::FALLBACK_IMAGE,
-            'date' => $booking->getCreatedAt(),
+            'date' => $booking->getStartsAt() ?? $booking->getCreatedAt(),
             'participants' => max(1, $participants),
             'amount' => (float) $booking->getTotalPrice(),
             'status' => $status,

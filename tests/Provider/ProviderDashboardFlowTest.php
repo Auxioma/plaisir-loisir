@@ -55,13 +55,11 @@ final class ProviderDashboardFlowTest extends WebTestCase
         $client->request('GET', '/pro/tableau-de-bord');
 
         self::assertResponseIsSuccessful();
-        // « Pro Tableau de Bord … » est le nom AFFICHÉ du profil
-        // (ProviderProfile::displayName) : c'est lui que montre l'écran,
-        // jamais le prénom brut du compte.
-        self::assertSelectorTextContains('h1', 'Pro Tableau de Bord');
-        // Le devis envoyé à l'instant doit apparaître dans « vos derniers
-        // devis envoyés », identifié par le titre (unique) de la demande.
-        self::assertSelectorTextContains('body', 'Besoin pour le tableau de bord');
+        // Tableau de bord des maquettes profil_professionnel (02/10) : la
+        // demande ouverte dans la catégorie du professionnel apparaît dans
+        // les accès rapides (« Demandes de devis »).
+        self::assertSelectorTextContains('h1', 'Tableau de bord');
+        self::assertSelectorTextContains('.pp-quick', 'Demandes de devis');
     }
 
     public function testEditingTheProfilePersistsTheChanges(): void
@@ -71,7 +69,10 @@ final class ProviderDashboardFlowTest extends WebTestCase
         $providerUser = $this->makeProviderUser($category);
 
         $client->loginUser($providerUser);
-        $crawler = $client->request('GET', '/pro/profil');
+        // La fiche se modifie désormais dans Paramètres › Profil professionnel.
+        $client->request('GET', '/pro/profil');
+        self::assertResponseRedirects('/pro/parametres?section=profil-pro');
+        $crawler = $client->followRedirect();
         self::assertResponseIsSuccessful();
 
         $token = (string) $crawler->filter('input[name="_token"]')->attr('value');
@@ -83,7 +84,7 @@ final class ProviderDashboardFlowTest extends WebTestCase
             'ville' => 'Marseille',
         ]);
 
-        self::assertResponseRedirects('/pro/profil');
+        self::assertResponseRedirects('/pro/parametres?section=profil-pro');
 
         $provider = static::getContainer()->get(ProviderProfileRepository::class)->findOneByUser($providerUser);
         self::assertNotNull($provider);
@@ -99,12 +100,12 @@ final class ProviderDashboardFlowTest extends WebTestCase
         $providerUser = $this->makeProviderUser($category);
 
         $client->loginUser($providerUser);
-        $crawler = $client->request('GET', '/pro/profil');
+        $crawler = $client->request('GET', '/pro/parametres?section=profil-pro');
         $token = (string) $crawler->filter('input[name="_token"]')->attr('value');
 
         $client->request('POST', '/pro/profil', ['_token' => $token, 'displayName' => '   ']);
 
-        self::assertResponseRedirects('/pro/profil');
+        self::assertResponseRedirects('/pro/parametres?section=profil-pro');
         $client->followRedirect();
         self::assertSelectorTextContains('.toast-body', 'ne peut pas être vide');
     }

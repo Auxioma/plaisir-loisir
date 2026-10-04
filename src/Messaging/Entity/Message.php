@@ -84,4 +84,10 @@ class Message
     {
         $this->readAt ??= new \DateTimeImmutable();
     }
+
+    /** « Marquer comme non lu » (espace pro, 02/10). */
+    public function markAsUnread(): void
+    {
+        $this->readAt = null;
+    }
 }

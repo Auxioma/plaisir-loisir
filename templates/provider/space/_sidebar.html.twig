@@ -1,0 +1,33 @@
+{#
+    Sidebar de l'espace pro (maquettes profil_professionnel) : 12 entrées sur
+    une ligne, item actif sur fond bleu, compteur rouge sur « Clients &
+    Messages », puis l'encart « Développez votre visibilité » (contenu
+    adaptable par écran via `promo`).
+#}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<nav class="pp-menu" aria-label="{{ 'Menu professionnel'|trans }}">
+    {% for item in menu %}
+        {% set is_active = item.title == active %}
+        <a href="{{ path(item.route) }}" class="pp-menu__item{{ is_active ? ' is-active' }}"{% if is_active %} aria-current="page"{% endif %}>
+            <span class="pp-menu__icon">{{ ico.svg(item.icon, 21) }}</span>
+            <span class="pp-menu__text">{{ item.title|trans }}</span>
+            {% set badge_count = item.badge == 'messages' ? user.unreadMessages : 0 %}
+            {% if badge_count > 0 %}<span class="pf-menu__count">{{ badge_count > 99 ? '99+' : badge_count }}</span>{% endif %}
+        </a>
+    {% endfor %}
+</nav>
+
+{% set promo = promo|default({
+    title: 'Développez votre visibilité',
+    text: 'Boostez vos activités et attirez plus de clients.',
+    cta: 'Créer une offre',
+    href: path('app_pro_promotions_new'),
+}) %}
+<div class="pp-boost">
+    <strong>{{ promo.title|trans }}</strong>
+    <p>{{ promo.text|trans }}</p>
+    <a class="pp-boost__cta" href="{{ promo.href }}">{{ promo.cta|trans }}</a>
+    <span class="pp-boost__rocket" aria-hidden="true">{{ icon.rocket(64) }}</span>
+</div>

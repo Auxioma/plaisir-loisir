@@ -96,10 +96,169 @@ class ProviderProfile
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Category $mainCategory = null;
 
+    // ---- Espace pro (maquettes profil_professionnel, 02/10) ----
+
+    /** Adresse affichée (Paramètres / Mon profil). */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $address = null;
+
+    /** Image de couverture de la fiche (chemin public sous uploads/). */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $coverPath = null;
+
+    /** Zone d'intervention (ex. « Alpes, Auvergne-Rhône-Alpes »). */
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $interventionZone = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $youtubeUrl = null;
+
+    /** Fuseau horaire des créneaux. */
+    #[ORM\Column(length: 64, options: ['default' => 'Europe/Paris'])]
+    private string $timezone = 'Europe/Paris';
+
+    /** Disponibilités résumées (ex. « Lun - Dim : 7h - 20h »). */
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $availabilityLabel = null;
+
+    /** Moyen de versement par défaut : bank | paypal | card. */
+    #[ORM\Column(length: 20, options: ['default' => 'bank'])]
+    private string $payoutMethod = 'bank';
+
+    /** IBAN de versement (affiché masqué). */
+    #[ORM\Column(length: 34, nullable: true)]
+    private ?string $payoutIban = null;
+
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $payoutPaypalEmail = null;
+
+    #[ORM\Column(length: 4, nullable: true)]
+    private ?string $payoutCardLast4 = null;
+
     // Les informations fiscales et légales (forme juridique, SIRET, TVA, siège,
     // représentant légal, assurance) vivent dans App\Legal\Entity\CompanyIdentity,
     // reliée à ce profil. Trois colonnes « fiscal* » traînaient ici, que
     // personne ne lisait et qui ne suffisaient à aucun dossier réel.
+
+    public function getAddress(): ?string
+    {
+        return $this->address;
+    }
+
+    public function setAddress(?string $address): static
+    {
+        $this->address = $address;
+
+        return $this;
+    }
+
+    public function getCoverPath(): ?string
+    {
+        return $this->coverPath;
+    }
+
+    public function setCoverPath(?string $coverPath): static
+    {
+        $this->coverPath = $coverPath;
+
+        return $this;
+    }
+
+    public function getInterventionZone(): ?string
+    {
+        return $this->interventionZone;
+    }
+
+    public function setInterventionZone(?string $interventionZone): static
+    {
+        $this->interventionZone = $interventionZone;
+
+        return $this;
+    }
+
+    public function getYoutubeUrl(): ?string
+    {
+        return $this->youtubeUrl;
+    }
+
+    public function setYoutubeUrl(?string $youtubeUrl): static
+    {
+        $this->youtubeUrl = $youtubeUrl;
+
+        return $this;
+    }
+
+    public function getTimezone(): string
+    {
+        return $this->timezone;
+    }
+
+    public function setTimezone(string $timezone): static
+    {
+        $this->timezone = $timezone;
+
+        return $this;
+    }
+
+    public function getAvailabilityLabel(): ?string
+    {
+        return $this->availabilityLabel;
+    }
+
+    public function setAvailabilityLabel(?string $availabilityLabel): static
+    {
+        $this->availabilityLabel = $availabilityLabel;
+
+        return $this;
+    }
+
+    public function getPayoutMethod(): string
+    {
+        return $this->payoutMethod;
+    }
+
+    public function setPayoutMethod(string $payoutMethod): static
+    {
+        $this->payoutMethod = $payoutMethod;
+
+        return $this;
+    }
+
+    public function getPayoutIban(): ?string
+    {
+        return $this->payoutIban;
+    }
+
+    public function setPayoutIban(?string $payoutIban): static
+    {
+        $this->payoutIban = $payoutIban;
+
+        return $this;
+    }
+
+    public function getPayoutPaypalEmail(): ?string
+    {
+        return $this->payoutPaypalEmail;
+    }
+
+    public function setPayoutPaypalEmail(?string $payoutPaypalEmail): static
+    {
+        $this->payoutPaypalEmail = $payoutPaypalEmail;
+
+        return $this;
+    }
+
+    public function getPayoutCardLast4(): ?string
+    {
+        return $this->payoutCardLast4;
+    }
+
+    public function setPayoutCardLast4(?string $payoutCardLast4): static
+    {
+        $this->payoutCardLast4 = $payoutCardLast4;
+
+        return $this;
+    }
 
     public function getUser(): ?User
     {

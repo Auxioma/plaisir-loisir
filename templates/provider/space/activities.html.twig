@@ -1,0 +1,145 @@
+{#
+    Mes activités — maquette profil_activites_professionnel.jpeg (02/10).
+    Données : ProviderActivityController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import 'provider/space/_ui.html.twig' as ui %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Mes activités'|trans }}{% endblock %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Mes activités'|trans }} <span class="pp-title-ico">{{ icon.edit_square(24) }}</span></h1>
+            <p class="pf-sub">{{ 'Gérez, modifiez et suivez toutes vos activités facilement.'|trans }}</p>
+        </div>
+        <div class="pp-head__actions">
+            <a class="pf-btn pf-btn--primary" href="{{ path('app_pro_activities_new') }}">{{ icon.plus(18) }} {{ 'Ajouter une activité'|trans }}</a>
+            <details class="pl-dropdown pf-kebab">
+                <summary class="pf-btn pp-btn-ghost">{{ 'Exporter'|trans }} {{ icon.chevron_down(16) }}</summary>
+                <div class="tm-menu tm-menu--right">
+                    <a class="tm-menu__item" href="{{ path('app_pro_activities_export') }}">{{ icon.download(16) }} {{ 'Exporter en CSV (Excel)'|trans }}</a>
+                </div>
+            </details>
+        </div>
+    </header>
+
+    <nav class="pf-tabs-row" aria-label="{{ 'Filtrer par statut'|trans }}">
+        <div class="pf-tabs">
+            {% for key, label in {toutes: 'Toutes', publiees: 'Publiées', 'en-attente': 'En attente', brouillons: 'Brouillons', suspendues: 'Suspendues'} %}
+                <a class="pf-tab{{ tab == key ? ' is-active' }}" href="{{ path('app_pro_activities', {onglet: key}) }}">{{ label|trans }} ({{ counts[key] }})</a>
+            {% endfor %}
+        </div>
+    </nav>
+
+    <form method="get" class="pf-toolbar pp-toolbar">
+        <input type="hidden" name="onglet" value="{{ tab }}">
+        <div class="pf-search pp-grow">
+            <input type="search" name="q" value="{{ query }}" placeholder="{{ 'Rechercher une activité…'|trans }}" aria-label="{{ 'Rechercher une activité'|trans }}">
+            <button type="submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(18) }}</button>
+        </div>
+        <div class="pf-select">
+            <select name="categorie" onchange="this.form.submit()" aria-label="{{ 'Catégorie'|trans }}">
+                <option value="">{{ 'Catégorie'|trans }}</option>
+                {% for c in categories %}<option value="{{ c.slug }}"{{ category == c.slug ? ' selected' }}>{{ c.name|trans }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="pf-select">
+            <select name="statut" onchange="this.form.submit()" aria-label="{{ 'Statut'|trans }}">
+                <option value="">{{ 'Statut'|trans }}</option>
+                {% for s in statuses %}<option value="{{ s.value }}"{{ status == s.value ? ' selected' }}>{{ s.label|trans }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="pf-select">
+            <select name="tri" onchange="this.form.submit()" aria-label="{{ 'Trier'|trans }}">
+                {% for key, label in {recentes: 'Plus récentes', anciennes: 'Plus anciennes', reservations: 'Plus réservées', vues: 'Plus vues', titre: 'Titre (A-Z)'} %}
+                    <option value="{{ key }}"{{ sort == key ? ' selected' }}>{{ label|trans }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+    <section class="pf-card pp-list-card">
+        {% if rows is empty %}
+            <div class="pf-empty">
+                <strong>{{ 'Aucune activité ici pour le moment.'|trans }}</strong>
+                {{ 'Créez votre première activité : elle sera publiée après validation par notre équipe.'|trans }}
+                <div><a class="pf-btn pf-btn--primary" href="{{ path('app_pro_activities_new') }}">{{ icon.plus(18) }} {{ 'Ajouter une activité'|trans }}</a></div>
+            </div>
+        {% else %}
+            <form method="post" action="{{ path('app_pro_activities_action') }}" id="pp-bulk" data-pp-bulk>
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                <div class="pp-bulkbar" data-pp-bulk-bar hidden>
+                    <span data-pp-bulk-count>0</span> {{ 'sélectionnée(s)'|trans }}
+                    <button class="pf-btn" name="action" value="soumettre">{{ 'Envoyer en validation'|trans }}</button>
+                    <button class="pf-btn" name="action" value="brouillon">{{ 'Repasser en brouillon'|trans }}</button>
+                    <button class="pf-btn" name="action" value="dupliquer">{{ 'Dupliquer'|trans }}</button>
+                    <button class="pf-btn pf-btn--danger" name="action" value="supprimer" data-confirm="{{ 'Supprimer les activités sélectionnées ?'|trans }}">{{ 'Supprimer'|trans }}</button>
+                </div>
+            </form>
+            <ul class="pp-activities">
+                {% for r in rows %}
+                    {% set s = r.service %}
+                    <li class="pp-activity">
+                        <input class="pp-check" type="checkbox" name="ids[]" value="{{ s.id }}" form="pp-bulk" aria-label="{{ 'Sélectionner'|trans }} {{ s.title }}" data-pp-bulk-item>
+                        <img class="pp-activity__img" src="{{ asset(r.cover) }}" alt="">
+                        <div class="pp-activity__main">
+                            <a class="pp-activity__title" href="{{ path('app_pro_activities_edit', {id: s.id}) }}">{{ s.title }}</a>
+                            <span class="pp-activity__meta">{{ s.category ? s.category.name|trans }}{% if s.city or s.placeLabel %} <i>•</i> {{ s.city ?? s.placeLabel }}{% endif %}</span>
+                            <span class="pp-activity__meta">{{ icon.calendar_grid(14) }} {{ s.createdAt|pf_date('d MMMM y') }}{% if s.durationLabel %} <span class="pp-gap">{{ icon.clock(14) }} {{ s.durationLabel }}</span>{% endif %}</span>
+                        </div>
+                        <span class="pf-pill pf-pill--{{ s.status.tone }} pp-pill">{{ s.status.label|trans }}</span>
+                        <div class="pp-metric">{{ icon.eye(18) }}<strong>{{ r.views }}</strong><small>{{ 'vues'|trans }}</small></div>
+                        <div class="pp-metric">{{ icon.calendar_grid(18) }}<strong>{{ r.bookings }}</strong><small>{{ 'réservations'|trans }}</small></div>
+                        <div class="pp-metric">{{ icon.star(18) }}<strong>{{ r.rating is not null ? r.rating|number_format(1, ',') : '–' }}</strong><small>{{ 'avis'|trans }}</small></div>
+                        <details class="pl-dropdown pf-kebab">
+                            <summary aria-label="{{ 'Actions'|trans }}">{{ icon.dots(20) }}</summary>
+                            <div class="tm-menu tm-menu--right">
+                                {% if s.status.value != 'suspended' %}
+                                    <a class="tm-menu__item" href="{{ path('app_pro_activities_edit', {id: s.id}) }}">{{ icon.edit_square(16) }} {{ 'Modifier'|trans }}</a>
+                                {% endif %}
+                                {% if s.status.value == 'published' %}
+                                    <a class="tm-menu__item" href="{{ path('app_activity_show', {slug: s.slug}) }}" target="_blank" rel="noopener">{{ icon.eye(16) }} {{ 'Voir la fiche publique'|trans }}</a>
+                                {% endif %}
+                                {% for a in (s.status.value in ['draft', 'archived'] ? [['soumettre', 'Envoyer en validation']] : []) |merge(s.status.value in ['published', 'pending'] ? [['brouillon', 'Repasser en brouillon']] : [])|merge([['dupliquer', 'Dupliquer'], ['supprimer', 'Supprimer']]) %}
+                                    <form method="post" action="{{ path('app_pro_activities_action') }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                        <input type="hidden" name="id" value="{{ s.id }}">
+                                        <button class="tm-menu__item{{ a[0] == 'supprimer' ? ' is-danger' }}" name="action" value="{{ a[0] }}"{% if a[0] == 'supprimer' %} data-confirm="{{ 'Supprimer cette activité ?'|trans }}"{% endif %}>{{ a[1]|trans }}</button>
+                                    </form>
+                                {% endfor %}
+                            </div>
+                        </details>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {{ ui.pager(page, pages, rows|length, total, 'activités') }}
+    </section>
+{% endblock %}
+
+{% block space_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Vue d’ensemble'|trans }}</h2>
+        <ul class="pf-list pp-overview">
+            <li><span class="pf-ico pf-ico--xs pf-ico--blue">{{ icon.calendar_grid(18) }}</span><strong>{{ counts.toutes }}</strong><span>{{ 'Total des activités'|trans }}</span></li>
+            <li><span class="pf-ico pf-ico--xs pf-ico--green">{{ icon.check_badge(18) }}</span><strong>{{ counts.publiees }}</strong><span>{{ 'Activités publiées'|trans }}</span></li>
+            <li><span class="pf-ico pf-ico--xs pf-ico--orange">{{ icon.clock(18) }}</span><strong>{{ counts['en-attente'] }}</strong><span>{{ 'En attente de validation'|trans }}</span></li>
+            <li><span class="pf-ico pf-ico--xs pf-ico--blue">{{ icon.edit_square(18) }}</span><strong>{{ counts.brouillons }}</strong><span>{{ 'Brouillon'|trans }}</span></li>
+            <li><span class="pf-ico pf-ico--xs pf-ico--red">{{ icon.ban(18) }}</span><strong>{{ counts.suspendues }}</strong><span>{{ 'Suspendue'|trans }}</span></li>
+        </ul>
+        <a class="pf-btn pf-btn--block pp-soft-btn" href="{{ path('app_pro_stats') }}">{{ ico.svg('chart', 18) }} {{ 'Voir mes statistiques'|trans }}</a>
+    </section>
+
+    {{ ui.tips('Conseils pour vos activités', tips, 'Voir tous nos conseils', path('app_faq')) }}
+
+    <section class="pf-card pp-help">
+        <div class="pp-help__row">
+            <span class="pf-ico pf-ico--sm pf-ico--round pf-ico--blue">{{ icon.headset(22) }}</span>
+            <div><strong>{{ 'Besoin d’aide ?'|trans }}</strong><small>{{ 'Notre équipe est là pour vous accompagner.'|trans }}</small></div>
+        </div>
+        <a class="pf-btn pf-btn--block" href="{{ path('app_pro_support') }}">{{ icon.headset(18) }} {{ 'Nous contacter'|trans }}</a>
+    </section>
+{% endblock %}

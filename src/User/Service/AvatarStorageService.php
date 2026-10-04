@@ -84,6 +84,18 @@ final class AvatarStorageService
         }
     }
 
+    /** Retire la photo de profil (retour à la silhouette par défaut). */
+    public function remove(User $user): void
+    {
+        $previous = $user->getAvatarPath();
+        $user->setAvatarPath(null);
+        $this->entityManager->flush();
+
+        if (null !== $previous) {
+            $this->deleteFile($previous);
+        }
+    }
+
     private function deleteFile(string $relativePath): void
     {
         $path = $this->projectDir.'/public/'.$relativePath;

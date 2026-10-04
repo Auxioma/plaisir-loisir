@@ -1338,3 +1338,7 @@
    detail d'un evenement) — les deux planches ne s'accordent pas, on suit
    celle du groupe pour cet ecran. */
 .evn-group > .container { padding-top: 79px; }
+
+/* Cœur favori (01/10) : bouton réel, plein et violet une fois en favori. */
+.evn-card__fav { border: 0; cursor: pointer; }
+.evn-card__fav.is-active { color: var(--pl-action); }

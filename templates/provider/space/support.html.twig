@@ -1,0 +1,183 @@
+{#
+    Support — maquette profil_support_professionnel.jpeg (02/10).
+    Données : ProviderSupportController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import 'provider/space/_ui.html.twig' as ui %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Support'|trans }}{% endblock %}
+
+{% macro csrf() %}<input type="hidden" name="_token" value="{{ csrf_token('submit') }}">{% endmacro %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Support'|trans }} <span class="pp-title-ico">{{ icon.headset(24) }}</span></h1>
+            <p class="pf-sub">{{ 'Nous sommes là pour vous aider. Comment pouvons-nous vous accompagner aujourd’hui ?'|trans }}</p>
+        </div>
+    </header>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Comment pouvons-nous vous aider ?'|trans }}</h2>
+        <div class="pp-help-grid">
+            <a class="pp-help-card" href="{{ path('app_faq') }}">
+                <span class="pp-help-card__ico is-blue">{{ icon.help_circle(26) }}</span>
+                <strong>{{ 'FAQ'|trans }}</strong><small>{{ 'Trouvez des réponses aux questions les plus fréquentes.'|trans }}</small>
+                <em>{{ 'Consulter la FAQ'|trans }} {{ icon.arrow_right(14) }}</em>
+            </a>
+            <button type="button" class="pp-help-card" data-pp-open="pp-ticket">
+                <span class="pp-help-card__ico is-green">{{ icon.mail(26) }}</span>
+                <strong>{{ 'Envoyer un ticket'|trans }}</strong><small>{{ 'Décrivez votre problème et notre équipe vous répondra.'|trans }}</small>
+                <em>{{ 'Ouvrir un ticket'|trans }} {{ icon.arrow_right(14) }}</em>
+            </button>
+            <form method="post" action="{{ path('app_pro_support_create') }}" class="pp-help-card-form">
+                {{ _self.csrf() }}<input type="hidden" name="category" value="chat">
+                <button class="pp-help-card">
+                    <span class="pp-help-card__ico is-violet">{{ icon.chat_bubble(26) }}</span>
+                    <strong>{{ 'Chat en direct'|trans }}</strong><small>{{ 'Discutez avec un conseiller en temps réel.'|trans }}</small>
+                    <em>{{ 'Démarrer un chat'|trans }} {{ icon.arrow_right(14) }}</em>
+                </button>
+            </form>
+            <button type="button" class="pp-help-card" data-pp-open="pp-callback">
+                <span class="pp-help-card__ico is-orange">{{ icon.phone(26) }}</span>
+                <strong>{{ 'Demander un appel'|trans }}</strong><small>{{ 'Laissez-nous vos coordonnées, nous vous rappelons.'|trans }}</small>
+                <em>{{ 'Demander un appel'|trans }} {{ icon.arrow_right(14) }}</em>
+            </button>
+            <a class="pp-help-card" href="{{ path('app_help_center') }}">
+                <span class="pp-help-card__ico is-blue">{{ icon.book_open(26) }}</span>
+                <strong>{{ 'Guides & ressources'|trans }}</strong><small>{{ 'Découvrez nos tutoriels et guides pratiques.'|trans }}</small>
+                <em>{{ 'Voir les guides'|trans }} {{ icon.arrow_right(14) }}</em>
+            </a>
+        </div>
+    </section>
+
+    <section class="pf-card" id="tickets">
+        <h2 class="pf-card__title pp-mb">{{ 'Mes tickets'|trans }}</h2>
+        <form method="get" class="pf-toolbar pp-toolbar">
+            {% if show_all %}<input type="hidden" name="tous" value="1">{% endif %}
+            <div class="pf-search pp-grow">
+                <input type="search" name="q" value="{{ query }}" placeholder="{{ 'Rechercher un ticket…'|trans }}" aria-label="{{ 'Rechercher'|trans }}">
+                <button type="submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(18) }}</button>
+            </div>
+            <div class="pf-select">
+                <select name="statut" onchange="this.form.submit()" aria-label="{{ 'Statut'|trans }}">
+                    <option value="">{{ 'Tous les statuts'|trans }}</option>
+                    {% for s in statuses %}<option value="{{ s.value }}"{{ status == s.value ? ' selected' }}>{{ s.label|trans }}</option>{% endfor %}
+                </select>
+            </div>
+        </form>
+        {% if rows is empty %}
+            <p class="pf-empty">{{ 'Aucun ticket.'|trans }} <button type="button" class="pf-link pp-linkbtn" data-pp-open="pp-ticket">{{ 'Ouvrir un ticket'|trans }}</button></p>
+        {% else %}
+            <div class="pf-table-wrap">
+                <table class="pf-table pp-table">
+                    <thead><tr><th>{{ 'ID'|trans }}</th><th>{{ 'Sujet'|trans }}</th><th>{{ 'Catégorie'|trans }}</th><th>{{ 'Statut'|trans }}</th><th>{{ 'Dernière réponse'|trans }}</th><th class="pf-table__th-actions">{{ 'Actions'|trans }}</th></tr></thead>
+                    <tbody>
+                        {% for t in rows %}
+                            <tr>
+                                <td><strong class="pp-strong">{{ t.reference }}</strong></td>
+                                <td>{{ t.subject }}</td>
+                                <td>{{ t.category.label|trans }}</td>
+                                <td><span class="pf-pill pf-pill--{{ t.status.tone }} pp-pill">{{ t.status.label|trans }}</span></td>
+                                <td>{{ t.lastReplyAt|pf_date('d MMM y')|trim('.') }}, {{ t.lastReplyAt|date('H:i') }}</td>
+                                <td>
+                                    <div class="pf-table__actions">
+                                        <a class="pf-btn pp-btn-ghost pp-btn-sm" href="{{ path('app_pro_support_show', {number: t.number}) }}">{{ 'Voir'|trans }}</a>
+                                        <details class="pl-dropdown pf-kebab">
+                                            <summary aria-label="{{ 'Actions'|trans }}">{{ icon.dots(18) }}</summary>
+                                            <div class="tm-menu tm-menu--right">
+                                                <a class="tm-menu__item" href="{{ path('app_pro_support_show', {number: t.number}) }}#fin">{{ 'Répondre'|trans }}</a>
+                                                <form method="post" action="{{ path('app_pro_support_show', {number: t.number}) }}">
+                                                    {{ _self.csrf() }}
+                                                    {% if t.status.value in ['resolved', 'closed'] %}
+                                                        <button class="tm-menu__item" name="action" value="reopen">{{ 'Rouvrir le ticket'|trans }}</button>
+                                                    {% else %}
+                                                        <button class="tm-menu__item" name="action" value="close">{{ 'Fermer le ticket'|trans }}</button>
+                                                    {% endif %}
+                                                </form>
+                                            </div>
+                                        </details>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+        {% if show_all %}
+            {{ ui.pager(page, pages, rows|length, total, 'tickets') }}
+        {% elseif total > rows|length %}
+            <a class="pf-btn pp-btn-ghost pp-center-btn" href="{{ path('app_pro_support', {tous: 1}) }}#tickets">{{ 'Voir tous mes tickets'|trans }} {{ icon.arrow_right(16) }}</a>
+        {% endif %}
+    </section>
+
+    <dialog id="pp-ticket" class="pp-dialog" aria-labelledby="pp-ticket-title"{% if subject %} data-pp-autoopen{% endif %}>
+        <form method="post" action="{{ path('app_pro_support_create') }}" class="pp-dialog__body" id="ticket">
+            {{ _self.csrf() }}
+            <h2 id="pp-ticket-title" class="pf-card__title">{{ 'Ouvrir un ticket'|trans }}</h2>
+            <div class="pf-field"><label for="t-cat">{{ 'Catégorie'|trans }}</label><select id="t-cat" name="category">{% for c in categories %}<option value="{{ c.value }}">{{ c.label|trans }}</option>{% endfor %}</select></div>
+            <div class="pf-field"><label for="t-subject">{{ 'Sujet'|trans }}</label><input id="t-subject" name="subject" value="{{ subject }}" maxlength="180" required></div>
+            <div class="pf-field"><label for="t-msg">{{ 'Votre message'|trans }}</label><textarea id="t-msg" name="message" rows="5" required></textarea></div>
+            <div class="pp-form__actions"><button type="button" class="pf-btn pp-btn-ghost" data-pp-close>{{ 'Annuler'|trans }}</button><button class="pf-btn pf-btn--primary">{{ 'Envoyer'|trans }}</button></div>
+        </form>
+    </dialog>
+
+    <dialog id="pp-callback" class="pp-dialog" aria-labelledby="pp-callback-title">
+        <form method="post" action="{{ path('app_pro_support_create') }}" class="pp-dialog__body">
+            {{ _self.csrf() }}<input type="hidden" name="category" value="callback">
+            <h2 id="pp-callback-title" class="pf-card__title">{{ 'Demander un appel'|trans }}</h2>
+            <div class="pf-field"><label for="c-phone">{{ 'Numéro de téléphone'|trans }}</label><input id="c-phone" type="tel" name="phone" value="{{ app.user.phone }}" required></div>
+            <div class="pf-field"><label for="c-slot">{{ 'Créneau souhaité'|trans }}</label><select id="c-slot" name="slot"><option value="">{{ 'Dès que possible'|trans }}</option><option>{{ 'Matin (9h–12h)'|trans }}</option><option>{{ 'Après-midi (14h–18h)'|trans }}</option></select></div>
+            <div class="pf-field"><label for="c-subject">{{ 'Sujet'|trans }}</label><input id="c-subject" name="subject" maxlength="180"></div>
+            <div class="pf-field"><label for="c-msg">{{ 'Précisions (facultatif)'|trans }}</label><textarea id="c-msg" name="message" rows="3"></textarea></div>
+            <div class="pp-form__actions"><button type="button" class="pf-btn pp-btn-ghost" data-pp-close>{{ 'Annuler'|trans }}</button><button class="pf-btn pf-btn--primary">{{ 'Être rappelé'|trans }}</button></div>
+        </form>
+    </dialog>
+{% endblock %}
+
+{% block space_aside %}
+    <section class="pf-card">
+        <div class="pf-card__head">
+            <h2 class="pf-card__title">{{ 'Foire aux questions'|trans }}</h2>
+            <a class="pf-link" href="{{ path('app_faq') }}">{{ 'Voir toutes les FAQ'|trans }} {{ icon.arrow_right(14) }}</a>
+        </div>
+        {% if faq is empty %}
+            <p class="pf-muted">{{ 'Consultez notre FAQ complète.'|trans }}</p>
+        {% else %}
+            <div class="pp-faq">
+                {% for q in faq %}
+                    <details>
+                        <summary>{{ icon.help_circle(16) }} <span>{{ q.question }}</span> {{ icon.chevron_down(16) }}</summary>
+                        <div>{{ q.answer|striptags|length > 320 ? q.answer|striptags|slice(0, 318) ~ '…' : q.answer|striptags }}</div>
+                    </details>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Contactez-nous'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Notre équipe vous répond du lundi au vendredi de 9h à 18h (heure de Paris).'|trans }}</p>
+        <ul class="pf-list pp-contact-list">
+            <li><span class="pf-ico pf-ico--xs pf-ico--blue">{{ icon.mail(16) }}</span><div class="pf-list__body"><strong>{{ 'Email'|trans }}</strong><a href="mailto:{{ contact.email }}">{{ contact.email }}</a></div></li>
+            <li><span class="pf-ico pf-ico--xs pf-ico--blue">{{ icon.phone(16) }}</span><div class="pf-list__body"><strong>{{ 'Téléphone'|trans }}</strong><a href="tel:{{ contact.phone|replace({' ': ''}) }}">{{ contact.phone }}</a></div></li>
+            <li><span class="pf-ico pf-ico--xs pf-ico--blue">{{ icon.chat_bubble(16) }}</span><div class="pf-list__body"><strong>{{ 'Chat en direct'|trans }}</strong>
+                <form method="post" action="{{ path('app_pro_support_create') }}">{{ _self.csrf() }}<input type="hidden" name="category" value="chat"><button class="pf-link pp-linkbtn">{{ 'Disponible maintenant'|trans }}</button></form></div></li>
+            <li><span class="pf-ico pf-ico--xs pf-ico--blue">{{ icon.clock(16) }}</span><div class="pf-list__body"><strong>{{ 'Délai de réponse moyen'|trans }}</strong><small>{{ 'Moins de 2h'|trans }}</small></div></li>
+        </ul>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Suivez-nous'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Restez informé de nos actualités et nouveautés.'|trans }}</p>
+        <div class="pp-follow">
+            <a class="is-fb" href="{{ socials.facebook }}" target="_blank" rel="noopener" aria-label="Facebook">{{ icon.social_facebook(18) }}</a>
+            <a class="is-ig" href="{{ socials.instagram }}" target="_blank" rel="noopener" aria-label="Instagram">{{ icon.instagram(18) }}</a>
+            <a class="is-in" href="{{ socials.linkedin }}" target="_blank" rel="noopener" aria-label="LinkedIn">{{ icon.social_linkedin(18) }}</a>
+            <a class="is-yt" href="{{ socials.youtube }}" target="_blank" rel="noopener" aria-label="YouTube">{{ icon.youtube(18) }}</a>
+        </div>
+    </section>
+{% endblock %}

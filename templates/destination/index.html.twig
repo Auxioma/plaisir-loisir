@@ -1,150 +1,151 @@
+{#
+    Destinations (menu principal) — maquette docs/maquettes/destinations.jpeg
+    (01/10). Action : DestinationController::index() — filtres réels dans
+    l'URL : q, continent, type, budget, note.
+
+    Écart assumé : le filtre « Activités populaires » de la maquette n'est
+    pas repris, une destination ne portant pas de catégories d'activités.
+    Styles : assets/styles/discover.css (.ex-*, .ds-*).
+#}
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ 'Destinations'|trans }}{% endblock %}
-{% block meta_description %}{{ 'Tourisme dans toute la France : toutes les destinations. Des lieux exceptionnels, à des prix exclusifs, pour des expériences inoubliables.'|trans }}{% endblock %}
 
-{% block header %}
-    {# Un seul include : navbar.html.twig choisit lui-même l'état connecté
-       ou visiteur d'après la session. #}
-    {% include '_partials/navbar.html.twig' with { nav_active: 'destinations' } %}
-{% endblock %}
+{% set continents = {'': 'Toutes', france: 'France', europe: 'Europe', 'amerique-nord': 'Amérique du Nord', 'amerique-sud': 'Amérique du Sud', afrique: 'Afrique', asie: 'Asie', oceanie: 'Océanie'} %}
+{% set types = {'': 'Toutes les destinations', villes: 'Villes', montagne: 'Montagne', mer: 'Mer & Plage', campagne: 'Campagne', lacs: 'Lacs & Rivières'} %}
+{% set badgeTone = {'Populaire': 'violet', 'Bestseller': 'red', 'Best-seller': 'red', 'Tendance': 'blue'} %}
 
 {% block body %}
-<div class="dest-page dest-landing">
-
-    {# ==================================================================
-       HERO (écran 1) : plage + voile blanc à gauche, H1 sur 3 lignes
-       avec « toutes les destinations » en orange.
-       ================================================================ #}
-    <section class="dest-hero">
-        <img class="dest-hero__bg" src="{{ asset('images/destinations/hero-plage.jpg') }}" alt="">
-        <div class="dest-hero__overlay" aria-hidden="true"></div>
-        <div class="container dest-hero__inner">
-            <h1 class="dest-hero__title">{{ 'Tourisme dans toute la France'|trans }}&nbsp;: <span class="is-accent-line">{{ 'toutes les destinations'|trans }}</span></h1>
-            <p class="dest-hero__subtitle">{{ 'Découvrez toutes nos incroyables destinations, des lieux exceptionnels, à des prix exclusifs et vivez des expériences inoubliables.'|trans }}</p>
-        </div>
-    </section>
-
-    {# ==================================================================
-       CATÉGORIES POPULAIRES : fil d'Ariane + carrousel de 5 cartes.
-       ================================================================ #}
-    <section class="act-section dest-section--head">
-        <div class="container">
-            <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
-                <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
-                <span aria-hidden="true">|</span>
-                <span aria-current="page">{{ 'Destinations'|trans }}</span>
-            </nav>
-
-            <div class="home-section__head">
-                <div>
-                    <h2 class="home-section__title">{{ 'Catégories populaires'|trans }}</h2>
-                    <p class="home-section__subtitle">{{ "Envie d'aventure, de détente ou de découvertes ? Explorez nos catégories et trouvez l'activité qui vous ressemble."|trans }}</p>
-                </div>
-                <a href="{{ path('app_destinations_popular') }}" class="btn-see-all">{{ 'Voir toutes les destinations'|trans }} {{ icon.arrow_up_right(16) }}</a>
+<div class="ex">
+    <aside class="ex-filters" aria-label="{{ 'Filtres'|trans }}">
+        <form class="ex-filters__form" method="get" action="{{ path('app_destinations') }}">
+            {% if continent %}<input type="hidden" name="continent" value="{{ continent }}">{% endif %}
+            <div class="ex-filters__head">
+                <h2>{{ 'Filtres'|trans }}</h2>
+                <a class="ex-link" href="{{ path('app_destinations') }}">{{ 'Réinitialiser'|trans }}</a>
             </div>
 
-            <div class="dest-cats">
-                <button type="button" class="home-cats__nav" data-dest-cats-prev aria-label="{{ 'Voir les catégories précédentes'|trans }}">{{ icon.chevron_left(16) }}</button>
-                <div class="dest-cats__scroll" data-dest-cats-scroll>
-                    {% for c in categories %}
-                        <a href="{{ path('app_activities') }}" class="dest-cat">
-                            <span class="dest-cat__icon">
-                                {%- if c.icon == 'cat_canoe' %}{{ icon.cat_canoe(24) }}
-                                {%- elseif c.icon == 'cat_bike' %}{{ icon.cat_bike(24) }}
-                                {%- elseif c.icon == 'cat_hiking' %}{{ icon.cat_hiking(24) }}
-                                {%- elseif c.icon == 'cat_sports' %}{{ icon.cat_sports(24) }}
-                                {%- else %}{{ icon.cat_culture(24) }}
-                                {%- endif %}
-                            </span>
-                            <span>
-                                <span class="dest-cat__label">{{ c.label }}</span>
-                                <span class="dest-cat__count">{{ c.count }}</span>
-                            </span>
-                        </a>
+            <label class="ex-label" for="ds-q">{{ 'Où voulez-vous partir ?'|trans }}</label>
+            <span class="ex-input pl-suggest-anchor">
+                <input id="ds-q" type="text" name="q" data-suggest="lieu" value="{{ query }}" placeholder="{{ 'Pays, région, ville...'|trans }}">
+                {{ icon.map_pin(18) }}
+            </span>
+
+            <fieldset class="ex-fieldset">
+                <legend class="ex-label">{{ 'Type de destination'|trans }}</legend>
+                <div class="ds-types">
+                    {% for key, label in types %}
+                        <label class="ds-type{{ type == key ? ' is-active' }}">
+                            <input type="radio" name="type" value="{{ key }}"{{ type == key ? ' checked' }} onchange="this.form.submit()">
+                            {%- if key == '' %}{{ icon.globe_simple(18) }}{% elseif key == 'villes' %}{{ icon.building(18) }}{% elseif key == 'mer' %}{{ icon.beach(18) }}{% elseif key == 'campagne' %}{{ icon.tree(18) }}{% else %}{{ icon.cat_hiking(18) }}{% endif %} {{ label|trans }}
+                        </label>
                     {% endfor %}
                 </div>
-                <button type="button" class="home-cats__nav" data-dest-cats-next aria-label="{{ 'Voir les catégories suivantes'|trans }}">{{ icon.chevron_right(16) }}</button>
-            </div>
-        </div>
-    </section>
+            </fieldset>
 
-    {# ==================================================================
-       TOUTES NOS DESTINATIONS : mosaïque 15 tuiles à spans variables.
-       ================================================================ #}
-    <section class="act-section">
-        <div class="container">
-            <div class="home-section__head">
-                <div>
-                    <h2 class="home-section__title">{{ 'Toutes nos destinations'|trans }}</h2>
+            <fieldset class="ex-fieldset">
+                <legend class="ex-label">{{ 'Budget (par personne)'|trans }}</legend>
+                <div class="ex-range" data-ex-range data-max="500" data-single>
+                    <div class="ex-range__labels"><span>0 €</span><span data-ex-range-max-label>{{ budget is null or budget >= 500 ? '500 € et +' : budget ~ ' €' }}</span></div>
+                    <div class="ex-range__track"><span data-ex-range-bar></span></div>
+                    <input type="range" min="0" max="0" value="0" tabindex="-1" aria-hidden="true" data-ex-range-min disabled>
+                    <input type="range" min="0" max="500" step="5" name="budget" value="{{ budget ?? 500 }}" aria-label="{{ 'Budget maximum'|trans }}" data-ex-range-max>
+                    <span hidden data-ex-range-min-label></span>
                 </div>
+            </fieldset>
+
+            <fieldset class="ex-fieldset">
+                <legend class="ex-label">{{ 'Note des utilisateurs'|trans }}</legend>
+                <div class="ex-ratings">
+                    {% for n in [4, 3, 2] %}
+                        <label class="ex-rating"><input type="radio" name="note" value="{{ n }}"{{ rating == n ? ' checked' }}><span>{{ icon.star_solid(12) }} {{ n }} {{ 'et +'|trans }}</span></label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+
+            <button type="submit" class="pf-btn pf-btn--primary pf-btn--block pf-btn--lg">{{ 'Afficher les résultats'|trans }}</button>
+            <p class="ex-count"><strong>{{ total }}</strong> {{ (total > 1 ? 'destinations trouvées' : 'destination trouvée')|trans }}</p>
+        </form>
+    </aside>
+
+    <div class="ex-main">
+        <header class="ex-head">
+            <h1>{{ 'Destinations'|trans }}</h1>
+            <p>{{ 'Explorez les plus belles destinations et trouvez des activités inoubliables.'|trans }}</p>
+        </header>
+
+        <nav class="ex-tabs" aria-label="{{ 'Continents'|trans }}">
+            {% for key, label in continents %}
+                <a class="{{ continent == key ? 'is-active' }}" href="{{ path('app_destinations', app.request.query.all|merge({continent: key ?: null})) }}">
+                    {%- if key == '' %}{{ icon.grid(20) }}{% elseif key == 'france' %}{{ icon.building(20) }}{% else %}{{ icon.globe_simple(20) }}{% endif %} {{ label|trans }}</a>
+            {% endfor %}
+        </nav>
+
+        <section class="ds-hero">
+            <img class="ds-hero__bg" src="{{ asset('images/destinations/banniere-monde.jpg') }}" alt="">
+            <div class="ds-hero__text">
+                <h2>{{ 'Partez à la'|trans }} <span>{{ 'découverte du monde'|trans }}</span></h2>
+                <p>{{ 'Des expériences uniques vous attendent,'|trans }}<br>{{ 'où que vous soyez.'|trans }}</p>
+                <a class="pf-btn pf-btn--primary pf-btn--lg" href="{{ path('app_activities') }}#carte">{{ 'Explorer la carte'|trans }} {{ icon.map(20) }}</a>
             </div>
-            <div class="dest-mosaic">
-                {% for t in mosaic %}
-                    <a href="{{ path('app_destination_city', { ville: 'lille' }) }}"
-                       class="dest-tile dest-tile--{{ t.span }} {{ t.align == 'center' ? 'dest-tile--center' }}"
-                       style="grid-column: {{ t.col }} / span {{ t.span == 'xwide' ? 4 : (t.span == 'wide' ? 3 : 2) }}; grid-row: {{ t.row }} / span {{ t.span == 'tall' ? 2 : 1 }};">
-                        <img src="{{ asset(t.image) }}" alt="{{ t.name }}">
-                        <span class="dest-tile__badge">{{ icon.book_open(16) }} {{ t.count }} {{ 'Activités'|trans }}</span>
-                        <span class="dest-tile__name">{{ t.name }}</span>
+            <div class="ds-ideas">
+                <h3>{{ 'Idées du moment'|trans }}</h3>
+                <ul>
+                    {% for idea in ideas %}
+                        <li><img src="{{ asset(idea.image) }}" alt="" loading="lazy"><span><strong>{{ idea.title|trans }}</strong><small>{{ idea.subtitle|trans }}</small></span></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <div class="ds-section-head">
+            <h2>{{ 'Destinations populaires'|trans }}</h2>
+            <a href="{{ path('app_destinations_popular') }}">{{ 'Voir toutes les destinations'|trans }} {{ icon.arrow_right(16) }}</a>
+        </div>
+
+        {% if destinations is empty %}
+            <div class="pf-card pf-empty">
+                <strong>{{ 'Aucune destination ne correspond à votre recherche.'|trans }}</strong>
+                <a class="pf-btn" href="{{ path('app_destinations') }}">{{ 'Voir toutes les destinations'|trans }}</a>
+            </div>
+        {% else %}
+            <div class="ds-grid">
+                {% for d in destinations %}
+                    <a class="ds-card" href="{{ path('app_destination_city', {ville: d.slug}) }}">
+                        <span class="ds-card__media">
+                            <img src="{{ asset(d.image) }}" alt="{{ d.name }}" loading="lazy">
+                            {% if d.badge %}<span class="ds-card__badge ds-card__badge--{{ badgeTone[d.badge] ?? 'violet' }}">{{ d.badge|trans }}</span>{% endif %}
+                            <button type="button" class="ex-card__fav{{ d.favorite ? ' is-active' }}"
+                                    aria-pressed="{{ d.favorite ? 'true' : 'false' }}"
+                                    aria-label="{{ (d.favorite ? 'Retirer des favoris' : 'Ajouter aux favoris')|trans }}"
+                                    data-favorite-slug="{{ d.slug }}" data-favorite-type="destination"
+                                    data-favorite-url="{{ path('app_favorite_toggle') }}"
+                                    data-favorite-token="{{ csrf_token('submit') }}"
+                                    data-favorite-label-on="{{ 'Retirer des favoris'|trans }}"
+                                    data-favorite-label-off="{{ 'Ajouter aux favoris'|trans }}">{{ d.favorite ? icon.heart_solid(20) : icon.heart(20) }}</button>
+                        </span>
+                        <span class="ds-card__body">
+                            <strong>{{ d.name }}</strong>
+                            {% if d.tagline %}<small>{{ d.tagline }}</small>{% endif %}
+                            {% if d.rating %}<span class="ex-card__rating">{{ icon.star_solid(14) }} {{ d.rating }} <em>({{ d.reviews }})</em></span>{% endif %}
+                            <span class="ds-card__foot">
+                                <span>{{ icon.calendar_grid(14) }} {{ d.count }} {{ 'activités'|trans }}</span>
+                                {% if d.price %}<span class="ds-card__price"><small>{{ 'À partir de'|trans }}</small><strong>{{ d.price }} €</strong></span>{% endif %}
+                            </span>
+                        </span>
                     </a>
                 {% endfor %}
             </div>
-            <div class="act-more">
-                <a href="{{ path('app_destinations_popular') }}" class="pl-btn pl-btn--outline-action">{{ 'Voir plus de destinations'|trans }} {{ icon.chevron_down(16) }}</a>
-            </div>
-        </div>
-    </section>
+        {% endif %}
 
-    {# ==================================================================
-       BANNIÈRE « PARTEZ À LA DÉCOUVERTE DU MONDE » + Idées du moment.
-       ================================================================ #}
-    <section class="act-section">
-        <div class="container">
-            <div class="dest-banner">
-                <img class="dest-banner__bg" src="{{ asset('images/destinations/banniere-monde.jpg') }}" alt="">
-                <div class="dest-banner__overlay" aria-hidden="true"></div>
-                <div class="dest-banner__text">
-                    <h2>{{ 'Partez à la'|trans }} <span>{{ 'découverte du monde'|trans }}</span></h2>
-                    <p>{{ "Des expériences uniques vous attendent,"|trans }}<br>{{ "où que vous soyez."|trans }}</p>
-                    <a href="{{ path('app_activities') }}#carte" class="pl-btn dest-banner__cta">{{ 'Explorer la carte'|trans }} {{ icon.map(18) }}</a>
-                </div>
-                <aside class="dest-banner__ideas">
-                    <h3>{{ 'Idées du moment'|trans }}</h3>
-                    {% for i in ideas %}
-                        <a href="{{ path('app_activities') }}" class="dest-idea">
-                            <img src="{{ asset(i.image) }}" alt="">
-                            <span>
-                                <strong>{{ i.title }}</strong>
-                                <small>{{ i.subtitle }}</small>
-                            </span>
-                        </a>
-                    {% endfor %}
-                </aside>
-            </div>
-        </div>
-    </section>
-
-    {# ==================================================================
-       DESTINATIONS POPULAIRES : 4 cartes + lien vers le listing.
-       ================================================================ #}
-    <section class="act-section">
-        <div class="container">
-            <div class="home-section__head">
-                <div>
-                    <h2 class="home-section__title">{{ 'Destinations populaires'|trans }}</h2>
-                    <p class="home-section__subtitle">{{ "Des villes d'art aux paysages grandioses : choisissez votre prochaine destination."|trans }}</p>
-                </div>
-                <a href="{{ path('app_destinations_popular') }}" class="btn-see-all">{{ 'Voir toutes les destinations'|trans }} {{ icon.arrow_up_right(16) }}</a>
-            </div>
-            <div class="card-grid">
-                {% for d in destinations %}
-                    {% include 'destination/_card.html.twig' with { d: d } %}
-                {% endfor %}
-            </div>
-        </div>
-    </section>
-
+        <section class="ex-trust ds-trust">
+            <div>{{ icon.cat_bike(30) }}<span><strong>{{ 'Meilleurs prix garantis'|trans }}</strong>{{ 'On s’aligne si vous trouvez moins cher'|trans }}</span></div>
+            <div>{{ icon.calendar_grid(30) }}<span><strong>{{ 'Réservation facile'|trans }}</strong>{{ 'En quelques clics'|trans }}</span></div>
+            <div>{{ icon.shield(30) }}<span><strong>{{ 'Paiement sécurisé'|trans }}</strong>{{ 'Transactions 100% sécurisées'|trans }}</span></div>
+            <div>{{ icon.star(30) }}<span><strong>{{ 'Avis vérifiés'|trans }}</strong>{{ 'Des milliers d’avis authentiques'|trans }}</span></div>
+            <div>{{ icon.headset_mic(30) }}<span><strong>{{ 'Support 7j/7'|trans }}</strong>{{ 'Notre équipe est à votre écoute'|trans }}</span></div>
+        </section>
+    </div>
 </div>
 {% endblock %}

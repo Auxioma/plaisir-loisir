@@ -11,7 +11,15 @@ use App\Catalog\Enum\BookingType;
 use App\Catalog\Enum\CancellationPolicy;
 use App\Catalog\Enum\OpeningPeriod;
 use App\Catalog\Enum\ServiceStatus;
+use App\Catalog\Service\ActivityPublishingService;
+use App\Notification\Enum\NotificationCategory;
+use App\Notification\Service\NotificationService;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
@@ -21,6 +29,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Saisie des activités du catalogue.
@@ -68,6 +80,76 @@ class ServiceCrudController extends AbstractCrudController
             // donc « position », et non la date de création.
             ->setDefaultSort(['position' => 'ASC', 'title' => 'ASC'])
             ->setSearchFields(['title', 'placeLabel', 'city', 'shortDescription']);
+    }
+
+    public function configureFilters(Filters $filters): Filters
+    {
+        return $filters->add(ChoiceFilter::new('status', 'Statut')->setChoices(self::choices(ServiceStatus::cases())))->add('provider')->add('category');
+    }
+
+    /**
+     * Validation des activités soumises depuis l'espace pro (« En attente »)
+     * et suspension d'une activité publiée (02/10).
+     */
+    public function configureActions(Actions $actions): Actions
+    {
+        $validate = Action::new('validate', 'Valider et publier', 'fa fa-check')
+            ->linkToCrudAction('validate')
+            ->renderAsForm()
+            ->displayIf(static fn (Service $s): bool => \in_array($s->getStatus(), [ServiceStatus::Pending, ServiceStatus::Draft], true));
+        $suspend = Action::new('suspend', 'Suspendre', 'fa fa-ban')
+            ->linkToCrudAction('suspend')
+            ->renderAsForm()
+            ->displayIf(static fn (Service $s): bool => ServiceStatus::Published === $s->getStatus());
+
+        return $actions
+            ->add(Crud::PAGE_INDEX, $validate)->add(Crud::PAGE_EDIT, $validate)
+            ->add(Crud::PAGE_INDEX, $suspend)->add(Crud::PAGE_EDIT, $suspend);
+    }
+
+    /**
+     * @param AdminContext<Service> $context
+     */
+    // POST uniquement : une action qui change l'état ne doit pas suivre un simple lien.
+    #[AdminRoute(path: '/{entityId}/validate', name: 'validate', options: ['methods' => ['POST']])]
+    public function validate(AdminContext $context, ActivityPublishingService $publishing, NotificationService $notifications, AdminUrlGenerator $urls): Response
+    {
+        $service = $context->getEntity()->getInstance();
+        if (!$service instanceof Service) {
+            throw $this->createNotFoundException();
+        }
+
+        try {
+            $publishing->publish($service);
+            if (null !== $owner = $service->getProvider()?->getUser()) {
+                $notifications->notify($owner, NotificationCategory::Activity, 'Activité publiée', sprintf('« %s » est maintenant en ligne.', $service->getTitle()));
+            }
+            $this->addFlash('success', sprintf('« %s » est publiée.', $service->getTitle()));
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('danger', $e->getMessage());
+        }
+
+        return new RedirectResponse($urls->setController(self::class)->setAction(Action::INDEX)->generateUrl());
+    }
+
+    /**
+     * @param AdminContext<Service> $context
+     */
+    #[AdminRoute(path: '/{entityId}/suspend', name: 'suspend', options: ['methods' => ['POST']])]
+    public function suspend(AdminContext $context, ActivityPublishingService $publishing, NotificationService $notifications, AdminUrlGenerator $urls): Response
+    {
+        $service = $context->getEntity()->getInstance();
+        if (!$service instanceof Service) {
+            throw $this->createNotFoundException();
+        }
+
+        $publishing->suspend($service);
+        if (null !== $owner = $service->getProvider()?->getUser()) {
+            $notifications->notify($owner, NotificationCategory::Activity, 'Activité suspendue', sprintf('« %s » a été suspendue par l’équipe TrouveMoi. Contactez le support pour plus d’informations.', $service->getTitle()));
+        }
+        $this->addFlash('success', sprintf('« %s » est suspendue.', $service->getTitle()));
+
+        return new RedirectResponse($urls->setController(self::class)->setAction(Action::INDEX)->generateUrl());
     }
 
     public function configureFields(string $pageName): iterable
@@ -189,7 +271,9 @@ class ServiceCrudController extends AbstractCrudController
      */
     private const LABELS = [
         'draft' => 'Brouillon',
+        'pending' => 'En attente de validation',
         'published' => 'Publiée',
+        'suspended' => 'Suspendue',
         'archived' => 'Archivée',
         'beginner' => 'Débutant',
         'intermediate' => 'Intermédiaire',

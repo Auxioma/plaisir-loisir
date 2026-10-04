@@ -38,6 +38,10 @@ class Conversation
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Service $service = null;
 
+    /** Rangée dans « Archives » par le professionnel (espace pro, 02/10). */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $archivedByProvider = false;
+
     /**
      * @var Collection<int, Message>
      */
@@ -120,5 +124,17 @@ class Conversation
     {
         return $this->client === $user
             || ($this->provider?->getUser() === $user);
+    }
+
+    public function isArchivedByProvider(): bool
+    {
+        return $this->archivedByProvider;
+    }
+
+    public function setArchivedByProvider(bool $archived): static
+    {
+        $this->archivedByProvider = $archived;
+
+        return $this;
     }
 }

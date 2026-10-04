@@ -1,0 +1,180 @@
+{#
+    Briques de l'espace pro : tuiles, graphiques SVG rendus côté serveur
+    (courbes, barres, anneau), étoiles, tendances, pagination.
+    {% import 'provider/space/_ui.html.twig' as ui %}
+#}
+
+{% macro trend(value, suffix = '%') %}
+    {%- if value is not null -%}
+        <span class="pf-trend{{ value < 0 ? ' is-down' }}">{{ value > 0 ? '+' }}{{ value }}{{ suffix }}</span>
+    {%- endif -%}
+{% endmacro %}
+
+{% macro money(amount, decimals = 2) %}{{ amount|number_format(decimals, ',', ' ') }} €{% endmacro %}
+
+{# Tuile : icône teintée, libellé, valeur, tendance, note. #}
+{% macro tile(label, value, tone, iconName, trend = null, note = null, extra = null) %}
+    {%- import 'provider/space/_ico.html.twig' as ico -%}
+    <article class="pf-card pp-tile">
+        <span class="pf-ico pf-ico--sm pf-ico--round pf-ico--{{ tone }}">{{ ico.svg(iconName, 22) }}</span>
+        <div class="pp-tile__body">
+            <span class="pp-tile__label">{{ label|trans }}</span>
+            <span class="pp-tile__value">{{ value }}</span>
+            {% if extra %}{{ extra|raw }}{% endif %}
+            <span class="pp-tile__note">{{ _self.trend(trend) }}{% if note %} <span>{{ note|trans }}</span>{% endif %}</span>
+        </div>
+    </article>
+{% endmacro %}
+
+{% macro stars(rating, size = 15) %}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    <span class="pp-stars" aria-label="{{ rating }}/5">
+        {%- for i in 1..5 -%}
+            <span class="pp-stars__s{{ rating >= i - 0.25 ? ' is-on' : (rating >= i - 0.75 ? ' is-half' : '') }}">{{ icon.star_solid(size) }}</span>
+        {%- endfor -%}
+    </span>
+{% endmacro %}
+
+{#
+    Courbes. `series` : liste de {values, color, dashed?, area?, label?}.
+    `labels` : libellés de l'axe X (répartis sur la largeur). `unit` : suffixe
+    des graduations (« € », « % »).
+#}
+{% macro line(series, labels, unit = '', height = 170, dots = true) %}
+    {% set peak = 0 %}
+    {% for s in series %}{% set peak = max(peak, max(s.values|merge([0]))) %}{% endfor %}
+    {% set step = peak <= 4 ? 1 : (peak <= 8 ? 2 : (peak <= 40 ? 10 : (peak <= 100 ? 20 : (peak <= 400 ? 100 : (peak <= 1000 ? 200 : (peak <= 4000 ? 500 : 1000)))))) %}
+    {% set ymax = max(step * 4, ((peak / step)|round(0, 'ceil')) * step) %}
+    {% set ticks = (ymax / step)|round %}
+    {% set W = 600 %}{% set H = height %}
+    <div class="pp-chart" style="--h: {{ H }}px">
+        <div class="pp-chart__axis">
+            {% for k in ticks..0 %}<span>{{ (step * k)|number_format(0, ',', ' ') }}{{ unit ? ' ' ~ unit }}</span>{% endfor %}
+        </div>
+        <div class="pp-chart__plot">
+            <svg viewBox="0 0 {{ W }} {{ H }}" preserveAspectRatio="none" role="img" aria-label="{{ 'Graphique'|trans }}">
+                {% for k in 0..ticks %}<line x1="0" x2="{{ W }}" y1="{{ (H / ticks * k)|round(1) }}" y2="{{ (H / ticks * k)|round(1) }}"/>{% endfor %}
+                {% for s in series %}
+                    {% set n = s.values|length %}
+                    {% set d = '' %}
+                    {% for v in s.values %}
+                        {% set x = n > 1 ? (W / (n - 1) * loop.index0) : W / 2 %}
+                        {% set d = d ~ (loop.first ? 'M' : ' L') ~ x|round(1) ~ ' ' ~ (H - v / ymax * H)|round(1) %}
+                    {% endfor %}
+                    {% if s.area|default(false) %}<path d="{{ d }} L{{ W }} {{ H }} L0 {{ H }} Z" fill="{{ s.color }}" fill-opacity=".08" stroke="none"/>{% endif %}
+                    <path d="{{ d }}" fill="none" stroke="{{ s.color }}" stroke-width="2"{% if s.dashed|default(false) %} stroke-dasharray="5 5"{% endif %} vector-effect="non-scaling-stroke"/>
+                {% endfor %}
+            </svg>
+            {% if dots %}
+                {% for s in series %}
+                    {% set n = s.values|length %}
+                    {% if n <= 31 %}
+                        {% for v in s.values %}
+                            <i class="pp-chart__dot" style="left: {{ n > 1 ? (100 / (n - 1) * loop.index0)|round(2) : 50 }}%; top: {{ (100 - v / ymax * 100)|round(2) }}%; --c: {{ s.color }}" title="{{ v|number_format(v == v|round ? 0 : 2, ',', ' ') }}{{ unit ? ' ' ~ unit }}"></i>
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            <div class="pp-chart__x">
+                {% for l in labels %}<span>{{ l }}</span>{% endfor %}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{# Barres verticales (revenus par jour). #}
+{% macro bars(values, labels, unit = '€', height = 110) %}
+    {% set peak = max(values|merge([0])) %}
+    {% set step = peak <= 40 ? 10 : (peak <= 200 ? 50 : (peak <= 400 ? 100 : (peak <= 2000 ? 500 : 1000))) %}
+    {% set ymax = max(step * 3, ((peak / step)|round(0, 'ceil')) * step) %}
+    {% set ticks = (ymax / step)|round %}
+    <div class="pp-chart pp-chart--bars" style="--h: {{ height }}px">
+        <div class="pp-chart__axis">
+            {% for k in ticks..0 %}<span>{{ (step * k)|number_format(0, ',', ' ') }} {{ unit }}</span>{% endfor %}
+        </div>
+        <div class="pp-chart__plot">
+            <div class="pp-bars">
+                {% for v in values %}
+                    <span class="pp-bars__bar{{ loop.last ? ' is-last' }}" style="height: {{ (v / ymax * 100)|round(2) }}%" title="{{ v|number_format(2, ',', ' ') }} {{ unit }}"></span>
+                {% endfor %}
+            </div>
+            <div class="pp-chart__x pp-chart__x--even">
+                {% for l in labels %}<span>{{ l }}</span>{% endfor %}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{# Anneau de répartition. `items` : {label, count, percent}. #}
+{% macro donut(items, total, caption, colors = ['#2f5be7', '#f39c12', '#22b35e', '#8b5cf6', '#14b8c4']) %}
+    <div class="pf-donut pp-donut">
+        <div class="pf-donut__chart">
+            <svg viewBox="0 0 140 140" aria-hidden="true">
+                <circle cx="70" cy="70" r="54" class="pf-donut__track"/>
+                {% set C = 339.292 %}{% set offset = 0 %}
+                {% for b in items %}
+                    {% set len = total > 0 ? b.count / total * C : 0 %}
+                    <circle cx="70" cy="70" r="54" stroke="{{ colors[loop.index0 % colors|length] }}" stroke-dasharray="{{ len|round(2) }} {{ (C - len)|round(2) }}" stroke-dashoffset="{{ (-offset)|round(2) }}" transform="rotate(-90 70 70)"/>
+                    {% set offset = offset + len %}
+                {% endfor %}
+            </svg>
+            <span><strong>{{ total }}</strong>{{ caption|trans }}</span>
+        </div>
+        {% if items is empty %}
+            <p class="pf-muted">{{ 'Pas encore de données sur la période.'|trans }}</p>
+        {% else %}
+            <ul class="pf-donut__legend">
+                {% for b in items %}
+                    <li><i style="background: {{ colors[loop.index0 % colors|length] }}"></i>{{ b.label|trans }}<span>{{ b.count }} ({{ b.percent }}%)</span></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{# Pagination « Afficher x sur n » + pages (conserve les autres paramètres). #}
+{% macro pager(page, pages, shown, total, noun) %}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    {% set route = app.request.attributes.get('_route') %}
+    {% set params = app.request.attributes.get('_route_params')|merge(app.request.query.all) %}
+    <div class="pf-pager pp-pager">
+        <span>{{ 'Afficher %n% sur %total% %noun%'|trans({'%n%': shown, '%total%': total, '%noun%': noun|trans}) }}</span>
+        {% if pages > 1 %}
+            <nav aria-label="{{ 'Pagination'|trans }}">
+                <a class="{{ page <= 1 ? 'is-off' }}" href="{{ path(route, params|merge({page: page - 1})) }}" aria-label="{{ 'Page précédente'|trans }}">{{ icon.chevron_left(16) }}</a>
+                {% for p in 1..pages %}
+                    {% if p == 1 or p == pages or (p >= page - 2 and p <= page + 2) %}
+                        <a class="{{ p == page ? 'is-current' }}" href="{{ path(route, params|merge({page: p})) }}"{% if p == page %} aria-current="page"{% endif %}>{{ p }}</a>
+                    {% elseif p == page - 3 or p == page + 3 %}
+                        <span class="pf-pager__page">…</span>
+                    {% endif %}
+                {% endfor %}
+                <a class="{{ page >= pages ? 'is-off' }}" href="{{ path(route, params|merge({page: page + 1})) }}" aria-label="{{ 'Page suivante'|trans }}">{{ icon.chevron_right(16) }}</a>
+            </nav>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{# Encart de conseils. #}
+{% macro tips(title, items, linkLabel, href) %}
+    {%- import 'provider/space/_ico.html.twig' as ico -%}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ title|trans }}</h2>
+        <ul class="pf-list pp-tips">
+            {% for t in items %}
+                <li><span class="pp-tips__ico">{{ icon.sparkle_tip(18) }}</span><div class="pf-list__body"><strong>{{ t.title|trans }}</strong><small>{{ t.text|trans }}</small></div></li>
+            {% endfor %}
+        </ul>
+        {% if href %}<a class="pf-link pp-arrow" href="{{ href }}">{{ linkLabel|trans }} {{ icon.arrow_right(16) }}</a>{% endif %}
+    </section>
+{% endmacro %}
+
+{# Avatar d'un utilisateur (photo ou initiales). #}
+{% macro avatar(u, size = 40) %}
+    {%- if u and u.avatarPath -%}
+        <img class="pp-avatar" src="{{ asset(u.avatarPath) }}" alt="" width="{{ size }}" height="{{ size }}" style="width: {{ size }}px; height: {{ size }}px">
+    {%- else -%}
+        <span class="pp-avatar pp-avatar--initials" style="width: {{ size }}px; height: {{ size }}px; font-size: {{ (size * 0.38)|round }}px" aria-hidden="true">{{ u ? (u.firstName|first ~ u.lastName|first)|upper : '?' }}</span>
+    {%- endif -%}
+{% endmacro %}

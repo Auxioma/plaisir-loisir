@@ -370,12 +370,59 @@ async function initLeafletMap(mapview) {
     }, 80);
 }
 
+/*
+ * 7. Page Activités (maquette activites.jpeg, 01/10) : curseur de prix à
+ *    deux poignées, bascule « Voir sur la carte » (réutilise la carte
+ *    Leaflet ci-dessus) et affichage grille / liste.
+ */
+function initExplore(root = document) {
+    const range = root.querySelector('[data-ex-range]');
+    if (range) {
+        const min = range.querySelector('[data-ex-range-min]');
+        const max = range.querySelector('[data-ex-range-max]');
+        const bar = range.querySelector('[data-ex-range-bar]');
+        const minLabel = range.querySelector('[data-ex-range-min-label]');
+        const maxLabel = range.querySelector('[data-ex-range-max-label]');
+        const top = Number(range.dataset.max);
+        const render = () => {
+            const lo = Math.min(+min.value, +max.value);
+            const hi = Math.max(+min.value, +max.value);
+            minLabel.textContent = `${lo} €`;
+            maxLabel.textContent = hi >= top ? `${top} € et +` : `${hi} €`;
+            bar.style.left = `${(lo / top) * 100}%`;
+            bar.style.width = `${((hi - lo) / top) * 100}%`;
+        };
+        [min, max].forEach((input) => input.addEventListener('input', render));
+        render();
+    }
+
+    const toggle = root.querySelector('#ex-map-toggle');
+    const results = root.querySelector('#ex-results');
+    const mapview = root.querySelector('#act-mapview');
+    if (toggle && results && mapview) {
+        const apply = () => {
+            results.hidden = toggle.checked;
+            mapview.hidden = !toggle.checked;
+            if (toggle.checked) initLeafletMap(mapview);
+        };
+        toggle.addEventListener('change', apply);
+        if (window.location.hash === '#carte') { toggle.checked = true; apply(); }
+    }
+
+    const grid = root.querySelector('[data-ex-grid]');
+    root.querySelectorAll('[data-ex-view]').forEach((btn) => btn.addEventListener('click', () => {
+        root.querySelectorAll('[data-ex-view]').forEach((b) => b.classList.toggle('is-active', b === btn));
+        grid?.classList.toggle('is-list', btn.dataset.exView === 'list');
+    }));
+}
+
 const start = () => {
     initOfferCountdowns();
     initBookingPanel();
     initReviewFormStars();
     initReviewsModal();
     initListingToggles();
+    initExplore();
 };
 
 // Turbo recharge le <body> sans recharger la page : on ré-initialise à

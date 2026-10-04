@@ -6,9 +6,13 @@ namespace App\Catalog\Controller;
 
 use App\Catalog\Enum\ActivitySort;
 use App\Catalog\Presenter\ActivityPresenter;
+use App\Catalog\Repository\CategoryRepository;
+use App\Catalog\Repository\PromotionRepository;
 use App\Catalog\Repository\ServiceRepository;
 use App\Catalog\StaticCatalog;
 use App\Favorite\Service\CurrentUserFavorites;
+use App\Stats\Service\PageViewRecorder;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -49,6 +53,7 @@ final class ActivityController extends AbstractController
         private readonly ServiceRepository $services,
         private readonly ActivityPresenter $presenter,
         private readonly CurrentUserFavorites $favorites,
+        private readonly CategoryRepository $categoryRepository,
     ) {
     }
 
@@ -151,6 +156,9 @@ final class ActivityController extends AbstractController
             'selections' => StaticCatalog::selections(),
             'cities' => StaticCatalog::cities(),
             'filterChips' => StaticCatalog::filterChips(),
+            // Catégories réelles du catalogue : onglets et cases à cocher de
+            // la maquette activites.jpeg (01/10).
+            'catalogCategories' => $this->categoryRepository->findRoots(),
             'clusters' => StaticCatalog::mapClusters(),
         ]);
     }
@@ -218,12 +226,25 @@ final class ActivityController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/activites/{slug}', 'en' => '/en/activities/{slug}'], name: 'app_activity_show')]
-    public function show(string $slug): Response
+    public function show(string $slug, Request $request, PageViewRecorder $pageViews, PromotionRepository $promotions, EntityManagerInterface $entityManager): Response
     {
         $service = $this->services->findPublishedBySlug($slug);
 
         if (null === $service) {
             throw $this->createNotFoundException(sprintf('Activité « %s » introuvable.', $slug));
+        }
+
+        // Statistiques de l'espace pro (02/10) : consultation de la fiche, et
+        // offre en cours (affichée, comptée ; « clic » si l'on arrive par le
+        // lien de l'offre, paramètre `offre`).
+        $pageViews->recordActivity($request, $service, $this->getUser());
+        $promotion = $promotions->findRunningForService($service);
+        if (null !== $promotion && $this->getUser() !== $service->getProvider()?->getUser()) {
+            $promotion->setViewsCount($promotion->getViewsCount() + 1);
+            if ($request->query->get('offre') === (string) $promotion->getId()) {
+                $promotion->setClicksCount($promotion->getClicksCount() + 1);
+            }
+            $entityManager->flush();
         }
 
         // Ce 404 pour « pas de fiche detaillee » est retire. Le raisonnement
@@ -241,6 +262,7 @@ final class ActivityController extends AbstractController
         return $this->render('activity/show.html.twig', [
             'activity' => $this->presenter->card($service, favoriteSlugs: $this->favorites->activitySlugs()),
             'detail' => $detail,
+            'promotion' => $promotion,
             'reviews' => StaticCatalog::reviews(),
             // « Activites similaires » : la maquette y montrait deux activites
             // qui n'existent pas au catalogue, et surtout une premiere carte

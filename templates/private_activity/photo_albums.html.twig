@@ -1,0 +1,127 @@
+{#
+    Album photo (menu principal) — maquette docs/maquettes/album_photo.jpeg
+    (01/10). Données : PhotoAlbumsController. En-tête et pied de page communs
+    à la plateforme (décision du 01/10).
+
+    « Événements publics » = albums des groupes & clubs ; « Événements
+    privés » = albums des activités privées de la personne connectée.
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Album photo'|trans }}{% endblock %}
+
+{% block body %}
+<div class="ap">
+    <div class="ap-main">
+        <header class="ap-head">
+            <h1>{{ icon.image_frame(38) }} {{ 'Album photo'|trans }}</h1>
+            <p>{{ 'Revivez et partagez les moments inoubliables de toutes vos activités.'|trans }}</p>
+        </header>
+
+        <nav class="ap-tabs">
+            {% for key, label in {tous: 'Tous les albums', publics: 'Événements publics', prives: 'Événements privés'} %}
+                <a class="{{ tab == key ? 'is-active' }}" href="{{ path('app_photo_albums', {onglet: key}) }}">
+                    {%- if key == 'tous' %}{{ icon.image_frame(20) }}{% elseif key == 'publics' %}{{ icon.globe_simple(20) }}{% else %}{{ icon.padlock(20) }}{% endif %} {{ label|trans }}</a>
+            {% endfor %}
+        </nav>
+
+        <form class="pf-toolbar ap-toolbar" method="get">
+            <input type="hidden" name="onglet" value="{{ tab }}">
+            {% if category %}<input type="hidden" name="categorie" value="{{ category }}">{% endif %}
+            <div class="pf-search">
+                <input type="search" name="q" value="{{ query }}" placeholder="{{ 'Rechercher un album, une activité...'|trans }}" aria-label="{{ 'Rechercher un album'|trans }}">
+                <button type="submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(18) }}</button>
+            </div>
+            <div class="pf-select">
+                <select name="periode" onchange="this.form.submit()" aria-label="{{ 'Période'|trans }}">
+                    <option value="">{{ 'Toutes les dates'|trans }}</option>
+                    <option value="30j"{{ period == '30j' ? ' selected' }}>{{ '30 derniers jours'|trans }}</option>
+                    <option value="annee"{{ period == 'annee' ? ' selected' }}>{{ 'Cette année'|trans }}</option>
+                </select>
+            </div>
+            <div class="pf-select">
+                <select name="categorie" onchange="this.form.submit()" aria-label="{{ 'Catégorie'|trans }}">
+                    <option value="">{{ 'Toutes les catégories'|trans }}</option>
+                    {% for name, n in categories %}<option value="{{ name }}"{{ category == name ? ' selected' }}>{{ name|trans }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="pf-select ap-toolbar__sort">
+                <select name="tri" onchange="this.form.submit()" aria-label="{{ 'Trier'|trans }}">
+                    <option value="recents"{{ sort == 'recents' ? ' selected' }}>{{ 'Plus récents'|trans }}</option>
+                    <option value="anciens"{{ sort == 'anciens' ? ' selected' }}>{{ 'Plus anciens'|trans }}</option>
+                    <option value="photos"{{ sort == 'photos' ? ' selected' }}>{{ 'Plus de photos'|trans }}</option>
+                </select>
+            </div>
+        </form>
+
+        {% if albums is empty %}
+            <div class="pf-card pf-empty">
+                <strong>{{ 'Aucun album à afficher.'|trans }}</strong>
+                {% if tab == 'prives' and not app.user %}
+                    {{ 'Connectez-vous pour retrouver les albums de vos activités privées.'|trans }}
+                    <br><a class="pf-btn" href="{{ path('app_login') }}">{{ 'Se connecter'|trans }}</a>
+                {% else %}
+                    {{ 'Chaque activité organisée ou rejointe dispose de son album photo partagé.'|trans }}
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="ap-grid">
+                {% for a in albums %}
+                    <a class="ap-card" href="{{ a.route ? path(a.route, a.routeParams) : '#' }}">
+                        <span class="ap-card__media">
+                            <img src="{{ asset(a.image) }}" alt="" loading="lazy">
+                            <span class="ap-card__privacy{{ a.public ? '' : ' is-private' }}" title="{{ a.public ? 'Album public'|trans : 'Album privé'|trans }}">{{ a.public ? icon.users(15) : icon.padlock(15) }}</span>
+                            <span class="ap-card__count">{{ a.photos }} {{ 'photos'|trans }}</span>
+                        </span>
+                        <span class="ap-card__body">
+                            <strong>{{ a.title }}</strong>
+                            <span>{{ a.date|pf_date('d MMMM y') }}</span>
+                            <span>{{ a.location ?: '—' }}</span>
+                            {% if a.avatars is not empty %}
+                                <span class="fv-avatars">{% for f in a.avatars %}<img src="{{ asset(f) }}" alt="">{% endfor %}{% if a.more > 0 %}<em>+{{ a.more }}</em>{% endif %}</span>
+                            {% endif %}
+                        </span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% include 'account/_pager.html.twig' with { noun: 'albums'|trans } %}
+
+        <section class="ap-share">
+            <span class="ap-share__ico">{{ icon.camera(34) }}</span>
+            <div>
+                <strong>{{ 'Partagez vos moments !'|trans }}</strong>
+                <span>{{ 'Ajoutez vos photos aux albums existants ou créez de nouveaux albums pour vos activités.'|trans }}</span>
+            </div>
+            <a class="pf-btn" href="{{ path('app_account_private_activities_new') }}">{{ 'Créer un album'|trans }}</a>
+            <a class="pf-btn pf-btn--primary" href="{{ path('app_account_albums') }}">{{ 'Ajouter des photos'|trans }}</a>
+        </section>
+    </div>
+
+    <aside class="ap-aside">
+        <section class="pf-card">
+            <h2 class="pf-card__title">{{ 'Catégories'|trans }}</h2>
+            <ul class="ap-cats">
+                <li><a class="{{ category == '' ? 'is-active' }}" href="{{ path('app_photo_albums', {onglet: tab}) }}">{{ icon.image_frame(18) }}<span><strong>{{ 'Toutes les catégories'|trans }}</strong><small>{{ all_count }} {{ 'albums'|trans }}</small></span></a></li>
+                {% for name, n in categories %}
+                    <li><a class="{{ category == name ? 'is-active' }}" href="{{ path('app_photo_albums', {onglet: tab, categorie: name}) }}">{{ icon.camera(18) }}<span><strong>{{ name|trans }}</strong><small>{{ n }} {{ n > 1 ? 'albums'|trans : 'album'|trans }}</small></span></a></li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="pf-card">
+            <h2 class="pf-card__title">{{ 'Albums populaires'|trans }}</h2>
+            <ul class="pf-list ap-popular">
+                {% for a in popular %}
+                    <li><a class="pf-list__link" href="{{ a.route ? path(a.route, a.routeParams) : '#' }}"><img src="{{ asset(a.image) }}" alt="" loading="lazy"><span class="pf-list__body"><strong>{{ a.title }}</strong><small>{{ a.photos }} {{ 'photos'|trans }}</small></span></a></li>
+                {% else %}
+                    <li class="pf-muted">{{ 'Aucun album pour le moment.'|trans }}</li>
+                {% endfor %}
+            </ul>
+            <a class="pf-btn pf-btn--block" href="{{ path('app_photo_albums', {tri: 'photos'}) }}">{{ 'Voir plus d’albums'|trans }}</a>
+        </section>
+    </aside>
+</div>
+{% endblock %}

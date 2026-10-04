@@ -1,0 +1,57 @@
+{# Icônes de l'espace pro absentes de _partials/_icons (trait 1.8, 24×24). #}
+{% macro svg(name, size = 22) %}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    {%- if name == 'home' -%}
+        <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-5.5h4V20"/></svg>
+    {%- elseif name == 'chart' -%}
+        <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5h17"/><path d="M6 20.5v-6M10.5 20.5v-10M15 20.5v-7M19.5 20.5V6"/><path d="m5 10 4.5-4 4 3 6-5"/></svg>
+    {%- elseif name == 'support' -%}
+        {{ icon.support_cycle(size) }}
+    {%- elseif name == 'chat' -%}
+        {{ icon.chat_bubble(size) }}
+    {%- elseif name == 'edit' -%}{{ icon.edit_square(size) }}
+    {%- elseif name == 'calendar' -%}{{ icon.calendar_grid(size) }}
+    {%- elseif name == 'calendar_days' -%}{{ icon.calendar_days(size) }}
+    {%- elseif name == 'star' -%}{{ icon.star(size) }}
+    {%- elseif name == 'euro' -%}{{ icon.euro(size) }}
+    {%- elseif name == 'tag' -%}{{ icon.tag(size) }}
+    {%- elseif name == 'gear' -%}{{ icon.gear(size) }}
+    {%- elseif name == 'person' -%}{{ icon.user_round(size) }}
+    {%- elseif name == 'eye' -%}{{ icon.eye(size) }}
+    {%- elseif name == 'users' -%}{{ icon.users(size) }}
+    {%- elseif name == 'wallet' -%}{{ icon.wallet(size) }}
+    {%- elseif name == 'cursor' -%}
+        <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 3.5 13.5 6-5.8 1.9-1.9 5.8z"/><path d="m13 13 6 6"/></svg>
+    {%- elseif name == 'trend' -%}{{ icon.trend_up(size) }}
+    {%- elseif name == 'bag' -%}
+        <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="13.5" rx="2"/><path d="M8.5 7V5.5a3.5 3.5 0 0 1 7 0V7"/><path d="M9 11.5h6"/></svg>
+    {%- elseif name == 'thumb' -%}{{ icon.thumbs_up(size) }}
+    {%- elseif name == 'neutral' -%}
+        <svg class="pl-icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 15h7"/><circle cx="9" cy="10" r=".6" fill="currentColor"/><circle cx="15" cy="10" r=".6" fill="currentColor"/></svg>
+    {%- elseif name == 'thumb_down' -%}
+        <span style="display:inline-flex;transform:rotate(180deg)">{{ icon.thumbs_up(size) }}</span>
+    {%- elseif name == 'check' -%}{{ icon.check_badge(size) }}
+    {%- elseif name == 'clock' -%}{{ icon.clock(size) }}
+    {%- elseif name == 'x' -%}{{ icon.ban(size) }}
+    {%- elseif name == 'doc' -%}{{ icon.receipt(size) }}
+    {%- elseif name == 'bank' -%}{{ icon.building(size) }}
+    {%- elseif name == 'card' -%}{{ icon.card(size) }}
+    {%- elseif name == 'mail' -%}{{ icon.mail(size) }}
+    {%- elseif name == 'phone' -%}{{ icon.phone(size) }}
+    {%- elseif name == 'pin' -%}{{ icon.map_pin(size) }}
+    {%- elseif name == 'help' -%}{{ icon.help_circle(size) }}
+    {%- elseif name == 'book' -%}{{ icon.book_open(size) }}
+    {%- elseif name == 'bell' -%}{{ icon.bell(size) }}
+    {%- elseif name == 'lock' -%}{{ icon.padlock(size) }}
+    {%- elseif name == 'puzzle' -%}{{ icon.puzzle(size) }}
+    {%- elseif name == 'trash' -%}{{ icon.trash(size) }}
+    {%- elseif name == 'globe' -%}{{ icon.globe_simple(size) }}
+    {%- elseif name == 'briefcase' -%}{{ icon.briefcase(size) }}
+    {%- elseif name == 'shield' -%}{{ icon.shield_check(size) }}
+    {%- elseif name == 'trophy' -%}{{ icon.crown(size) }}
+    {%- elseif name == 'rocket' -%}{{ icon.rocket(size) }}
+    {%- elseif name == 'zap' -%}{{ icon.zap(size) }}
+    {%- elseif name == 'image' -%}{{ icon.image_frame(size) }}
+    {%- else -%}{{ icon.bell(size) }}
+    {%- endif -%}
+{% endmacro %}

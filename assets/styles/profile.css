@@ -894,3 +894,7 @@
 /* corporate.css (formulaire partenaire) espace ses .pf-field successifs :
    sans effet dans l'espace compte, où les grilles gèrent l'espacement. */
 .pf .pf-field + .pf-field { margin-top: 0; }
+
+/* Cœur favori des cartes d'activités privées (01/10). */
+.pa-fav { flex-shrink: 0; display: inline-flex; padding: 4px; background: none; border: 0; color: var(--tm-ink-3); cursor: pointer; }
+.pa-fav.is-active { color: var(--tm-pro); }

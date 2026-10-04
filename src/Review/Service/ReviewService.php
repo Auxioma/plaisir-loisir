@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Review\Service;
 
+use App\Booking\Entity\Booking;
+use App\Booking\Enum\BookingStatus;
 use App\Quote\Entity\Quote;
 use App\Quote\Enum\QuoteStatus;
 use App\Review\Entity\Review;
@@ -61,6 +63,47 @@ final class ReviewService
         $this->entityManager->flush();
 
         // Émet un événement de domaine : les abonnés (ex. notification de l'annonceur) réagissent.
+        $this->eventDispatcher->dispatch(new ReviewAdded($review));
+
+        return $review;
+    }
+
+    /**
+     * Avis sur une activité réservée (catalogue), une fois la séance terminée.
+     *
+     * @throws \InvalidArgumentException note hors bornes, réservation d'un autre
+     *                                   client, non terminée, ou déjà notée
+     */
+    public function addBookingReview(Booking $booking, User $author, int $rating, ?string $comment = null): Review
+    {
+        if ($rating < 1 || $rating > 5) {
+            throw new \InvalidArgumentException('La note doit être comprise entre 1 et 5.');
+        }
+
+        if ($booking->getClient() !== $author) {
+            throw new \InvalidArgumentException('Seul le client de la réservation peut la noter.');
+        }
+
+        if (BookingStatus::Completed !== $booking->getStatus()) {
+            throw new \InvalidArgumentException('Vous pourrez noter cette activité une fois la séance terminée.');
+        }
+
+        if (null !== $this->reviews->findOneBy(['booking' => $booking])) {
+            throw new \InvalidArgumentException('Cette réservation a déjà reçu un avis.');
+        }
+
+        $service = $booking->getService();
+        $review = (new Review())
+            ->setAuthor($author)
+            ->setProvider($service?->getProvider())
+            ->setBooking($booking)
+            ->setService($service)
+            ->setRating($rating)
+            ->setComment($comment);
+
+        $this->entityManager->persist($review);
+        $this->entityManager->flush();
+
         $this->eventDispatcher->dispatch(new ReviewAdded($review));
 
         return $review;

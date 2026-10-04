@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\User;
 
+use App\Provider\StaticProviderSpace;
+
 /**
  * Données statiques de l'espace compte « Paramètre du profil » (spec profil :
  * sidebar, favoris, listes, notifications). Même approche que StaticCatalog :
@@ -96,21 +98,19 @@ final class StaticAccount
      */
     public static function providerMenu(): array
     {
-        return [
-            ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité professionnelle', 'route' => 'app_pro_dashboard', 'badge' => false],
-            ['icon' => 'receipt', 'title' => 'Demandes reçues', 'subtitle' => 'Répondre par un devis', 'route' => 'app_pro_requests', 'badge' => 'requests'],
-            // Nouvel item (Lot G, §14 du CDC) : même route que côté client, la
-            // conversation ne dépend pas du chapeau porté pour la consulter.
-            ['icon' => 'mail', 'title' => 'Messages', 'subtitle' => 'Conversations avec vos clients', 'route' => 'app_account_messages', 'badge' => 'messages'],
-            ['icon' => 'card', 'title' => 'Abonnement', 'subtitle' => 'Votre offre et sa facturation', 'route' => 'app_pro_subscription', 'badge' => false],
-            ['icon' => 'badge_check', 'title' => 'Ma fiche professionnelle', 'subtitle' => 'Ce que voient vos clients', 'route' => 'app_pro_profile_edit', 'badge' => false],
-            // Nouvel item (Lot H, §16.2 du CDC) : Review dépendait encore du
-            // catalogue à réservation directe en pause, aucun écran ici.
-            ['icon' => 'star', 'title' => 'Avis reçus', 'subtitle' => 'Ce que vos clients disent de vous', 'route' => 'app_pro_reviews', 'badge' => 'reviews'],
-            ['icon' => 'heart', 'title' => 'Favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false],
-            ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => 'notifications'],
-            ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Se déconnecter', 'route' => 'app_account_logout_confirm', 'badge' => false, 'section' => ''],
-        ];
+        // Mêmes entrées que la sidebar de l'espace pro (StaticProviderSpace,
+        // maquettes profil_professionnel du 02/10), pour les écrans partagés
+        // affichés avec la coquille du compte (notifications, favoris…).
+        $icons = ['home' => 'grid', 'edit' => 'edit', 'calendar' => 'calendar', 'calendar_days' => 'calendar', 'chat' => 'mail', 'star' => 'star', 'euro' => 'wallet', 'tag' => 'receipt', 'chart' => 'grid', 'gear' => 'gear', 'person' => 'person', 'support' => 'hand_heart'];
+        $menu = [];
+        foreach (StaticProviderSpace::menu() as $item) {
+            $menu[] = ['icon' => $icons[$item['icon']] ?? 'grid', 'title' => $item['title'], 'subtitle' => '', 'route' => $item['route'], 'badge' => $item['badge']];
+        }
+        $menu[] = ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Vos notifications et alertes', 'route' => 'app_account_notifications', 'badge' => 'notifications', 'section' => ''];
+        $menu[] = ['icon' => 'heart', 'title' => 'Favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false];
+        $menu[] = ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Se déconnecter', 'route' => 'app_account_logout_confirm', 'badge' => false, 'section' => ''];
+
+        return $menu;
     }
 
     /**

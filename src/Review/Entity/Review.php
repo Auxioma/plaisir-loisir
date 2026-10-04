@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Review\Entity;
 
+use App\Booking\Entity\Booking;
+use App\Catalog\Entity\Service;
 use App\Provider\Entity\ProviderProfile;
 use App\Quote\Entity\Quote;
 use App\Review\Enum\ReviewStatus;
@@ -37,9 +39,22 @@ class Review
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?ProviderProfile $provider = null;
 
+    /**
+     * Devis à l'origine de l'avis — OU réservation d'une activité du
+     * catalogue (02/10, espace pro « Avis & Évaluations ») : l'un des deux.
+     */
     #[ORM\ManyToOne(targetEntity: Quote::class)]
-    #[ORM\JoinColumn(nullable: false, unique: true, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: true, unique: true, onDelete: 'CASCADE')]
     private ?Quote $quote = null;
+
+    #[ORM\ManyToOne(targetEntity: Booking::class)]
+    #[ORM\JoinColumn(nullable: true, unique: true, onDelete: 'CASCADE')]
+    private ?Booking $booking = null;
+
+    /** Activité notée (renseignée pour un avis issu d'une réservation). */
+    #[ORM\ManyToOne(targetEntity: Service::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Service $service = null;
 
     /**
      * Note de 1 à 5 (en étoiles).
@@ -154,5 +169,29 @@ class Review
     {
         $this->providerReply = $text;
         $this->repliedAt = new \DateTimeImmutable();
+    }
+
+    public function getBooking(): ?Booking
+    {
+        return $this->booking;
+    }
+
+    public function setBooking(?Booking $booking): static
+    {
+        $this->booking = $booking;
+
+        return $this;
+    }
+
+    public function getService(): ?Service
+    {
+        return $this->service ?? $this->booking?->getService();
+    }
+
+    public function setService(?Service $service): static
+    {
+        $this->service = $service;
+
+        return $this;
     }
 }

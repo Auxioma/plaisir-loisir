@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Review\Controller;
 
-use App\Provider\Entity\ProviderProfile;
-use App\Provider\Repository\ProviderProfileRepository;
+use App\Booking\Repository\BookingRepository;
 use App\Quote\Entity\Quote;
 use App\Quote\Repository\QuoteRepository;
 use App\Review\Entity\Review;
@@ -36,7 +35,6 @@ final class ReviewController extends AbstractController
         private readonly ReviewRepository $reviews,
         private readonly ReviewService $reviewService,
         private readonly ReviewModerationService $moderation,
-        private readonly ProviderProfileRepository $providerProfiles,
         private readonly AccountIdentityPresenter $identity,
     ) {
     }
@@ -68,18 +66,44 @@ final class ReviewController extends AbstractController
         return $this->redirectToRoute('app_account_requests_show', ['id' => $requestId]);
     }
 
-    #[Route(path: ['fr' => '/pro/avis', 'en' => '/en/pro/reviews'], name: 'app_pro_reviews')]
-    #[IsGranted('ROLE_PROVIDER')]
-    public function index(): Response
+    /**
+     * Avis d'un client sur une activité réservée et terminée (02/10) : il
+     * alimente « Avis & Évaluations » côté professionnel.
+     */
+    #[Route(path: ['fr' => '/compte/reservations/{id}/avis', 'en' => '/en/account/bookings/{id}/review'], name: 'app_account_booking_review', methods: ['GET', 'POST'])]
+    public function bookingReview(string $id, Request $request, BookingRepository $bookings): Response
     {
-        $provider = $this->currentProvider();
+        $booking = Ulid::isValid($id) ? $bookings->find(Ulid::fromString($id)) : null;
+        if (null === $booking || $booking->getClient() !== $this->currentUser()) {
+            throw new NotFoundHttpException('Cette réservation est introuvable.');
+        }
 
-        return $this->render('review/avis_recus.html.twig', [
+        $existing = $this->reviews->findOneBy(['booking' => $booking]);
+
+        if ($request->isMethod('POST') && null === $existing) {
+            if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+                return $this->redirectToRoute('app_account_booking_review', ['id' => $id]);
+            }
+
+            try {
+                $comment = trim((string) $request->request->get('commentaire', ''));
+                $this->reviewService->addBookingReview($booking, $this->currentUser(), (int) $request->request->get('note', 0), '' !== $comment ? $comment : null);
+                $this->addFlash('success', 'Votre avis a bien été publié, merci.');
+
+                return $this->redirectToRoute('app_account_history');
+            } catch (\InvalidArgumentException $e) {
+                $this->addFlash('error', $e->getMessage());
+            }
+        }
+
+        return $this->render('review/booking_review.html.twig', [
             'user' => $this->identity->identityFor($this->currentUser()),
-            'menu' => StaticAccount::providerMenu(),
-            'active' => 'Avis reçus',
-            'reviews' => $this->reviews->findForProvider($provider),
-            'average' => $this->reviews->averageRatingForProvider($provider),
+            'menu' => StaticAccount::menu(),
+            'active' => 'Mes réservations',
+            'booking' => $booking,
+            'existing' => $existing,
         ]);
     }
 
@@ -96,13 +120,14 @@ final class ReviewController extends AbstractController
             return $this->redirectToRoute('app_pro_reviews');
         }
 
+        $back = (string) $request->headers->get('referer', '');
         $text = trim((string) $request->request->get('reponse', ''));
         if ('' !== $text) {
             $this->moderation->reply($review, $this->currentUser(), $text);
             $this->addFlash('success', 'Votre réponse a été publiée.');
         }
 
-        return $this->redirectToRoute('app_pro_reviews');
+        return str_starts_with($back, $request->getSchemeAndHttpHost().'/') ? $this->redirect($back) : $this->redirectToRoute('app_pro_reviews');
     }
 
     private function currentUser(): User
@@ -114,17 +139,6 @@ final class ReviewController extends AbstractController
         }
 
         return $user;
-    }
-
-    private function currentProvider(): ProviderProfile
-    {
-        $provider = $this->providerProfiles->findOneByUser($this->currentUser());
-
-        if (null === $provider) {
-            throw $this->createAccessDeniedException('Aucun dossier prestataire rattaché à ce compte.');
-        }
-
-        return $provider;
     }
 
     private function findQuoteOrFail(string $id): Quote

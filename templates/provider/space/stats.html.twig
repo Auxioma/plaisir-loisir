@@ -1,0 +1,133 @@
+{#
+    Statistiques — maquette profil_statistiques_professionnel.jpeg (02/10).
+    Données : ProviderStatsController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import 'provider/space/_ui.html.twig' as ui %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Statistiques'|trans }}{% endblock %}
+
+{% block space %}
+    {% set query = {du: from|date('Y-m-d'), au: to|date('Y-m-d'), comparer: compare_value ?: null, mesure: metric} %}
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Statistiques'|trans }} <span class="pp-title-ico">{{ ico.svg('chart', 24) }}</span></h1>
+            <p class="pf-sub">{{ 'Analysez les performances de votre activité.'|trans }}</p>
+        </div>
+        <div class="pp-head__actions pp-head__actions--col">
+            <form method="get" class="pp-range">
+                <input type="hidden" name="mesure" value="{{ metric }}">
+                <label class="visually-hidden" for="st-du">{{ 'Du'|trans }}</label>
+                <input id="st-du" type="date" name="du" value="{{ from|date('Y-m-d') }}" onchange="this.form.submit()">
+                <span>–</span>
+                <label class="visually-hidden" for="st-au">{{ 'Au'|trans }}</label>
+                <input id="st-au" type="date" name="au" value="{{ to|date('Y-m-d') }}" onchange="this.form.submit()">
+                <div class="pf-select pf-select--sm">
+                    <select name="comparer" onchange="this.form.submit()" aria-label="{{ 'Comparer à'|trans }}">
+                        <option value="">{{ 'Comparer à : période précédente'|trans }}</option>
+                        {% for m in compare_months %}<option value="{{ m|date('Y-m') }}"{{ compare_value == m|date('Y-m') ? ' selected' }}>{{ 'Comparer à :'|trans }} {{ m|pf_date('MMMM y')|capitalize }}</option>{% endfor %}
+                    </select>
+                </div>
+            </form>
+            <a class="pf-link" href="{{ path('app_pro_stats_export', query) }}">{{ icon.download(16) }} {{ 'Exporter le rapport'|trans }}</a>
+        </div>
+    </header>
+
+    {% set vs = 'vs ' ~ compare_from|pf_date('d MMM')|trim('.') %}
+    <div class="pp-tiles pp-tiles--5">
+        {{ ui.tile('Vues du profil', tiles.views.value|number_format(0, ',', ' '), 'blue', 'eye', tiles.views.trend, vs) }}
+        {{ ui.tile('Clics', tiles.clicks.value|number_format(0, ',', ' '), 'violet', 'cursor', tiles.clicks.trend, vs) }}
+        {{ ui.tile('Réservations', tiles.bookings.value, 'violet', 'calendar', tiles.bookings.trend, vs) }}
+        {{ ui.tile('Taux de conversion', tiles.conversion.value|number_format(1, ',') ~ '%', 'green', 'trend', null, (tiles.conversion.delta >= 0 ? '+' : '') ~ tiles.conversion.delta|number_format(1, ',') ~ ' pt ' ~ vs) }}
+        {{ ui.tile('Revenus', ui.money(tiles.revenue.value), 'green', 'wallet', tiles.revenue.trend, vs) }}
+    </div>
+
+    {% set labels = [] %}
+    {% for k in 0..6 %}{% set labels = labels|merge([from|date_modify('+' ~ ((days - 1) / 6 * k)|round ~ ' days')|pf_date('d MMM')|trim('.')]) %}{% endfor %}
+
+    <div class="pp-grid pp-grid--stats">
+        <section class="pf-card">
+            <h2 class="pf-card__title">{{ 'Évolution des vues, clics et réservations'|trans }}</h2>
+            <div class="pp-legend">
+                <span><i style="background:#2f5be7"></i>{{ 'Vues'|trans }}</span>
+                <span><i style="background:#8b5cf6"></i>{{ 'Clics'|trans }}</span>
+                <span><i style="background:#22b35e"></i>{{ 'Réservations'|trans }}</span>
+            </div>
+            {{ ui.line([{values: series.views, color: '#2f5be7'}, {values: series.clicks, color: '#8b5cf6'}, {values: series.bookings, color: '#22b35e'}], labels, '', 180, days <= 31) }}
+        </section>
+        <section class="pf-card">
+            <h2 class="pf-card__title pp-mb">{{ 'Répartition des réservations'|trans }}</h2>
+            {{ ui.donut(breakdown, tiles.bookings.value, 'Réservations', ['#2f5be7', '#8b5cf6', '#22b35e', '#f39c12', '#14b8c4']) }}
+        </section>
+    </div>
+
+    <div class="pp-grid pp-grid--2">
+        <section class="pf-card">
+            <h2 class="pf-card__title pp-mb">{{ 'Sources de trafic'|trans }}</h2>
+            <ul class="pp-sources">
+                {% set colors = ['#2f5be7', '#8b5cf6', '#22b35e', '#f39c12', '#14b8c4'] %}
+                {% for s in sources %}
+                    <li><span>{{ s.label|trans }}</span><span class="pp-bar"><i style="width: {{ s.percent }}%; background: {{ colors[loop.index0] }}"></i></span><span>{{ s.count|number_format(0, ',', ' ') }} ({{ s.percent }}%)</span></li>
+                {% endfor %}
+            </ul>
+        </section>
+        <section class="pf-card">
+            <h2 class="pf-card__title">{{ 'Évolution du taux de conversion'|trans }}</h2>
+            {{ ui.line([{values: series.conversion, color: '#2f5be7'}], labels, '%', 150, days <= 31) }}
+        </section>
+    </div>
+{% endblock %}
+
+{% block space_aside %}
+    {% set query = {du: from|date('Y-m-d'), au: to|date('Y-m-d'), comparer: compare_value ?: null} %}
+    <section class="pf-card">
+        <div class="pf-card__head">
+            <h2 class="pf-card__title">{{ 'Performance par activité'|trans }}</h2>
+            <form method="get" class="pf-select pf-select--sm pp-mini-select">
+                {% for k, v in query|filter(v => v) %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+                <select name="mesure" onchange="this.form.submit()" aria-label="{{ 'Mesure'|trans }}">
+                    {% for key, label in {reservations: 'Réservations', vues: 'Vues', revenus: 'Revenus'} %}<option value="{{ key }}"{{ metric == key ? ' selected' }}>{{ label|trans }}</option>{% endfor %}
+                </select>
+            </form>
+        </div>
+        {% if per_activity is empty %}
+            <p class="pf-muted">{{ 'Pas encore de données sur la période.'|trans }}</p>
+        {% else %}
+            <ul class="pp-perf-list">
+                {% for r in per_activity %}
+                    <li>
+                        <span class="pp-ellipsis">{{ r.service.title }}</span>
+                        <strong>{{ metric == 'revenus' ? ui.money(r.value, 0) : r.value }}</strong>
+                        {% if r.trend is not null %}<em class="pp-up{{ r.trend < 0 ? ' is-down' }}">{{ r.trend > 0 ? '+' }}{{ r.trend }}%</em>{% endif %}
+                        <span class="pp-bar"><i style="width: {{ (r.value / per_activity_max * 100)|round }}%"></i></span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <a class="pf-link pp-arrow pp-center" href="{{ path('app_pro_activities', {tri: 'reservations'}) }}">{{ 'Voir toutes les activités'|trans }} {{ icon.arrow_right(16) }}</a>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Données clés'|trans }}</h2>
+        <dl class="pp-kvs pp-kvs--trend">
+            <div><dt>{{ 'Vues du profil'|trans }}</dt><dd>{{ tiles.views.value|number_format(0, ',', ' ') }} {{ ui.trend(tiles.views.trend) }}</dd></div>
+            <div><dt>{{ 'Clics sur activités'|trans }}</dt><dd>{{ tiles.clicks.value|number_format(0, ',', ' ') }} {{ ui.trend(tiles.clicks.trend) }}</dd></div>
+            <div><dt>{{ 'Demandes de renseignements'|trans }}</dt><dd>{{ inquiries }}</dd></div>
+            <div><dt>{{ 'Réservations'|trans }}</dt><dd>{{ tiles.bookings.value }} {{ ui.trend(tiles.bookings.trend) }}</dd></div>
+            <div><dt>{{ 'Taux de conversion'|trans }}</dt><dd>{{ tiles.conversion.value|number_format(1, ',') }}% <span class="pf-trend{{ tiles.conversion.delta < 0 ? ' is-down' }}">{{ tiles.conversion.delta >= 0 ? '+' }}{{ tiles.conversion.delta|number_format(1, ',') }} pt</span></dd></div>
+            <div><dt>{{ 'Revenus générés'|trans }}</dt><dd>{{ ui.money(tiles.revenue.value) }} {{ ui.trend(tiles.revenue.trend) }}</dd></div>
+        </dl>
+        <a class="pf-link pp-arrow pp-center" href="{{ path('app_pro_stats_export', query) }}">{{ 'Télécharger le rapport détaillé'|trans }} {{ icon.arrow_right(16) }}</a>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Périodes les plus performantes'|trans }}</h2>
+        <dl class="pp-kvs">
+            <div><dt>{{ icon.calendar_grid(16) }} {{ 'Jour de la semaine'|trans }}</dt><dd>{{ best.weekday ? best.weekday|trans : '—' }}</dd></div>
+            <div><dt>{{ icon.clock(16) }} {{ 'Tranche horaire'|trans }}</dt><dd>{{ best.hours ?? '—' }}</dd></div>
+            <div><dt>{{ icon.calendar_grid(16) }} {{ 'Mois'|trans }}</dt><dd>{{ best.month ? best.month|pf_date('MMMM y')|capitalize : '—' }}</dd></div>
+        </dl>
+    </section>
+{% endblock %}

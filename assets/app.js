@@ -31,6 +31,10 @@ import './styles/app.css';
 import './styles/layout.css';
 // Espace compte (maquettes profil_particulier, 30/09).
 import './styles/profile.css';
+// Pages du menu principal : activités, destinations, favoris, albums (01/10).
+import './styles/discover.css';
+// Espace professionnel (maquettes profil_professionnel, 02/10).
+import './styles/pro.css';
 
 // Adaptations telephone / tablette. Charge EN DERNIER : a specificite egale,
 // ses regles doivent l'emporter sur le CSS de bureau qu'elles degradent.
@@ -60,6 +64,8 @@ import './account.js';
 
 // Coeur « Ajouter aux favoris » des cartes (cablage du 21/08).
 import './favorites.js';
+// Espace professionnel : dialogues, actions groupées, messagerie.
+import './pro.js';
 
 // Suggestions pendant la frappe dans les champs de recherche (26/08).
 import './autocomplete.js';

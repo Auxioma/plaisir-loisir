@@ -51,6 +51,10 @@
                 <p class="evn-organizer">
                     <img src="{{ asset('images/events/avatar-thomas.jpg') }}" alt="">
                     {{ 'Organisé par'|trans }} <strong>{{ event.organizer }}</strong>
+                    {# Suivre l'organisateur : il apparaît dans « Mes favoris » (01/10). #}
+                    {% if app.user and event.organizerId and event.organizerId != app.user.id ~ '' %}
+                        {% include '_partials/_event_fav.html.twig' with { type: 'organisateur', key: event.organizerId, class: 'pa-fav' } %}
+                    {% endif %}
                 </p>
 
                 {% if event.description %}

@@ -6,6 +6,7 @@ namespace App\Payment\Repository;
 
 use App\Booking\Entity\Booking;
 use App\Payment\Entity\Payment;
+use App\Provider\Entity\ProviderProfile;
 use App\User\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -53,5 +54,23 @@ class PaymentRepository extends ServiceEntityRepository
             ->getResult();
 
         return $payments;
+    }
+
+    /**
+     * Paiements des réservations d'un professionnel (« Revenus & Paiements »).
+     *
+     * @return list<Payment>
+     */
+    public function findForProvider(ProviderProfile $provider): array
+    {
+        return $this->createQueryBuilder('p')
+            ->innerJoin('p.booking', 'b')->addSelect('b')
+            ->innerJoin('b.service', 's')->addSelect('s')
+            ->innerJoin('b.client', 'c')->addSelect('c')
+            ->andWhere('s.provider = :provider')
+            ->setParameter('provider', $provider->getId(), 'ulid')
+            ->orderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

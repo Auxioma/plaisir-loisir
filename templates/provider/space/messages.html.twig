@@ -1,0 +1,176 @@
+{#
+    Clients & Messages — maquette profil_clients&messages_professionnel.jpeg
+    (02/10). Données : ProviderMessagesController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import 'provider/space/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Clients & Messages'|trans }}{% endblock %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Clients & Messages'|trans }} <span class="pp-title-ico">{{ icon.chat_bubble(24) }}</span></h1>
+            <p class="pf-sub">{{ 'Communiquez facilement avec vos clients.'|trans }}</p>
+        </div>
+    </header>
+
+    <div class="pp-inbox">
+        <section class="pf-card pp-inbox__list">
+            <form method="get" class="pp-inbox__search">
+                <input type="hidden" name="onglet" value="{{ tab }}">
+                <div class="pf-search pp-grow">
+                    <input type="search" name="q" value="{{ query }}" placeholder="{{ 'Rechercher un client ou un message…'|trans }}" aria-label="{{ 'Rechercher'|trans }}">
+                    <button type="submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(18) }}</button>
+                </div>
+                <details class="pl-dropdown pf-kebab">
+                    <summary class="pf-btn pp-btn-ghost">{{ icon.funnel(16) }} {{ 'Filtrer'|trans }}</summary>
+                    <div class="tm-menu tm-menu--right">
+                        {% for key, label in {toutes: 'Toutes les conversations', 'non-lues': 'Non lues', reservations: 'Clients ayant réservé', archives: 'Archives'} %}
+                            <a class="tm-menu__item{{ tab == key ? ' is-active' }}" href="{{ path('app_pro_messages', {onglet: key}) }}">{{ label|trans }}</a>
+                        {% endfor %}
+                    </div>
+                </details>
+            </form>
+            <nav class="pf-tabs pp-inbox__tabs" aria-label="{{ 'Conversations'|trans }}">
+                {% for key, label in {toutes: 'Toutes', 'non-lues': 'Non lues', reservations: 'Réservations', archives: 'Archives'} %}
+                    <a class="pf-tab{{ tab == key ? ' is-active' }}" href="{{ path('app_pro_messages', {onglet: key}) }}">{{ label|trans }}{% if key in ['toutes', 'non-lues'] %} ({{ counts[key] }}){% endif %}</a>
+                {% endfor %}
+            </nav>
+            {% if rows is empty %}
+                <p class="pf-empty">{{ 'Aucune conversation.'|trans }}<br><small>{{ 'Vos clients vous écrivent depuis votre fiche ou une réservation ; vous pouvez aussi les contacter depuis « Réservations ».'|trans }}</small></p>
+            {% else %}
+                <ul class="pp-threads">
+                    {% for r in rows %}
+                        {% set c = r.c %}
+                        <li>
+                            <a class="pp-thread{{ selected and selected.id == c.id ? ' is-active' }}" href="{{ path('app_pro_messages', {conversation: c.id, onglet: tab}) }}">
+                                {{ ui.avatar(c.client, 40) }}
+                                <span class="pp-thread__body">
+                                    <strong>{{ c.client.firstName }} {{ c.client.lastName }}</strong>
+                                    <span>{{ r.last ? (r.last.body|length > 46 ? r.last.body|slice(0, 44) ~ '…' : r.last.body) : 'Nouvelle conversation'|trans }}</span>
+                                </span>
+                                <span class="pp-thread__end">
+                                    <small>{{ r.at|date('Y-m-d') == 'now'|date('Y-m-d') ? r.at|date('H:i') : (r.at|date('Y-m-d') == 'yesterday'|date('Y-m-d') ? 'Hier'|trans : r.at|pf_date('d MMM')|trim('.')) }}</small>
+                                    {% if r.unread > 0 %}<b class="pp-thread__count">{{ r.unread }}</b>{% else %}<i class="pp-dot{{ r.last and r.last.author == me ? ' is-grey' }}"></i>{% endif %}
+                                </span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% if has_more %}
+                    <a class="pf-link pp-more" href="{{ path('app_pro_messages', {onglet: tab, q: query ?: null, n: shown + step, conversation: selected ? selected.id : null}) }}">{{ 'Afficher plus de conversations'|trans }} {{ icon.chevron_down(16) }}</a>
+                {% endif %}
+            {% endif %}
+        </section>
+
+        <section class="pf-card pp-inbox__thread">
+            {% if selected is null %}
+                <p class="pf-empty">{{ 'Sélectionnez une conversation.'|trans }}</p>
+            {% else %}
+                <header class="pp-thread-head">
+                    {{ ui.avatar(client, 48) }}
+                    <div>
+                        <strong>{{ client.firstName }} {{ client.lastName }}</strong>
+                        <small>{% if details.last %}{{ 'Réservation'|trans }} #{{ details.last.reference }} • {{ details.last.service.title }}{% else %}{{ selected.service ? selected.service.title : 'Client'|trans }}{% endif %}</small>
+                    </div>
+                    {% if details.last %}
+                        <a class="pf-btn pp-btn-ghost" href="{{ path('app_pro_bookings', {q: details.last.reference}) }}">{{ 'Voir la réservation'|trans }}</a>
+                    {% endif %}
+                    <details class="pl-dropdown pf-kebab">
+                        <summary class="pf-iconbtn" aria-label="{{ 'Plus d’actions'|trans }}">{{ icon.dots(18) }}</summary>
+                        <div class="tm-menu tm-menu--right">
+                            <form method="post" action="{{ path('app_pro_messages_archive', {id: selected.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                <button class="tm-menu__item">{{ selected.archivedByProvider ? 'Désarchiver'|trans : 'Archiver la conversation'|trans }}</button>
+                            </form>
+                            <form method="post" action="{{ path('app_pro_messages_unread', {id: selected.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                <button class="tm-menu__item">{{ 'Marquer comme non lu'|trans }}</button>
+                            </form>
+                        </div>
+                    </details>
+                </header>
+
+                <div class="pp-chat" data-pp-chat>
+                    {% set lastDay = '' %}
+                    {% for m in selected.messages %}
+                        {% set day = m.createdAt|date('Y-m-d') %}
+                        {% if day != lastDay %}
+                            <p class="pp-chat__day">{{ day == 'now'|date('Y-m-d') ? 'Aujourd’hui'|trans : (day == 'yesterday'|date('Y-m-d') ? 'Hier'|trans : m.createdAt|pf_date('d MMMM y')) }}</p>
+                            {% set lastDay = day %}
+                        {% endif %}
+                        {% set mine = m.author == me %}
+                        <div class="pp-msg{{ mine ? ' is-mine' }}">
+                            {% if not mine %}{{ ui.avatar(m.author, 30) }}{% endif %}
+                            <div class="pp-msg__bubble">
+                                <p>{{ m.body|nl2br }}</p>
+                                <small>{{ m.createdAt|date('H:i') }}{% if mine %} <span class="pp-msg__read{{ m.readAt ? ' is-read' }}">{{ icon.check(13) }}</span>{% endif %}</small>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="pf-muted pp-center">{{ 'Écrivez le premier message à votre client.'|trans }}</p>
+                    {% endfor %}
+                    <span id="fin"></span>
+                </div>
+
+                <form method="post" action="{{ path('app_pro_messages_send', {id: selected.id}) }}" class="pp-composer">
+                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                    <label class="visually-hidden" for="pp-body">{{ 'Votre message'|trans }}</label>
+                    <textarea id="pp-body" name="body" rows="1" placeholder="{{ 'Écrire un message…'|trans }}" required data-pp-autosend></textarea>
+                    <button class="pp-composer__send" aria-label="{{ 'Envoyer'|trans }}">{{ icon.send(20) }}</button>
+                </form>
+            {% endif %}
+        </section>
+    </div>
+{% endblock %}
+
+{% block space_aside %}
+    {% if client %}
+        <section class="pf-card pp-client-card">
+            <h2 class="pf-card__title pp-mb">{{ 'Détails du client'|trans }}</h2>
+            <div class="pp-client-card__id">
+                {{ ui.avatar(client, 64) }}
+                <div>
+                    <strong>{{ client.firstName }} {{ client.lastName }}</strong>
+                    <small>{{ 'Membre depuis'|trans }} {{ client.createdAt|pf_date('MMMM y') }}</small>
+                    {% if details.bookings|length >= 2 %}<span class="pf-pill pf-pill--green">{{ 'Client régulier'|trans }}</span>{% elseif details.bookings|length == 1 %}<span class="pf-pill pf-pill--blue">{{ 'Client'|trans }}</span>{% endif %}
+                </div>
+            </div>
+            <ul class="pp-contact">
+                <li>{{ icon.mail(16) }} <a href="mailto:{{ client.email }}">{{ client.email }}</a></li>
+                {% if client.phone %}<li>{{ icon.phone(16) }} <a href="tel:{{ client.phone|replace({' ': ''}) }}">{{ client.phone }}</a></li>{% endif %}
+                {% if details.city %}<li>{{ icon.map_pin(16) }} {{ details.city }}</li>{% endif %}
+            </ul>
+
+            {% if details.last %}
+                <h3 class="pp-subtitle">{{ 'Dernière réservation'|trans }}</h3>
+                <div class="pp-lastbooking">
+                    <img src="{{ asset(details.last.service|pp_cover) }}" alt="">
+                    <div><strong>{{ details.last.service.title }}</strong><small>{{ (details.last.startsAt ?? details.last.createdAt)|pf_date('d MMM y')|trim('.') }} {{ 'à'|trans }} {{ (details.last.startsAt ?? details.last.createdAt)|date('H:i') }}</small></div>
+                    <span class="pf-pill pf-pill--{{ details.last.status.tone }}">{{ details.last.status.label|trans }}</span>
+                </div>
+                <a class="pf-btn pf-btn--block" href="{{ path('app_pro_bookings', {q: client.email}) }}">{{ icon.receipt(16) }} {{ 'Voir l’historique'|trans }}</a>
+            {% endif %}
+
+            <h3 class="pp-subtitle">{{ 'Notes privées'|trans }}</h3>
+            <form method="post" action="{{ path('app_pro_messages_note', {id: selected.id}) }}" class="pp-note">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                <label class="visually-hidden" for="pp-note">{{ 'Note privée'|trans }}</label>
+                <textarea id="pp-note" name="body" rows="3" placeholder="{{ 'Visible de vous seul…'|trans }}">{{ details.note ? details.note.body }}</textarea>
+                <div class="pp-note__foot">
+                    <small>{% if details.note %}{{ 'Modifiée le'|trans }} {{ details.note.updatedAt|date('d/m/Y') }} {{ 'par vous'|trans }}{% else %}{{ 'Aucune note'|trans }}{% endif %}</small>
+                    <button class="pp-note__save" aria-label="{{ 'Enregistrer la note'|trans }}" title="{{ 'Enregistrer la note'|trans }}">{{ icon.edit_square(16) }}</button>
+                </div>
+            </form>
+
+            <h3 class="pp-subtitle">{{ 'Statistiques'|trans }}</h3>
+            <dl class="pp-kvs">
+                <div><dt>{{ 'Réservations totales'|trans }}</dt><dd>{{ details.bookings|length }}</dd></div>
+                <div><dt>{{ 'Dépensé au total'|trans }}</dt><dd>{{ ui.money(details.spent) }}</dd></div>
+                <div><dt>{{ 'Avis laissés'|trans }}</dt><dd>{{ icon.star(14) }} {{ details.reviews }}</dd></div>
+            </dl>
+        </section>
+    {% endif %}
+{% endblock %}

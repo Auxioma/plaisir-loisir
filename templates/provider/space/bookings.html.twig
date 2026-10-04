@@ -1,0 +1,164 @@
+{#
+    Réservations — maquette profil_reservations_professionnel.jpeg (02/10).
+    Données : ProviderBookingController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import 'provider/space/_ui.html.twig' as ui %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Réservations'|trans }}{% endblock %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Réservations'|trans }} <span class="pp-title-ico">{{ icon.calendar_grid(24) }}</span></h1>
+            <p class="pf-sub">{{ 'Gérez toutes vos réservations et suivez leur statut en temps réel.'|trans }}</p>
+        </div>
+        <div class="pp-head__actions">
+            <details class="pl-dropdown pf-kebab">
+                <summary class="pf-btn pp-btn-ghost">{{ 'Exporter'|trans }} {{ icon.chevron_down(16) }}</summary>
+                <div class="tm-menu tm-menu--right">
+                    <a class="tm-menu__item" href="{{ path('app_pro_bookings_export') }}">{{ icon.download(16) }} {{ 'Exporter en CSV (Excel)'|trans }}</a>
+                </div>
+            </details>
+            <a class="pf-btn pf-btn--primary" href="{{ path('app_pro_bookings_report', {periode: days}) }}" target="_blank" rel="noopener">{{ icon.download(18) }} {{ 'Télécharger le rapport'|trans }}</a>
+        </div>
+    </header>
+
+    <nav class="pf-tabs-row" aria-label="{{ 'Filtrer par statut'|trans }}">
+        <div class="pf-tabs">
+            {% for key, label in {toutes: 'Toutes', confirmees: 'Confirmées', 'en-attente': 'En attente', terminees: 'Terminées', annulees: 'Annulées'} %}
+                <a class="pf-tab{{ tab == key ? ' is-active' }}" href="{{ path('app_pro_bookings', {onglet: key}) }}">{{ label|trans }} ({{ counts[key] }})</a>
+            {% endfor %}
+        </div>
+    </nav>
+
+    <form method="get" class="pf-toolbar pp-toolbar">
+        <input type="hidden" name="onglet" value="{{ tab }}">
+        <div class="pf-search pp-grow">
+            <input type="search" name="q" value="{{ query }}" placeholder="{{ 'Rechercher une réservation, un client…'|trans }}" aria-label="{{ 'Rechercher'|trans }}">
+            <button type="submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(18) }}</button>
+        </div>
+        <div class="pf-select">
+            <select name="activite" onchange="this.form.submit()" aria-label="{{ 'Activité'|trans }}">
+                <option value="">{{ 'Toutes activités'|trans }}</option>
+                {% for id, title in services %}<option value="{{ id }}"{{ activity == id ? ' selected' }}>{{ title }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="pf-select">
+            <select name="statut" onchange="this.form.submit()" aria-label="{{ 'Statut'|trans }}">
+                <option value="">{{ 'Tous statuts'|trans }}</option>
+                {% for s in statuses %}<option value="{{ s.value }}"{{ status == s.value ? ' selected' }}>{{ s.label|trans }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="pf-select">
+            <select name="tri" onchange="this.form.submit()" aria-label="{{ 'Trier'|trans }}">
+                {% for key, label in {recentes: 'Plus récentes', anciennes: 'Plus anciennes', date: 'Date de la séance', montant: 'Montant'} %}
+                    <option value="{{ key }}"{{ sort == key ? ' selected' }}>{{ label|trans }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+    <section class="pf-card pf-table-wrap pp-list-card">
+        {% if rows is empty %}
+            <div class="pf-empty"><strong>{{ 'Aucune réservation.'|trans }}</strong>{{ 'Les réservations de vos clients apparaîtront ici.'|trans }}</div>
+        {% else %}
+            <table class="pf-table pp-table">
+                <thead>
+                    <tr><th>{{ 'Réservation'|trans }}</th><th>{{ 'Client'|trans }}</th><th>{{ 'Activité'|trans }}</th><th>{{ 'Date'|trans }}</th><th>{{ 'Statut'|trans }}</th><th>{{ 'Montant'|trans }}</th><th><span class="visually-hidden">{{ 'Actions'|trans }}</span></th></tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        {% set b = row.b %}
+                        <tr>
+                            <td>
+                                <div class="pp-ref">
+                                    <img src="{{ asset(b.service|pp_cover) }}" alt="">
+                                    <div><strong>#{{ b.reference }}</strong><small>{{ 'Réservé le'|trans }} {{ b.createdAt|pf_date('d MMM y')|trim('.') }}<br>{{ 'à'|trans }} {{ b.createdAt|date('H:i') }}</small></div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="pp-client">
+                                    {{ ui.avatar(b.client, 40) }}
+                                    <div><strong>{{ b.client.firstName }} {{ b.client.lastName }}</strong><small>{{ b.client.email }}</small>{% if b.client.phone %}<small>{{ b.client.phone }}</small>{% endif %}</div>
+                                </div>
+                            </td>
+                            <td><strong class="pp-strong">{{ b.service.title }}</strong><small>{{ b.service.city ?? b.service.placeLabel }}</small></td>
+                            <td>{% if b.startsAt %}<span class="pp-date">{{ icon.calendar_grid(15) }} {{ b.startsAt|pf_date('d MMM y')|trim('.') }}<br>{{ b.startsAt|date('H:i') }}</span>{% else %}<span class="pf-muted">{{ 'À planifier'|trans }}</span>{% endif %}</td>
+                            <td><span class="pf-pill pf-pill--{{ b.status.tone }} pp-pill">{{ b.status.label|trans }}</span></td>
+                            <td class="pp-amount"><strong>{{ ui.money(b.totalPrice) }}</strong><small>{{ b.participants }} {{ 'pers.'|trans }}</small></td>
+                            <td>
+                                <details class="pl-dropdown pf-kebab">
+                                    <summary aria-label="{{ 'Actions'|trans }}">{{ icon.dots(20) }}</summary>
+                                    <div class="tm-menu tm-menu--right">
+                                        {% for a in row.actions %}
+                                            <form method="post" action="{{ path('app_pro_bookings_transition', {id: b.id, transition: a[0]}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                                <button class="tm-menu__item{{ a[0] == 'cancel' ? ' is-danger' }}"{% if a[0] == 'cancel' %} data-confirm="{{ 'Annuler cette réservation ? Le client sera prévenu.'|trans }}"{% endif %}>{{ a[1]|trans }}</button>
+                                            </form>
+                                        {% endfor %}
+                                        <a class="tm-menu__item" href="{{ path('app_pro_messages', {client: b.client.id}) }}">{{ icon.chat_bubble(16) }} {{ 'Contacter le client'|trans }}</a>
+                                        {% if b.service.status.value == 'published' %}
+                                            <a class="tm-menu__item" href="{{ path('app_activity_show', {slug: b.service.slug}) }}" target="_blank" rel="noopener">{{ icon.eye(16) }} {{ 'Voir l’activité'|trans }}</a>
+                                        {% endif %}
+                                    </div>
+                                </details>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {{ ui.pager(page, pages, rows|length, total, 'réservations') }}
+    </section>
+{% endblock %}
+
+{% block space_aside %}
+    {% set period_select %}
+        <form method="get" class="pf-select pf-select--sm pp-mini-select">
+            {% for k, v in app.request.query.all|filter((v, k) => k != 'periode' and v is not iterable) %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+            <select name="periode" onchange="this.form.submit()" aria-label="{{ 'Période'|trans }}">
+                {% for d, label in {7: 'Cette semaine', 30: 'Ce mois-ci', 90: '3 derniers mois'} %}<option value="{{ d }}"{{ d == days ? ' selected' }}>{{ label|trans }}</option>{% endfor %}
+            </select>
+        </form>
+    {% endset %}
+
+    <section class="pf-card">
+        <div class="pf-card__head"><h2 class="pf-card__title">{{ 'Aperçu des réservations'|trans }}</h2>{{ period_select }}</div>
+        <div class="pp-minitiles">
+            {% for key, s in summary %}
+                {% set tone = {confirmees: 'green', 'en-attente': 'orange', terminees: 'green', annulees: 'red'}[key] %}
+                <a class="pp-minitile" href="{{ path('app_pro_bookings', {onglet: key}) }}">
+                    <span class="pf-ico pf-ico--xs pf-ico--round pf-ico--{{ tone }}">{{ ico.svg({confirmees: 'calendar', 'en-attente': 'clock', terminees: 'check', annulees: 'x'}[key], 16) }}</span>
+                    <strong>{{ s.value }}</strong>
+                    <span>{{ s.label|trans }} {{ ui.trend(s.trend) }}</span>
+                    <small>{{ 'vs période précédente'|trans }}</small>
+                </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="pf-card">
+        <div class="pf-card__head"><h2 class="pf-card__title">{{ 'Revenus générés'|trans }}</h2>{{ period_select }}</div>
+        <p class="pp-big">{{ ui.money(revenue) }} {{ ui.trend(revenue_trend) }} <small>{{ 'vs période précédente'|trans }}</small></p>
+        {% set labels = [] %}
+        {% for k in 0..6 %}{% set labels = labels|merge([days == 7 ? from|date_modify('+' ~ k ~ ' days')|pf_date('EEE')|trim('.')|capitalize : from|date_modify('+' ~ ((days - 1) / 6 * k)|round ~ ' days')|pf_date('d MMM')|trim('.')]) %}{% endfor %}
+        {{ ui.line([{values: revenue_series, color: '#2f5be7', area: true}], labels, '€', 130, days <= 31) }}
+    </section>
+
+    <section class="pf-card">
+        <div class="pf-card__head"><h2 class="pf-card__title">{{ 'Activités les plus réservées'|trans }}</h2>{{ period_select }}</div>
+        {% if top is empty %}
+            <p class="pf-muted">{{ 'Aucune réservation sur la période.'|trans }}</p>
+        {% else %}
+            <ol class="pp-top pp-top--compact">
+                {% for t in top %}
+                    <li><span class="pp-top__rank">{{ loop.index }}</span><img src="{{ asset(t.image) }}" alt=""><div><strong class="pp-ellipsis">{{ t.service.title }}</strong><small>{{ t.count }} {{ t.count > 1 ? 'réservations'|trans : 'réservation'|trans }}</small></div></li>
+                {% endfor %}
+            </ol>
+        {% endif %}
+        <a class="pf-btn pf-btn--block pp-soft-btn" href="{{ path('app_pro_stats') }}">{{ ico.svg('chart', 18) }} {{ 'Voir toutes les statistiques'|trans }}</a>
+    </section>
+{% endblock %}

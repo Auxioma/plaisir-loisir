@@ -90,7 +90,7 @@ function appliquerEtat(bouton, actif) {
 function repercuterDansLaListe(bouton, actif) {
     const liste = bouton.closest('[data-favorite-list]');
     // .pf-fav : cartes de l'espace compte (maquette profil_favoris, 30/09).
-    const carte = bouton.closest('.pl-card, .pf-fav');
+    const carte = bouton.closest('.pl-card, .pf-fav, [data-favorite-card]');
 
     if (!liste || !carte) {
         return;

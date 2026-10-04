@@ -17,6 +17,11 @@ enum ProviderDocumentKind: string
 {
     case OperatingLicence = 'operating_licence';
     case FoodSafetyCertificate = 'food_safety_certificate';
+    // Pièces de l'espace pro « Mon profil » (02/10).
+    case Identity = 'identity';
+    case Insurance = 'insurance';
+    case Diploma = 'diploma';
+    case FirstAid = 'first_aid';
     case Other = 'other';
 
     public function label(): string
@@ -24,6 +29,10 @@ enum ProviderDocumentKind: string
         return match ($this) {
             self::OperatingLicence => "Licence d'exploitation",
             self::FoodSafetyCertificate => 'Certificat de sécurité alimentaire',
+            self::Identity => "Pièce d'identité",
+            self::Insurance => 'Assurance professionnelle',
+            self::Diploma => 'Diplôme / qualification',
+            self::FirstAid => 'Premiers secours',
             self::Other => 'Autre document',
         };
     }

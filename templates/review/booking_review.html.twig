@@ -1,0 +1,46 @@
+{#
+    Avis d'un client sur une activité réservée et terminée (02/10).
+    Données : ReviewController::bookingReview().
+#}
+{% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Donner mon avis'|trans }}{% endblock %}
+
+{% block account %}
+    <header class="pf-head">
+        <div>
+            <h1 class="pf-title">{{ 'Donner mon avis'|trans }}</h1>
+            <p class="pf-sub">{{ booking.service.title }} — {{ (booking.startsAt ?? booking.createdAt)|pf_date('d MMMM y') }}</p>
+        </div>
+    </header>
+
+    <section class="pf-card">
+        {% if existing %}
+            <p>{{ 'Vous avez déjà noté cette activité :'|trans }} <strong>{{ existing.rating }}/5</strong></p>
+            {% if existing.comment %}<blockquote class="pf-muted">« {{ existing.comment }} »</blockquote>{% endif %}
+            <a class="pf-btn" href="{{ path('app_account_history') }}">{{ 'Retour à mes réservations'|trans }}</a>
+        {% elseif booking.status.value != 'completed' %}
+            <p>{{ 'Vous pourrez noter cette activité une fois la séance terminée.'|trans }}</p>
+            <a class="pf-btn" href="{{ path('app_account_history') }}">{{ 'Retour à mes réservations'|trans }}</a>
+        {% else %}
+            <form method="post" class="pf-stack">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                <fieldset class="pf-field">
+                    <legend class="pf-card__title">{{ 'Votre note'|trans }}</legend>
+                    <div class="pp-rate">
+                        {% for n in 5..1 %}
+                            <input type="radio" id="note-{{ n }}" name="note" value="{{ n }}" required>
+                            <label for="note-{{ n }}" title="{{ n }}/5">{{ icon.star_solid(28) }}</label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+                <div class="pf-field">
+                    <label for="commentaire">{{ 'Votre commentaire (facultatif)'|trans }}</label>
+                    <textarea id="commentaire" name="commentaire" rows="5" maxlength="2000"></textarea>
+                </div>
+                <div><button class="pf-btn pf-btn--primary">{{ 'Publier mon avis'|trans }}</button></div>
+            </form>
+        {% endif %}
+    </section>
+{% endblock %}
