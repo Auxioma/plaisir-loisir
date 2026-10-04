@@ -138,7 +138,7 @@
 
     <section class="pf-card">
         <h2 class="pf-card__title pp-mb">{{ 'Évolution de la note moyenne'|trans }}</h2>
-        {% set values = evolution|map(e => e.value ?? 0) %}
+        {% set values = evolution|map(e => (e.value ?? 0)) %}
         {% set labels = evolution|map(e => e.label|pf_date('MMM')|trim('.')|capitalize) %}
         {{ ui.line([{values: values, color: '#2f5be7'}], labels, '', 120) }}
         <a class="pf-link pp-arrow pp-center" href="{{ path('app_pro_reviews_export') }}">{{ ico.svg('chart', 16) }} {{ 'Exporter le rapport détaillé'|trans }} {{ icon.arrow_right(16) }}</a>

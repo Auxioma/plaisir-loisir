@@ -45,7 +45,7 @@
         </div>
     </div>
     <div class="review-card__foot">
-        <span>{{ 'Est-ce que ça vous a aidé ?'|trans }} <button type="button" class="review-card__helpful" aria-label="{{ "Cet avis m'a aidé"|trans }}" aria-pressed="false" data-helpful="{{ r.id ?? r.author ~ r.title }}">{{ icon.thumbs_up(16) }}</button></span>
+        <span>{{ 'Est-ce que ça vous a aidé ?'|trans }} <button type="button" class="review-card__helpful" aria-label="{{ "Cet avis m'a aidé"|trans }}" aria-pressed="false" data-helpful="{{ r.id ?? (r.author ~ r.title) }}">{{ icon.thumbs_up(16) }}</button></span>
         <a href="https://translate.google.com/?sl=auto&tl={{ app.request.locale == 'en' ? 'fr' : 'en' }}&op=translate&text={{ r.text|url_encode }}" target="_blank" rel="noopener">{{ 'Traduire'|trans }}</a>
     </div>
 </article>

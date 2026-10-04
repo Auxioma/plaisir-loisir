@@ -7,6 +7,15 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    # Valeurs par défaut des variables ajoutées après coup : un serveur dont
+    # le .env.local.php (composer dump-env) est antérieur ne doit pas tomber
+    # sur « Environment variable not found » (CD #16, 04/10).
+    env(SOCIAL_FACEBOOK_URL): 'https://www.facebook.com/trouvemoi.eu'
+    env(SOCIAL_INSTAGRAM_URL): 'https://www.instagram.com/trouvemoi.eu'
+    env(SOCIAL_TIKTOK_URL): 'https://www.tiktok.com/@trouvemoi.eu'
+    env(SOCIAL_YOUTUBE_URL): 'https://www.youtube.com/@trouvemoi'
+    env(SOCIAL_LINKEDIN_URL): 'https://www.linkedin.com/company/trouvemoi'
+    env(STRIPE_SECRET_KEY): ''
 
 services:
     # default configuration for services in *this* file
