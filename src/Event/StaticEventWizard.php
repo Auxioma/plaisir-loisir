@@ -101,4 +101,23 @@ final class StaticEventWizard
     {
         return [5, 10, 15, 20, 30, 50, 75, 100, 150, 200];
     }
+
+    /**
+     * Choix du menu « Limite de participants » (valeur envoyée => libellé).
+     *
+     * Construit ici et non en Twig : le filtre `merge` repose sur
+     * array_merge, qui renumérote les clés numériques — « 20 participants »
+     * partait alors avec la valeur 3 et l'étape 6 refusait la saisie.
+     *
+     * @return array<string|int, string>
+     */
+    public static function capacityOptions(): array
+    {
+        $options = ['unlimited' => 'Illimité'];
+        foreach (self::capacities() as $n) {
+            $options[$n] = $n.' participants';
+        }
+
+        return $options;
+    }
 }

@@ -81,7 +81,13 @@ final class EventWizardFlowTest extends WebTestCase
         $this->post($client, 5, ['description' => 'Une longue description du pique-nique avec tout le programme.'], ['cover' => new UploadedFile($image, 'cover.png', 'image/png', null, true)]);
         self::assertResponseRedirects('/evenements/creer/6');
 
-        $this->post($client, 6, ['visibility' => 'public', 'capacity' => '50', 'reminder' => '24h', 'registration' => '1', 'show_participants' => '1']);
+        // La valeur est lue dans le menu affiché, comme un vrai navigateur :
+        // le 04/10, « 20 participants » partait avec la valeur 3 (clés
+        // renumérotées par le filtre Twig merge) et l'étape refusait la saisie.
+        $crawler = $client->request('GET', '/evenements/creer/6');
+        $capacity = $crawler->filter('select[name="capacity"] option')->reduce(static fn ($o): bool => '20 participants' === trim($o->text()))->attr('value');
+        self::assertSame('20', $capacity);
+        $this->post($client, 6, ['visibility' => 'public', 'capacity' => (string) $capacity, 'reminder' => '24h', 'registration' => '1', 'show_participants' => '1']);
         self::assertResponseRedirects('/evenements/creer/7');
         $this->post($client, 7, ['invites' => [(string) $invitee->getId()], 'invite_emails' => 'ami@exemple.fr']);
         self::assertResponseRedirects('/evenements/creer/8');
@@ -98,7 +104,7 @@ final class EventWizardFlowTest extends WebTestCase
         self::assertSame($day.' 18:00', $event->getStartsAt()->format('Y-m-d H:i'));
         self::assertSame('Lyon, 69006', $event->getLocation());
         self::assertSame('plein-air', $event->getCategory()?->getSlug());
-        self::assertSame(50, $event->getCapacity());
+        self::assertSame(20, $event->getCapacity());
         self::assertNotNull($event->getImagePath());
         self::assertSame(1, $em->getRepository(EventRegistration::class)->count(['event' => $event]));
         self::assertSame(2, $em->getRepository(EventInvitation::class)->count(['event' => $event]));
