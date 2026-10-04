@@ -11,6 +11,7 @@ use App\Catalog\Entity\Service;
 use App\Catalog\Entity\ServicePackage;
 use App\Catalog\Enum\ActivitySort;
 use App\Catalog\Enum\ServiceStatus;
+use App\Provider\Entity\ProviderProfile;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
@@ -668,5 +669,24 @@ class ServiceRepository extends ServiceEntityRepository
             ->getArrayResult();
 
         return array_column($lignes, 'title');
+    }
+
+    /**
+     * Activités d'un professionnel, tous statuts (espace pro « Mes activités »).
+     *
+     * @return list<Service>
+     */
+    public function findForProvider(ProviderProfile $provider): array
+    {
+        return $this->createQueryBuilder('s')
+            ->leftJoin('s.category', 'c')->addSelect('c')
+            ->leftJoin('s.media', 'm')->addSelect('m')
+            ->leftJoin('s.packages', 'p')->addSelect('p')
+            ->andWhere('s.provider = :provider')
+            ->andWhere('s.deletedAt IS NULL')
+            ->setParameter('provider', $provider->getId(), 'ulid')
+            ->orderBy('s.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

@@ -96,6 +96,13 @@ class DashboardController extends AbstractDashboardController
         // filtre « Date » de la recherche n'a rien sur quoi mordre.
         yield MenuItem::linkTo(AvailabilityCrudController::class, 'Disponibilités', 'fa fa-calendar-days');
 
+        yield MenuItem::linkTo(PromotionCrudController::class, 'Offres des professionnels', 'fa fa-percent');
+
+        // Activité des professionnels (espace pro, 02/10).
+        yield MenuItem::section('Réservations');
+        yield MenuItem::linkTo(BookingCrudController::class, 'Réservations', 'fa fa-calendar-check');
+        yield MenuItem::linkTo(PaymentCrudController::class, 'Paiements', 'fa fa-money-bill');
+
         yield MenuItem::section('Classement');
         yield MenuItem::linkTo(DestinationCrudController::class, 'Destinations', 'fa fa-map-location-dot');
         yield MenuItem::linkTo(CategoryCrudController::class, 'Catégories', 'fa fa-tags');
@@ -116,6 +123,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Demandes reçues');
         yield MenuItem::linkTo(PartnerApplicationCrudController::class, 'Candidatures partenaires', 'fa fa-handshake');
         yield MenuItem::linkTo(ContactMessageCrudController::class, 'Messages de contact', 'fa fa-envelope');
+        yield MenuItem::linkTo(SupportTicketCrudController::class, 'Tickets support', 'fa fa-headset');
 
         // Demande du CTO le 29/08 : les textes juridiques et l'aide se gèrent
         // en base, parce qu'ils évoluent dans le temps et qu'une évolution ne

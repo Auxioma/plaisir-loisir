@@ -67,150 +67,6 @@
 }
 
 /* --------------------------------------------------------------------------
- *  1.2 En-tête : panneau de navigation
- *
- *  POINT DE BASCULE : 1600px, un point CUSTOM et non `xxl` (1400) — ce
- *  n'était plus soutenable après le 14/09.
- *
- *  À l'origine ce point valait 1400 (`xxl`), mesuré pour les 5 liens de la
- *  maquette : ~1015px de contenu, débordant sous ~1360px de fenêtre. Deux
- *  chantiers y ont depuis ajouté un 6e lien (« Événements », qui remplace un
- *  ancien lien de même largeur — neutre) et un menu déroulant « Plus »
- *  regroupant 4 liens vers les professionnels et les activités privées (§9,
- *  §12-13 du CDC). Deux menus séparés débordaient encore une fois fusionnés
- *  en un seul par manque de marge ; un point de bascule à 1600 lui en donne.
- *  Ce n'est PLUS un palier Bootstrap standard (rien au-delà de `xxl`
- *  n'existe) : indépendant des autres règles `1400`/`1399.98` de ce fichier,
- *  qui restent inchangées pour tout ce qui n'est pas cette navigation.
- *
- *  Non re-mesuré au pixel (pas d'outil de capture d'écran disponible) :
- *  valeur volontairement généreuse pour laisser de la marge. À confirmer à
- *  l'écran.
- * ------------------------------------------------------------------------ */
-
-/* Au-dessus du point de bascule, le panneau n'existe pas : on annule tout ce
-   que la classe `.offcanvas` de Bootstrap impose. La navigation reprend sa
-   place dans le flux. */
-@media (min-width: 1600px) {
-    .pl-navbar__panel.offcanvas {
-        position: static;
-        z-index: auto;
-        width: auto !important;
-        height: auto !important;
-        max-width: none;
-        visibility: visible !important;
-        background: transparent !important;
-        border: 0 !important;
-        transform: none !important;
-        transition: none;
-    }
-    .pl-navbar__panel-head { display: none; }
-    .pl-navbar__panel-body { display: flex; padding: 0; overflow: visible; }
-}
-
-/* Sous le point de bascule : le panneau glisse depuis la droite. */
-@media (max-width: 1599.98px) {
-    .pl-navbar__panel.offcanvas { width: 320px; max-width: 86vw; }
-
-    .pl-navbar__panel-head {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 20px 24px;
-        border-bottom: 1px solid var(--pl-border);
-    }
-    .pl-navbar__panel-logo { height: 36px; width: auto; }
-    .pl-navbar__panel-close {
-        display: inline-flex; align-items: center; justify-content: center;
-        width: 36px; height: 36px;
-        background: var(--pl-surface-dashboard);
-        border: 0; border-radius: 50%;
-        color: var(--pl-text);
-        cursor: pointer;
-    }
-
-    .pl-navbar__panel-body { padding: 16px 12px 32px; overflow-y: auto; }
-
-    /* Dans le panneau, les liens s'empilent et prennent toute la largeur. */
-    .pl-navbar__panel .pl-nav {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 2px;
-    }
-    .pl-navbar__panel .pl-nav__link {
-        padding: 12px;
-        font-size: 16px;
-        border-radius: 8px;
-    }
-    /* La pastille « Nouveau » ne peut plus flotter sous un lien pleine
-       largeur : elle passe à droite du libellé. */
-    .pl-navbar__panel .pl-nav__link--badged { justify-content: flex-start; }
-    .pl-navbar__panel .pl-nav__badge {
-        position: static;
-        transform: none;
-        margin-left: 8px;
-    }
-    /* Les menus déroulants natifs (<details>) s'ouvrent en accordéon. */
-    .pl-navbar__panel .pl-dropdown { width: 100%; }
-    .pl-navbar__panel .pl-dropdown__toggle { padding: 12px; font-size: 16px; }
-    .pl-navbar__panel .pl-dropdown__menu {
-        position: static;
-        width: 100%;
-        margin: 0 0 4px;
-        box-shadow: none;
-        border: 0;
-        padding-left: 12px;
-    }
-}
-
-/* Le burger lui-même : trois traits, 44px de cible tactile.
-   Ce bloc ne déclare AUCUN `display` : une requête média n'ajoute pas de
-   spécificité, donc entre `@media (…) { .pl-burger { … } }` et `.pl-burger { … }`
-   c'est simplement la dernière écrite qui gagne. Les deux `display` sont donc
-   posés juste après, en aval de toute règle de base, pour que l'ordre du
-   fichier ne puisse plus les inverser. */
-.pl-burger {
-    flex-direction: column; justify-content: center;
-    gap: 5px;
-    width: 44px; height: 44px;
-    padding: 0 10px;
-    background: transparent;
-    border: 0;
-    cursor: pointer;
-}
-.pl-burger span {
-    display: block;
-    height: 2px;
-    border-radius: 2px;
-    background: var(--pl-text);
-}
-/* Bascule du burger — à laisser en dernier, cf. commentaire ci-dessus.
-   Même point de bascule custom (1600) que le panneau de navigation : les
-   deux doivent changer d'état ensemble, sinon soit le burger reste caché
-   alors que le menu est replié, soit il reste affiché en double du menu
-   déjà en ligne. */
-@media (min-width: 1600px) { .pl-burger { display: none; } }
-@media (max-width: 1599.98px) { .pl-burger { display: inline-flex; } }
-
-/* --------------------------------------------------------------------------
- *  1.3 En-tête : barre elle-même
- * ------------------------------------------------------------------------ */
-@media (max-width: 1199.98px) {
-    .pl-navbar { padding-inline: 48px; }
-}
-@media (max-width: 991.98px) {
-    .pl-navbar { height: 76px; padding-inline: 32px; }
-    .pl-navbar__logo img { height: 36px; }
-    /* Les boutons d'action de l'en-tête ne tiennent pas à côté du burger. */
-    .pl-navbar__actions .pl-btn { display: none; }
-}
-@media (max-width: 575.98px) {
-    .pl-navbar { height: 68px; padding-inline: 20px; }
-    .pl-navbar__logo img { height: 30px; }
-    /* On ne garde que la cloche et l'avatar à côté du burger. */
-    .pl-navbar__actions .pl-iconbtn:not(:last-of-type) { display: none; }
-    .pl-navbar__actions { gap: 4px; }
-}
-
-/* --------------------------------------------------------------------------
  *  1.4 Titres et textes
  *  Les corps de la maquette (48px de titre de section, 40px de H1 de bloc)
  *  sont dessinés pour 1440. On les réduit par palier plutôt qu'au cas par cas.
@@ -304,26 +160,6 @@
     .of-card__badge,
     .of-flash__cell,
     .evn-part__tag { font-size: 12px; }
-}
-
-/* --------------------------------------------------------------------------
- *  1.6 Pied de page
- * ------------------------------------------------------------------------ */
-/* Les colonnes sont déjà en `flex-wrap: wrap` : il suffit de resserrer la
-   gouttière de 100px, qui force sinon une seule colonne par ligne. */
-@media (max-width: 1199.98px) {
-    .pl-footer { padding-inline: 48px; }
-    .pl-footer__columns { gap: 40px 56px; }
-}
-@media (max-width: 991.98px) {
-    .pl-footer { padding-inline: 32px; }
-    .pl-footer__columns { gap: 36px 40px; }
-}
-@media (max-width: 575.98px) {
-    .pl-footer { padding-inline: 20px; }
-    .pl-footer__columns { flex-direction: column; gap: 28px; }
-    .pl-footer__brand { max-width: none; }
-    .pl-footer__bottom { flex-direction: column; align-items: flex-start; gap: 16px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -982,15 +818,6 @@
     .auth-welcome__title { font-size: 32px; line-height: 40px; }
     .auth-welcome__brand { white-space: normal; }
 
-    /* Écran d'entrée « Client / Professionnel » : les deux panneaux et leur
-       séparateur vertical s'empilent. */
-    .auth-choice-card {
-        grid-template-columns: 1fr;
-        gap: 32px;
-        padding: 24px;
-    }
-    .auth-choice-sep { display: none; }
-    .auth-choice-band__intro span { max-width: none; }
 }
 @media (max-width: 575.98px) {
     .auth-hero { padding: 32px 20px; }
@@ -998,7 +825,6 @@
     /* Les boutons sociaux passent en colonne. */
     .auth-socials { flex-direction: column; }
     .auth-socials > * { width: 100%; justify-content: center; }
-    .auth-choice-band__points li { flex-wrap: wrap; }
     /* La colonne d'arguments est figée à 304px : trop large pour un
        iPhone SE une fois les marges du héros déduites. */
     .auth-features { width: 100%; }

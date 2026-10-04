@@ -1,0 +1,177 @@
+{#
+    Mon profil — maquette profil_infos_professionel.jpeg (02/10).
+    Données : ProviderProfileController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import 'provider/space/_ui.html.twig' as ui %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Mon profil'|trans }}{% endblock %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Mon profil'|trans }} <span class="pp-title-ico">{{ icon.user_round(24) }}</span></h1>
+            <p class="pf-sub">{{ 'Gérez vos informations personnelles et professionnelles.'|trans }}</p>
+        </div>
+        {% if verified and provider.slug %}<a class="pf-btn pp-btn-ghost" href="{{ path('app_provider_profile', {slug: provider.slug}) }}" target="_blank" rel="noopener">{{ icon.eye(16) }} {{ 'Voir ma fiche publique'|trans }}</a>{% endif %}
+    </header>
+
+    <div class="pp-profile-top">
+        <section class="pf-card pp-idcard pp-idcard--big">
+            <div class="pp-idcard__photo">
+                {{ ui.avatar(me, 150) }}
+                <a class="pp-idcard__cam" href="{{ path('app_pro_settings') }}#photo" aria-label="{{ 'Changer la photo'|trans }}">{{ icon.camera(16) }}</a>
+            </div>
+            <div class="pp-idcard__body">
+                <h2>{{ me.firstName }} {{ me.lastName }} {% if verified %}<span class="pf-pill pf-pill--green">{{ icon.check_badge(12) }} {{ 'Vérifié'|trans }}</span>{% endif %}</h2>
+                <p>{{ 'Professionnel depuis'|trans }} {{ provider.createdAt|pf_date('MMMM y') }}</p>
+                <span class="pf-pill pf-pill--blue">{{ 'Membre Pro'|trans }}</span>
+                <p class="pp-idcard__rating">{% if average is not null %}{{ ui.stars(average, 18) }} <strong>{{ average|number_format(1, ',') }}</strong> ({{ reviews_count }} {{ 'avis'|trans }}){% else %}<span class="pf-muted">{{ 'Pas encore d’avis'|trans }}</span>{% endif %}</p>
+                <ul class="pp-contact">
+                    {% if provider.city %}<li>{{ icon.map_pin(16) }} {{ provider.city }}</li>{% endif %}
+                    <li>{{ icon.mail(16) }} {{ me.email }}</li>
+                    {% if me.phone %}<li>{{ icon.phone(16) }} {{ me.phone }}</li>{% endif %}
+                </ul>
+            </div>
+            <a class="pf-btn pp-btn-ghost pp-idcard__edit" href="{{ path('app_pro_settings', {section: 'infos', modifier: 1}) }}">{{ icon.edit_square(16) }} {{ 'Modifier le profil'|trans }}</a>
+        </section>
+
+        <section class="pf-card pp-highlights">
+            <div class="pp-highlight is-blue">{{ icon.calendar_grid(26) }}<small>{{ 'Depuis'|trans }}</small><strong>{{ provider.createdAt|pf_date('MMMM y')|capitalize }}</strong><span>{{ 'Membre depuis'|trans }}</span></div>
+            <div class="pp-highlight is-green">{{ icon.badge_check(26) }}<strong>{{ reviews_count }}</strong><span>{{ 'Avis reçus'|trans }}</span><small>{{ 'Note moyenne'|trans }} {{ average is not null ? average|number_format(1, ',') : '—' }}</small></div>
+            <div class="pp-highlight is-violet">{{ ico.svg('trophy', 26) }}<strong>{{ rank ? 'Top ' ~ rank ~ '%' : '—' }}</strong><span>{{ 'Professionnels'|trans }}</span><small>{{ 'les mieux notés'|trans }}</small></div>
+            <div class="pp-highlight is-orange">{{ icon.rocket(26) }}<strong>{{ response_rate is not null ? response_rate ~ '%' : '—' }}</strong><span>{{ 'Taux de réponse'|trans }}</span><small>{{ 'aux messages'|trans }}</small></div>
+        </section>
+    </div>
+
+    <div class="pp-profile-main">
+        <section class="pf-card">
+            <nav class="pf-tabs pp-tabs-icons" aria-label="{{ 'Sections du profil'|trans }}">
+                {% for key, t in {infos: ['person', 'Informations personnelles'], activites: ['edit', 'Activités proposées'], medias: ['image', 'Photos & Médias'], preferences: ['gear', 'Préférences'], securite: ['lock', 'Sécurité']} %}
+                    <a class="pf-tab{{ tab == key ? ' is-active' }}" href="{{ path('app_pro_my_profile', {onglet: key}) }}">{{ ico.svg(t[0], 18) }} {{ t[1]|trans }}</a>
+                {% endfor %}
+            </nav>
+
+            {% if tab == 'infos' %}
+                <div class="pp-profile-infos">
+                    <dl class="pp-info pp-info--edit">
+                        {% set edit = path('app_pro_settings', {section: 'infos', modifier: 1}) %}
+                        {% for row in [
+                            ['person', 'Nom complet', me.firstName ~ ' ' ~ me.lastName],
+                            ['mail', 'Email', me.email],
+                            ['phone', 'Téléphone', me.phone ?: '—'],
+                            ['pin', 'Adresse', provider.address ?: '—'],
+                            ['globe', 'Site web', provider.websiteUrl ? provider.websiteUrl|replace({'https://': '', 'http://': ''}) : '—'],
+                            ['help', 'À propos', provider.bio ? (provider.bio|length > 110 ? provider.bio|slice(0, 108) ~ '…' : provider.bio) : '—'],
+                            ['globe', 'Langue', me.preferredLocale == 'en' ? 'English' : 'Français'],
+                            ['clock', 'Fuseau horaire', provider.timezone],
+                        ] %}
+                            <div><dt>{{ ico.svg(row[0], 16) }} {{ row[1]|trans }}</dt><dd>{{ row[2] }}</dd><a href="{{ edit }}" class="pp-iconlink" aria-label="{{ 'Modifier'|trans }} {{ row[1]|trans }}">{{ icon.edit_square(15) }}</a></div>
+                        {% endfor %}
+                    </dl>
+                    <div class="pp-about">
+                        <h3 class="pp-subtitle">{{ 'À propos de moi'|trans }}</h3>
+                        <p>{{ provider.bio ? provider.bio|nl2br : 'Présentez-vous à vos futurs clients depuis « Modifier le profil ».'|trans }}</p>
+                        {% if documents is not empty %}
+                            <ul class="pf-checks">{% for d in documents %}<li>{{ icon.check_badge(16) }} {{ d.kind.label|trans }}</li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+                </div>
+                <a class="pf-btn pp-btn-ghost pp-btn-sm" href="{{ path('app_pro_settings', {section: 'infos', modifier: 1}) }}">{{ icon.edit_square(16) }} {{ 'Modifier les informations'|trans }}</a>
+            {% elseif tab == 'activites' %}
+                {% if services is empty %}
+                    <p class="pf-empty">{{ 'Aucune activité.'|trans }} <a class="pf-link" href="{{ path('app_pro_activities_new') }}">{{ 'Ajouter une activité'|trans }}</a></p>
+                {% else %}
+                    <ul class="pp-mini-list">
+                        {% for s in services %}
+                            <li><img src="{{ asset(s|pp_cover) }}" alt=""><div><strong>{{ s.title }}</strong><small>{{ s.category ? s.category.name|trans }} · {{ s.city ?? s.placeLabel }}</small></div><span class="pf-pill pf-pill--{{ s.status.tone }}">{{ s.status.label|trans }}</span><a class="pp-iconlink" href="{{ path('app_pro_activities_edit', {id: s.id}) }}" aria-label="{{ 'Modifier'|trans }}">{{ icon.edit_square(16) }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% elseif tab == 'medias' %}
+                {% if media is empty %}
+                    <p class="pf-empty">{{ 'Ajoutez des photos à vos activités pour les retrouver ici.'|trans }}</p>
+                {% else %}
+                    <div class="pp-gallery">{% for m in media %}<a href="{{ path('app_pro_activities_edit', {id: m.service.id}) }}" title="{{ m.service.title }}"><img src="{{ asset(m.path) }}" alt="{{ m.service.title }}" loading="lazy"></a>{% endfor %}</div>
+                {% endif %}
+            {% elseif tab == 'preferences' %}
+                <dl class="pp-info">
+                    <div><dt>{{ 'Notifications par e-mail'|trans }}</dt><dd>{{ (preference ? preference.emailEnabled : true) ? 'Activées'|trans : 'Désactivées'|trans }}</dd></div>
+                    <div><dt>{{ 'Notifications sur le site'|trans }}</dt><dd>{{ (preference ? preference.pushEnabled : true) ? 'Activées'|trans : 'Désactivées'|trans }}</dd></div>
+                    <div><dt>{{ 'Disponibilités'|trans }}</dt><dd>{{ provider.availabilityLabel ?? '—' }}</dd></div>
+                    <div><dt>{{ 'Zone d’intervention'|trans }}</dt><dd>{{ provider.interventionZone ?? '—' }}</dd></div>
+                </dl>
+                <a class="pf-btn pp-btn-ghost pp-btn-sm" href="{{ path('app_pro_settings', {section: 'preferences'}) }}">{{ 'Modifier mes préférences'|trans }}</a>
+            {% else %}
+                <dl class="pp-info">
+                    <div><dt>{{ 'Mot de passe'|trans }}</dt><dd>••••••••</dd><a class="pf-link" href="{{ path('app_pro_settings', {section: 'securite'}) }}">{{ 'Modifier'|trans }}</a></div>
+                    <div><dt>{{ 'Statut du dossier'|trans }}</dt><dd>{{ verified ? 'Vérifié'|trans : 'En cours de vérification'|trans }}</dd></div>
+                    <div><dt>{{ 'Pièces justificatives'|trans }}</dt><dd>{{ documents|length }}</dd><a class="pf-link" href="#documents">{{ 'Gérer'|trans }}</a></div>
+                </dl>
+            {% endif %}
+        </section>
+
+        <section class="pf-card">
+            <h2 class="pf-card__title pp-mb">{{ 'Mes préférences'|trans }}</h2>
+            <div class="pp-prefs">
+                <a href="{{ path('app_pro_settings', {section: 'notifications'}) }}">{{ icon.bell(22) }}<span><strong>{{ 'Notifications'|trans }}</strong><small>{{ (preference ? preference.emailEnabled : true) ? 'Email'|trans : '' }}{{ (preference ? preference.emailEnabled and preference.pushEnabled : true) ? ' et ' }}{{ (preference ? preference.pushEnabled : true) ? 'site activés'|trans : '' }}{{ preference and not preference.emailEnabled and not preference.pushEnabled ? 'Désactivées'|trans }}</small></span></a>
+                <a href="{{ path('app_pro_settings', {section: 'paiement'}) }}">{{ icon.card(22) }}<span><strong>{{ 'Mode de paiement'|trans }}</strong><small>{{ {bank: 'Virement bancaire', paypal: 'PayPal', card: 'Carte bancaire'}[provider.payoutMethod]|trans }}</small></span></a>
+                <a href="{{ path('app_pro_settings', {section: 'preferences'}) }}">{{ icon.calendar_grid(22) }}<span><strong>{{ 'Disponibilités'|trans }}</strong><small>{{ provider.availabilityLabel ?? 'À renseigner'|trans }}</small></span></a>
+                <a href="{{ path('app_pro_settings', {section: 'profil-pro'}) }}">{{ icon.map_pin(22) }}<span><strong>{{ 'Zone d’intervention'|trans }}</strong><small>{{ provider.interventionZone ?? provider.city ?? 'À renseigner'|trans }}</small></span></a>
+            </div>
+        </section>
+    </div>
+{% endblock %}
+
+{% block space_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Mes badges'|trans }}</h2>
+        <ul class="pp-badges">
+            {% for b in badges %}
+                <li class="pp-badge pp-badge--{{ b.key }}{{ b.on ? ' is-on' }}" title="{{ b.hint|trans }}">
+                    <span>{{ ico.svg({verified: 'shield', top: 'star', fast: 'zap', xp: 'trophy'}[b.key], 26) }}</span>
+                    <small>{{ b.label|trans }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="pf-card" id="documents">
+        <h2 class="pf-card__title pp-mb">{{ 'Mes documents'|trans }}</h2>
+        {% if documents is empty %}
+            <p class="pf-muted">{{ 'Aucun document déposé.'|trans }}</p>
+        {% else %}
+            <ul class="pf-list pp-docs">
+                {% for d in documents %}
+                    <li>
+                        <span class="pp-docs__ico">{{ icon.receipt(18) }}</span>
+                        <div class="pf-list__body"><strong>{{ d.kind.label|trans }}</strong><small class="pp-ellipsis">{{ d.originalName }} · {{ d.readableSize }}</small></div>
+                        <span class="pf-pill pf-pill--{{ verified ? 'green' : 'orange' }}">{{ verified ? 'Vérifié'|trans : 'En vérification'|trans }}</span>
+                        <form method="post" action="{{ path('app_pro_documents_delete', {id: d.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                            <button class="pp-iconlink" aria-label="{{ 'Supprimer'|trans }}" data-confirm="{{ 'Supprimer ce document ?'|trans }}">{{ icon.trash(15) }}</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <button type="button" class="pf-btn pp-btn-ghost pp-btn-sm pp-center-btn" data-pp-open="pp-doc">{{ icon.edit_square(16) }} {{ 'Gérer mes documents'|trans }}</button>
+        <dialog id="pp-doc" class="pp-dialog" aria-labelledby="pp-doc-title">
+            <form method="post" action="{{ path('app_pro_documents_upload') }}" enctype="multipart/form-data" class="pp-dialog__body">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                <h2 id="pp-doc-title" class="pf-card__title">{{ 'Ajouter un document'|trans }}</h2>
+                <div class="pf-field"><label for="doc-kind">{{ 'Type de document'|trans }}</label><select id="doc-kind" name="kind">{% for k in document_kinds %}<option value="{{ k.value }}">{{ k.label|trans }}</option>{% endfor %}</select></div>
+                <div class="pf-field"><label for="doc-file">{{ 'Fichier (PDF ou image, 8 Mo max.)'|trans }}</label><input id="doc-file" type="file" name="document" accept="application/pdf,image/jpeg,image/png,image/webp" required></div>
+                <div class="pp-form__actions"><button type="button" class="pf-btn pp-btn-ghost" data-pp-close>{{ 'Annuler'|trans }}</button><button class="pf-btn pf-btn--primary">{{ 'Envoyer'|trans }}</button></div>
+            </form>
+        </dialog>
+    </section>
+
+    <a class="pf-card pp-danger-link" href="{{ path('app_pro_settings', {section: 'suppression'}) }}">
+        <span class="pp-danger-link__ico">{{ icon.trash(22) }}</span>
+        <span><strong>{{ 'Supprimer mon compte'|trans }}</strong><small>{{ 'Supprimez définitivement votre compte et toutes vos données.'|trans }}</small></span>
+        {{ icon.chevron_right(18) }}
+    </a>
+{% endblock %}

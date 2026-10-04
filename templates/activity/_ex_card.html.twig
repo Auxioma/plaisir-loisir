@@ -1,0 +1,32 @@
+{#
+    Carte d'activité des pages du menu principal (maquette activites.jpeg,
+    01/10) : image, badge, cœur ; titre, lieu, note (avis), durée et prix.
+    Garde les classes `pl-card` / `pl-card__price` que lisent les tests et le
+    script des favoris. Variable : a (ActivityPresenter::card).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+<a href="{{ a.slug ? path('app_activity_show', { slug: a.slug }) : path('app_activities') }}" class="pl-card ex-card">
+    <span class="ex-card__media">
+        <img src="{{ asset(a.image) }}" alt="{{ a.title }}" loading="lazy">
+        {% if a.badge %}<span class="ex-card__badge">{{ a.badge|trans }}</span>{% endif %}
+        {% if a.slug %}
+            <button type="button" class="ex-card__fav{{ a.favorite|default(false) ? ' is-active' }}"
+                    aria-pressed="{{ a.favorite|default(false) ? 'true' : 'false' }}"
+                    aria-label="{{ (a.favorite|default(false) ? 'Retirer des favoris' : 'Ajouter aux favoris')|trans }}"
+                    data-favorite-slug="{{ a.slug }}" data-favorite-type="activite"
+                    data-favorite-url="{{ path('app_favorite_toggle') }}"
+                    data-favorite-token="{{ csrf_token('submit') }}"
+                    data-favorite-label-on="{{ 'Retirer des favoris'|trans }}"
+                    data-favorite-label-off="{{ 'Ajouter aux favoris'|trans }}">{{ a.favorite|default(false) ? icon.heart_solid(20) : icon.heart(20) }}</button>
+        {% endif %}
+    </span>
+    <span class="ex-card__body">
+        <strong class="ex-card__title">{{ a.title }}</strong>
+        <span class="ex-card__place">{{ a.place }}</span>
+        {% if a.rating %}<span class="ex-card__rating">{{ icon.star_solid(14) }} {{ a.rating }} <em>({{ a.reviews }})</em></span>{% endif %}
+        <span class="ex-card__foot">
+            <span class="ex-card__duration">{{ icon.clock(14) }} {{ a.duration }}</span>
+            <span class="ex-card__price"><small>{{ 'À partir de'|trans }}</small> <span class="pl-card__price">{{ a.price }} €</span></span>
+        </span>
+    </span>
+</a>

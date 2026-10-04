@@ -14,7 +14,7 @@
            evenement etait cree — defaut trouve par les tests fonctionnels. #}
         <img src="{{ asset(e.image ?? 'images/events/ev-raft-clean.jpg') }}" alt="{{ e.title }}">
         <span class="evn-badge evn-badge--{{ e.color }}">{{ e.category }}</span>
-        <span class="evn-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</span>
+        {% include '_partials/_event_fav.html.twig' with { type: 'evenement', key: e.slug } %}
         <span class="evn-card__date">{{ e.date }}</span>
     </div>
     <div class="evn-card__body">

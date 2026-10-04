@@ -31,6 +31,7 @@ final class DestinationPresenter
     {
         return [
             'name' => $destination->getName(),
+            'country' => $destination->getCountry(),
             'tagline' => $destination->getTagline(),
             'rating' => $this->rating($destination),
             'reviews' => $destination->getReviewsCount(),

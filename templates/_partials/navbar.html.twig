@@ -1,181 +1,155 @@
 {#
-    En-tête commun à TOUTES les pages (maquette : le même header partout).
+    En-tête UNIQUE de la plateforme — maquette assets/maquettes/choix_profil.jpeg
+    (30/09). Bandeau bleu nuit : logo, recherche, Activités ▾, Destinations,
+    Mes favoris, Album photo (Nouveau), Notifications, Se connecter,
+    Déposer une activité. Styles : assets/styles/layout.css (.tm-header).
 
-    Variable optionnelle :
-      - nav_active : la maquette peint « Activités » en violet sur tous les
-        écrans, SAUF sur le flow Offres où « Offres du moments » passe en
-        orange et « Activités » redevient foncé (export Offres du moment1).
+    Les anciennes variantes (navbar_home, navbar_corporate, navbar_events…)
+    ne sont plus que des alias de ce fichier : un seul en-tête partout.
 
-    L'état connecté (icônes + avatar à droite, au lieu du bouton « S'inscrire »)
-    n'est PLUS un paramètre : il est lu dans la session. Avant le câblage, une
-    vingtaine de templates écrivaient « connected: true » en dur, si bien qu'un
-    visiteur non connecté voyait un avatar menant à un espace compte auquel il
-    n'a pas accès. Une seule source de vérité : app.user.
+    Les liens que la maquette ne montre plus à plat (Offres du moment, Bons
+    cadeaux, Événements, Activités privées, Trouver un professionnel…) restent
+    joignables dans le menu déroulant « Activités ».
 
-    Icônes connectées câblées sur l'espace compte : cœur → Mes favoris,
-    enveloppe → Messagerie, cloche → Notifications, avatar → espace compte.
-    Messagerie, Notifications et (pour ROLE_PROVIDER) Demandes reçues
-    portent un badge de non-lus, identique à celui du menu compte (signalé
-    le 18/09 : les badges divergeaient, le header n'affichait jamais rien).
+    L'élément actif est déduit de la route courante ; la variable `nav_active`
+    encore passée par certains templates est ignorée.
+
+    Connecté : « Se connecter » laisse la place à l'avatar (menu Profil,
+    Messagerie, raccourcis pro, Déconnexion). Favoris et Notifications
+    portent leur compteur de non-lus.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
-{# En dev seulement, « ?connecte=1 » prévisualise l'état connecté sans compte
-   (utile pour comparer un écran à la maquette). Inopérant en production. #}
+{# En dev seulement, « ?connecte=1 » prévisualise l'état connecté sans compte. #}
 {% set connected = app.user is not null or (app.debug and app.request.query.getBoolean('connecte')) %}
-{% set nav_active = nav_active|default('') %}
+{% set route = app.request.attributes.get('_route', '') %}
+{% set is_provider = app.user is not null and is_granted('ROLE_PROVIDER') %}
 
-<header class="pl-navbar pl-navbar--connected">
-    <div class="pl-navbar__inner">
-        <div class="pl-navbar__left">
-            <a href="{{ path('app_home') }}" class="pl-navbar__logo" aria-label="{{ 'Accueil TrouveMoi'|trans }}">
-                <img src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir & Loisirs">
-            </a>
+{% set active =
+    route == 'app_favorites_page' ? 'favoris' :
+    route == 'app_photo_albums' ? 'album' :
+    route starts with 'app_account_notification' ? 'notifications' :
+    route starts with 'app_destination' ? 'destinations' :
+    (route starts with 'app_activit' or route starts with 'app_offer' or route starts with 'app_gift' or route starts with 'app_event' or route starts with 'app_private_activit') ? 'activites' : ''
+%}
 
-            {# Sous 992px la navigation glisse dans un panneau offcanvas de
-               Bootstrap ; au-dessus, le CSS le neutralise et elle reprend sa
-               place en ligne (mécanique de `navbar-expand-lg`). #}
-            <div class="pl-navbar__panel offcanvas offcanvas-end" id="plNav" tabindex="-1" aria-label="{{ 'Menu'|trans }}">
-                <div class="pl-navbar__panel-head">
-                    <img class="pl-navbar__panel-logo" src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir &amp; Loisirs">
-                    <button type="button" class="pl-navbar__panel-close" data-bs-dismiss="offcanvas" aria-label="{{ 'Fermer'|trans }}">{{ icon.x(16) }}</button>
-                </div>
-                <div class="pl-navbar__panel-body">
-                    <nav class="pl-nav pl-nav--connected" aria-label="{{ 'Navigation principale'|trans }}">
-                        <a href="{{ path('app_activities') }}" class="pl-nav__link {{ nav_active not in ['offres', 'cadeaux'] ? 'is-active' }}">{{ 'Activités'|trans }}</a>
-                        <a href="{{ path('app_destinations') }}" class="pl-nav__link pl-nav__link--badged">{{ 'Destinations'|trans }} <span class="pl-nav__badge">{{ 'Nouveau'|trans }}</span></a>
-                        <a href="{{ path('app_offers') }}" class="pl-nav__link pl-nav__link--offres {{ nav_active == 'offres' ? 'is-active-cta' }}">{{ icon.flame(18) }} {{ 'Offres du moments'|trans }}</a>
-                        <a href="{{ path('app_gifts') }}" class="pl-nav__link {{ nav_active == 'cadeaux' ? 'is-active' }}">{{ icon.gift(18) }} {{ 'Cadeaux'|trans }}</a>
-                        {#
-                            RENOMMÉ (14/09) : ce lien menait à /evenements/prives, un
-                            onglet du domaine Event (contenu figé StaticEvents, hors
-                            périmètre du CDC actuel selon le rapport du 7 septembre) —
-                            PAS la fonctionnalité « Activités privées entre particuliers »
-                            du §12-13 du CDC, qui vit dans le domaine PrivateActivity.
-                            Les deux portaient le même libellé « Activités privées » :
-                            collision de nom repérée en construisant le Lot D. Ce lien
-                            pointe maintenant vers la landing du domaine Event lui-même
-                            (pas spécifiquement son onglet « privé »), sous son vrai nom.
-                        #}
-                        <a href="{{ path('app_events') }}" class="pl-nav__link">{{ 'Événements'|trans }}</a>
-                        {#
-                            §21.2 du CDC : « Trouver un professionnel », « Déposer une
-                            demande » ; §12-13 : « Activités privées entre particuliers ».
-                            Aucune maquette Figma ne couvre ces écrans.
+<header class="tm-header">
+    <div class="tm-header__inner">
+        <a href="{{ path('app_home') }}" class="tm-header__logo" aria-label="{{ 'Accueil TrouveMoi'|trans }}">
+            <img src="{{ asset('images/logo-trouvemoi.png') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="186" height="52">
+        </a>
 
-                            UN SEUL MENU POUR LES QUATRE LIENS, PAS DEUX (14/09, v2).
-                            Un menu « Professionnels » et un menu « Activités privées »
-                            distincts débordaient encore : la barre est calée au pixel sur
-                            un cadre de 1440 sans la moindre marge (docs/grille-figma.md),
-                            et DEUX menus déroulants supplémentaires pèsent presque autant
-                            que les libellés qu'ils remplacent (chacun porte son propre
-                            texte + chevron). Un seul menu « Plus », au libellé volontai-
-                            rement court, regroupe les quatre liens et ne coûte que la
-                            largeur d'un item générique. Signalé une deuxième fois par le
-                            client après le premier correctif (menu unique par fonction) :
-                            cette fois la largeur ajoutée est mesurée sur le PIRE cas
-                            (libellé le plus court possible), pas seulement réduite.
-                        #}
-                        <details class="pl-dropdown">
-                            <summary class="pl-dropdown__toggle">{{ 'Plus'|trans }} {{ icon.chevron_down(16) }}</summary>
-                            <div class="pl-dropdown__menu">
-                                <a href="{{ path('app_provider_search') }}" class="pl-dropdown__item">{{ 'Trouver un professionnel'|trans }}</a>
-                                <a href="{{ path('app_account_requests_new') }}" class="pl-dropdown__item">{{ 'Déposer une demande'|trans }}</a>
-                                <a href="{{ path('app_private_activities') }}" class="pl-dropdown__item">{{ 'Activités privées'|trans }}</a>
-                                <a href="{{ path('app_account_private_activities_new') }}" class="pl-dropdown__item">{{ 'Organiser une activité'|trans }}</a>
-                            </div>
-                        </details>
-                    </nav>
-                </div>
+        <form class="tm-search pl-suggest-anchor" action="{{ path('app_activities') }}" method="get" role="search">
+            <input class="tm-search__input" type="search" name="q" data-suggest="activite"
+                   placeholder="{{ 'Rechercher une activité, un loisir, une destination...'|trans }}"
+                   aria-label="{{ 'Rechercher'|trans }}" value="{{ route == 'app_activities' ? app.request.query.get('q') : '' }}">
+            <button class="tm-search__btn" type="submit" aria-label="{{ 'Lancer la recherche'|trans }}">{{ icon.search(20) }}</button>
+        </form>
+
+        {# Sous 1200px la navigation glisse dans un panneau offcanvas de
+           Bootstrap ; au-dessus, le CSS le neutralise et elle reprend sa place
+           en ligne (mécanique de `navbar-expand-xl`). #}
+        <div class="tm-header__panel offcanvas offcanvas-end" id="tmNav" tabindex="-1" aria-label="{{ 'Menu'|trans }}">
+            <div class="tm-header__panel-head">
+                <img src="{{ asset('images/logo-trouvemoi.png') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="150" height="42">
+                <button type="button" class="tm-header__panel-close" data-bs-dismiss="offcanvas" aria-label="{{ 'Fermer'|trans }}">{{ icon.x(18) }}</button>
             </div>
+
+            <nav class="tm-nav" aria-label="{{ 'Navigation principale'|trans }}">
+                <details class="pl-dropdown tm-nav__dropdown">
+                    <summary class="tm-nav__link{{ active == 'activites' ? ' is-active' }}">{{ 'Activités'|trans }} {{ icon.chevron_down(14) }}</summary>
+                    <div class="tm-menu">
+                        <a href="{{ path('app_activities') }}" class="tm-menu__item">{{ 'Toutes les activités'|trans }}</a>
+                        <a href="{{ path('app_offers') }}" class="tm-menu__item">{{ 'Offres du moment'|trans }}</a>
+                        <a href="{{ path('app_gifts') }}" class="tm-menu__item">{{ 'Bons cadeaux'|trans }}</a>
+                        <a href="{{ path('app_events') }}" class="tm-menu__item">{{ 'Événements'|trans }}</a>
+                        <a href="{{ path('app_private_activities') }}" class="tm-menu__item">{{ 'Activités privées'|trans }}</a>
+                        <a href="{{ path('app_account_private_activities_new') }}" class="tm-menu__item">{{ 'Organiser une activité'|trans }}</a>
+                        <a href="{{ path('app_provider_search') }}" class="tm-menu__item">{{ 'Trouver un professionnel'|trans }}</a>
+                        <a href="{{ path('app_account_requests_new') }}" class="tm-menu__item">{{ 'Déposer une demande'|trans }}</a>
+                    </div>
+                </details>
+
+                <a href="{{ path('app_destinations') }}" class="tm-nav__link{{ active == 'destinations' ? ' is-active' }}">{{ 'Destinations'|trans }}</a>
+
+                <a href="{{ path('app_favorites_page') }}" class="tm-nav__link{{ active == 'favoris' ? ' is-active' }}">
+                    <span class="tm-nav__icon">{{ icon.heart(20) }}</span> {{ 'Mes favoris'|trans }}
+                </a>
+
+                <a href="{{ path('app_photo_albums') }}" class="tm-nav__link tm-nav__link--badged{{ active == 'album' ? ' is-active' }}">
+                    {{ 'Album photo'|trans }}
+                    <span class="tm-nav__badge">{{ 'Nouveau'|trans }}</span>
+                </a>
+
+                <a href="{{ path('app_account_notifications') }}" class="tm-nav__link{{ active == 'notifications' ? ' is-active' }}">
+                    <span class="tm-nav__icon">{{ icon.bell(20) }}</span>
+                    {{ 'Notifications'|trans }}
+                    {# Maquette : pastille rouge en exposant après le libellé. #}
+                    {% if app.user %}
+                        {% set unreadNotifications = unread_notifications_count(app.user) %}
+                        {% if unreadNotifications > 0 %}
+                            <span class="tm-nav__count">{{ unreadNotifications > 99 ? '99+' : unreadNotifications }}</span>
+                        {% endif %}
+                    {% endif %}
+                </a>
+            </nav>
         </div>
 
-        <div class="pl-navbar__actions">
-            <a href="{{ path('app_corporate_partner') }}" class="pl-btn pl-btn--cta">{{ 'Déposer une annonce'|trans }}</a>
-
+        <div class="tm-header__actions">
             {% if connected %}
-                {# Seul point d'accès à /pro/demandes pour un compte
-                   ROLE_PROVIDER : sans lien nulle part, la page n'était
-                   joignable qu'en tapant l'URL à la main (signalé le 14/09,
-                   même défaut que /professionnels avant son ajout au menu). #}
-                {% if is_granted('ROLE_PROVIDER') %}
-                    {# Même compteur que le badge « Demandes reçues » du menu
-                       compte pro (account/_sidebar.html.twig, user.pendingProviderRequests) :
-                       demandes ouvertes de son métier pas encore devisées. #}
-                    {% set pendingRequests = pending_requests_count(app.user) %}
-                    <a href="{{ path('app_pro_requests') }}" class="pl-iconbtn" aria-label="{{ 'Demandes reçues'|trans }}">
-                        {{ icon.receipt(20) }}
-                        {% if pendingRequests > 0 %}
-                            <span class="pl-iconbtn__badge">{{ pendingRequests > 99 ? '99+' : pendingRequests }}</span>
-                        {% endif %}
-                    </a>
-                    {# Même défaut évité pour /pro/abonnement (§17 du CDC) : sans ce
-                       lien, seule une URL tapée à la main y mène. #}
-                    <a href="{{ path('app_pro_subscription') }}" class="pl-iconbtn" aria-label="{{ 'Abonnement'|trans }}">{{ icon.card(20) }}</a>
-                {% endif %}
-                <a href="{{ path('app_account_favorites') }}" class="pl-iconbtn" aria-label="{{ 'Mes favoris'|trans }}">{{ icon.heart(20) }}</a>
-
-                {# Mêmes compteurs que le badge du menu compte
-                   (account/_sidebar.html.twig, user.unreadMessages /
-                   user.unreadNotifications) : UnreadCountsExtension interroge
-                   les mêmes dépôts, pour que le header et le menu compte
-                   affichent toujours le même nombre. #}
-                {% set unreadMessages = unread_messages_count(app.user) %}
-                <a href="{{ path('app_account_messages') }}" class="pl-iconbtn" aria-label="{{ 'Messagerie'|trans }}">
-                    {{ icon.mail(20) }}
-                    {% if unreadMessages > 0 %}
-                        <span class="pl-iconbtn__badge">{{ unreadMessages > 99 ? '99+' : unreadMessages }}</span>
-                    {% endif %}
-                </a>
-
-                {% set unreadNotifications = unread_notifications_count(app.user) %}
-                <a href="{{ path('app_account_notifications') }}" class="pl-iconbtn" aria-label="{{ 'Notifications'|trans }}">
-                    {{ icon.bell(20) }}
-                    {% if unreadNotifications > 0 %}
-                        <span class="pl-iconbtn__badge">{{ unreadNotifications > 99 ? '99+' : unreadNotifications }}</span>
-                    {% endif %}
-                </a>
-
-                {# Répond au signalement du 14/09 : ni le compte pro ni le compte
-                   client n'avaient de page qui leur soit propre — l'avatar menait
-                   toujours à /compte/favoris, y compris avec le libellé « Profil »
-                   côté client, ce qui ne correspondait à rien de réel. Les deux
-                   ouvrent maintenant un vrai tableau de bord (§8.3 du CDC côté
-                   pro ; agrégat demandes/activités privées/favoris côté client,
-                   account/_layout.html.twig::dashboard()).
-
-                   MENU « Profil / Déconnexion », PAS UN LIEN DIRECT (18/09) :
-                   l'avatar ouvrait le tableau de bord au premier clic, sans
-                   aucun accès rapide à la déconnexion depuis l'en-tête — il
-                   fallait passer par le tableau de bord puis chercher
-                   « Déconnexion » dans le menu du compte. La déconnexion
-                   ouvre une modale de confirmation plutôt que l'écran dédié
-                   (account/deconnexion.html.twig), plus adaptée à un menu. #}
-                <details class="pl-dropdown pl-dropdown--profile">
-                    <summary class="pl-avatarbtn pl-dropdown__toggle--profile" aria-label="{{ 'Menu du compte'|trans }}">
-                        <img src="{{ asset(app.user.avatarPath ?? 'images/account/avatar-default.svg') }}" alt="">
-                        <span class="pl-avatarbtn__dot" aria-hidden="true"></span>
+                <details class="pl-dropdown tm-account">
+                    {# Maquettes profil_particulier : pastille avatar + nom + « Mon compte ». #}
+                    <summary class="tm-account__toggle" aria-label="{{ 'Menu du compte'|trans }}">
+                        <span class="tm-account__avatar">
+                            <img src="{{ asset(app.user.avatarPath ?? 'images/account/avatar-default.svg') }}" alt="">
+                            {% set unreadMessages = app.user ? unread_messages_count(app.user) : 0 %}
+                            {% if unreadMessages > 0 %}<span class="tm-account__dot" aria-hidden="true"></span>{% endif %}
+                        </span>
+                        <span class="tm-account__id">
+                            <strong>{{ app.user ? (app.user.firstName ~ ' ' ~ app.user.lastName) : 'Thomas Martin' }}</strong>
+                            <small>{{ 'Mon compte'|trans }}</small>
+                        </span>
+                        {{ icon.chevron_down(14) }}
                     </summary>
-                    <div class="pl-dropdown__menu pl-dropdown__menu--signin">
-                        <a href="{{ is_granted('ROLE_PROVIDER') ? path('app_pro_dashboard') : path('app_account_dashboard') }}" class="pl-dropdown__item">{{ icon.person(16) }} {{ 'Profil'|trans }}</a>
-                        <button type="button" class="pl-dropdown__item pl-dropdown__item--danger" data-bs-toggle="modal" data-bs-target="#confirm-logout">{{ icon.logout(16) }} {{ 'Déconnexion'|trans }}</button>
+                    <div class="tm-menu tm-menu--right">
+                        <a href="{{ is_provider ? path('app_pro_dashboard') : path('app_account_dashboard') }}" class="tm-menu__item">{{ icon.person(16) }} {{ 'Profil'|trans }}</a>
+                        <a href="{{ is_provider ? path('app_pro_messages') : path('app_account_messages') }}" class="tm-menu__item">
+                            {{ icon.mail(16) }} {{ 'Messagerie'|trans }}
+                            {% if unreadMessages > 0 %}<span class="tm-menu__count">{{ unreadMessages > 99 ? '99+' : unreadMessages }}</span>{% endif %}
+                        </a>
+                        {% if is_provider %}
+                            {% set pendingRequests = pending_requests_count(app.user) %}
+                            <a href="{{ path('app_pro_requests') }}" class="tm-menu__item">
+                                {{ icon.receipt(16) }} {{ 'Demandes reçues'|trans }}
+                                {% if pendingRequests > 0 %}<span class="tm-menu__count">{{ pendingRequests > 99 ? '99+' : pendingRequests }}</span>{% endif %}
+                            </a>
+                            <a href="{{ path('app_pro_subscription') }}" class="tm-menu__item">{{ icon.card(16) }} {{ 'Abonnement'|trans }}</a>
+                        {% endif %}
+                        {% if app.user %}
+                            <button type="button" class="tm-menu__item tm-menu__item--danger" data-bs-toggle="modal" data-bs-target="#confirm-logout">{{ icon.logout(16) }} {{ 'Déconnexion'|trans }}</button>
+                        {% endif %}
                     </div>
                 </details>
             {% else %}
-                {# Même choix que navbar_home.html.twig (signalé le 18/09) :
-                   « Se connecter » ouvre un menu Client / Prestataire vers les
-                   deux écrans de connexion, l'inscription reste jointe depuis
-                   ces écrans via la page « Bienvenue » (app_auth_choice). #}
-                <details class="pl-dropdown pl-dropdown--signin">
-                    <summary class="pl-btn pl-btn--outline-dark pl-dropdown__toggle--signin">
-                        {{ icon.person(18) }} {{ 'Se connecter'|trans }} {{ icon.chevron_down(16) }}
-                    </summary>
-                    <div class="pl-dropdown__menu pl-dropdown__menu--signin">
-                        <a href="{{ path('app_login') }}" class="pl-dropdown__item">{{ 'Client'|trans }}</a>
-                        <a href="{{ path('app_pro_login') }}" class="pl-dropdown__item">{{ 'Prestataire'|trans }}</a>
+                {# Même bouton que la maquette ; il ouvre le choix Client /
+                   Prestataire, les deux écrans de connexion étant distincts. #}
+                <details class="pl-dropdown tm-signin">
+                    <summary class="tm-btn tm-btn--dark">{{ 'Se connecter'|trans }}</summary>
+                    <div class="tm-menu tm-menu--right">
+                        <a href="{{ path('app_login') }}" class="tm-menu__item">{{ 'Client'|trans }}</a>
+                        <a href="{{ path('app_pro_login') }}" class="tm-menu__item">{{ 'Prestataire'|trans }}</a>
                     </div>
                 </details>
             {% endif %}
-            {% include '_partials/_navbar_burger.html.twig' with { panel_id: 'plNav' } %}
+
+            {# Pas encore d'écran de création d'activité côté pro : le
+               prestataire atterrit sur son tableau de bord, le visiteur sur
+               la présentation de l'offre professionnelle. #}
+            <a href="{{ is_provider ? path('app_pro_dashboard') : path('app_corporate_partner') }}" class="tm-btn tm-btn--cta">{{ 'Déposer une activité'|trans }}</a>
+
+            <button class="tm-burger" type="button" data-bs-toggle="offcanvas" data-bs-target="#tmNav"
+                    aria-controls="tmNav" aria-label="{{ 'Ouvrir le menu'|trans }}">
+                <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+            </button>
         </div>
     </div>
 </header>

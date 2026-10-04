@@ -1,0 +1,11 @@
+{# Icône d'une notification selon sa catégorie (NotificationPresenter). #}
+{%- import '_partials/_icons.html.twig' as icon -%}
+{%- set size = size|default(20) -%}
+{%- if name == 'calendar_check' %}{{ icon.calendar_grid(size) }}
+{%- elseif name == 'star' %}{{ icon.star(size) }}
+{%- elseif name == 'card' %}{{ icon.card(size) }}
+{%- elseif name == 'mail' %}{{ icon.mail(size) }}
+{%- elseif name == 'receipt' %}{{ icon.receipt(size) }}
+{%- elseif name == 'users' %}{{ icon.users(size) }}
+{%- else %}{{ icon.bell(size) }}
+{%- endif -%}

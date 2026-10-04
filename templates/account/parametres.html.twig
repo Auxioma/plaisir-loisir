@@ -1,128 +1,141 @@
 {#
-    Paramètres du compte (Lot I, 15/09). Aucune maquette : réutilise le
-    gabarit de l'espace compte et des cartes Bootstrap, comme les autres
-    écrans ajoutés sans Figma (quote/mes_demandes.html.twig et consorts).
-    Variable : account (l'entité User).
+    Paramètres du compte — maquette docs/maquettes/profil_particulier/
+    profil_parametres_particulier.jpeg (30/09). Action : AccountController::settings().
+
+    La modification de l'identité, du téléphone, de la photo, de la langue et
+    de l'adresse se fait dans « Informations personnelles » : les boutons
+    « Modifier » y mènent. Le mot de passe se change par le parcours « mot de
+    passe oublié » (code envoyé par e-mail). Export, désactivation et
+    suppression sont réels (RGPD, §26 du CDC).
+
+    Écarts assumés : pas de suivi des appareils connectés ni de double
+    authentification (aucun back) ; le fuseau horaire est celui de la
+    plateforme (Europe/Paris).
 #}
 {% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+{% import 'account/_ui.html.twig' as ui %}
 
 {% block title %}{{ 'Paramètres du compte'|trans }}{% endblock %}
 
 {% block account %}
-    {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Paramètres du compte'|trans }],
-        title: 'Paramètres du compte'|trans,
-    } %}
-
-    <div class="card shadow-sm mb-4">
-        <div class="card-body p-4">
-            <h2 class="h5 mb-3">{{ 'Vos informations'|trans }}</h2>
-            {# data-turbo="false" : réponse 200 (pas de redirection) sur erreur, pour
-               réafficher le formulaire avec ses erreurs — voir security/register.html.twig
-               pour le même correctif appliqué à l'inscription. #}
-            {{ form_start(settingsForm, { action: path('app_account_settings'), method: 'post', attr: { enctype: 'multipart/form-data', 'data-turbo': 'false' } }) }}
-                <div class="row g-3 mb-3">
-                    <div class="col-sm-6">
-                        <label class="form-label" for="prenom">{{ 'Prénom'|trans }}</label>
-                        {{ form_widget(settingsForm.firstName, { id: 'prenom', attr: { class: 'form-control', maxlength: 100 } }) }}
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="form-label" for="nom">{{ 'Nom'|trans }}</label>
-                        {{ form_widget(settingsForm.lastName, { id: 'nom', attr: { class: 'form-control', maxlength: 100 } }) }}
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label" for="telephone">{{ 'Téléphone'|trans }}</label>
-                    {# Pas de maquette Figma pour cet écran : un select pays classique
-                       suffit, pas besoin de l'indicateur compact des autres formulaires. #}
-                    <div class="input-group">
-                        {{ form_widget(settingsForm.phone.country, { attr: { class: 'form-select', style: 'max-width: 12rem;' } }) }}
-                        {{ form_widget(settingsForm.phone.number, { id: 'telephone', attr: { class: 'form-control' } }) }}
-                    </div>
-                </div>
-
-                <div class="mb-4" data-controller="photo-preview">
-                    <label class="form-label" for="photo">{{ 'Photo de profil'|trans }}</label>
-                    <div class="mb-2">
-                        <img class="acc-photo-preview" src="{{ account.avatarPath ? asset(account.avatarPath) : '' }}" alt="" data-photo-preview-target="image" {{ account.avatarPath ? '' : 'hidden' }}>
-                    </div>
-                    {{ form_widget(settingsForm.photo, { id: 'photo', attr: { class: 'form-control', accept: 'image/jpeg,image/png,image/webp', 'data-photo-preview-target': 'input', 'data-action': 'change->photo-preview#preview' } }) }}
-                    <div class="form-text">{{ 'JPEG, PNG ou WebP, 4 Mo maximum.'|trans }}</div>
-                </div>
-
-                <button type="submit" class="btn pl-btn pl-btn--cta">{{ 'Enregistrer'|trans }}</button>
-            {{ form_end(settingsForm) }}
+    <header class="pf-head">
+        <div>
+            <h1 class="pf-title">{{ 'Paramètres du compte'|trans }}</h1>
+            <p class="pf-sub">{{ 'Gérez vos préférences de compte et de sécurité.'|trans }}</p>
         </div>
-    </div>
+    </header>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-body p-4">
-            <h2 class="h5 mb-2">{{ 'Vos données'|trans }}</h2>
-            <p class="text-muted small mb-3">{{ 'Téléchargez une copie de vos données personnelles (profil, favoris, demandes, activités privées, avis, messages envoyés).'|trans }}</p>
-            <a href="{{ path('app_account_export') }}" class="btn btn-outline-secondary">{{ 'Exporter mes données'|trans }}</a>
+    <nav class="pf-tabs pf-tabs--line">
+        <a class="pf-tab is-active" href="#general">{{ icon.sliders(18) }} {{ 'Général'|trans }}</a>
+        <a class="pf-tab" href="#securite">{{ icon.shield(18) }} {{ 'Sécurité'|trans }}</a>
+        <a class="pf-tab" href="#donnees">{{ icon.eye(18) }} {{ 'Confidentialité'|trans }}</a>
+        <a class="pf-tab" href="{{ path('app_account_profile') }}">{{ icon.gear(18) }} {{ 'Préférences'|trans }}</a>
+        <a class="pf-tab" href="{{ path('app_account_notification_preferences') }}">{{ icon.mail(18) }} {{ 'Communications'|trans }}</a>
+        <a class="pf-tab" href="#zone-dangereuse">{{ icon.trash(18) }} {{ 'Supprimer le compte'|trans }}</a>
+    </nav>
+
+    <section class="pf-card pf-settings-account" id="general">
+        <div class="pf-card__head">
+            <h2 class="pf-card__title">{{ 'Informations du compte'|trans }}</h2>
+            <a class="pf-btn" href="{{ path('app_account_profile') }}">{{ 'Modifier'|trans }}</a>
         </div>
-    </div>
-
-    <div class="card border-danger shadow-sm">
-        <div class="card-body p-4">
-            <h2 class="h5 mb-3 text-danger">{{ 'Zone de danger'|trans }}</h2>
-
-            {# `confirm()` natif remplacé (signalé le 18/09) : pas une vraie
-               boîte de dialogue de l'application — bloquée par certains
-               navigateurs/webviews (elle se contente alors de logger dans la
-               console, sans jamais rien demander à la personne), pas de
-               charte graphique, aucun moyen de la personnaliser. Une vraie
-               modale Bootstrap (déjà chargée globalement, voir app.js) pour
-               ces deux décisions irréversibles : elle force un second clic
-               EXPLICITE sur le bouton rouge, « Annuler » ferme sans rien
-               envoyer. #}
-            <div class="d-flex flex-wrap gap-2">
-                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirm-deactivate">{{ 'Désactiver mon compte'|trans }}</button>
-                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirm-delete">{{ 'Supprimer mon compte'|trans }}</button>
-            </div>
+        <div class="pf-settings-account__body">
+            <span class="pf-settings-account__avatar">
+                <img src="{{ asset(user.avatar) }}" alt="">
+                <a href="{{ path('app_account_profile') }}" aria-label="{{ 'Changer la photo'|trans }}">{{ icon.camera(14) }}</a>
+            </span>
+            <dl>
+                <div><dt>{{ 'Nom complet'|trans }}</dt><dd>{{ user.name }}</dd></div>
+                <div><dt>{{ 'Email'|trans }}</dt><dd>{{ account.email }} {% if account.status.value == 'active' %}{{ ui.pill('Vérifié'|trans, 'green') }}{% endif %}</dd></div>
+                <div><dt>{{ 'Numéro de téléphone'|trans }}</dt><dd>{{ account.phone ?: '—' }}</dd></div>
+            </dl>
         </div>
-    </div>
+    </section>
 
-    <div class="modal fade" id="confirm-deactivate" tabindex="-1" aria-labelledby="confirm-deactivate-title" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form method="post" action="{{ path('app_account_deactivate') }}">
-                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                    <div class="modal-header">
-                        <h2 class="modal-title h5 text-danger" id="confirm-deactivate-title">{{ 'Désactiver mon compte ?'|trans }}</h2>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'Fermer'|trans }}"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p class="mb-0">{{ 'Vous ne pourrez plus vous connecter tant qu\'un administrateur ne l\'aura pas réactivé.'|trans }}</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ 'Annuler'|trans }}</button>
-                        <button type="submit" class="btn btn-outline-danger">{{ 'Désactiver mon compte'|trans }}</button>
-                    </div>
-                </form>
-            </div>
+    <section class="pf-card pf-setting" id="securite">
+        <span class="pf-setting__ico">{{ icon.padlock(22) }}</span>
+        <div class="pf-setting__body">
+            <strong>{{ 'Mot de passe'|trans }}</strong>
+            <span class="pf-setting__dots">••••••••••••••</span>
+            <small>{{ 'Un code de vérification vous est envoyé par e-mail pour le changer.'|trans }}</small>
         </div>
-    </div>
+        <a class="pf-btn" href="{{ path('app_forgot_password_request') }}">{{ 'Modifier le mot de passe'|trans }}</a>
+    </section>
 
-    <div class="modal fade" id="confirm-delete" tabindex="-1" aria-labelledby="confirm-delete-title" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form method="post" action="{{ path('app_account_delete') }}">
-                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                    <div class="modal-header">
-                        <h2 class="modal-title h5 text-danger" id="confirm-delete-title">{{ 'Supprimer mon compte ?'|trans }}</h2>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'Fermer'|trans }}"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p class="mb-0">{{ 'Suppression définitive de votre compte et de vos données personnelles. Cette action est irréversible.'|trans }}</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ 'Annuler'|trans }}</button>
-                        <button type="submit" class="btn btn-danger">{{ 'Supprimer définitivement'|trans }}</button>
-                    </div>
-                </form>
-            </div>
+    <section class="pf-card pf-setting">
+        <span class="pf-setting__ico">{{ icon.globe_simple(22) }}</span>
+        <div class="pf-setting__body pf-setting__body--cols">
+            <strong>{{ 'Langue et région'|trans }}</strong>
+            <div><small>{{ 'Langue'|trans }}</small><span>{{ (account.preferredLocale ?? app.request.locale) == 'en' ? 'English' : 'Français' }}</span></div>
+            <div><small>{{ 'Région'|trans }}</small><span>{{ account.country ? account.country|pf_country : 'France' }}</span></div>
         </div>
-    </div>
+        <a class="pf-btn" href="{{ path('app_account_profile') }}">{{ 'Modifier'|trans }}</a>
+    </section>
+
+    <section class="pf-card pf-setting">
+        <span class="pf-setting__ico">{{ icon.clock(22) }}</span>
+        <div class="pf-setting__body">
+            <strong>{{ 'Fuseau horaire'|trans }}</strong>
+            <small>{{ 'Fuseau horaire actuel'|trans }}</small>
+            <span>(UTC+01:00) Paris, Bruxelles</span>
+        </div>
+    </section>
+
+    <section class="pf-card pf-setting">
+        <span class="pf-setting__ico">{{ icon.monitor(22) }}</span>
+        <div class="pf-setting__body">
+            <strong>{{ 'Appareils connectés'|trans }}</strong>
+            <small>{{ 'Vous êtes connecté sur cet appareil. Déconnectez-vous pour fermer votre session.'|trans }}</small>
+        </div>
+        <a class="pf-btn" href="{{ path('app_account_logout_confirm') }}">{{ 'Se déconnecter'|trans }}</a>
+    </section>
+
+    <section class="pf-card pf-setting" id="donnees">
+        <span class="pf-setting__ico">{{ icon.download(22) }}</span>
+        <div class="pf-setting__body">
+            <strong>{{ 'Télécharger mes données'|trans }}</strong>
+            <small>{{ 'Obtenez une copie de toutes vos données personnelles.'|trans }}</small>
+        </div>
+        <a class="pf-btn" href="{{ path('app_account_export') }}">{{ 'Demander mes données'|trans }}</a>
+    </section>
+{% endblock %}
+
+{% block account_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Résumé du compte'|trans }}</h2>
+        <ul class="pf-list pf-summary-list">
+            <li><span class="pf-ico pf-ico--xs">{{ icon.calendar_grid(16) }}</span><span class="pf-list__body">{{ 'Membre depuis'|trans }}</span><span class="pf-list__end">{{ user.memberSince|capitalize }}</span></li>
+            <li><span class="pf-ico pf-ico--xs">{{ icon.shield(16) }}</span><span class="pf-list__body">{{ 'Statut du compte'|trans }}</span><span class="pf-list__end">{{ account.status.value == 'active' ? ui.pill('Actif'|trans, 'green') : ui.pill('En attente'|trans, 'orange') }}</span></li>
+            <li><span class="pf-ico pf-ico--xs">{{ icon.edit_square(16) }}</span><span class="pf-list__body">{{ 'Activités publiées'|trans }}</span><span class="pf-list__end">{{ published_count }}</span></li>
+            <li><span class="pf-ico pf-ico--xs">{{ icon.calendar_grid(16) }}</span><span class="pf-list__body">{{ 'Réservations'|trans }}</span><span class="pf-list__end">{{ reservations_count }}</span></li>
+            <li><span class="pf-ico pf-ico--xs">{{ icon.star(16) }}</span><span class="pf-list__body">{{ 'Avis laissés'|trans }}</span><span class="pf-list__end">{{ reviews_count }}</span></li>
+        </ul>
+        <a class="pf-btn pf-btn--block" href="{{ path('app_account_dashboard') }}">{{ 'Voir mon tableau de bord'|trans }}</a>
+    </section>
+
+    <section class="pf-card pf-card--soft">
+        <h2 class="pf-card__title pf-card__title--icon"><span class="pf-shield">{{ icon.shield(22) }}</span>{{ 'Conseil sécurité'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Pour protéger votre compte, nous vous recommandons :'|trans }}</p>
+        <ul class="pf-checks pf-checks--spaced">
+            <li>{{ icon.check(14) }} {{ 'Un mot de passe fort et unique'|trans }}</li>
+            <li>{{ icon.check(14) }} {{ 'Ne jamais communiquer vos codes de vérification'|trans }}</li>
+            <li>{{ icon.check(14) }} {{ 'La mise à jour régulière de vos informations'|trans }}</li>
+        </ul>
+        <a class="pf-link pf-arrow-link" href="{{ path('app_corporate_privacy') }}">{{ 'En savoir plus sur la sécurité'|trans }} {{ icon.arrow_right(14) }}</a>
+    </section>
+
+    <section class="pf-card pf-danger" id="zone-dangereuse">
+        <h2 class="pf-card__title pf-card__title--icon"><span>{{ icon.trash(22) }}</span>{{ 'Zone dangereuse'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Des actions irréversibles pour votre compte.'|trans }}</p>
+        <form method="post" action="{{ path('app_account_delete') }}" onsubmit="return confirm('{{ 'Supprimer définitivement votre compte et vos données personnelles ? Cette action est irréversible.'|trans|e('js') }}')">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+            <button type="submit" class="pf-btn pf-btn--danger pf-btn--block">{{ 'Supprimer mon compte'|trans }}</button>
+        </form>
+        <p class="pf-danger__or">{{ 'ou'|trans }}</p>
+        <form method="post" action="{{ path('app_account_deactivate') }}" onsubmit="return confirm('{{ 'Désactiver votre compte ? Vous devrez nous contacter pour le réactiver.'|trans|e('js') }}')">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+            <button type="submit" class="pf-danger__link">{{ 'Désactiver temporairement'|trans }}</button>
+        </form>
+    </section>
 {% endblock %}

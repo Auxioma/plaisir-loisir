@@ -1,0 +1,176 @@
+{#
+    Tableau de bord pro — maquette docs/maquettes/profil_professionnel/
+    profil_dashboard_professionnel.jpeg (02/10). Données : ProviderDashboardController.
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import 'provider/space/_ui.html.twig' as ui %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Tableau de bord'|trans }}{% endblock %}
+
+{% block space %}
+    <div class="pp-dash-top">
+        <div class="pp-dash-top__main">
+            <header class="pf-head pp-head">
+                <div>
+                    <h1 class="pf-title">{{ 'Tableau de bord'|trans }} <span aria-hidden="true">👋</span></h1>
+                    <p class="pf-sub">{{ 'Bienvenue %name% ! Voici un aperçu de votre activité aujourd’hui.'|trans({'%name%': user.firstName}) }}</p>
+                </div>
+                <form method="get" class="pp-period">
+                    {{ icon.calendar_grid(18) }}
+                    <label class="visually-hidden" for="pp-period">{{ 'Période'|trans }}</label>
+                    <select id="pp-period" name="periode" onchange="this.form.submit()">
+                        {% for d, label in {7: '7 derniers jours', 30: '30 derniers jours', 90: '90 derniers jours'} %}
+                            <option value="{{ d }}"{{ d == days ? ' selected' }}>{{ from|pf_date('d MMM')|trim('.') }} – {{ to|pf_date('d MMM y') }} · {{ label|trans }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </header>
+
+            <div class="pp-tiles pp-tiles--5">
+                {{ ui.tile('Réservations totales', tiles.bookings.value, 'blue', 'users', tiles.bookings.trend, 'vs période précédente') }}
+                {{ ui.tile('Activités en ligne', tiles.online, 'green', 'calendar', null, 'En ligne') }}
+                {% set stars = tiles.rating is not null ? ui.stars(tiles.rating, 16) : '' %}
+                {{ ui.tile('Avis moyens', tiles.rating is not null ? tiles.rating|number_format(1, ',') ~ '/5' : '—', 'orange', 'star', null, tiles.rating is null ? 'Aucun avis' : (tiles.rating >= 4.5 ? 'Excellent' : (tiles.rating >= 4 ? 'Très bien' : (tiles.rating >= 3 ? 'Bien' : 'À améliorer'))), stars) }}
+                {{ ui.tile('Revenus de la période', ui.money(tiles.revenue.value, 0), 'violet', 'euro', tiles.revenue.trend, 'vs période précédente') }}
+                {{ ui.tile('Vues de profil', tiles.views.value|number_format(0, ',', ' '), 'blue', 'eye', tiles.views.trend, 'vs période précédente') }}
+            </div>
+        </div>
+        <a class="pp-hero" href="{{ path('app_pro_activities_new') }}">
+            <img src="{{ asset('images/activities/visite-guidee.jpg') }}" alt="">
+            <span>{{ 'Gérez vos activités et développez votre entreprise avec TrouveMoi !'|trans }}</span>
+        </a>
+    </div>
+
+    <div class="pp-grid pp-grid--dash">
+        <section class="pf-card">
+            <div class="pf-card__head">
+                <h2 class="pf-card__title">{{ 'Aperçu des réservations'|trans }}</h2>
+                <a class="pf-link" href="{{ path('app_pro_bookings') }}">{{ 'Voir tout'|trans }}</a>
+            </div>
+            <div class="pp-legend">
+                <span><i style="background:#2f5be7"></i>{{ 'Période actuelle'|trans }}</span>
+                <span><i class="is-dashed"></i>{{ 'Période précédente'|trans }}</span>
+            </div>
+            {% set labels = [] %}
+            {% for k in 0..6 %}
+                {% set labels = labels|merge([days == 7 ? from|date_modify('+' ~ k ~ ' days')|pf_date('EEE')|trim('.')|capitalize : from|date_modify('+' ~ ((days - 1) / 6 * k)|round ~ ' days')|pf_date('d MMM')|trim('.')]) %}
+            {% endfor %}
+            {{ ui.line([
+                {values: series_previous, color: '#a9b0c4', dashed: true},
+                {values: series_current, color: '#2f5be7', area: true},
+            ], labels, '', 170, days <= 31) }}
+        </section>
+
+        <section class="pf-card">
+            <div class="pf-card__head">
+                <h2 class="pf-card__title">{{ 'Réservations récentes'|trans }}</h2>
+                <a class="pf-link" href="{{ path('app_pro_bookings') }}">{{ 'Voir tout'|trans }}</a>
+            </div>
+            {% if recent is empty %}
+                <p class="pf-muted">{{ 'Vos réservations apparaîtront ici.'|trans }}</p>
+            {% else %}
+                <ul class="pf-list pf-list--lined pp-people">
+                    {% for b in recent %}
+                        <li>
+                            {{ ui.avatar(b.client, 40) }}
+                            <div class="pf-list__body">
+                                <strong>{{ b.client.firstName }} {{ b.client.lastName }}</strong>
+                                <span class="pp-ellipsis">{{ b.service.title }}</span>
+                                <small>{{ (b.startsAt ?? b.createdAt)|pf_date('d MMM')|trim('.') }} · {{ (b.startsAt ?? b.createdAt)|date('H:i') }}</small>
+                            </div>
+                            <span class="pf-pill pf-pill--{{ b.status.tone }} pp-pill">{{ b.status.label|trans }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+    </div>
+
+    <div class="pp-grid pp-grid--3">
+        <section class="pf-card">
+            <div class="pf-card__head">
+                <h2 class="pf-card__title">{{ 'Top activités'|trans }}</h2>
+                <a class="pf-link" href="{{ path('app_pro_activities') }}">{{ 'Voir tout'|trans }}</a>
+            </div>
+            {% if top is empty %}
+                <p class="pf-muted">{{ 'Aucune réservation sur la période.'|trans }}</p>
+            {% else %}
+                <ol class="pp-top">
+                    {% for t in top %}
+                        <li>
+                            <span class="pp-top__rank">{{ loop.index }}</span>
+                            <img src="{{ asset(t.image) }}" alt="">
+                            <div>
+                                <strong class="pp-ellipsis">{{ t.service.title }}</strong>
+                                <small>{{ t.count }} {{ t.count > 1 ? 'réservations'|trans : 'réservation'|trans }}</small>
+                                <span class="pp-bar"><i style="width: {{ (t.count / top_max * 100)|round }}%"></i></span>
+                            </div>
+                            {% if t.trend is not null %}<em class="pp-up{{ t.trend < 0 ? ' is-down' }}">{{ t.trend > 0 ? '+' }}{{ t.trend }}%</em>{% endif %}
+                        </li>
+                    {% endfor %}
+                </ol>
+            {% endif %}
+        </section>
+
+        <section class="pf-card">
+            <div class="pf-card__head">
+                <h2 class="pf-card__title">{{ 'Revenus'|trans }}</h2>
+                <a class="pf-link" href="{{ path('app_pro_revenue') }}">{{ 'Voir tout'|trans }}</a>
+            </div>
+            <p class="pp-big">{{ ui.money(revenue, 0) }} {{ ui.trend(revenue_trend) }} <small>{{ 'vs période précédente'|trans }}</small></p>
+            {% set bar_values = revenue_series|slice(-7) %}
+            {% set bar_labels = [] %}
+            {% for k in 0..(bar_values|length - 1) %}
+                {% set bar_labels = bar_labels|merge([to|date_modify('-' ~ (bar_values|length - 1 - k) ~ ' days')|pf_date('EEE')|trim('.')|capitalize]) %}
+            {% endfor %}
+            {{ ui.bars(bar_values, bar_labels) }}
+        </section>
+
+        <section class="pf-card">
+            <h2 class="pf-card__title pp-mb">{{ 'Répartition des réservations'|trans }}</h2>
+            {{ ui.donut(breakdown, breakdown_total, 'Total') }}
+        </section>
+    </div>
+{% endblock %}
+
+{% block space_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Accès rapide'|trans }}</h2>
+        <div class="pp-quick">
+            <a href="{{ path('app_pro_activities_new') }}"><span class="pp-quick__ico is-blue">{{ icon.plus(22) }}</span>{{ 'Ajouter une activité'|trans }}</a>
+            <a href="{{ path('app_pro_calendar') }}"><span class="pp-quick__ico is-violet">{{ icon.calendar_grid(22) }}</span>{{ 'Calendrier'|trans }}</a>
+            <a href="{{ path('app_pro_promotions') }}"><span class="pp-quick__ico is-orange">{{ icon.tag(22) }}</span>{{ 'Mes offres'|trans }}</a>
+            <a href="{{ path('app_pro_messages') }}"><span class="pp-quick__ico is-blue">{{ icon.chat_bubble(22) }}</span>{{ 'Messages'|trans }}{% if user.unreadMessages > 0 %}<b class="pp-quick__badge">{{ user.unreadMessages }}</b>{% endif %}</a>
+            <a href="{{ path('app_pro_reviews') }}"><span class="pp-quick__ico is-orange">{{ icon.star_solid(22) }}</span>{{ 'Avis clients'|trans }}</a>
+            <a href="{{ path('app_pro_stats') }}"><span class="pp-quick__ico is-green">{{ ico.svg('chart', 22) }}</span>{{ 'Statistiques'|trans }}</a>
+            {% if open_requests > 0 %}
+                <a href="{{ path('app_pro_requests') }}" class="pp-quick__wide"><span class="pp-quick__ico is-violet">{{ icon.receipt(22) }}</span>{{ 'Demandes de devis'|trans }}<b class="pp-quick__badge">{{ open_requests }}</b></a>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="pf-card">
+        <div class="pf-card__head">
+            <h2 class="pf-card__title">{{ 'Notifications'|trans }}</h2>
+            <a class="pf-link" href="{{ path('app_account_notifications') }}">{{ 'Voir tout'|trans }}</a>
+        </div>
+        {% if notifications is empty %}
+            <p class="pf-muted">{{ 'Aucune notification.'|trans }}</p>
+        {% else %}
+            <ul class="pf-list pf-list--lined pp-notifs">
+                {% for n in notifications %}
+                    <li>
+                        <span class="pf-ico pf-ico--xs pf-ico--round pf-ico--{{ n.tone == 'yellow' ? 'orange' : (n.tone == 'violet' ? 'blue' : n.tone) }}">{% include 'account/_notification_icon.html.twig' with { name: n.icon, size: 16 } %}</span>
+                        <div class="pf-list__body">
+                            <strong>{{ n.title }}</strong>
+                            <small>{{ n.detail|length > 48 ? n.detail|slice(0, 46) ~ '…' : n.detail }}</small>
+                        </div>
+                        <span class="pp-notifs__time">{{ n.time }}{% if not n.muted %}<i class="pp-dot"></i>{% endif %}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </section>
+{% endblock %}

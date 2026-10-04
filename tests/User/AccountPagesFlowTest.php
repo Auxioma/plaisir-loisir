@@ -19,31 +19,32 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
- * Rubriques restantes de l'espace client (Lot J, 15/09) : mes activités
- * créées et l'historique (demandes clôturées + activités privées passées).
+ * Rubriques de l'espace client : informations personnelles (anciennement
+ * dans Paramètres, déplacées le 30/09), mes événements et l'historique
+ * (demandes clôturées + activités privées passées).
  */
 final class AccountPagesFlowTest extends WebTestCase
 {
-    public function testTheSettingsScreenUpdatesNameAndPhone(): void
+    public function testThePersonalInformationScreenUpdatesNameAndPhone(): void
     {
         $client = static::createClient();
         $user = $this->makeClient();
         $email = $user->getEmail();
         $client->loginUser($user);
 
-        $crawler = $client->request('GET', '/compte/parametres');
+        $crawler = $client->request('GET', '/compte/informations');
         self::assertResponseIsSuccessful();
 
-        $token = (string) $crawler->filter('form[action*="parametres"] input[name="account_settings_form[_token]"]')->first()->attr('value');
-        $client->request('POST', '/compte/parametres', [
-            'account_settings_form' => [
+        $token = (string) $crawler->filter('input[name="personal_information_form[_token]"]')->first()->attr('value');
+        $client->request('POST', '/compte/informations', [
+            'personal_information_form' => [
                 'firstName' => 'Nouveau',
                 'lastName' => 'Nom',
                 'phone' => ['country' => 'FR', 'number' => '0600000000'],
                 '_token' => $token,
             ],
         ]);
-        self::assertResponseRedirects('/compte/parametres');
+        self::assertResponseRedirects('/compte/informations');
 
         // $user est détaché depuis le reboot du noyau par $client->request() :
         // on le recharge par son e-mail, seul identifiant sûr d'une requête à
@@ -56,18 +57,18 @@ final class AccountPagesFlowTest extends WebTestCase
         self::assertSame('+33600000000', $reloaded->getPhone());
     }
 
-    public function testTheSettingsScreenRejectsAnInvalidPhoneNumber(): void
+    public function testThePersonalInformationScreenRejectsAnInvalidPhoneNumber(): void
     {
         $client = static::createClient();
         $user = $this->makeClient();
         $email = $user->getEmail();
         $client->loginUser($user);
 
-        $crawler = $client->request('GET', '/compte/parametres');
-        $token = (string) $crawler->filter('form[action*="parametres"] input[name="account_settings_form[_token]"]')->first()->attr('value');
+        $crawler = $client->request('GET', '/compte/informations');
+        $token = (string) $crawler->filter('input[name="personal_information_form[_token]"]')->first()->attr('value');
 
-        $client->request('POST', '/compte/parametres', [
-            'account_settings_form' => [
+        $client->request('POST', '/compte/informations', [
+            'personal_information_form' => [
                 'firstName' => 'Nouveau',
                 'lastName' => 'Nom',
                 'phone' => ['country' => 'FR', 'number' => '123'],

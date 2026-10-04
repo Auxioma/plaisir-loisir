@@ -1,0 +1,131 @@
+{#
+    Revenus & Paiements — maquette profil_Revenus&Paiements_professionnel.jpeg
+    (02/10). Données : ProviderRevenueController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import 'provider/space/_ui.html.twig' as ui %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Revenus & Paiements'|trans }}{% endblock %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Revenus & Paiements'|trans }} <span class="pp-title-ico">{{ icon.card(24) }}</span></h1>
+            <p class="pf-sub">{{ 'Suivez vos revenus, vos paiements et gérez vos transactions.'|trans }}</p>
+        </div>
+    </header>
+
+    <form method="get" class="pp-periods">
+        <input type="hidden" name="par" value="{{ granularity }}">
+        <label class="pp-period-box"><small>{{ 'Période'|trans }}</small>
+            <select name="mois" onchange="this.form.submit()">{% for m in months %}<option value="{{ m|date('Y-m') }}"{{ m|date('Y-m') == month|date('Y-m') ? ' selected' }}>{{ m|pf_date('MMMM y')|capitalize }}</option>{% endfor %}</select>
+        </label>
+        <label class="pp-period-box"><small>{{ 'Comparer à'|trans }}</small>
+            <select name="comparer" onchange="this.form.submit()">{% for m in months %}<option value="{{ m|date('Y-m') }}"{{ m|date('Y-m') == compare|date('Y-m') ? ' selected' }}>{{ m|pf_date('MMMM y')|capitalize }}</option>{% endfor %}</select>
+        </label>
+        <a class="pf-btn pp-btn-ghost pp-push" href="{{ path('app_pro_revenue_export') }}">{{ icon.download(16) }} {{ 'Exporter le rapport'|trans }}</a>
+    </form>
+
+    {% set vs = 'vs ' ~ compare|pf_date('MMMM y') %}
+    <div class="pp-tiles pp-tiles--4">
+        {{ ui.tile('Revenus totaux', ui.money(tiles.gross.value), 'green', 'wallet', tiles.gross.trend, vs) }}
+        {{ ui.tile('Réservations payées', tiles.count.value, 'blue', 'calendar', tiles.count.trend, vs) }}
+        {{ ui.tile('Panier moyen', ui.money(tiles.avg.value), 'orange', 'bag', tiles.avg.trend, vs) }}
+        {{ ui.tile('En attente de versement', ui.money(tiles.pending.value), 'violet', 'doc', null, tiles.pending.count ~ ' ' ~ (tiles.pending.count > 1 ? 'paiements' : 'paiement')) }}
+    </div>
+
+    <section class="pf-card">
+        <div class="pf-card__head">
+            <h2 class="pf-card__title">{{ 'Évolution des revenus'|trans }}</h2>
+            <form method="get" class="pf-select pf-select--sm">
+                <input type="hidden" name="mois" value="{{ month|date('Y-m') }}"><input type="hidden" name="comparer" value="{{ compare|date('Y-m') }}">
+                <select name="par" onchange="this.form.submit()" aria-label="{{ 'Granularité'|trans }}">
+                    <option value="jour"{{ granularity == 'jour' ? ' selected' }}>{{ 'Par jour'|trans }}</option>
+                    <option value="semaine"{{ granularity == 'semaine' ? ' selected' }}>{{ 'Par semaine'|trans }}</option>
+                </select>
+            </form>
+        </div>
+        <div class="pp-legend">
+            <span><i style="background:#2f5be7"></i>{{ month|pf_date('MMMM y')|capitalize }}</span>
+            <span><i class="is-dashed"></i>{{ compare|pf_date('MMMM y')|capitalize }}</span>
+        </div>
+        {% set labels = [] %}
+        {% if granularity == 'jour' %}
+            {% for d in [1, 6, 11, 16, 21, 26, month|date('t')] %}{% set labels = labels|merge([d ~ ' ' ~ month|pf_date('MMM')|trim('.')]) %}{% endfor %}
+        {% else %}
+            {% for k in 1..(series|length) %}{% set labels = labels|merge(['Sem. ' ~ k]) %}{% endfor %}
+        {% endif %}
+        {{ ui.line([{values: compare_series, color: '#a9b0c4', dashed: true}, {values: series, color: '#2f5be7', area: true}], labels, '€', 170) }}
+    </section>
+
+    <section class="pf-card pf-table-wrap">
+        <div class="pf-card__head pp-pad"><h2 class="pf-card__title">{{ show_all ? 'Toutes les transactions'|trans : 'Transactions récentes'|trans }}</h2></div>
+        {% if transactions is empty %}
+            <p class="pf-empty">{{ 'Aucune transaction pour le moment.'|trans }}</p>
+        {% else %}
+            <table class="pf-table pp-table">
+                <thead><tr><th>{{ 'Date'|trans }}</th><th>{{ 'Réservation'|trans }}</th><th>{{ 'Activité'|trans }}</th><th>{{ 'Client'|trans }}</th><th>{{ 'Montant'|trans }}</th><th>{{ 'Statut'|trans }}</th><th>{{ 'Type'|trans }}</th><th></th></tr></thead>
+                <tbody>
+                    {% for p in transactions %}
+                        {% set b = p.booking %}
+                        <tr>
+                            <td>{{ p.createdAt|pf_date('d MMM y')|trim('.') }}<small>{{ p.createdAt|date('H:i') }}</small></td>
+                            <td><strong class="pp-strong">#{{ b.reference }}</strong></td>
+                            <td><div class="pf-table__item pp-mini-item"><img src="{{ asset(b.service|pp_cover) }}" alt=""><span>{{ b.service.title }}</span></div></td>
+                            <td><div class="pp-client">{{ ui.avatar(b.client, 28) }}<span>{{ b.client.firstName }} {{ b.client.lastName }}</span></div></td>
+                            <td><strong class="pp-strong">{{ ui.money(p.amount) }}</strong></td>
+                            <td>{% set st = {pending: ['En attente', 'orange'], paid: ['Payé', 'green'], failed: ['Échoué', 'red'], refunded: ['Remboursé', 'grey']}[p.status.value] %}<span class="pf-pill pf-pill--{{ st[1] }} pp-pill">{{ st[0]|trans }}</span></td>
+                            <td class="pp-paytype">{% if p.method == 'paypal' %}{{ icon.pay_paypal() }} PayPal{% elseif p.method == 'transfer' %}{{ icon.building(16) }} {{ 'Virement'|trans }}{% else %}{{ icon.card(16) }} {{ 'Carte'|trans }}{% endif %}</td>
+                            <td>
+                                <details class="pl-dropdown pf-kebab">
+                                    <summary aria-label="{{ 'Actions'|trans }}">{{ icon.dots(18) }}</summary>
+                                    <div class="tm-menu tm-menu--right">
+                                        <a class="tm-menu__item" href="{{ path('app_pro_bookings', {q: b.reference}) }}">{{ 'Voir la réservation'|trans }}</a>
+                                        <a class="tm-menu__item" href="{{ path('app_pro_messages', {client: b.client.id}) }}">{{ 'Contacter le client'|trans }}</a>
+                                        <a class="tm-menu__item" href="{{ path('app_pro_support', {sujet: 'Paiement #' ~ b.reference}) }}#ticket">{{ 'Signaler un problème'|trans }}</a>
+                                    </div>
+                                </details>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% if show_all %}
+            <div class="pp-pad">{{ ui.pager(page, pages, transactions|length, total_transactions, 'transactions') }}</div>
+        {% elseif total_transactions > 5 %}
+            <a class="pf-link pp-arrow pp-pad" href="{{ path('app_pro_revenue', {toutes: 1, mois: month|date('Y-m'), comparer: compare|date('Y-m')}) }}">{{ 'Voir toutes les transactions'|trans }} {{ icon.arrow_right(16) }}</a>
+        {% endif %}
+    </section>
+{% endblock %}
+
+{% block space_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Résumé financier'|trans }} <small class="pf-muted">· {{ month|pf_date('MMMM y') }}</small></h2>
+        <dl class="pp-kvs">
+            <div><dt>{{ 'Revenus totaux'|trans }}</dt><dd>{{ ui.money(split.gross) }}</dd></div>
+            <div><dt>{{ 'Commission TrouveMoi'|trans }} ({{ commission_rate|round }}%)</dt><dd>-{{ ui.money(split.commission) }}</dd></div>
+            <div><dt>{{ 'Frais de paiement'|trans }}</dt><dd>-{{ ui.money(split.fees) }}</dd></div>
+            <div class="pp-kvs__total"><dt>{{ 'Montant net'|trans }}</dt><dd class="is-green">{{ ui.money(split.net) }}</dd></div>
+        </dl>
+        <a class="pf-btn pf-btn--block pp-soft-btn" href="{{ path('app_pro_revenue_export') }}">{{ ico.svg('chart', 16) }} {{ 'Voir le détail des revenus'|trans }}</a>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Prochain versement'|trans }}</h2>
+        <ul class="pf-list">
+            <li><span class="pf-ico pf-ico--xs pf-ico--blue">{{ icon.calendar_grid(16) }}</span><strong>{{ next_payout.date|pf_date('d MMMM y') }}</strong></li>
+            <li><span class="pf-ico pf-ico--xs pf-ico--blue">{{ icon.euro(16) }}</span><div class="pf-list__body"><small>{{ 'Montant estimé'|trans }}</small></div><span class="pf-list__end is-green">{{ ui.money(next_payout.amount) }}</span></li>
+            <li><span class="pf-ico pf-ico--xs pf-ico--blue">{{ icon.card(16) }}</span><div class="pf-list__body"><small>{{ 'Mode de paiement'|trans }}</small></div>
+                <span class="pf-list__end">{% if provider.payoutMethod == 'paypal' and provider.payoutPaypalEmail %}PayPal{% elseif provider.payoutMethod == 'card' and provider.payoutCardLast4 %}{{ 'Carte'|trans }} (•••• {{ provider.payoutCardLast4 }}){% elseif provider.payoutIban %}{{ 'Virement bancaire'|trans }} (•••• {{ provider.payoutIban|slice(-4) }}){% else %}<span class="pf-muted">{{ 'À configurer'|trans }}</span>{% endif %}</span></li>
+        </ul>
+        <a class="pf-btn pf-btn--block pp-soft-btn" href="{{ path('app_pro_settings', {section: 'paiement'}) }}">{{ icon.gear(16) }} {{ 'Gérer mes moyens de paiement'|trans }}</a>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Moyens de paiement'|trans }}</h2>
+        {% include 'provider/space/_payout_methods.html.twig' %}
+    </section>
+{% endblock %}

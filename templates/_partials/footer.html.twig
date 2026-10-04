@@ -1,86 +1,86 @@
-{# Pied de page principal, présent en bas de toutes les pages. #}
+{#
+    Pied de page UNIQUE de la plateforme — maquette choix_profil.jpeg (30/09).
+    Styles : assets/styles/layout.css (.tm-footer).
+
+    Maquette : cinq liens seulement dans « Aide & support ». CGV et politique
+    de cookies n'y figurent pas, mais aucune autre page n'y mène et leur accès
+    est une obligation légale (vente en ligne, RGPD) : ils sont posés,
+    discrets, dans la ligne du copyright. À retirer si le client les place
+    ailleurs.
+
+    Le sélecteur « France » en bas à droite porte la langue : elle vit dans
+    l'URL, chaque choix mène donc à la MÊME page dans l'autre langue.
+#}
 {% import '_partials/_icons.html.twig' as icon %}
 
-<footer class="pl-footer">
-    <div class="pl-footer__inner">
-        <div class="pl-footer__columns">
-            {# Marque + description + réseaux sociaux #}
-            <div class="pl-footer__brand">
-                <img class="pl-footer__brand-logo" src="{{ asset('images/logo.svg') }}" alt="TrouveMoi Plaisir & Loisirs">
-                <p class="pl-footer__brand-text">{{ 'La plateforme qui vous aide à trouver les meilleures activités et loisirs partout en France.'|trans }}</p>
-                <div class="pl-footer__socials">
-                    <a href="#" aria-label="Facebook">{{ icon.facebook() }}</a>
-                    <a href="#" aria-label="YouTube">{{ icon.youtube() }}</a>
-                    <a href="#" aria-label="TikTok">{{ icon.tiktok() }}</a>
-                    <a href="#" aria-label="Instagram">{{ icon.instagram() }}</a>
+<footer class="tm-footer">
+    <div class="tm-footer__inner">
+        <div class="tm-footer__grid">
+            <div class="tm-footer__brand">
+                <img class="tm-footer__logo" src="{{ asset('images/logo-trouvemoi.png') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="130" height="36">
+                <p class="tm-footer__text">{{ 'La plateforme qui vous aide à trouver les meilleures activités et loisirs partout en France.'|trans }}</p>
+                <div class="tm-footer__socials">
+                    <a href="#" aria-label="Facebook">{{ icon.facebook(12) }}</a>
+                    <a href="#" aria-label="Instagram">{{ icon.instagram(12) }}</a>
+                    <a href="#" aria-label="TikTok">{{ icon.tiktok(12) }}</a>
+                    <a href="#" aria-label="YouTube">{{ icon.youtube(12) }}</a>
                 </div>
             </div>
 
-            {# Colonne Explorer #}
-            <div class="pl-footer__col">
-                <div class="pl-footer__col-title">{{ 'Explorer'|trans }}</div>
-                <div class="pl-footer__links">
-                    <a href="{{ path('app_activities') }}">{{ 'Activités'|trans }}</a>
-                    <a href="{{ path('app_destinations') }}">{{ 'Destinations'|trans }}</a>
-                    <a href="{{ path('app_events_private') }}">{{ 'Activités privées'|trans }}</a>
-                    <a href="{{ path('app_gifts') }}">{{ 'Bons cadeaux'|trans }}</a>
-                    <a href="{{ path('app_offers') }}">{{ 'Offres du moment'|trans }}</a>
-                </div>
-            </div>
+            <nav class="tm-footer__col" aria-label="{{ 'Explorer'|trans }}">
+                <div class="tm-footer__title">{{ 'Explorer'|trans }}</div>
+                <a href="{{ path('app_activities') }}">{{ 'Activités'|trans }}</a>
+                <a href="{{ path('app_destinations') }}">{{ 'Destinations'|trans }}</a>
+                <a href="{{ path('app_private_activities') }}">{{ 'Activités privées'|trans }}</a>
+                <a href="{{ path('app_gifts') }}">{{ 'Bons cadeaux'|trans }}</a>
+                <a href="{{ path('app_offers') }}">{{ 'Offres du moment'|trans }}</a>
+            </nav>
 
-            {# Colonne À propos #}
-            <div class="pl-footer__col">
-                <div class="pl-footer__col-title">{{ 'À propos'|trans }}</div>
-                <div class="pl-footer__links">
-                    <a href="{{ path('app_corporate_about') }}">{{ 'Qui sommes-nous ?'|trans }}</a>
-                    <a href="{{ path('app_corporate_partner') }}">{{ 'Devenir prestataire'|trans }}</a>
-                    <a href="{{ path('app_corporate_careers') }}">{{ 'Carrières'|trans }}</a>
-                    <a href="#">{{ 'Presse'|trans }}</a>
-                    <a href="{{ path('app_corporate_contact') }}">{{ 'Contact'|trans }}</a>
-                </div>
-            </div>
+            <nav class="tm-footer__col" aria-label="{{ 'À propos'|trans }}">
+                <div class="tm-footer__title">{{ 'À propos'|trans }}</div>
+                <a href="{{ path('app_corporate_about') }}">{{ 'Qui sommes-nous ?'|trans }}</a>
+                <a href="{{ path('app_corporate_partner') }}">{{ 'Devenir partenaire'|trans }}</a>
+                <a href="{{ path('app_corporate_careers') }}">{{ 'Carrières'|trans }}</a>
+                <a href="#">{{ 'Presse'|trans }}</a>
+                <a href="{{ path('app_corporate_contact') }}">{{ 'Contact'|trans }}</a>
+            </nav>
 
-            {# Colonne Aide & support #}
-            <div class="pl-footer__col">
-                <div class="pl-footer__col-title">{{ 'Aide & support'|trans }}</div>
-                <div class="pl-footer__links">
-                    <a href="{{ path('app_help_center') }}">{{ "Centre d'aide"|trans }}</a>
-                    <a href="{{ path('app_faq') }}">FAQ</a>
-                    <a href="{{ path('app_corporate_terms') }}">{{ "Conditions générales d'utilisation"|trans }}</a>
-                    <a href="{{ path('app_corporate_sales_terms') }}">{{ 'Conditions générales de vente'|trans }}</a>
-                    <a href="{{ path('app_corporate_privacy') }}">{{ 'Politique de confidentialité'|trans }}</a>
-                    <a href="{{ path('app_corporate_cookies') }}">{{ 'Politique de cookies'|trans }}</a>
-                    <a href="{{ path('app_corporate_legal') }}">{{ 'Mentions légales'|trans }}</a>
-                </div>
-            </div>
+            <nav class="tm-footer__col" aria-label="{{ 'Aide & support'|trans }}">
+                <div class="tm-footer__title">{{ 'Aide & support'|trans }}</div>
+                <a href="{{ path('app_help_center') }}">{{ "Centre d'aide"|trans }}</a>
+                <a href="{{ path('app_faq') }}">FAQ</a>
+                <a href="{{ path('app_corporate_terms') }}">{{ 'Conditions générales'|trans }}</a>
+                <a href="{{ path('app_corporate_privacy') }}">{{ 'Politique de confidentialité'|trans }}</a>
+                <a href="{{ path('app_corporate_legal') }}">{{ 'Mentions légales'|trans }}</a>
+            </nav>
 
-            {# Colonne Paiement sécurisé #}
-            <div class="pl-footer__col">
-                <div class="pl-footer__col-title">{{ 'Paiement sécurisé'|trans }}</div>
-                <div class="pl-footer__payments">
-                    {{ icon.pay_visa() }}
-                    {{ icon.pay_mastercard() }}
-                    {{ icon.pay_paypal() }}
-                    {{ icon.pay_applepay() }}
+            <div class="tm-footer__col">
+                <div class="tm-footer__title">{{ 'Paiement sécurisé'|trans }}</div>
+                <div class="tm-footer__payments">
+                    {{ icon.paycard_visa() }}
+                    {{ icon.paycard_mastercard() }}
+                    {{ icon.paycard_paypal() }}
+                    {{ icon.paycard_applepay() }}
                 </div>
             </div>
         </div>
 
-        <hr class="pl-footer__divider">
-
-        <div class="pl-footer__bottom">
-            <span>©2024 TrouveMoi Plaisirs &amp; Loisirs | {{ 'Tous droits réservés'|trans }}</span>
-            <div class="pl-footer__selectors">
-                <button type="button" class="pl-footer__chip">{{ icon.globe() }} France {{ icon.chevron_down(16) }}</button>
-                {# Sélecteur de langue fonctionnel (menu ouvert vers le haut). #}
-                <details class="pl-dropdown pl-dropdown--footer">
-                    <summary class="pl-footer__chip">{{ icon.translate() }} {{ app.request.locale == 'en' ? 'English' : 'Français' }} {{ icon.chevron_down(16) }}</summary>
-                    <div class="pl-dropdown__menu pl-dropdown__menu--up">
-                        <a href="{{ locale_switch_path('fr') }}" class="pl-dropdown__item{{ app.request.locale != 'en' ? ' is-active' }}">{{ icon.flag_fr(20) }} {{ 'Français'|trans }}</a>
-                        <a href="{{ locale_switch_path('en') }}" class="pl-dropdown__item{{ app.request.locale == 'en' ? ' is-active' }}">{{ icon.flag_gb(20) }} {{ 'Anglais'|trans }}</a>
-                    </div>
-                </details>
+        <div class="tm-footer__bottom">
+            <div class="tm-footer__legal">
+                <span>© 2024 TrouveMoi Plaisirs &amp; Loisirs – {{ 'Tous droits réservés'|trans }}</span>
+                <a href="{{ path('app_corporate_sales_terms') }}">{{ 'Conditions générales de vente'|trans }}</a>
+                <a href="{{ path('app_corporate_cookies') }}">{{ 'Politique de cookies'|trans }}</a>
             </div>
+            <details class="pl-dropdown tm-footer__locale">
+                <summary>
+                    {% if app.request.locale == 'en' %}{{ icon.flag_gb(18) }} English{% else %}{{ icon.flag_fr(18) }} France{% endif %}
+                    {{ icon.chevron_down(12) }}
+                </summary>
+                <div class="tm-menu tm-menu--up">
+                    <a href="{{ locale_switch_path('fr') }}" class="tm-menu__item{{ app.request.locale != 'en' ? ' is-active' }}">{{ icon.flag_fr(16) }} {{ 'Français'|trans }}</a>
+                    <a href="{{ locale_switch_path('en') }}" class="tm-menu__item{{ app.request.locale == 'en' ? ' is-active' }}">{{ icon.flag_gb(16) }} {{ 'Anglais'|trans }}</a>
+                </div>
+            </details>
         </div>
     </div>
 </footer>

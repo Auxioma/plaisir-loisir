@@ -121,10 +121,18 @@ Le travail = **brancher les écrans Twig (jadis statiques via classes `Static*`)
 
 **Fait** : auth complète, catalogue activités/destinations (pagination + tri), favoris, socle
 juridique versionné, OAuth Google/Facebook/Apple (identifiants encore `test-`), back-office
-EasyAdmin, parcours d'authentification pro (écrans `/pro`).
+EasyAdmin, parcours d'authentification pro (écrans `/pro`), pages du menu (activités,
+destinations, albums photo, « Mes favoris »), **espace professionnel complet** (`/pro/*`,
+maquettes `docs/maquettes/profil_professionnel`, contrôleurs `src/Provider/Controller/Space/`,
+lecture des données dans `ProviderSpace`) : activités soumises puis validées dans le back-office,
+réservations (workflow), calendrier/créneaux, messagerie + notes clients, avis, revenus
+(commission 12 %), offres (`Promotion`), statistiques (`Stats\PageView`), paramètres, documents,
+tickets support (`SupportTicket`, réponse depuis EasyAdmin). Démo : `ProviderSpaceFixtures`.
 
-**Reste** : espace compte réel (favoris/listes/notifs/parrainage), tunnel réservation + Stripe
-réel, domaine `Event/` (encore statique), logique métier derrière `/pro`, photo de profil User,
+**Reste** : tunnel réservation + Stripe réel (la date de séance `Booking::startsAt` doit y être
+saisie), page publique « Offres du moment » encore statique (`StaticOffers`, pas branchée sur
+`Promotion`), domaine `Event/` (encore statique), liens réseaux sociaux officiels à confirmer
+(`ProviderSupportController::SOCIALS`, pied de page),
 vérif d'email, pages politique de confidentialité / CGV / cookies. Détail : fin de
 `docs/cablage-back-front.md`.
 

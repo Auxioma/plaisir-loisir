@@ -6,13 +6,18 @@ namespace App\Favorite\Controller;
 
 use App\Catalog\Repository\DestinationRepository;
 use App\Catalog\Repository\ServiceRepository;
+use App\Event\Entity\Event;
+use App\Event\Entity\Group;
 use App\Favorite\Service\FavoriteService;
+use App\PrivateActivity\Entity\PrivateActivity;
 use App\User\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * Ajout et retrait d'un favori, depuis le cœur des cartes.
@@ -36,6 +41,7 @@ final class FavoriteController extends AbstractController
         FavoriteService $favorites,
         ServiceRepository $services,
         DestinationRepository $destinations,
+        EntityManagerInterface $entityManager,
     ): Response {
         $user = $this->getUser();
 
@@ -62,6 +68,13 @@ final class FavoriteController extends AbstractController
         $favori = match ($type) {
             'activite' => $this->toggleActivity($favorites, $services, $user, $slug),
             'destination' => $this->toggleDestination($favorites, $destinations, $user, $slug),
+            // Univers Event (01/10) : `slug` porte le slug d'un événement ou
+            // d'un groupe, l'identifiant d'une activité privée ou d'un
+            // organisateur.
+            'evenement' => $this->toggleTarget($favorites, $user, 'event', $entityManager->getRepository(Event::class)->findOneBy(['slug' => $slug])),
+            'groupe' => $this->toggleTarget($favorites, $user, 'group', $entityManager->getRepository(Group::class)->findOneBy(['slug' => $slug])),
+            'activite-privee' => $this->toggleTarget($favorites, $user, 'privateActivity', Ulid::isValid($slug) ? $entityManager->getRepository(PrivateActivity::class)->find(Ulid::fromString($slug)) : null),
+            'organisateur' => $this->toggleTarget($favorites, $user, 'organizer', Ulid::isValid($slug) ? $entityManager->getRepository(User::class)->find(Ulid::fromString($slug)) : null),
             default => null,
         };
 
@@ -87,5 +100,17 @@ final class FavoriteController extends AbstractController
         $destination = $destinations->findOneBySlug($slug);
 
         return null !== $destination ? $favorites->toggleDestination($user, $destination) : null;
+    }
+
+    /**
+     * @param 'event'|'group'|'privateActivity'|'organizer' $field
+     */
+    private function toggleTarget(FavoriteService $favorites, User $user, string $field, Event|Group|PrivateActivity|User|null $target): ?bool
+    {
+        if (null === $target || $target === $user) {
+            return null;
+        }
+
+        return $favorites->toggle($user, $field, $target);
     }
 }

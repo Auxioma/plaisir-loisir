@@ -83,7 +83,7 @@ final class NotificationPresenter
     }
 
     /**
-     * @return array{icon: string, tone: string, title: string, detail: string, time: string, thumb: null, muted: bool}
+     * @return array{icon: string, tone: string, title: string, detail: string, time: string, thumb: null, muted: bool, category: string}
      */
     private function item(Notification $notification, \DateTimeImmutable $now): array
     {
@@ -97,6 +97,7 @@ final class NotificationPresenter
             'time' => $this->relativeTime($notification->getCreatedAt() ?? $now, $now),
             'thumb' => null,
             'muted' => $notification->isRead(),
+            'category' => $category,
         ];
     }
 

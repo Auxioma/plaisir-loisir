@@ -1,0 +1,274 @@
+{#
+    Paramètres — maquette profil_parametres_professionnel.jpeg (02/10).
+    Données : ProviderSettingsController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import 'provider/space/_ui.html.twig' as ui %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Paramètres'|trans }}{% endblock %}
+
+{% macro hidden(form, section) %}
+    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+    <input type="hidden" name="form" value="{{ form }}">
+    <input type="hidden" name="section" value="{{ section }}">
+{% endmacro %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Paramètres'|trans }} <span class="pp-title-ico">{{ icon.gear(24) }}</span></h1>
+            <p class="pf-sub">{{ 'Gérez les paramètres de votre compte professionnel.'|trans }}</p>
+        </div>
+    </header>
+
+    {% set sections = [
+        {key: 'infos', icon: 'person', title: 'Informations du profil', text: 'Gérez vos informations personnelles et professionnelles'},
+        {key: 'profil-pro', icon: 'briefcase', title: 'Profil professionnel', text: 'Gérez votre établissement et vos informations'},
+        {key: 'preferences', icon: 'gear', title: 'Préférences', text: 'Gérez vos préférences de communication'},
+        {key: 'notifications', icon: 'bell', title: 'Notifications', text: 'Choisissez vos préférences de notifications'},
+        {key: 'paiement', icon: 'card', title: 'Moyens de paiement', text: 'Gérez vos comptes et moyens de paiement'},
+        {key: 'securite', icon: 'lock', title: 'Sécurité', text: 'Gérez votre mot de passe et la sécurité'},
+        {key: 'abonnement', icon: 'doc', title: 'Abonnement', text: 'Gérez votre abonnement et vos options'},
+        {key: 'integrations', icon: 'puzzle', title: 'Intégrations', text: 'Connectez vos outils et services'},
+        {key: 'suppression', icon: 'trash', title: 'Suppression du compte', text: 'Supprimez définitivement votre compte'},
+    ] %}
+
+    <div class="pp-settings">
+        <nav class="pf-card pp-settings__nav" aria-label="{{ 'Sections des paramètres'|trans }}">
+            {% for s in sections %}
+                <a class="pp-settings__item{{ section == s.key ? ' is-active' }}{{ s.key == 'suppression' ? ' is-danger' }}" href="{{ path('app_pro_settings', {section: s.key}) }}">
+                    <span class="pp-settings__ico">{{ ico.svg(s.icon, 20) }}</span>
+                    <span><strong>{{ s.title|trans }}</strong><small>{{ s.text|trans }}</small></span>
+                </a>
+            {% endfor %}
+        </nav>
+
+        <div class="pp-settings__body">
+            {% if section == 'infos' %}
+                <section class="pf-card">
+                    <div class="pf-card__head">
+                        <div><h2 class="pf-card__title">{{ 'Informations du profil'|trans }}</h2><p class="pf-card__sub">{{ 'Vos informations personnelles et professionnelles.'|trans }}</p></div>
+                        {% if not editing %}<a class="pf-btn pp-btn-ghost pp-btn-sm" href="{{ path('app_pro_settings', {section: 'infos', modifier: 1}) }}">{{ icon.edit_square(16) }} {{ 'Modifier'|trans }}</a>{% endif %}
+                    </div>
+                    <div class="pp-idcard">
+                        {{ ui.avatar(me, 72) }}
+                        <div>
+                            <strong>{{ me.firstName }} {{ me.lastName }}</strong>
+                            {% if provider.status.value == 'verified' %}<span class="pf-pill pf-pill--green">{{ icon.check_badge(12) }} {{ 'Vérifié'|trans }}</span>{% endif %}
+                            <small>{{ 'Professionnel depuis'|trans }} {{ provider.createdAt|pf_date('MMMM y') }}</small>
+                            <small>{{ 'Membre Pro'|trans }}</small>
+                        </div>
+                    </div>
+                    {% if editing %}
+                        <form method="post" action="{{ path('app_pro_settings_save') }}" class="pf-form-grid">
+                            {{ _self.hidden('infos', 'infos') }}
+                            <div class="pf-field"><label for="s-first">{{ 'Prénom'|trans }}</label><input id="s-first" name="firstName" value="{{ me.firstName }}" required></div>
+                            <div class="pf-field"><label for="s-last">{{ 'Nom'|trans }}</label><input id="s-last" name="lastName" value="{{ me.lastName }}" required></div>
+                            <div class="pf-field"><label for="s-email">{{ 'Email'|trans }}</label><input id="s-email" value="{{ me.email }}" readonly></div>
+                            <div class="pf-field"><label for="s-phone">{{ 'Téléphone'|trans }}</label><input id="s-phone" name="phone" value="{{ me.phone }}"></div>
+                            <div class="pf-field pf-span-2"><label for="s-address">{{ 'Adresse'|trans }}</label><input id="s-address" name="address" value="{{ provider.address }}"></div>
+                            <div class="pf-field pf-span-2"><label for="s-web">{{ 'Site web'|trans }}</label><input id="s-web" name="websiteUrl" value="{{ provider.websiteUrl }}" placeholder="https://"></div>
+                            <div class="pf-field pf-span-2"><label for="s-bio">{{ 'À propos'|trans }}</label><textarea id="s-bio" name="bio" rows="4">{{ provider.bio }}</textarea></div>
+                            <div class="pf-field"><label for="s-locale">{{ 'Langue'|trans }}</label><select id="s-locale" name="locale"><option value="fr"{{ me.preferredLocale != 'en' ? ' selected' }}>Français</option><option value="en"{{ me.preferredLocale == 'en' ? ' selected' }}>English</option></select></div>
+                            <div class="pf-field"><label for="s-tz">{{ 'Fuseau horaire'|trans }}</label><select id="s-tz" name="timezone">{% for k, l in timezones %}<option value="{{ k }}"{{ provider.timezone == k ? ' selected' }}>{{ l }}</option>{% endfor %}</select></div>
+                            <div class="pp-form__actions pf-span-2">
+                                <a class="pf-btn pp-btn-ghost" href="{{ path('app_pro_settings', {section: 'infos'}) }}">{{ 'Annuler'|trans }}</a>
+                                <button class="pf-btn pf-btn--primary">{{ 'Enregistrer'|trans }}</button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <dl class="pp-info">
+                            <div><dt>{{ icon.mail(16) }} {{ 'Email'|trans }}</dt><dd>{{ me.email }}</dd></div>
+                            <div><dt>{{ icon.phone(16) }} {{ 'Téléphone'|trans }}</dt><dd>{{ me.phone ?: '—' }}</dd></div>
+                            <div><dt>{{ icon.map_pin(16) }} {{ 'Adresse'|trans }}</dt><dd>{{ provider.address ?: '—' }}</dd></div>
+                            <div><dt>{{ icon.globe_simple(16) }} {{ 'Site web'|trans }}</dt><dd>{% if provider.websiteUrl %}<a href="{{ provider.websiteUrl }}" target="_blank" rel="noopener">{{ provider.websiteUrl|replace({'https://': '', 'http://': ''}) }}</a>{% else %}—{% endif %}</dd></div>
+                            <div><dt>{{ icon.info(16) }} {{ 'À propos'|trans }}</dt><dd>{{ provider.bio ? provider.bio|nl2br : '—' }}</dd></div>
+                            <div><dt>{{ icon.translate(16) }} {{ 'Langue'|trans }}</dt><dd>{{ me.preferredLocale == 'en' ? 'English' : 'Français' }}</dd></div>
+                            <div><dt>{{ icon.clock(16) }} {{ 'Fuseau horaire'|trans }}</dt><dd>{{ timezones[provider.timezone] ?? provider.timezone }}</dd></div>
+                        </dl>
+                        <a class="pf-btn pp-btn-ghost pp-btn-sm" href="{{ path('app_pro_settings', {section: 'securite'}) }}">{{ icon.padlock(16) }} {{ 'Modifier le mot de passe'|trans }}</a>
+                    {% endif %}
+                </section>
+            {% endif %}
+
+            {% if section in ['infos', 'profil-pro'] %}
+                <section class="pf-card">
+                    <div class="pf-card__head">
+                        <h2 class="pf-card__title">{{ 'Informations professionnelles'|trans }}</h2>
+                        {% if section == 'infos' %}<a class="pf-btn pp-btn-ghost pp-btn-sm" href="{{ path('app_pro_settings', {section: 'profil-pro'}) }}">{{ icon.edit_square(16) }} {{ 'Modifier'|trans }}</a>{% endif %}
+                    </div>
+                    {% if section == 'profil-pro' %}
+                        <form method="post" action="{{ path('app_pro_profile_edit') }}" class="pf-form-grid">
+                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                            <div class="pf-field"><label for="p-display">{{ 'Nom affiché'|trans }} *</label><input id="p-display" name="displayName" value="{{ provider.displayName }}" required></div>
+                            <div class="pf-field"><label for="p-company">{{ 'Nom de l’établissement'|trans }}</label><input id="p-company" name="companyName" value="{{ provider.companyName }}"></div>
+                            <div class="pf-field"><label for="p-cat">{{ 'Catégorie'|trans }}</label>
+                                <select id="p-cat" name="metier"><option value="">—</option>{% for c in categories %}<option value="{{ c.slug }}"{{ provider.mainCategory and provider.mainCategory.slug == c.slug ? ' selected' }}>{{ c.name|trans }}</option>{% endfor %}</select></div>
+                            <div class="pf-field"><label for="p-city">{{ 'Ville'|trans }}</label><input id="p-city" name="ville" value="{{ provider.city }}"></div>
+                            <div class="pf-field pf-span-2"><label for="p-address">{{ 'Adresse de l’établissement'|trans }}</label><input id="p-address" name="address" value="{{ provider.address }}"></div>
+                            <div class="pf-field pf-span-2"><label for="p-zone">{{ 'Zone d’intervention'|trans }}</label><input id="p-zone" name="interventionZone" value="{{ provider.interventionZone }}" placeholder="Alpes, Auvergne-Rhône-Alpes"></div>
+                            <div class="pf-field pf-span-2"><label for="p-bio">{{ 'Présentation'|trans }}</label><textarea id="p-bio" name="bio" rows="4">{{ provider.bio }}</textarea></div>
+                            <input type="hidden" name="websiteUrl" value="{{ provider.websiteUrl }}">
+                            <input type="hidden" name="facebookUrl" value="{{ provider.facebookUrl }}">
+                            <input type="hidden" name="instagramUrl" value="{{ provider.instagramUrl }}">
+                            <input type="hidden" name="linkedinUrl" value="{{ provider.linkedinUrl }}">
+                            <div class="pp-form__actions pf-span-2"><button class="pf-btn pf-btn--primary">{{ 'Enregistrer'|trans }}</button></div>
+                        </form>
+                        <hr class="pp-sep">
+                    {% endif %}
+                    <dl class="pp-info pp-info--compact">
+                        <div><dt>{{ 'Nom de l’établissement'|trans }}</dt><dd>{{ provider.companyName ?? company.tradeName ?? company.legalName ?? provider.displayName }}</dd></div>
+                        <div><dt>{{ 'Catégorie'|trans }}</dt><dd>{{ provider.mainCategory ? provider.mainCategory.name|trans : '—' }}</dd></div>
+                        <div><dt>{{ 'SIRET'|trans }}</dt><dd>{{ company and company.siret ? company.siret : '—' }}</dd></div>
+                        <div><dt>{{ 'Adresse de l’établissement'|trans }}</dt><dd>{{ provider.address ?? (company ? [company.registeredStreet, company.registeredPostalCode, company.registeredCity]|filter(v => v)|join(' ') : '—') }}</dd></div>
+                        <div><dt>{{ 'Zone d’intervention'|trans }}</dt><dd>{{ provider.interventionZone ?? provider.city ?? '—' }}</dd></div>
+                        <div><dt>{{ 'Numéro de TVA'|trans }}</dt><dd>{{ company and company.vatNumber ? company.vatNumber : '—' }}</dd></div>
+                    </dl>
+                    <p class="pf-muted pp-hint">{{ 'SIRET et TVA proviennent de votre dossier de vérification :'|trans }} <a class="pf-link" href="{{ path('app_pro_support', {sujet: 'Mise à jour de mes informations légales'}) }}#ticket">{{ 'demander une modification'|trans }}</a>.</p>
+                </section>
+            {% endif %}
+
+            {% if section == 'preferences' %}
+                <section class="pf-card">
+                    <h2 class="pf-card__title pp-mb">{{ 'Préférences'|trans }}</h2>
+                    <form method="post" action="{{ path('app_pro_settings_save') }}" class="pf-form-grid">
+                        {{ _self.hidden('preferences', 'preferences') }}
+                        <div class="pf-field"><label for="pr-locale">{{ 'Langue de communication'|trans }}</label><select id="pr-locale" name="locale"><option value="fr"{{ me.preferredLocale != 'en' ? ' selected' }}>Français</option><option value="en"{{ me.preferredLocale == 'en' ? ' selected' }}>English</option></select></div>
+                        <div class="pf-field"><label for="pr-tz">{{ 'Fuseau horaire'|trans }}</label><select id="pr-tz" name="timezone">{% for k, l in timezones %}<option value="{{ k }}"{{ provider.timezone == k ? ' selected' }}>{{ l }}</option>{% endfor %}</select></div>
+                        <div class="pf-field pf-span-2"><label for="pr-av">{{ 'Disponibilités affichées'|trans }}</label><input id="pr-av" name="availabilityLabel" value="{{ provider.availabilityLabel }}" placeholder="Lun - Dim : 7h - 20h"></div>
+                        <div class="pp-form__actions pf-span-2"><button class="pf-btn pf-btn--primary">{{ 'Enregistrer'|trans }}</button></div>
+                    </form>
+                </section>
+            {% endif %}
+
+            {% if section == 'notifications' %}
+                <section class="pf-card">
+                    <h2 class="pf-card__title pp-mb">{{ 'Notifications'|trans }}</h2>
+                    <form method="post" action="{{ path('app_pro_settings_save') }}" class="pf-stack">
+                        {{ _self.hidden('notifications', 'notifications') }}
+                        <label class="pp-switch"><input type="checkbox" name="email_enabled" value="1"{{ (preference ? preference.emailEnabled : true) ? ' checked' }}><span></span>{{ 'Recevoir les notifications par e-mail (réservations, messages, avis)'|trans }}</label>
+                        <label class="pp-switch"><input type="checkbox" name="push_enabled" value="1"{{ (preference ? preference.pushEnabled : true) ? ' checked' }}><span></span>{{ 'Recevoir les notifications sur le site (cloche)'|trans }}</label>
+                        <div><button class="pf-btn pf-btn--primary">{{ 'Enregistrer'|trans }}</button> <a class="pf-link" href="{{ path('app_account_notifications') }}">{{ 'Voir mes notifications'|trans }}</a></div>
+                    </form>
+                </section>
+            {% endif %}
+
+            {% if section == 'paiement' %}
+                <section class="pf-card">
+                    <h2 class="pf-card__title pp-mb">{{ 'Moyens de paiement'|trans }}</h2>
+                    <p class="pf-muted">{{ 'Vos revenus sont versés chaque mois sur le moyen par défaut.'|trans }}</p>
+                    {% include 'provider/space/_payout_methods.html.twig' %}
+                </section>
+            {% endif %}
+
+            {% if section == 'securite' %}
+                <section class="pf-card">
+                    <h2 class="pf-card__title pp-mb">{{ 'Modifier le mot de passe'|trans }}</h2>
+                    <form method="post" action="{{ path('app_pro_settings_save') }}" class="pf-form-grid">
+                        {{ _self.hidden('securite', 'securite') }}
+                        <div class="pf-field pf-span-2"><label for="pw-cur">{{ 'Mot de passe actuel'|trans }}</label><input id="pw-cur" type="password" name="current" autocomplete="current-password" required></div>
+                        <div class="pf-field"><label for="pw-new">{{ 'Nouveau mot de passe'|trans }}</label><input id="pw-new" type="password" name="new" autocomplete="new-password" minlength="8" required></div>
+                        <div class="pf-field"><label for="pw-conf">{{ 'Confirmation'|trans }}</label><input id="pw-conf" type="password" name="confirm" autocomplete="new-password" minlength="8" required></div>
+                        <p class="pf-muted pf-span-2">{{ 'Au moins 8 caractères, dont une lettre et un chiffre.'|trans }}</p>
+                        <div class="pp-form__actions pf-span-2"><button class="pf-btn pf-btn--primary">{{ 'Modifier le mot de passe'|trans }}</button></div>
+                    </form>
+                </section>
+            {% endif %}
+
+            {% if section == 'abonnement' %}
+                <section class="pf-card">
+                    <h2 class="pf-card__title pp-mb">{{ 'Abonnement'|trans }}</h2>
+                    {% if subscription and subscription.plan %}
+                        <p>{{ 'Offre actuelle :'|trans }} <strong>{{ subscription.plan.name }}</strong>{% if subscription.currentPeriodEnd %} · {{ 'jusqu’au'|trans }} {{ subscription.currentPeriodEnd|date('d/m/Y') }}{% endif %}</p>
+                    {% else %}
+                        <p class="pf-muted">{{ 'Vous n’avez pas encore d’abonnement : choisissez une offre pour gagner en visibilité.'|trans }}</p>
+                    {% endif %}
+                    <a class="pf-btn pf-btn--primary" href="{{ path('app_pro_subscription') }}">{{ 'Gérer mon abonnement'|trans }}</a>
+                </section>
+            {% endif %}
+
+            {% if section == 'integrations' %}
+                <section class="pf-card">
+                    <h2 class="pf-card__title pp-mb">{{ 'Intégrations'|trans }}</h2>
+                    <ul class="pf-list pf-list--lined">
+                        <li><span class="pf-ico pf-ico--xs pf-ico--blue">{{ icon.calendar_grid(16) }}</span><div class="pf-list__body"><strong>{{ 'Export de vos réservations'|trans }}</strong><small>{{ 'Fichier CSV compatible Excel, Google Sheets, Numbers.'|trans }}</small></div><a class="pf-btn pp-btn-sm" href="{{ path('app_pro_bookings_export') }}">{{ 'Télécharger'|trans }}</a></li>
+                        <li><span class="pf-ico pf-ico--xs pf-ico--green">{{ icon.euro(16) }}</span><div class="pf-list__body"><strong>{{ 'Export comptable'|trans }}</strong><small>{{ 'Vos transactions avec commission et net, pour votre comptabilité.'|trans }}</small></div><a class="pf-btn pp-btn-sm" href="{{ path('app_pro_revenue_export') }}">{{ 'Télécharger'|trans }}</a></li>
+                        <li><span class="pf-ico pf-ico--xs pf-ico--orange">{{ icon.globe_simple(16) }}</span><div class="pf-list__body"><strong>{{ 'Réseaux sociaux'|trans }}</strong><small>{{ 'Affichés sur votre fiche publique.'|trans }}</small></div><a class="pf-btn pp-btn-sm" href="#pp-socials">{{ 'Configurer'|trans }}</a></li>
+                    </ul>
+                </section>
+            {% endif %}
+
+            {% if section == 'suppression' %}
+                <section class="pf-card pp-danger-card">
+                    <h2 class="pf-card__title pp-mb">{{ 'Suppression du compte'|trans }}</h2>
+                    <p>{{ 'La suppression est définitive : vos données personnelles sont effacées, vos activités retirées du catalogue et vos réservations à venir ne pourront plus être gérées.'|trans }}</p>
+                    <form method="post" action="{{ path('app_account_delete') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                        <label class="pp-switch"><input type="checkbox" required><span></span>{{ 'Je comprends que cette action est irréversible.'|trans }}</label>
+                        <p><button class="pf-btn pf-btn--danger" data-confirm="{{ 'Supprimer définitivement votre compte ?'|trans }}">{{ icon.trash(16) }} {{ 'Supprimer mon compte'|trans }}</button></p>
+                    </form>
+                </section>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block space_aside %}
+    <section class="pf-card" id="photo">
+        <h2 class="pf-card__title">{{ 'Photo de profil'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Votre photo de profil visible par vos clients.'|trans }}</p>
+        <div class="pp-photo">
+            {{ ui.avatar(me, 84) }}
+            <form method="post" action="{{ path('app_pro_settings_save') }}" enctype="multipart/form-data" class="pp-photo__actions">
+                {{ _self.hidden('photo', section) }}
+                <label class="pf-btn pp-btn-ghost pp-btn-sm">{{ icon.download(14) }} {{ 'Changer la photo'|trans }}<input type="file" name="photo" accept="image/jpeg,image/png,image/webp" hidden onchange="this.form.submit()"></label>
+                {% if me.avatarPath %}<button class="pf-btn pf-btn--danger pp-btn-sm" name="action" value="supprimer">{{ icon.trash(14) }} {{ 'Supprimer'|trans }}</button>{% endif %}
+            </form>
+        </div>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Couverture'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Image de couverture de votre profil professionnel.'|trans }}</p>
+        <img class="pp-cover" src="{{ asset(provider.coverPath ?? 'images/activities/visite-guidee.jpg') }}" alt="">
+        <form method="post" action="{{ path('app_pro_settings_save') }}" enctype="multipart/form-data" class="pp-photo__actions pp-center">
+            {{ _self.hidden('couverture', section) }}
+            <label class="pf-btn pp-btn-ghost pp-btn-sm">{{ icon.download(14) }} {{ 'Changer la couverture'|trans }}<input type="file" name="cover" accept="image/jpeg,image/png,image/webp" hidden onchange="this.form.submit()"></label>
+            {% if provider.coverPath %}<button class="pf-btn pf-btn--danger pp-btn-sm" name="action" value="supprimer">{{ icon.trash(14) }} {{ 'Supprimer'|trans }}</button>{% endif %}
+        </form>
+    </section>
+
+    <section class="pf-card" id="pp-socials">
+        <h2 class="pf-card__title">{{ 'Réseaux sociaux'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Connectez vos réseaux sociaux à votre profil.'|trans }}</p>
+        <ul class="pp-socials">
+            {% for s in [
+                {field: 'facebookUrl', label: 'Facebook', ico: icon.social_facebook(18), value: provider.facebookUrl, cls: 'fb'},
+                {field: 'instagramUrl', label: 'Instagram', ico: icon.instagram(18), value: provider.instagramUrl, cls: 'ig'},
+                {field: 'linkedinUrl', label: 'LinkedIn', ico: icon.social_linkedin(18), value: provider.linkedinUrl, cls: 'in'},
+                {field: 'youtubeUrl', label: 'YouTube', ico: icon.youtube(18), value: provider.youtubeUrl, cls: 'yt'},
+            ] %}
+                <li>
+                    <span class="pp-socials__ico is-{{ s.cls }}">{{ s.ico }}</span>
+                    <span class="pp-socials__name">{{ s.label }}</span>
+                    <span class="pp-socials__val pp-ellipsis">{{ s.value ? s.value|replace({'https://': '', 'http://': '', 'www.': ''}) : '' }}</span>
+                    <button type="button" class="pf-btn pp-btn-ghost pp-btn-sm" data-pp-open="pp-social-{{ s.cls }}">{{ s.value ? 'Modifier'|trans : 'Connecter'|trans }}</button>
+                    <dialog id="pp-social-{{ s.cls }}" class="pp-dialog">
+                        <form method="post" action="{{ path('app_pro_settings_save') }}" class="pp-dialog__body">
+                            {{ _self.hidden('reseaux', section) }}
+                            <h2 class="pf-card__title">{{ s.label }}</h2>
+                            <div class="pf-field"><label for="soc-{{ s.cls }}">{{ 'Lien de votre page'|trans }}</label><input id="soc-{{ s.cls }}" name="{{ s.field }}" value="{{ s.value }}" placeholder="https://"></div>
+                            <div class="pp-form__actions">
+                                <button type="button" class="pf-btn pp-btn-ghost" data-pp-close>{{ 'Annuler'|trans }}</button>
+                                {% if s.value %}<button class="pf-btn pf-btn--danger" name="{{ s.field }}" value="">{{ 'Déconnecter'|trans }}</button>{% endif %}
+                                <button class="pf-btn pf-btn--primary">{{ 'Enregistrer'|trans }}</button>
+                            </div>
+                        </form>
+                    </dialog>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endblock %}

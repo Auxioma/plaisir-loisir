@@ -1,91 +1,221 @@
 {#
-    Tableau de bord de l'espace client (spec profil, entrée « Tableau de
-    bord » de la sidebar). Câblé le 14/09, même mouvement que
-    provider/tableau_de_bord.html.twig : agrège ce qui existe réellement
-    (demandes de devis, activités privées, favoris) plutôt que d'ajouter un
-    nouvel écran statique. Aucune maquette Figma pour cet écran.
+    Tableau de bord client — maquette docs/maquettes/profil_particulier/
+    profil_dashboard_particulier.jpeg (30/09). Données réelles, voir
+    AccountController::dashboard().
+
+    Écarts assumés avec la maquette :
+      - « Vues du profil » et « Revenus générés » n'existent pas pour un
+        particulier : remplacés par « Activités créées » et « Dépenses » ;
+      - les tendances ne s'affichent que s'il existe une période précédente
+        à laquelle se comparer.
 #}
 {% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ 'Tableau de bord'|trans }}{% endblock %}
 
-{% block account %}
-    {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Tableau de bord'|trans }],
-        title: ('Bonjour'|trans) ~ ' ' ~ user.firstName,
-        subtitle: 'Aperçu de votre activité sur TrouveMoi.'|trans,
-    } %}
+{% macro tile_icon(name) %}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    {%- if name == 'edit' %}{{ icon.edit_square(28) }}{% elseif name == 'heart' %}{{ icon.heart(28) }}{% elseif name == 'calendar' %}{{ icon.calendar_grid(28) }}{% else %}{{ icon.euro(28) }}{% endif -%}
+{% endmacro %}
 
-    <div class="row g-4 mb-4">
-        <div class="col-sm-4">
-            <a href="{{ path('app_account_requests') }}" class="text-decoration-none">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <div class="fs-2 fw-bold" style="color: var(--pl-action);">{{ requests_count }}</div>
-                        <div class="text-muted small">{{ 'Demandes de devis envoyées'|trans }}</div>
+{% block account %}
+    <header class="pf-head">
+        <div>
+            <h1 class="pf-title">{{ 'Tableau de bord'|trans }}</h1>
+            <p class="pf-sub">{{ 'Bienvenue %name% ! Voici un aperçu de votre activité sur TrouveMoi Plaisirs & Loisirs.'|trans({'%name%': user.firstName}) }}</p>
+        </div>
+        <span class="pf-daterange">{{ 'Du'|trans }} {{ period_start|pf_date('d MMMM') }} {{ 'au'|trans }} {{ period_end|pf_date('d MMMM y') }}</span>
+    </header>
+
+    <div class="pf-row pf-row--4">
+        {% for tile in tiles %}
+            <article class="pf-card pf-stat pf-stat--chart">
+                <div class="pf-stat__top">
+                    <span class="pf-ico pf-ico--{{ tile.tone }}">{{ _self.tile_icon(tile.icon) }}</span>
+                    <div class="pf-stat__body">
+                        <span class="pf-stat__label">{{ tile.label|trans }}</span>
+                        <span class="pf-stat__value">
+                            {{ tile.value }}
+                            {% if tile.trend is not null %}<span class="pf-trend{{ tile.trend < 0 ? ' is-down' }}">{{ tile.trend > 0 ? '+' }}{{ tile.trend }}%</span>{% endif %}
+                        </span>
+                        <span class="pf-stat__note">{{ 'vs période précédente'|trans }}</span>
                     </div>
                 </div>
-            </a>
-        </div>
-        <div class="col-sm-4">
-            <a href="{{ path('app_account_private_activities') }}" class="text-decoration-none">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <div class="fs-2 fw-bold" style="color: var(--pl-action);">{{ organized_count + joined_count }}</div>
-                        <div class="text-muted small">{{ 'Activités privées organisées ou rejointes'|trans }}</div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-sm-4">
-            <a href="{{ path('app_account_favorites') }}" class="text-decoration-none">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <div class="fs-2 fw-bold" style="color: var(--pl-action);">{{ favorites_count }}</div>
-                        <div class="text-muted small">{{ 'Activités et destinations favorites'|trans }}</div>
-                    </div>
-                </div>
-            </a>
-        </div>
+                <svg class="pf-spark pf-spark--{{ tile.tone }}" viewBox="0 0 200 36" preserveAspectRatio="none" aria-hidden="true">
+                    {% if tile.spark %}<path d="{{ tile.spark }}"/>{% else %}<path d="M0 33 L200 33"/>{% endif %}
+                </svg>
+            </article>
+        {% endfor %}
     </div>
 
-    {% if recent_requests is not empty %}
-        <h2 class="h5 mb-3">{{ 'Vos dernières demandes'|trans }}</h2>
-        <div class="list-group mb-4">
-            {% for demande in recent_requests %}
-                <a href="{{ path('app_account_requests_show', {id: demande.id}) }}"
-                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    <span>{{ demande.title }}</span>
-                    <span class="badge rounded-pill {{ demande.open ? 'text-bg-success' : 'text-bg-secondary' }}">
-                        {{ demande.open ? 'Ouverte'|trans : 'Clôturée'|trans }}
-                    </span>
-                </a>
-            {% endfor %}
-        </div>
-    {% else %}
-        {% include 'account/_empty.html.twig' with { message: "Vous n'avez encore rien demandé ni rejoint : vos demandes de devis et vos activités privées apparaîtront ici."|trans } %}
-    {% endif %}
-
-    {# Notifications récentes (spec §7.1) : mêmes cinq dernières que /compte/notifications, sans le regroupement par jour. #}
-    <h2 class="h5 mb-3">{{ 'Notifications récentes'|trans }}</h2>
-    {% if recent_notifications is not empty %}
-        <div class="list-group mb-4">
-            {% for n in recent_notifications %}
-                <div class="list-group-item{{ n.muted ? ' text-muted' }}">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <strong>{{ n.title }}</strong>
-                        <span class="text-muted small">{{ n.time }}</span>
-                    </div>
-                    <div class="small">{{ n.detail }}</div>
+    {# ---- Accès rapides ---- #}
+    <section class="pf-card pf-quick">
+        <h2 class="pf-card__title">{{ 'Accès rapides'|trans }}</h2>
+        <div class="pf-quick__grid">
+            <div class="pf-quick__item">
+                <span class="pf-ico pf-ico--violet">{{ icon.image_frame(28) }}</span>
+                <div>
+                    <strong>{{ 'Mes albums photos'|trans }}</strong>
+                    <span>{{ albums_count }} {{ albums_count > 1 ? 'albums'|trans : 'album'|trans }}</span>
+                    <span>{{ photos_count }} {{ 'photos partagées'|trans }}</span>
+                    <a class="pf-btn" href="{{ path('app_account_albums') }}">{{ 'Voir mes albums'|trans }}</a>
                 </div>
-            {% endfor %}
+            </div>
+            <div class="pf-quick__item">
+                <span class="pf-ico pf-ico--green">{{ icon.calendar_grid(28) }}</span>
+                <div>
+                    <strong>{{ 'Mes activités créées'|trans }}</strong>
+                    <span>{{ created_count }} {{ created_count > 1 ? 'activités'|trans : 'activité'|trans }}</span>
+                    <span>{{ created_upcoming }} {{ 'à venir'|trans }}</span>
+                    <a class="pf-btn" href="{{ path('app_account_private_activities') }}">{{ 'Voir mes activités'|trans }}</a>
+                </div>
+            </div>
+            <div class="pf-quick__item">
+                <span class="pf-ico pf-ico--orange">{{ icon.ticket(28) }}</span>
+                <div>
+                    <strong>{{ 'Mes réservations'|trans }}</strong>
+                    <span>{{ reservations_count }} {{ reservations_count > 1 ? 'réservations'|trans : 'réservation'|trans }}</span>
+                    <span>{{ reservations_upcoming }} {{ 'à venir'|trans }}</span>
+                    <a class="pf-btn" href="{{ path('app_account_history') }}">{{ 'Voir mes réservations'|trans }}</a>
+                </div>
+            </div>
         </div>
-        <a href="{{ path('app_account_notifications') }}" class="d-inline-block mb-4">{{ 'Voir toutes les notifications'|trans }}</a>
-    {% else %}
-        {% include 'account/_empty.html.twig' with { message: "Vous n'avez encore aucune notification."|trans } %}
-    {% endif %}
+    </section>
 
-    <p class="text-muted small">
-        {{ 'Albums photos, activités créées et réservations arrivent avec un prochain lot du projet.'|trans }}
-    </p>
+    {# ---- Graphiques ---- #}
+    <div class="pf-charts">
+        <section class="pf-card">
+            <div class="pf-card__head">
+                <h2 class="pf-card__title">{{ 'Évolution de vos réservations'|trans }}</h2>
+                <form method="get" class="pf-select pf-select--sm">
+                    <select name="periode" onchange="this.form.submit()" aria-label="{{ 'Période'|trans }}">
+                        {% for d in [7, 30, 90] %}
+                            <option value="{{ d }}"{{ d == days ? ' selected' }}>{{ '%n% derniers jours'|trans({'%n%': d}) }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+            {% set peak = max(series|merge([0])) %}
+            {% set ymax = max(4, ((peak / 4)|round(0, 'ceil')) * 4) %}
+            {% set W = 460 %}{% set H = 150 %}
+            {% set n = series|length %}
+            <div class="pf-line">
+                <div class="pf-line__axis">
+                    {% for k in 4..0 %}<span>{{ (ymax / 4 * k)|round }}</span>{% endfor %}
+                </div>
+                <div class="pf-line__plot">
+                    <svg viewBox="0 0 {{ W }} {{ H }}" preserveAspectRatio="none" aria-label="{{ 'Réservations par jour'|trans }}" role="img">
+                        {% for k in 0..4 %}<line x1="0" x2="{{ W }}" y1="{{ H / 4 * k }}" y2="{{ H / 4 * k }}"/>{% endfor %}
+                        {% set d = '' %}
+                        {% for v in series %}
+                            {% set d = d ~ (loop.first ? 'M' : ' L') ~ (W / (n - 1) * loop.index0)|round(1) ~ ' ' ~ (H - v / ymax * H)|round(1) %}
+                        {% endfor %}
+                        <path class="pf-line__area" d="{{ d }} L{{ W }} {{ H }} L0 {{ H }} Z"/>
+                        <path class="pf-line__path" d="{{ d }}"/>
+                    </svg>
+                    <div class="pf-line__x">
+                        {% for k in 0..5 %}
+                            {% set day = period_start|date_modify('+' ~ ((days - 1) / 5 * k)|round ~ ' days') %}
+                            <span>{{ day|pf_date('d MMM')|trim('.') }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="pf-card">
+            <h2 class="pf-card__title">{{ 'Répartition des réservations'|trans }}</h2>
+            {% set total = breakdown|reduce((carry, b) => carry + b.count, 0) %}
+            {% set colors = ['#1ea84a', '#5b2ee6', '#f5a524', '#7d86c9'] %}
+            <div class="pf-donut">
+                <div class="pf-donut__chart">
+                    <svg viewBox="0 0 140 140" aria-hidden="true">
+                        <circle cx="70" cy="70" r="54" class="pf-donut__track"/>
+                        {% set C = 339.292 %}{% set offset = 0 %}
+                        {% for b in breakdown %}
+                            {% set len = total > 0 ? b.count / total * C : 0 %}
+                            <circle cx="70" cy="70" r="54" stroke="{{ colors[loop.index0] }}" stroke-dasharray="{{ len|round(2) }} {{ (C - len)|round(2) }}" stroke-dashoffset="{{ (-offset)|round(2) }}" transform="rotate(-90 70 70)"/>
+                            {% set offset = offset + len %}
+                        {% endfor %}
+                    </svg>
+                    <span><strong>{{ total }}</strong>{{ total > 1 ? 'réservations'|trans : 'réservation'|trans }}</span>
+                </div>
+                {% if breakdown is empty %}
+                    <p class="pf-muted">{{ 'Vos réservations apparaîtront ici par type d’activité.'|trans }}</p>
+                {% else %}
+                    <ul class="pf-donut__legend">
+                        {% for b in breakdown %}
+                            <li><i style="background: {{ colors[loop.index0] }}"></i>{{ b.label|trans }}<span>{{ b.count }} ({{ b.percent }}%)</span></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    {# ---- Conseils ---- #}
+    <section class="pf-card pf-card--soft pf-tips">
+        <h2 class="pf-card__title">{{ 'Conseils pour booster votre activité'|trans }}</h2>
+        <div class="pf-tips__grid">
+            <div><span class="pf-tips__icon">{{ icon.image_frame(18) }}</span><strong>{{ 'Ajoutez de nouvelles photos'|trans }}</strong><p>{{ 'Les activités avec au moins 10 photos reçoivent 3 fois plus de réservations.'|trans }}</p></div>
+            <div><span class="pf-tips__icon">{{ icon.calendar_grid(18) }}</span><strong>{{ 'Répondez aux avis'|trans }}</strong><p>{{ 'Répondez aux avis pour améliorer votre visibilité et la confiance des clients.'|trans }}</p></div>
+            <div><span class="pf-tips__icon">{{ icon.user_pin(18) }}</span><strong>{{ 'Mettez à jour vos disponibilités'|trans }}</strong><p>{{ 'Des disponibilités à jour augmentent vos chances de réservation.'|trans }}</p></div>
+        </div>
+        <a class="pf-btn pf-tips__cta" href="{{ path('app_help_center') }}">{{ 'Voir tous les conseils'|trans }}</a>
+    </section>
+{% endblock %}
+
+{% block account_aside %}
+    <section class="pf-card">
+        <div class="pf-card__head">
+            <h2 class="pf-card__title">{{ 'Activité récente'|trans }}</h2>
+            <a class="pf-link" href="{{ path('app_account_notifications') }}">{{ 'Voir tout'|trans }}</a>
+        </div>
+        {% if recent_notifications is empty %}
+            <p class="pf-muted">{{ 'Aucune activité récente.'|trans }}</p>
+        {% else %}
+            <ul class="pf-list pf-recent">
+                {% for n in recent_notifications %}
+                    <li>
+                        <span class="pf-ico pf-ico--xs pf-ico--{{ n.tone == 'yellow' ? 'orange' : n.tone }}">{% include 'account/_notification_icon.html.twig' with { name: n.icon, size: 18 } %}</span>
+                        <div class="pf-list__body">
+                            <small class="pf-recent__tag pf-recent__tag--{{ n.tone }}">{{ n.title }}</small>
+                            <strong>{{ n.detail|length > 60 ? n.detail|slice(0, 58) ~ '…' : n.detail }}</strong>
+                            <small>{{ n.time }}</small>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </section>
+
+    <section class="pf-card">
+        <div class="pf-card__head">
+            <h2 class="pf-card__title">{{ 'Prochaines réservations'|trans }}</h2>
+            <a class="pf-link" href="{{ path('app_account_history', { onglet: 'a-venir' }) }}">{{ 'Voir tout'|trans }}</a>
+        </div>
+        {% if upcoming is empty %}
+            <p class="pf-muted">{{ 'Aucune réservation à venir.'|trans }}</p>
+        {% else %}
+            <ul class="pf-list">
+                {% for r in upcoming %}
+                    <li>
+                        <span class="pf-datebox"><strong>{{ r.date|date('d') }}</strong>{{ r.date|pf_month }}</span>
+                        <div class="pf-list__body">
+                            <strong>{{ r.title }}</strong>
+                            <small>{{ r.participants }} {{ r.participants > 1 ? 'personnes'|trans : 'personne'|trans }}</small>
+                        </div>
+                        <span class="pf-timepill">{{ r.date|date('H') }}h{{ r.date|date('i') }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </section>
+
+    <section class="pf-card pf-card--soft pf-promo">
+        <h2 class="pf-card__title"><span class="pf-promo__gift">{{ icon.gift(22) }}</span>{{ 'Parrainez vos amis'|trans }}</h2>
+        <p>{{ 'Invitez vos proches et gagnez 10 € de crédit.'|trans }}<br>{{ 'Ils bénéficient aussi de 10 € de réduction !'|trans }}</p>
+        <a class="pf-btn" href="{{ path('app_account_referral') }}">{{ 'Inviter mes amis'|trans }}</a>
+    </section>
 {% endblock %}

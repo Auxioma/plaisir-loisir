@@ -1,62 +1,138 @@
 {#
-    « Mes activités » (§13.6 du CDC : J'organise / Je participe). Liste
-    d'attente et invitations reçues laissées de côté ici — elles se
-    consultent depuis la fiche de chaque activité (show.html.twig).
+    Mes activités créées — maquette docs/maquettes/profil_particulier/
+    profil_activites_particulier.jpeg (30/09).
+    Données : PrivateActivityController::myActivities().
+
+    Écarts assumés : pas de « Vues » (aucun compteur) ni de brouillons ; les
+    colonnes montrent les participants confirmés et les demandes en attente.
 #}
 {% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+{% import 'account/_ui.html.twig' as ui %}
 
-{% block title %}{{ 'Mes activités privées'|trans }}{% endblock %}
+{% block title %}{{ 'Mes activités créées'|trans }}{% endblock %}
 
 {% block account %}
-    {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Mes activités privées'|trans }],
-        title: 'Mes activités privées'|trans,
-        subtitle: 'Les sorties que vous organisez et celles que vous rejoignez.'|trans,
-    } %}
+    <header class="pf-head">
+        <div>
+            <h1 class="pf-title">{{ 'Mes activités créées'|trans }}</h1>
+            <p class="pf-sub">{{ 'Gérez toutes les activités que vous avez créées sur TrouveMoi Event.'|trans }}</p>
+        </div>
+    </header>
 
-    <div class="mb-4">
-        <a href="{{ path('app_account_private_activities_new') }}" class="btn pl-btn pl-btn--cta">
-            {{ 'Organiser une activité'|trans }}
-        </a>
+    <div class="pf-tabs-row">
+        <nav class="pf-tabs">
+            {% for key, label in {'toutes': 'Toutes mes activités', 'en-ligne': 'En ligne', 'completes': 'Complètes', 'passees': 'Passées', 'annulees': 'Annulées'} %}
+                <a class="pf-tab{{ tab == key ? ' is-active' }}" href="{{ path('app_account_private_activities', {onglet: key}) }}">{{ label|trans }}</a>
+            {% endfor %}
+        </nav>
+        <a class="pf-btn pf-btn--primary pf-btn--lg" href="{{ path('app_account_private_activities_new') }}">{{ icon.plus(18) }} {{ 'Créer une activité'|trans }}</a>
     </div>
 
-    <h2 class="h5 mb-3">{{ 'J\'organise'|trans }}</h2>
-    {% if organized is empty %}
-        {% include 'account/_empty.html.twig' with { message: 'Vous n\'organisez aucune activité pour le moment.'|trans } %}
-    {% else %}
-        <div class="list-group mb-5">
-            {% for activity in organized %}
-                <a href="{{ path('app_private_activity_show', {id: activity.id}) }}"
-                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>{{ activity.title }}</strong>
-                        <div class="text-muted small">{{ activity.category.name }}{{ activity.scheduledAt ? ' — ' ~ activity.scheduledAt|date('d/m/Y') }}</div>
-                    </div>
-                    <span class="badge rounded-pill {{ activity.status.value == 'cancelled' ? 'text-bg-danger' : (activity.status.value == 'full' ? 'text-bg-secondary' : 'text-bg-success') }}">
-                        {{ activity.status.value == 'cancelled' ? 'Annulée'|trans : (activity.status.value == 'full' ? 'Complet'|trans : 'Ouverte'|trans) }}
-                    </span>
-                </a>
-            {% endfor %}
-        </div>
-    {% endif %}
+    <div class="pf-row pf-row--5">
+        {{ ui.stat('Total des activités'|trans, counts.all, 'activités créées'|trans, '+%n% ce mois-ci'|trans({'%n%': counts.month}), 'violet', 'calendar') }}
+        {{ ui.stat('En ligne'|trans, counts.online, 'activités visibles'|trans, counts.all ? (counts.online * 100 / counts.all)|round ~ '% ' ~ 'de vos activités'|trans : '', 'green', 'check') }}
+        {{ ui.stat('Complètes'|trans, counts.full, 'plus de place'|trans, counts.all ? (counts.full * 100 / counts.all)|round ~ '% ' ~ 'de vos activités'|trans : '', 'orange', 'clock') }}
+        {{ ui.stat('Annulées'|trans, counts.cancelled, 'par vous'|trans, counts.all ? (counts.cancelled * 100 / counts.all)|round ~ '% ' ~ 'de vos activités'|trans : '', 'grey', 'doc') }}
+        {{ ui.stat('Passées'|trans, counts.past, 'terminées'|trans, '', 'red', 'x') }}
+    </div>
 
-    <h2 class="h5 mb-3">{{ 'Je participe'|trans }}</h2>
-    {% if joined is empty %}
-        {% include 'account/_empty.html.twig' with { message: 'Vous ne participez à aucune activité pour le moment.'|trans } %}
-    {% else %}
-        <div class="list-group">
-            {% for participation in joined %}
-                <a href="{{ path('app_private_activity_show', {id: participation.privateActivity.id}) }}"
-                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>{{ participation.privateActivity.title }}</strong>
-                        <div class="text-muted small">{{ participation.privateActivity.category.name }}</div>
-                    </div>
-                    <span class="badge rounded-pill {{ participation.status.value == 'accepted' ? 'text-bg-success' : (participation.status.value == 'refused' ? 'text-bg-danger' : 'text-bg-warning') }}">
-                        {{ participation.status.value == 'accepted' ? 'Confirmée'|trans : (participation.status.value == 'pending' ? 'En attente'|trans : (participation.status.value == 'waiting_list' ? 'Liste d\'attente'|trans : 'Refusée'|trans)) }}
-                    </span>
-                </a>
-            {% endfor %}
+    <form class="pf-toolbar" method="get">
+        <input type="hidden" name="onglet" value="{{ tab }}">
+        <div class="pf-search">
+            <input type="search" name="q" value="{{ query }}" placeholder="{{ 'Rechercher une activité...'|trans }}" aria-label="{{ 'Rechercher une activité'|trans }}">
+            <button type="submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(18) }}</button>
         </div>
-    {% endif %}
+        <div class="pf-select">
+            <select name="tri" onchange="this.form.submit()" aria-label="{{ 'Trier'|trans }}">
+                <option value="recentes"{{ sort == 'recentes' ? ' selected' }}>{{ 'Trier par : Plus récentes'|trans }}</option>
+                <option value="anciennes"{{ sort == 'anciennes' ? ' selected' }}>{{ 'Trier par : Plus anciennes'|trans }}</option>
+                <option value="participants"{{ sort == 'participants' ? ' selected' }}>{{ 'Trier par : Participants'|trans }}</option>
+            </select>
+        </div>
+    </form>
+
+    <div class="pf-card pf-table-wrap">
+        {% if rows is empty %}
+            <div class="pf-empty">
+                <strong>{{ query or tab != 'toutes' ? 'Aucune activité ne correspond.'|trans : 'Vous n’avez pas encore créé d’activité.'|trans }}</strong>
+                {{ 'Organisez une sortie entre particuliers et invitez vos proches.'|trans }}
+                <br><a class="pf-btn" href="{{ path('app_account_private_activities_new') }}">{{ 'Créer une activité'|trans }}</a>
+            </div>
+        {% else %}
+            <table class="pf-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'Activité'|trans }}</th>
+                        <th>{{ 'Date'|trans }}</th>
+                        <th>{{ 'Statut'|trans }}</th>
+                        <th>{{ 'Participants'|trans }}</th>
+                        <th>{{ 'Demandes'|trans }}</th>
+                        <th class="pf-table__th-actions">{{ 'Actions'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            <td>
+                                <div class="pf-table__item">
+                                    <img src="{{ asset(row.image) }}" alt="" loading="lazy">
+                                    <div><strong>{{ row.title }}</strong><small>{{ row.place ?: '—' }}</small></div>
+                                </div>
+                            </td>
+                            <td>{{ row.date|pf_date('d MMMM y') }}<small>{{ row.date ? row.date|date('H') ~ 'h' ~ row.date|date('i') : '' }}</small></td>
+                            <td>{{ ui.pill(row.statusLabel|trans, {online: 'green', full: 'orange', past: 'red', cancelled: 'grey'}[row.status]) }}</td>
+                            <td>{{ row.participants }}{{ row.capacity ? ' / ' ~ row.capacity : '' }}</td>
+                            <td>{{ row.pending }}</td>
+                            <td>
+                                <div class="pf-table__actions">
+                                    <a class="pf-iconbtn" href="{{ path('app_private_activity_show', {id: row.id}) }}" aria-label="{{ 'Voir'|trans }}" title="{{ 'Voir'|trans }}">{{ icon.eye(18) }}</a>
+                                    <a class="pf-iconbtn" href="{{ path('app_private_activity_show', {id: row.id}) }}#participants" aria-label="{{ 'Gérer les participants'|trans }}" title="{{ 'Gérer les participants'|trans }}">{{ icon.edit_square(17) }}</a>
+                                    <details class="pl-dropdown pf-kebab pf-kebab--btn">
+                                        <summary class="pf-iconbtn" aria-label="{{ 'Plus d’actions'|trans }}">{{ icon.dots(18) }}</summary>
+                                        <div class="tm-menu tm-menu--right">
+                                            <a class="tm-menu__item" href="{{ path('app_account_album_show', {id: row.id}) }}">{{ 'Voir l’album'|trans }}</a>
+                                            {% if row.status in ['online', 'full'] %}
+                                                <form method="post" action="{{ path('app_account_private_activity_cancel', {id: row.id}) }}" onsubmit="return confirm('{{ 'Annuler cette activité ? Les participants seront prévenus.'|trans|e('js') }}')">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                                    <button type="submit" class="tm-menu__item tm-menu__item--danger">{{ 'Annuler l’activité'|trans }}</button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </details>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+    {% include 'account/_pager.html.twig' with { noun: 'activités'|trans } %}
+{% endblock %}
+
+{% block account_aside %}
+    {{ ui.help('Besoin d’aide ?'|trans, [
+        {label: 'Comment créer une activité ?'|trans, href: path('app_help_center')},
+        {label: 'Comment modifier mon activité ?'|trans, href: path('app_help_center')},
+        {label: 'Comment booster ma visibilité ?'|trans, href: path('app_help_center')},
+        {label: 'Voir le guide complet'|trans, href: path('app_faq')},
+    ]) }}
+
+    <section class="pf-card pf-boost">
+        <h2 class="pf-card__title"><span class="pf-boost__ico">{{ icon.rocket(22) }}</span>{{ 'Boostez vos activités'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Augmentez la visibilité de vos activités et attirez plus de participants.'|trans }}</p>
+        <a class="pf-btn pf-btn--block" href="{{ path('app_account_private_activities_new') }}">{{ 'Créer une nouvelle activité'|trans }}</a>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Statistiques globales'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Sur l’ensemble de vos activités'|trans }}</p>
+        <ul class="pf-list pf-list--lined pf-globals">
+            <li><span class="pf-ico pf-ico--xs">{{ icon.users(16) }}</span><span class="pf-list__body"><strong>{{ 'Participants confirmés'|trans }}</strong></span><span class="pf-list__end">{{ global.participants }}</span></li>
+            <li><span class="pf-ico pf-ico--xs">{{ icon.clock(16) }}</span><span class="pf-list__body"><strong>{{ 'Demandes en attente'|trans }}</strong></span><span class="pf-list__end">{{ global.pending }}</span></li>
+            <li><span class="pf-ico pf-ico--xs pf-ico--orange">{{ icon.trend_up(16) }}</span><span class="pf-list__body"><strong>{{ 'Taux de remplissage'|trans }}</strong></span><span class="pf-list__end">{{ global.fill is null ? '—' : global.fill ~ ' %' }}</span></li>
+        </ul>
+    </section>
 {% endblock %}

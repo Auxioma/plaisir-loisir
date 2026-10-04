@@ -63,7 +63,15 @@ final class HomeLinksTest extends WebTestCase
         $echecs = [];
         foreach (array_keys($adresses) as $adresse) {
             $client->request('GET', $adresse);
-            $code = $client->getResponse()->getStatusCode();
+            $reponse = $client->getResponse();
+            $code = $reponse->getStatusCode();
+
+            // L'en-tête unique (30/09) mène aux espaces membres (favoris,
+            // album, notifications…) : pour un visiteur, être renvoyé vers la
+            // connexion EST la destination attendue, pas un lien mort.
+            if (302 === $code && '/login' === parse_url((string) $reponse->headers->get('Location'), \PHP_URL_PATH)) {
+                continue;
+            }
 
             if (200 !== $code) {
                 $echecs[] = sprintf('%s → %d', $adresse, $code);

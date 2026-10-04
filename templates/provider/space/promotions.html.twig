@@ -1,0 +1,123 @@
+{#
+    Offres & Promotions — maquette profil_Offres&Promotions_professionnel.jpeg
+    (02/10). Données : ProviderPromotionController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import 'provider/space/_ui.html.twig' as ui %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Offres & Promotions'|trans }}{% endblock %}
+
+{% set status_labels = {active: ['Active', 'green'], scheduled: ['Planifiée', 'blue'], ended: ['Terminée', 'grey'], paused: ['En pause', 'orange']} %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Offres & Promotions'|trans }} <span class="pp-title-ico">{{ icon.tag(24) }}</span></h1>
+            <p class="pf-sub">{{ 'Créez, gérez et suivez vos offres promotionnelles.'|trans }}</p>
+        </div>
+        <a class="pf-btn pf-btn--primary" href="{{ path('app_pro_promotions_new') }}">{{ icon.plus(18) }} {{ 'Créer une offre'|trans }}</a>
+    </header>
+
+    <div class="pp-tiles pp-tiles--5">
+        {{ ui.tile('Offres actives', tiles.active, 'green', 'tag', null, '+' ~ tiles.active_new ~ ' ce mois-ci') }}
+        {{ ui.tile('Offres planifiées', tiles.scheduled, 'blue', 'calendar', null, 'À venir') }}
+        {{ ui.tile('Vues totales', tiles.views|number_format(0, ',', ' '), 'blue', 'eye', null, 'sur la fiche des activités') }}
+        {{ ui.tile('Clics totaux', tiles.clicks|number_format(0, ',', ' '), 'violet', 'cursor', null, 'via le lien de l’offre') }}
+        {{ ui.tile('Réservations générées', tiles.bookings, 'orange', 'bag', null, 'pendant les offres') }}
+    </div>
+
+    <form method="get" class="pf-toolbar pp-toolbar">
+        <div class="pf-search pp-grow">
+            <input type="search" name="q" value="{{ query }}" placeholder="{{ 'Rechercher une offre…'|trans }}" aria-label="{{ 'Rechercher'|trans }}">
+            <button type="submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(18) }}</button>
+        </div>
+        <div class="pf-select">
+            <select name="statut" onchange="this.form.submit()" aria-label="{{ 'Statut'|trans }}">
+                <option value="">{{ 'Tous les statuts'|trans }}</option>
+                {% for key, s in status_labels %}<option value="{{ key }}"{{ status == key ? ' selected' }}>{{ s[0]|trans }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="pf-select">
+            <select name="activite" onchange="this.form.submit()" aria-label="{{ 'Activité'|trans }}">
+                <option value="">{{ 'Toutes les activités'|trans }}</option>
+                {% for id, title in services %}<option value="{{ id }}"{{ activity == id ? ' selected' }}>{{ title }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="pf-select">
+            <select name="tri" onchange="this.form.submit()" aria-label="{{ 'Trier'|trans }}">
+                {% for key, label in {recentes: 'Plus récentes', anciennes: 'Plus anciennes', performance: 'Plus performantes'} %}<option value="{{ key }}"{{ sort == key ? ' selected' }}>{{ label|trans }}</option>{% endfor %}
+            </select>
+        </div>
+    </form>
+
+    <section class="pf-card pf-table-wrap pp-list-card">
+        {% if rows is empty %}
+            <div class="pf-empty"><strong>{{ 'Aucune offre.'|trans }}</strong>{{ 'Créez une réduction ou une offre spéciale pour attirer plus de clients.'|trans }}<div><a class="pf-btn pf-btn--primary" href="{{ path('app_pro_promotions_new') }}">{{ 'Créer une offre'|trans }}</a></div></div>
+        {% else %}
+            <table class="pf-table pp-table">
+                <thead><tr><th>{{ 'Offre'|trans }}</th><th>{{ 'Activité'|trans }}</th><th>{{ 'Période'|trans }}</th><th>{{ 'Statut'|trans }}</th><th>{{ 'Performance'|trans }}</th><th class="pf-table__th-actions">{{ 'Actions'|trans }}</th></tr></thead>
+                <tbody>
+                    {% for r in rows %}
+                        {% set p = r.p %}
+                        <tr>
+                            <td>
+                                <div class="pp-offer">
+                                    <span class="pp-offer__img"><img src="{{ asset(p.service|pp_cover) }}" alt=""><b>{{ p.badge }}</b></span>
+                                    <div><strong>{{ p.title }}</strong><small>{{ p.subtitle ?? p.kind.label|trans }}</small></div>
+                                </div>
+                            </td>
+                            <td><strong class="pp-strong">{{ p.service ? p.service.title : 'Toutes mes activités'|trans }}</strong></td>
+                            <td>{{ p.startsAt|pf_date('d MMM y')|trim('.') }}<small>→ {{ p.endsAt|pf_date('d MMM y')|trim('.') }}</small></td>
+                            <td><span class="pf-pill pf-pill--{{ status_labels[r.status][1] }} pp-pill">{{ status_labels[r.status][0]|trans }}</span></td>
+                            <td>
+                                {% if r.status == 'scheduled' %}<span class="pf-muted">—</span>{% else %}
+                                <div class="pp-perf"><span><small>{{ 'Vues'|trans }}</small>{{ p.viewsCount }}</span><span><small>{{ 'Clics'|trans }}</small>{{ p.clicksCount }}</span><span><small>{{ 'Réservations'|trans }}</small>{{ r.bookings }}</span></div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="pf-table__actions">
+                                    <a class="pf-btn pp-btn-ghost pp-btn-sm" href="{{ path('app_pro_promotions_edit', {id: p.id}) }}">{{ 'Voir'|trans }}</a>
+                                    <details class="pl-dropdown pf-kebab">
+                                        <summary aria-label="{{ 'Actions'|trans }}">{{ icon.dots(18) }}</summary>
+                                        <div class="tm-menu tm-menu--right">
+                                            <a class="tm-menu__item" href="{{ path('app_pro_promotions_edit', {id: p.id}) }}">{{ 'Modifier'|trans }}</a>
+                                            {% if p.service and p.service.status.value == 'published' %}<a class="tm-menu__item" href="{{ path('app_activity_show', {slug: p.service.slug, offre: p.id}) }}" target="_blank" rel="noopener">{{ 'Voir sur la fiche'|trans }}</a>{% endif %}
+                                            {% for a in (r.status == 'paused' ? [['reprendre', 'Reprendre']] : (r.status in ['active', 'scheduled'] ? [['pause', 'Mettre en pause'], ['terminer', 'Terminer maintenant']] : []))|merge([['supprimer', 'Supprimer']]) %}
+                                                <form method="post" action="{{ path('app_pro_promotions_action', {id: p.id}) }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                                    <button class="tm-menu__item{{ a[0] == 'supprimer' ? ' is-danger' }}" name="action" value="{{ a[0] }}"{% if a[0] == 'supprimer' %} data-confirm="{{ 'Supprimer cette offre ?'|trans }}"{% endif %}>{{ a[1]|trans }}</button>
+                                                </form>
+                                            {% endfor %}
+                                        </div>
+                                    </details>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        <div class="pp-pad">{{ ui.pager(page, pages, rows|length, total, 'offres') }}</div>
+    </section>
+{% endblock %}
+
+{% block space_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Performance globale'|trans }}</h2>
+        <div class="pp-minitiles">
+            <div class="pp-minitile"><span class="pf-ico pf-ico--xs pf-ico--round pf-ico--blue">{{ icon.eye(16) }}</span><strong>{{ tiles.views|number_format(0, ',', ' ') }}</strong><span>{{ 'Vues totales'|trans }}</span></div>
+            <div class="pp-minitile"><span class="pf-ico pf-ico--xs pf-ico--round pf-ico--blue">{{ ico.svg('cursor', 16) }}</span><strong>{{ tiles.clicks|number_format(0, ',', ' ') }}</strong><span>{{ 'Clics totaux'|trans }}</span></div>
+            <div class="pp-minitile"><span class="pf-ico pf-ico--xs pf-ico--round pf-ico--orange">{{ ico.svg('bag', 16) }}</span><strong>{{ tiles.bookings }}</strong><span>{{ 'Réservations'|trans }}</span></div>
+            <div class="pp-minitile"><span class="pf-ico pf-ico--xs pf-ico--round pf-ico--green">{{ icon.trend_up(16) }}</span><strong>{{ tiles.conversion is not null ? tiles.conversion|number_format(1, ',') ~ '%' : '—' }}</strong><span>{{ 'Taux de conversion'|trans }}</span></div>
+        </div>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Répartition par type d’offre'|trans }}</h2>
+        {{ ui.donut(kinds, kinds_total, 'Offres au total', ['#22b35e', '#2f5be7', '#f39c12', '#8b5cf6']) }}
+    </section>
+
+    {{ ui.tips('Conseils pour vos offres', tips, 'Voir tous nos conseils', path('app_faq')) }}
+{% endblock %}

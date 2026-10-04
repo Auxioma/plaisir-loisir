@@ -1,0 +1,109 @@
+{#
+    Création / modification d'une activité (« Ajouter une activité » de la
+    maquette Mes activités). Données : ProviderActivityController::form().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ is_new ? 'Ajouter une activité'|trans : 'Modifier une activité'|trans }}{% endblock %}
+
+{% macro err(errors, key) %}{% if errors[key] is defined %}<ul><li>{{ errors[key]|trans }}</li></ul>{% endif %}{% endmacro %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <a class="pp-back" href="{{ path('app_pro_activities') }}">{{ icon.arrow_left(16) }} {{ 'Mes activités'|trans }}</a>
+            <h1 class="pf-title">{{ is_new ? 'Ajouter une activité'|trans : service.title }}</h1>
+            <p class="pf-sub">
+                {% if is_new %}{{ 'Décrivez votre activité : elle sera publiée après validation par notre équipe.'|trans }}
+                {% else %}{{ 'Statut actuel :'|trans }} <span class="pf-pill pf-pill--{{ service.status.tone }}">{{ service.status.label|trans }}</span>{% endif %}
+            </p>
+        </div>
+    </header>
+
+    <form method="post" enctype="multipart/form-data" class="pp-form" novalidate>
+        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+
+        <section class="pf-card">
+            <h2 class="pf-card__title pp-mb">{{ 'Informations principales'|trans }}</h2>
+            <div class="pf-form-grid">
+                <div class="pf-field pf-span-2">
+                    <label for="f-title">{{ 'Titre de l’activité'|trans }} *</label>
+                    <input id="f-title" name="title" value="{{ values.title }}" maxlength="180" required>
+                    {{ _self.err(errors, 'title') }}
+                </div>
+                <div class="pf-field">
+                    <label for="f-category">{{ 'Catégorie'|trans }} *</label>
+                    <select id="f-category" name="category" required>
+                        <option value="">{{ 'Choisir…'|trans }}</option>
+                        {% for c in categories %}
+                            <option value="{{ c.slug }}"{{ values.category == c.slug ? ' selected' }}>{{ c.name|trans }}</option>
+                            {% for child in c.children %}
+                                <option value="{{ child.slug }}"{{ values.category == child.slug ? ' selected' }}>&nbsp;&nbsp;— {{ child.name|trans }}</option>
+                            {% endfor %}
+                        {% endfor %}
+                    </select>
+                    {{ _self.err(errors, 'category') }}
+                </div>
+                <div class="pf-field">
+                    <label for="f-price">{{ 'Prix par personne (€)'|trans }} *</label>
+                    <input id="f-price" name="price" inputmode="decimal" value="{{ values.price }}" placeholder="45.00" required>
+                    {{ _self.err(errors, 'price') }}
+                </div>
+                <div class="pf-field pf-span-2">
+                    <label for="f-short">{{ 'Accroche'|trans }}</label>
+                    <input id="f-short" name="shortDescription" value="{{ values.shortDescription }}" maxlength="255" placeholder="{{ 'Une phrase qui donne envie'|trans }}">
+                </div>
+                <div class="pf-field pf-span-2">
+                    <label for="f-desc">{{ 'Description'|trans }} *</label>
+                    <textarea id="f-desc" name="description" rows="6" required>{{ values.description }}</textarea>
+                    {{ _self.err(errors, 'description') }}
+                </div>
+            </div>
+        </section>
+
+        <section class="pf-card">
+            <h2 class="pf-card__title pp-mb">{{ 'Lieu et déroulé'|trans }}</h2>
+            <div class="pf-form-grid">
+                <div class="pf-field"><label for="f-city">{{ 'Ville'|trans }}</label><input id="f-city" name="city" value="{{ values.city }}"></div>
+                <div class="pf-field"><label for="f-place">{{ 'Lieu affiché (région, site)'|trans }}</label><input id="f-place" name="placeLabel" value="{{ values.placeLabel }}" placeholder="Alpes"></div>
+                <div class="pf-field"><label for="f-address">{{ 'Adresse'|trans }}</label><input id="f-address" name="address" value="{{ values.address }}"></div>
+                <div class="pf-field"><label for="f-cp">{{ 'Code postal'|trans }}</label><input id="f-cp" name="postalCode" value="{{ values.postalCode }}" maxlength="10"></div>
+                <div class="pf-field"><label for="f-duration">{{ 'Durée (minutes)'|trans }}</label><input id="f-duration" type="number" min="5" step="5" name="durationMinutes" value="{{ values.durationMinutes }}"></div>
+                <div class="pf-field"><label for="f-capacity">{{ 'Places par séance'|trans }}</label><input id="f-capacity" type="number" min="1" name="capacity" value="{{ values.capacity }}"></div>
+                <div class="pf-field"><label for="f-age">{{ 'Âge minimum'|trans }}</label><input id="f-age" type="number" min="0" name="minimumAge" value="{{ values.minimumAge }}"></div>
+                <div class="pf-field"><label for="f-meeting">{{ 'Point de rendez-vous'|trans }}</label><input id="f-meeting" name="meetingPoint" value="{{ values.meetingPoint }}"></div>
+                <div class="pf-field pf-span-2"><label for="f-included">{{ 'Ce qui est inclus'|trans }}</label><textarea id="f-included" name="included" rows="3">{{ values.included }}</textarea></div>
+            </div>
+        </section>
+
+        <section class="pf-card">
+            <h2 class="pf-card__title pp-mb">{{ 'Photos'|trans }}</h2>
+            <div class="pp-photos">
+                {% if cover %}<img src="{{ asset(cover) }}" alt="{{ 'Photo principale actuelle'|trans }}">{% endif %}
+                <div class="pf-form-grid">
+                    <div class="pf-field">
+                        <label for="f-cover">{{ cover ? 'Remplacer la photo principale'|trans : 'Photo principale'|trans }}</label>
+                        <input id="f-cover" type="file" name="cover" accept="image/jpeg,image/png,image/webp">
+                        {{ _self.err(errors, 'cover') }}
+                    </div>
+                    <div class="pf-field">
+                        <label for="f-gallery">{{ 'Ajouter des photos à la galerie'|trans }}</label>
+                        <input id="f-gallery" type="file" name="gallery[]" multiple accept="image/jpeg,image/png,image/webp">
+                    </div>
+                </div>
+            </div>
+            <p class="pf-muted pp-hint">{{ 'JPEG, PNG ou WebP, 6 Mo maximum par image.'|trans }}</p>
+        </section>
+
+        <div class="pp-form__actions">
+            <a class="pf-btn pp-btn-ghost" href="{{ path('app_pro_activities') }}">{{ 'Annuler'|trans }}</a>
+            <button class="pf-btn" type="submit" name="intent" value="brouillon">{{ 'Enregistrer en brouillon'|trans }}</button>
+            {% if is_new or service.status.value in ['draft', 'archived'] %}
+                <button class="pf-btn pf-btn--primary" type="submit" name="intent" value="soumettre">{{ 'Enregistrer et envoyer en validation'|trans }}</button>
+            {% else %}
+                <button class="pf-btn pf-btn--primary" type="submit" name="intent" value="enregistrer">{{ 'Enregistrer les modifications'|trans }}</button>
+            {% endif %}
+        </div>
+    </form>
+{% endblock %}

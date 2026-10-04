@@ -1,0 +1,16 @@
+{#
+    Cœur « favori » des cartes de l'univers Event (assets/favorites.js).
+    Variables : type ('evenement', 'groupe', 'activite-privee',
+    'organisateur'), key (slug ou identifiant), class (classe du bouton).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+{% set on = is_favorite(type, key) %}
+<button type="button" class="{{ class|default('evn-card__fav') }}{{ on ? ' is-active' }}"
+        aria-pressed="{{ on ? 'true' : 'false' }}"
+        aria-label="{{ (on ? 'Retirer des favoris' : 'Ajouter aux favoris')|trans }}"
+        data-favorite-slug="{{ key }}"
+        data-favorite-type="{{ type }}"
+        data-favorite-url="{{ path('app_favorite_toggle') }}"
+        data-favorite-token="{{ csrf_token('submit') }}"
+        data-favorite-label-on="{{ 'Retirer des favoris'|trans }}"
+        data-favorite-label-off="{{ 'Ajouter aux favoris'|trans }}">{{ on ? icon.heart_solid(16) : icon.heart(16) }}</button>

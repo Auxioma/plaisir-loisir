@@ -167,7 +167,7 @@ final class LegalPagesTest extends WebTestCase
             '/mentions-legales',
         ];
 
-        $liens = $crawler->filter('.pl-footer a')->each(static fn ($noeud): string => (string) $noeud->attr('href'));
+        $liens = $crawler->filter('.tm-footer a')->each(static fn ($noeud): string => (string) $noeud->attr('href'));
 
         foreach ($attendus as $attendu) {
             self::assertContains($attendu, $liens, sprintf('Le pied de page ne mène pas à %s.', $attendu));

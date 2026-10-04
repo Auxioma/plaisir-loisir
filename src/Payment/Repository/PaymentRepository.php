@@ -6,6 +6,8 @@ namespace App\Payment\Repository;
 
 use App\Booking\Entity\Booking;
 use App\Payment\Entity\Payment;
+use App\Provider\Entity\ProviderProfile;
+use App\User\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -31,5 +33,44 @@ class PaymentRepository extends ServiceEntityRepository
     public function findOneByReference(string $reference): ?Payment
     {
         return $this->findOneBy(['reference' => $reference]);
+    }
+
+    /**
+     * Paiements des réservations d'un client, du plus récent au plus ancien
+     * (écran « Paiements et abonnements » de l'espace compte).
+     *
+     * @return list<Payment>
+     */
+    public function findByClient(User $client): array
+    {
+        /** @var list<Payment> $payments */
+        $payments = $this->createQueryBuilder('p')
+            ->join('p.booking', 'b')
+            ->addSelect('b')
+            ->andWhere('b.client = :client')
+            ->setParameter('client', $client->getId(), 'ulid')
+            ->orderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        return $payments;
+    }
+
+    /**
+     * Paiements des réservations d'un professionnel (« Revenus & Paiements »).
+     *
+     * @return list<Payment>
+     */
+    public function findForProvider(ProviderProfile $provider): array
+    {
+        return $this->createQueryBuilder('p')
+            ->innerJoin('p.booking', 'b')->addSelect('b')
+            ->innerJoin('b.service', 's')->addSelect('s')
+            ->innerJoin('b.client', 'c')->addSelect('c')
+            ->andWhere('s.provider = :provider')
+            ->setParameter('provider', $provider->getId(), 'ulid')
+            ->orderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

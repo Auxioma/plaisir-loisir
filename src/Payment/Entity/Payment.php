@@ -42,6 +42,10 @@ class Payment
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $reference = null;
 
+    /** Moyen de paiement utilisé : card | paypal | transfer (02/10, « Revenus & Paiements »). */
+    #[ORM\Column(length: 20, options: ['default' => 'card'])]
+    private string $method = 'card';
+
     public function getBooking(): ?Booking
     {
         return $this->booking;
@@ -98,6 +102,18 @@ class Payment
     public function setReference(?string $reference): static
     {
         $this->reference = $reference;
+
+        return $this;
+    }
+
+    public function getMethod(): string
+    {
+        return $this->method;
+    }
+
+    public function setMethod(string $method): static
+    {
+        $this->method = \in_array($method, ['card', 'paypal', 'transfer'], true) ? $method : 'card';
 
         return $this;
     }

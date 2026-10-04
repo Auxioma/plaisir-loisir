@@ -34,4 +34,17 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
     }
+
+    /**
+     * Comptes administrateurs (notifications de l'équipe : tickets support…).
+     *
+     * @return list<User>
+     */
+    public function findAdmins(): array
+    {
+        $ids = $this->getEntityManager()->getConnection()
+            ->fetchFirstColumn('SELECT id FROM "user" WHERE CAST(roles AS TEXT) LIKE :role', ['role' => '%ROLE_ADMIN%']);
+
+        return [] === $ids ? [] : $this->findBy(['id' => $ids]);
+    }
 }

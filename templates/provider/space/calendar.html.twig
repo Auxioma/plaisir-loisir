@@ -1,0 +1,172 @@
+{#
+    Calendrier — maquette profil_calendrier_professionnel.jpeg (02/10).
+    Données : ProviderCalendarController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Calendrier'|trans }}{% endblock %}
+
+{% macro session(s, compact = false) %}
+    <div class="pp-session pp-session--{{ s.state }}">
+        <span class="pp-session__time">{{ s.start|date('H:i') }}</span>
+        <strong>{{ s.service.title }}</strong>
+        {% if not compact %}<span>{{ s.service.city ?? s.service.placeLabel }}</span>{% endif %}
+        {% if s.capacity and s.taken >= s.capacity %}
+            <em class="is-full">{{ 'Complet'|trans }}</em>
+        {% else %}
+            <span>{{ s.taken }}{% if s.capacity %} / {{ s.capacity }}{% endif %} {{ 'places'|trans }}</span>
+        {% endif %}
+        {% if s.slot and s.taken == 0 %}
+            <form method="post" action="{{ path('app_pro_calendar_slot_delete', {id: s.slot}) }}" class="pp-session__del">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                <button aria-label="{{ 'Fermer ce créneau'|trans }}" title="{{ 'Fermer ce créneau'|trans }}" data-confirm="{{ 'Fermer ce créneau ?'|trans }}">{{ icon.x(12) }}</button>
+            </form>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Calendrier'|trans }} <span class="pp-title-ico">{{ icon.calendar_grid(24) }}</span></h1>
+            <p class="pf-sub">{{ 'Visualisez et gérez votre planning en un coup d’œil.'|trans }}</p>
+        </div>
+        <div class="pp-head__actions">
+            <nav class="pp-seg" aria-label="{{ 'Vue'|trans }}">
+                {% for key, label in {mois: 'Mois', semaine: 'Semaine', jour: 'Jour'} %}
+                    <a class="{{ view == key ? 'is-active' }}" href="{{ path('app_pro_calendar', {vue: key, date: date|date('Y-m-d')}) }}">{{ label|trans }}</a>
+                {% endfor %}
+            </nav>
+            <details class="pl-dropdown pf-kebab">
+                <summary class="pf-btn pf-btn--primary">{{ icon.plus(18) }} {{ 'Ajouter une activité'|trans }} {{ icon.chevron_down(16) }}</summary>
+                <div class="tm-menu tm-menu--right">
+                    <a class="tm-menu__item" href="#pp-slot" data-pp-open="pp-slot">{{ icon.clock(16) }} {{ 'Ouvrir un créneau'|trans }}</a>
+                    <a class="tm-menu__item" href="{{ path('app_pro_activities_new') }}">{{ icon.edit_square(16) }} {{ 'Créer une nouvelle activité'|trans }}</a>
+                </div>
+            </details>
+        </div>
+    </header>
+
+    <div class="pp-cal-nav">
+        <a class="pf-iconbtn" href="{{ path('app_pro_calendar', {vue: view, date: prev|date('Y-m-d')}) }}" aria-label="{{ 'Précédent'|trans }}">{{ icon.chevron_left(18) }}</a>
+        <a class="pf-iconbtn" href="{{ path('app_pro_calendar', {vue: view, date: next|date('Y-m-d')}) }}" aria-label="{{ 'Suivant'|trans }}">{{ icon.chevron_right(18) }}</a>
+        <a class="pf-btn pp-btn-ghost" href="{{ path('app_pro_calendar', {vue: view}) }}">{{ 'Aujourd’hui'|trans }}</a>
+        <form method="get" class="pp-cal-title">
+            <input type="hidden" name="vue" value="{{ view }}">
+            <label class="visually-hidden" for="pp-month">{{ 'Aller à'|trans }}</label>
+            <h2>
+                {% if view == 'jour' %}{{ date|pf_date('EEEE d MMMM y')|capitalize }}
+                {% elseif view == 'semaine' %}{{ 'Semaine du'|trans }} {{ (days|first).date|pf_date('d MMM')|trim('.') }} {{ 'au'|trans }} {{ (days|last).date|pf_date('d MMM y')|trim('.') }}
+                {% else %}{{ date|pf_date('MMMM y')|capitalize }}{% endif %}
+            </h2>
+            <input id="pp-month" type="date" name="date" value="{{ date|date('Y-m-d') }}" onchange="this.form.submit()">
+        </form>
+    </div>
+
+    {% if view == 'mois' %}
+        <div class="pp-cal" role="grid">
+            {% for d in ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'] %}<div class="pp-cal__dow" role="columnheader">{{ d|trans }}</div>{% endfor %}
+            {% for key, day in days %}
+                <div class="pp-cal__day{{ day.date|date('m') != date|date('m') ? ' is-out' }}{{ key == 'now'|date('Y-m-d') ? ' is-today' }}" role="gridcell">
+                    <a class="pp-cal__num" href="{{ path('app_pro_calendar', {vue: 'jour', date: key}) }}">{{ day.date|date('j') }}</a>
+                    {% for s in day.sessions|slice(0, 2) %}{{ _self.session(s) }}{% endfor %}
+                    {% if day.sessions|length > 2 %}<a class="pp-cal__more" href="{{ path('app_pro_calendar', {vue: 'jour', date: key}) }}">+{{ day.sessions|length - 2 }} {{ 'autres'|trans }}</a>{% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% elseif view == 'semaine' %}
+        <div class="pp-week">
+            {% for key, day in days %}
+                <div class="pp-week__col{{ key == 'now'|date('Y-m-d') ? ' is-today' }}">
+                    <a class="pp-week__head" href="{{ path('app_pro_calendar', {vue: 'jour', date: key}) }}">{{ day.date|pf_date('EEE')|trim('.')|capitalize }} <strong>{{ day.date|date('j') }}</strong></a>
+                    {% for s in day.sessions %}{{ _self.session(s) }}{% else %}<p class="pf-muted pp-week__empty">—</p>{% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        {% set sessions = (days|first).sessions %}
+        <section class="pf-card pp-dayview">
+            {% for h in hours %}
+                {% set at = sessions|filter(s => s.start|date('G') == h) %}
+                <div class="pp-dayview__row">
+                    <span class="pp-dayview__h">{{ '%02d'|format(h) }}:00</span>
+                    <div class="pp-dayview__slots">{% for s in at %}{{ _self.session(s) }}{% endfor %}</div>
+                </div>
+            {% endfor %}
+            {% if sessions|filter(s => s.start|date('G') < hours|first or s.start|date('G') > hours|last) is not empty %}
+                <div class="pp-dayview__row"><span class="pp-dayview__h">{{ 'Autres'|trans }}</span><div class="pp-dayview__slots">{% for s in sessions|filter(s => s.start|date('G') < hours|first or s.start|date('G') > hours|last) %}{{ _self.session(s) }}{% endfor %}</div></div>
+            {% endif %}
+        </section>
+    {% endif %}
+
+    <dialog id="pp-slot" class="pp-dialog" aria-labelledby="pp-slot-title">
+        <form method="post" action="{{ path('app_pro_calendar_slot') }}" class="pp-dialog__body">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+            <input type="hidden" name="vue" value="{{ view }}">
+            <h2 id="pp-slot-title" class="pf-card__title">{{ 'Ouvrir un créneau'|trans }}</h2>
+            {% if services is empty %}
+                <p class="pf-muted">{{ 'Créez d’abord une activité pour pouvoir ouvrir des créneaux.'|trans }}</p>
+                <a class="pf-btn pf-btn--primary" href="{{ path('app_pro_activities_new') }}">{{ 'Créer une activité'|trans }}</a>
+            {% else %}
+                <div class="pf-form-grid">
+                    <div class="pf-field pf-span-2">
+                        <label for="slot-service">{{ 'Activité'|trans }}</label>
+                        <select id="slot-service" name="service" required>{% for s in services %}<option value="{{ s.id }}">{{ s.title }}</option>{% endfor %}</select>
+                    </div>
+                    <div class="pf-field"><label for="slot-date">{{ 'Date'|trans }}</label><input id="slot-date" type="date" name="date" value="{{ date|date('Y-m-d') }}" required></div>
+                    <div class="pf-field"><label for="slot-capacity">{{ 'Places'|trans }}</label><input id="slot-capacity" type="number" min="1" name="capacity" value="{{ (services|first).capacity ?? 8 }}" required></div>
+                    <div class="pf-field"><label for="slot-start">{{ 'Début'|trans }}</label><input id="slot-start" type="time" name="start" value="10:00" required></div>
+                    <div class="pf-field"><label for="slot-end">{{ 'Fin'|trans }}</label><input id="slot-end" type="time" name="end" value="12:00" required></div>
+                </div>
+                <div class="pp-form__actions">
+                    <button type="button" class="pf-btn pp-btn-ghost" data-pp-close>{{ 'Annuler'|trans }}</button>
+                    <button class="pf-btn pf-btn--primary">{{ 'Ouvrir le créneau'|trans }}</button>
+                </div>
+            {% endif %}
+        </form>
+    </dialog>
+{% endblock %}
+
+{% block space_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Activités à venir'|trans }}</h2>
+        {% if upcoming is empty %}
+            <p class="pf-muted">{{ 'Aucune séance planifiée.'|trans }}</p>
+        {% else %}
+            <ul class="pf-list pf-list--lined pp-upcoming">
+                {% for s in upcoming %}
+                    <li>
+                        <span class="pf-datebox">{% if s.start|date('Y-m-d') == 'now'|date('Y-m-d') %}<strong class="pp-today">{{ 'AUJ.'|trans }}</strong>{% else %}<strong>{{ s.start|date('d') }}</strong>{{ s.start|pf_month }}{% endif %}</span>
+                        <span class="pp-upcoming__time">{{ s.start|date('H:i') }}</span>
+                        <div class="pf-list__body"><strong>{{ s.service.title }}</strong><small>{{ s.service.city ?? s.service.placeLabel }}</small></div>
+                        <span class="pp-upcoming__seats">{{ icon.users(14) }} {{ s.taken }}{% if s.capacity %} / {{ s.capacity }}{% endif %}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <a class="pf-link pp-arrow" href="{{ path('app_pro_calendar', {vue: 'semaine'}) }}">{{ 'Voir tout le planning'|trans }} {{ icon.arrow_right(16) }}</a>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Aperçu du mois'|trans }}</h2>
+        <dl class="pp-kvs">
+            <div><dt>{{ icon.calendar_grid(16) }} {{ 'Total des réservations'|trans }}</dt><dd>{{ month.total }}</dd></div>
+            <div><dt class="is-green">{{ icon.check_badge(16) }} {{ 'Réservations confirmées'|trans }}</dt><dd class="is-green">{{ month.confirmed }}</dd></div>
+            <div><dt class="is-orange">{{ icon.clock(16) }} {{ 'En attente'|trans }}</dt><dd class="is-orange">{{ month.pending }}</dd></div>
+            <div><dt class="is-red">{{ icon.ban(16) }} {{ 'Annulées'|trans }}</dt><dd class="is-red">{{ month.cancelled }}</dd></div>
+        </dl>
+        <a class="pf-link pp-arrow pp-center" href="{{ path('app_pro_stats') }}">{{ ico.svg('chart', 16) }} {{ 'Voir les statistiques détaillées'|trans }} {{ icon.arrow_right(16) }}</a>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Légende'|trans }}</h2>
+        <ul class="pp-legend-list">
+            <li><i class="is-confirmed"></i>{{ 'Activité confirmée'|trans }}</li>
+            <li><i class="is-pending"></i>{{ 'Activité en attente'|trans }}</li>
+            <li><i class="is-cancelled"></i>{{ 'Activité annulée'|trans }}</li>
+            <li><i class="is-open"></i>{{ 'Créneau ouvert, sans réservation'|trans }}</li>
+        </ul>
+    </section>
+{% endblock %}

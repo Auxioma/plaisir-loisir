@@ -1,0 +1,30 @@
+{#
+    Gabarit de l'espace professionnel — maquettes docs/maquettes/
+    profil_professionnel (02/10) : sidebar bleu nuit (12 entrées + encart
+    « Développez votre visibilité »), colonne principale, colonne d'encarts
+    facultative (`space_aside`). Même coquille que l'espace particulier
+    (account/_layout, classes .pf-*), teinte bleue propre au pro (.pp).
+    Styles : assets/styles/pro.css.
+
+    Variables : user, menu, active, provider.
+#}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+{% set aside = block('space_aside') is defined ? block('space_aside')|trim : '' %}
+<div class="pf pp">
+    <aside class="pf-side">
+        <div class="pf-side__scroll">
+            {% include 'provider/space/_sidebar.html.twig' %}
+        </div>
+    </aside>
+    <div class="pf-main{{ aside ? ' pf-main--aside' }}">
+        <div class="pf-content">
+            {% block space %}{% endblock %}
+        </div>
+        {% if aside %}
+            <aside class="pf-aside">{{ aside|raw }}</aside>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

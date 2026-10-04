@@ -1,0 +1,148 @@
+{#
+    Avis & Évaluations — maquette profil_Avis&Evaluations_professionnel.jpeg
+    (02/10). Données : ProviderReviewController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import 'provider/space/_ui.html.twig' as ui %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Avis & Évaluations'|trans }}{% endblock %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Avis & Évaluations'|trans }} <span class="pp-title-ico">{{ icon.star(24) }}</span></h1>
+            <p class="pf-sub">{{ 'Consultez et gérez les avis laissés par vos clients.'|trans }}</p>
+        </div>
+    </header>
+
+    {% set base = max(counts.tous, 1) %}
+    <div class="pp-tiles pp-tiles--5">
+        <article class="pf-card pp-tile">
+            <span class="pf-ico pf-ico--sm pp-ico-plain is-orange">{{ icon.star_solid(26) }}</span>
+            <div class="pp-tile__body">
+                <span class="pp-tile__value">{{ average is not null ? average|number_format(1, ',') : '—' }}<small> / 5</small></span>
+                <span class="pp-tile__label">{{ 'Note moyenne'|trans }}</span>
+                {% if average_delta is not null %}<span class="pp-tile__note pp-delta{{ average_delta < 0 ? ' is-down' }}">{{ average_delta >= 0 ? '+' }}{{ average_delta|number_format(1, ',') }} {{ 'vs mois dernier'|trans }}</span>{% endif %}
+            </div>
+        </article>
+        <article class="pf-card pp-tile">
+            <span class="pf-ico pf-ico--sm pf-ico--round pf-ico--blue">{{ icon.comment(22) }}</span>
+            <div class="pp-tile__body"><span class="pp-tile__value">{{ counts.tous }}</span><span class="pp-tile__label">{{ 'Avis reçus'|trans }}</span><span class="pp-tile__note pp-delta">+{{ this_month }} {{ 'ce mois-ci'|trans }}</span></div>
+        </article>
+        <article class="pf-card pp-tile">
+            <span class="pf-ico pf-ico--sm pf-ico--round pf-ico--green">{{ icon.thumbs_up(22) }}</span>
+            <div class="pp-tile__body"><span class="pp-tile__value">{{ counts.positifs }}</span><span class="pp-tile__label">{{ 'Avis positifs'|trans }}</span><span class="pp-tile__note pp-delta">{{ (counts.positifs / base * 100)|round }}%</span></div>
+        </article>
+        <article class="pf-card pp-tile">
+            <span class="pf-ico pf-ico--sm pf-ico--round pf-ico--orange">{{ ico.svg('neutral', 22) }}</span>
+            <div class="pp-tile__body"><span class="pp-tile__value">{{ counts.neutres }}</span><span class="pp-tile__label">{{ 'Avis neutres'|trans }}</span><span class="pp-tile__note pp-delta">{{ (counts.neutres / base * 100)|round }}%</span></div>
+        </article>
+        <article class="pf-card pp-tile">
+            <span class="pf-ico pf-ico--sm pf-ico--round pf-ico--red">{{ ico.svg('thumb_down', 22) }}</span>
+            <div class="pp-tile__body"><span class="pp-tile__value">{{ counts.negatifs }}</span><span class="pp-tile__label">{{ 'Avis négatifs'|trans }}</span><span class="pp-tile__note pp-delta">{{ (counts.negatifs / base * 100)|round }}%</span></div>
+        </article>
+    </div>
+
+    <nav class="pf-tabs-row" aria-label="{{ 'Filtrer les avis'|trans }}">
+        <div class="pf-tabs">
+            {% for key, label in {tous: 'Tous les avis', positifs: 'Avis positifs', neutres: 'Avis neutres', negatifs: 'Avis négatifs'} %}
+                <a class="pf-tab{{ tab == key ? ' is-active' }}" href="{{ path('app_pro_reviews', {onglet: key}) }}">{{ label|trans }} ({{ counts[key] }})</a>
+            {% endfor %}
+        </div>
+        <a class="pf-link" href="{{ path('app_pro_reviews_export') }}">{{ icon.download(16) }} {{ 'Exporter'|trans }}</a>
+    </nav>
+
+    <form method="get" class="pf-toolbar pp-toolbar">
+        <input type="hidden" name="onglet" value="{{ tab }}">
+        <div class="pf-search pp-grow">
+            <input type="search" name="q" value="{{ query }}" placeholder="{{ 'Rechercher un avis, un client, une activité…'|trans }}" aria-label="{{ 'Rechercher'|trans }}">
+            <button type="submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(18) }}</button>
+        </div>
+        <div class="pf-select">
+            <select name="activite" onchange="this.form.submit()" aria-label="{{ 'Activité'|trans }}">
+                <option value="">{{ 'Toutes activités'|trans }}</option>
+                {% for id, title in services %}<option value="{{ id }}"{{ activity == id ? ' selected' }}>{{ title }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="pf-select">
+            <select name="note" onchange="this.form.submit()" aria-label="{{ 'Note'|trans }}">
+                <option value="">{{ 'Toutes notes'|trans }}</option>
+                {% for n in 5..1 %}<option value="{{ n }}"{{ note == n ? ' selected' }}>{{ n }} ★</option>{% endfor %}
+            </select>
+        </div>
+        <div class="pf-select">
+            <select name="tri" onchange="this.form.submit()" aria-label="{{ 'Trier'|trans }}">
+                {% for key, label in {recents: 'Plus récents', anciens: 'Plus anciens', meilleurs: 'Meilleures notes', 'moins-bons': 'Notes les plus basses', 'sans-reponse': 'Sans réponse d’abord'} %}
+                    <option value="{{ key }}"{{ sort == key ? ' selected' }}>{{ label|trans }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+    <section class="pf-card pp-list-card">
+        {% if rows is empty %}
+            <div class="pf-empty"><strong>{{ 'Aucun avis pour le moment.'|trans }}</strong>{{ 'Les avis de vos clients apparaîtront ici après leurs activités.'|trans }}</div>
+        {% else %}
+            <ul class="pp-reviews">
+                {% for r in rows %}
+                    <li class="pp-review">
+                        {{ ui.avatar(r.author, 48) }}
+                        <div class="pp-review__main">
+                            <div class="pp-review__who">
+                                <strong>{{ r.author.firstName }} {{ r.author.lastName|first }}.</strong>
+                                {% if r.booking or r.quote %}<span class="pf-pill pf-pill--green">{{ 'Client vérifié'|trans }}</span>{% endif %}
+                            </div>
+                            <small class="pf-muted">{% if r.booking %}{{ 'Réservation'|trans }} #{{ r.booking.reference }} · {% endif %}{{ r.createdAt|pf_date('d MMM y')|trim('.') }}</small>
+                            <div class="pp-review__rating">{{ ui.stars(r.rating) }} <strong>{{ r.rating }}/5</strong></div>
+                            {% if r.comment %}<p>{{ r.comment }}</p>{% endif %}
+                            {% if r.providerReply %}
+                                <div class="pp-review__reply"><strong>{{ 'Votre réponse'|trans }}</strong> · <small>{{ r.repliedAt|date('d/m/Y') }}</small><p>{{ r.providerReply }}</p></div>
+                            {% endif %}
+                            <details class="pp-review__form"{% if not r.providerReply %} data-pp-reply{% endif %}>
+                                <summary class="visually-hidden">{{ 'Répondre'|trans }}</summary>
+                                <form method="post" action="{{ path('app_pro_reviews_reply', {id: r.id}) }}" id="reply-{{ r.id }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                    <label class="visually-hidden" for="rep-{{ r.id }}">{{ 'Votre réponse publique'|trans }}</label>
+                                    <textarea id="rep-{{ r.id }}" name="reponse" rows="3" required placeholder="{{ 'Votre réponse publique…'|trans }}">{{ r.providerReply }}</textarea>
+                                    <button class="pf-btn pf-btn--primary">{{ r.providerReply ? 'Modifier la réponse'|trans : 'Publier la réponse'|trans }}</button>
+                                </form>
+                            </details>
+                        </div>
+                        <div class="pp-review__activity">
+                            {% if r.service %}<strong>{{ r.service.title }}</strong><small>{{ r.service.city ?? r.service.placeLabel }}</small>{% endif %}
+                        </div>
+                        <div class="pp-review__side">
+                            <small>{{ r.createdAt|pf_date('d MMM y')|trim('.') }}</small>
+                            <button type="button" class="pf-btn pp-btn-ghost pp-btn-sm" data-pp-toggle-reply>{{ r.providerReply ? 'Modifier'|trans : 'Répondre'|trans }} {{ icon.arrow_left(14) }}</button>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {{ ui.pager(page, pages, rows|length, total, 'avis') }}
+    </section>
+{% endblock %}
+
+{% block space_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Répartition des notes'|trans }}</h2>
+        <ul class="pp-dist">
+            {% for stars, d in distribution %}
+                <li><a href="{{ path('app_pro_reviews', {note: stars}) }}"><span>{{ stars }} {{ icon.star_solid(13) }}</span><span class="pp-bar pp-bar--gold"><i style="width: {{ d.percent }}%"></i></span><span>{{ d.count }} ({{ d.percent }}%)</span></a></li>
+            {% endfor %}
+        </ul>
+        <a class="pf-link pp-arrow pp-center" href="{{ path('app_pro_stats') }}">{{ ico.svg('chart', 16) }} {{ 'Voir toutes les statistiques'|trans }} {{ icon.arrow_right(16) }}</a>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title pp-mb">{{ 'Évolution de la note moyenne'|trans }}</h2>
+        {% set values = evolution|map(e => e.value ?? 0) %}
+        {% set labels = evolution|map(e => e.label|pf_date('MMM')|trim('.')|capitalize) %}
+        {{ ui.line([{values: values, color: '#2f5be7'}], labels, '', 120) }}
+        <a class="pf-link pp-arrow pp-center" href="{{ path('app_pro_reviews_export') }}">{{ ico.svg('chart', 16) }} {{ 'Exporter le rapport détaillé'|trans }} {{ icon.arrow_right(16) }}</a>
+    </section>
+
+    {{ ui.tips('Conseils pour plus d’avis', tips, 'Voir tous nos conseils', path('app_faq')) }}
+{% endblock %}

@@ -32,8 +32,8 @@ final class ActivityPublishingService
             throw new \InvalidArgumentException('Seul un annonceur vérifié peut publier une activité.');
         }
 
-        if (ServiceStatus::Draft !== $service->getStatus()) {
-            throw new \InvalidArgumentException('Seule une activité en brouillon peut être publiée.');
+        if (!\in_array($service->getStatus(), [ServiceStatus::Draft, ServiceStatus::Pending], true)) {
+            throw new \InvalidArgumentException('Seule une activité en brouillon ou en attente peut être publiée.');
         }
 
         $service->setStatus(ServiceStatus::Published);
@@ -43,6 +43,43 @@ final class ActivityPublishingService
     /**
      * Retire une activité du catalogue (archived).
      */
+    /**
+     * Le professionnel soumet son activité : elle passe « En attente » de
+     * validation par l'équipe (back-office, action « Valider »). Même double
+     * verrou que publish() : seul un annonceur vérifié peut soumettre.
+     */
+    public function submit(Service $service): void
+    {
+        $provider = $service->getProvider();
+        if (null === $provider || ProviderStatus::Verified !== $provider->getStatus()) {
+            throw new \InvalidArgumentException('Votre compte professionnel doit être vérifié avant de publier une activité.');
+        }
+
+        if (!\in_array($service->getStatus(), [ServiceStatus::Draft, ServiceStatus::Archived], true)) {
+            throw new \InvalidArgumentException('Seule une activité en brouillon peut être soumise.');
+        }
+
+        $service->setStatus(ServiceStatus::Pending);
+        $this->entityManager->flush();
+    }
+
+    /** Repasse une activité en brouillon (retrait de la publication par le professionnel). */
+    public function unpublish(Service $service): void
+    {
+        if (ServiceStatus::Suspended === $service->getStatus()) {
+            throw new \InvalidArgumentException('Une activité suspendue par l\'équipe ne peut pas être modifiée.');
+        }
+
+        $service->setStatus(ServiceStatus::Draft);
+        $this->entityManager->flush();
+    }
+
+    public function suspend(Service $service): void
+    {
+        $service->setStatus(ServiceStatus::Suspended);
+        $this->entityManager->flush();
+    }
+
     public function archive(Service $service): void
     {
         $service->setStatus(ServiceStatus::Archived);

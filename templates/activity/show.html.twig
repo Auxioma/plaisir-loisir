@@ -180,6 +180,10 @@
         {# --- Panneau de réservation sticky (spec §F). --- #}
         <aside class="act-booking" aria-label="{{ 'Réserver cette activité'|trans }}">
             <div class="act-booking__panel" data-booking data-price="{{ detail.price }}">
+                {# Offre en cours du professionnel (espace pro « Offres & Promotions », 02/10). #}
+                {% if promotion is defined and promotion %}
+                    <p class="act-booking__promo"><b>{{ promotion.badge }}</b> {{ promotion.title }}{% if promotion.subtitle %} — {{ promotion.subtitle }}{% endif %}<small>{{ 'Jusqu’au'|trans }} {{ promotion.endsAt|date('d/m/Y') }}</small></p>
+                {% endif %}
                 <p class="act-booking__price">{{ 'À partir de'|trans }} <strong>{{ detail.price }}€</strong> / {{ 'personne'|trans }}</p>
 
                 <label class="act-booking__field">

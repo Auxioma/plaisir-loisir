@@ -1,0 +1,27 @@
+{#
+    Séparateur « ou » + connexion sociale (maquette connexion_particulier).
+    Un fournisseur non configuré (identifiants « test- ») reste affiché mais
+    inactif. Les libellés sont écrits en toutes lettres : ce sont les clés du
+    catalogue de traduction.
+#}
+{% set social_buttons = [
+    { service: 'google',   label: 'Continuer avec Google' },
+    { service: 'facebook', label: 'Continuer avec Facebook' },
+    { service: 'apple',    label: 'Continuer avec Apple' }
+] %}
+<div class="tm-login__or"><span>{{ 'ou'|trans }}</span></div>
+
+<div class="tm-login__socials">
+    {% for button in social_buttons %}
+        {% if social_login_enabled(button.service) %}
+            <a class="tm-login__social" href="{{ path('app_social_start', { service: button.service }) }}">
+                <img src="{{ asset('images/social-' ~ button.service ~ '.svg') }}" alt="">{{ button.label|trans }}
+            </a>
+        {% else %}
+            <button type="button" class="tm-login__social" disabled title="{{ 'Bientôt disponible'|trans }}">
+                <img src="{{ asset('images/social-' ~ button.service ~ '.svg') }}" alt="">{{ button.label|trans }}
+            </button>
+        {% endif %}
+    {% endfor %}
+</div>
+

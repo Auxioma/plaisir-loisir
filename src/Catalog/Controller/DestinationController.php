@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Catalog\Controller;
 
+use App\Catalog\Entity\Destination;
 use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Presenter\DestinationPresenter;
 use App\Catalog\Repository\DestinationRepository;
@@ -44,17 +45,60 @@ final class DestinationController extends AbstractController
     ) {
     }
 
+    /** Continent de chaque pays (code ISO) : onglets de la maquette destinations.jpeg. */
+    private const CONTINENTS = [
+        'FR' => 'france',
+        'IT' => 'europe', 'PT' => 'europe', 'DE' => 'europe', 'CZ' => 'europe', 'CH' => 'europe', 'ES' => 'europe', 'BE' => 'europe', 'GB' => 'europe', 'GR' => 'europe', 'NL' => 'europe', 'AT' => 'europe', 'IE' => 'europe', 'HR' => 'europe',
+        'US' => 'amerique-nord', 'CA' => 'amerique-nord', 'MX' => 'amerique-nord',
+        'BR' => 'amerique-sud', 'AR' => 'amerique-sud', 'PE' => 'amerique-sud', 'CL' => 'amerique-sud', 'CO' => 'amerique-sud',
+        'MA' => 'afrique', 'EG' => 'afrique', 'SN' => 'afrique', 'TN' => 'afrique', 'ZA' => 'afrique', 'KE' => 'afrique', 'CI' => 'afrique',
+        'ID' => 'asie', 'TH' => 'asie', 'JP' => 'asie', 'VN' => 'asie', 'CN' => 'asie', 'IN' => 'asie',
+        'AU' => 'oceanie', 'NZ' => 'oceanie', 'PF' => 'oceanie', 'NC' => 'oceanie',
+    ];
+
+    /** Type de destination, reconnu par mots-clés dans le nom, l'accroche et la description. */
+    private const TYPES = [
+        'villes' => ['ville', 'capitale', 'city', 'york', 'paris'],
+        'montagne' => ['montagne', 'alpes', 'mont', 'sommet'],
+        'mer' => ['mer', 'plage', 'côte', 'cote', 'île', 'ile', 'bali'],
+        'campagne' => ['campagne', 'village', 'vignoble', 'nature'],
+        'lacs' => ['lac', 'rivière', 'riviere', 'fleuve'],
+    ];
+
+    /**
+     * Destinations — maquette docs/maquettes/destinations.jpeg (01/10) :
+     * filtres réels (recherche, continent, type, budget, note) sur les
+     * destinations publiées.
+     */
     #[Route(path: ['fr' => '/destinations', 'en' => '/en/destinations'], name: 'app_destinations')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $query = trim((string) $request->query->get('q', ''));
+        $continent = (string) $request->query->get('continent', '');
+        $type = (string) $request->query->get('type', '');
+        $budget = $request->query->has('budget') ? $request->query->getInt('budget') : null;
+        $rating = $request->query->has('note') ? (float) $request->query->get('note') : null;
+
+        $all = $this->destinations->findForListing();
+        $filtered = array_values(array_filter($all, function (Destination $d) use ($query, $continent, $type, $budget, $rating): bool {
+            $text = mb_strtolower($d->getName().' '.($d->getTagline() ?? '').' '.($d->getDescription() ?? '').' '.($d->getRegion() ?? ''));
+
+            return ('' === $query || str_contains($text, mb_strtolower($query)))
+                && ('' === $continent || (self::CONTINENTS[$d->getCountry()] ?? '') === $continent)
+                && ('' === $type || [] !== array_filter(self::TYPES[$type] ?? [], static fn (string $k): bool => str_contains($text, $k)))
+                && (null === $budget || $budget >= 500 || (null !== $d->getPriceFrom() && $d->getPriceFrom() <= $budget))
+                && (null === $rating || (float) $d->getRatingAverage() >= $rating);
+        }));
+
         return $this->render('destination/index.html.twig', [
-            'categories' => StaticDestinations::popularCategories(),
-            'mosaic' => StaticDestinations::mosaic(),
             'ideas' => StaticDestinations::ideas(),
-            'destinations' => $this->destinationPresenter->cards(
-                $this->destinations->findForListing(4),
-                $this->favorites->destinationSlugs(),
-            ),
+            'destinations' => $this->destinationPresenter->cards(\array_slice($filtered, 0, 12), $this->favorites->destinationSlugs()),
+            'total' => \count($filtered),
+            'query' => $query,
+            'continent' => $continent,
+            'type' => $type,
+            'budget' => $budget,
+            'rating' => $rating,
         ]);
     }
 

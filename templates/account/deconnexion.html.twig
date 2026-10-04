@@ -1,9 +1,11 @@
 {#
-    Écran 5 — Déconnexion : illustration + « À bientôt, {prénom} ! 👋 »,
-    3 arguments rassurants, confirmation (Oui = vraie déconnexion via
-    app_logout ; Annuler = retour page précédente, géré par account.js) et
-    bandeau « Besoin d'aide ? ».
-    Coquille maquette corrigée : « Mom compte » → Mon compte.
+    Déconnexion — maquette docs/maquettes/profil_particulier/
+    profil_deconnexion_particulier.jpeg (30/09) : carte « À bientôt » avec
+    illustration, trois arguments, confirmation, puis bandeau d'aide.
+
+    « Oui, me déconnecter » envoie un POST avec jeton (et non un lien GET,
+    qu'un site tiers pourrait déclencher à l'insu de la personne — corrigé le
+    25/08) ; « Annuler » revient à la page précédente (account.js).
 #}
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -12,68 +14,46 @@
 {% block meta_description %}{{ 'Déconnectez-vous de votre compte TrouveMoi Plaisirs & Loisirs en toute sécurité.'|trans }}{% endblock %}
 
 {% block account %}
-    {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Mon compte'|trans }, { label: 'Déconnexion'|trans }],
-        title: 'Déconnexion'|trans,
-    } %}
+    <header class="pf-head">
+        <div>
+            <h1 class="pf-title">{{ 'Déconnexion'|trans }}</h1>
+            <nav class="pf-crumb" aria-label="{{ 'Fil d’Ariane'|trans }}">
+                <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>{{ icon.chevron_right(12) }}
+                <a href="{{ path('app_account_dashboard') }}">{{ 'Mon compte'|trans }}</a>{{ icon.chevron_right(12) }}
+                <span aria-current="page">{{ 'Déconnexion'|trans }}</span>
+            </nav>
+        </div>
+    </header>
 
-    <div class="acc-logout">
-        <img class="acc-logout__img" src="{{ asset('images/account/logout-door.jpg') }}" alt="">
-
-        <div class="acc-logout__side">
-            <h2 class="acc-logout__hello">{{ 'À bientôt, %prenom% ! 👋'|trans({'%prenom%': user.firstName}) }}</h2>
-            {# La maquette casse la ligne après « & » : le paragraphe y tient sur TROIS
-               lignes, ce qui commande le rythme de toute la colonne. #}
-            <p class="acc-logout__text">{{ 'Vous êtes sur le point de vous déconnecter de votre compte TrouveMoi Plaisirs &<br>Loisirs.'|trans|raw }}</p>
-
-            <div class="acc-logout__args">
-                <div class="acc-logout__arg">
-                    <span class="acc-logout__argicon">{{ icon.lock(20) }}</span>
-                    <div><strong>{{ 'Vos informations sont en sécurité'|trans }}</strong><span>{{ 'Vos données personnelles restent protégées.'|trans }}</span></div>
-                </div>
-                <div class="acc-logout__arg">
-                    <span class="acc-logout__argicon">{{ icon.heart(20) }}</span>
-                    <div><strong>{{ 'Retrouvez vos favoris'|trans }}</strong><span>{{ 'Connectez-vous à tout moment pour retrouver vos activités favorites.'|trans }}</span></div>
-                </div>
-                <div class="acc-logout__arg">
-                    <span class="acc-logout__argicon">{{ icon.bell(20) }}</span>
-                    <div><strong>{{ 'Ne manquez rien'|trans }}</strong><span>{{ 'Restez informé de vos réservations et des nouvelles activités.'|trans }}</span></div>
+    <div class="pf-logout-wrap">
+        <section class="pf-card pf-logout">
+            <img class="pf-logout__img" src="{{ asset('images/account/logout-door.jpg') }}" alt="">
+            <div class="pf-logout__side">
+                <h2>{{ 'À bientôt, %prenom% ! 👋'|trans({'%prenom%': user.firstName}) }}</h2>
+                <p class="pf-logout__text">{{ 'Vous êtes sur le point de vous déconnecter de votre compte TrouveMoi Plaisirs & Loisirs.'|trans }}</p>
+                <ul class="pf-logout__args">
+                    <li><span class="pf-ico pf-ico--sm">{{ icon.padlock(20) }}</span><div><strong>{{ 'Vos informations sont en sécurité'|trans }}</strong><span>{{ 'Vos données personnelles restent protégées.'|trans }}</span></div></li>
+                    <li><span class="pf-ico pf-ico--sm">{{ icon.heart(20) }}</span><div><strong>{{ 'Retrouvez vos favoris'|trans }}</strong><span>{{ 'Connectez-vous à tout moment pour retrouver vos activités favorites.'|trans }}</span></div></li>
+                    <li><span class="pf-ico pf-ico--sm">{{ icon.bell(20) }}</span><div><strong>{{ 'Ne manquez rien'|trans }}</strong><span>{{ 'Restez informé de vos réservations et des nouvelles activités.'|trans }}</span></div></li>
+                </ul>
+                <p class="pf-logout__confirm">{{ 'Êtes-vous sûr de vouloir vous déconnecter ?'|trans }}</p>
+                <div class="pf-logout__actions">
+                    <form method="post" action="{{ path('app_logout') }}">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                        <button type="submit" class="pf-btn pf-btn--danger pf-btn--lg">{{ icon.logout_box(18) }} {{ 'Oui, me déconnecter'|trans }}</button>
+                    </form>
+                    <button type="button" class="pf-btn pf-btn--lg" data-acc-back>{{ 'Annuler'|trans }}</button>
                 </div>
             </div>
+        </section>
 
-            <p class="acc-logout__confirm">{{ 'Êtes-vous sûr de vouloir vous déconnecter ?'|trans }}</p>
-            <div class="acc-logout__actions">
-                {# UN FORMULAIRE, ET NON UN LIEN — corrigé le 25/08.
-
-                   La déconnexion par simple lien s'exécute sur un GET, sans
-                   preuve que le visiteur l'ait demandée. N'importe quel site
-                   tiers pouvait donc afficher
-
-                       <img src="https://trouvemoi.eu/logout">
-
-                   et déconnecter la personne à son insu. Aucune donnée n'est
-                   perdue au passage, mais c'est le manuel de Symfony : un
-                   envoi POST accompagné d'un jeton, activé côté pare-feu par
-                   « enable_csrf: true ».
-
-                   « display: contents » sur le formulaire : le bouton reste
-                   l'élément direct de la rangée flex, la mise en page ne
-                   bouge pas d'un pixel. #}
-                <form method="post" action="{{ path('app_logout') }}" style="display: contents;">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
-                    <button type="submit" class="acc-logout__yes">{{ icon.logout(17) }} {{ 'Oui, me déconnecter'|trans }}</button>
-                </form>
-                <button type="button" class="acc-logout__cancel" data-acc-back>{{ 'Annuler'|trans }}</button>
+        <section class="pf-card pf-card--soft pf-band">
+            <span class="pf-band__ico pf-band__ico--outline">{{ icon.shield(22) }}</span>
+            <div>
+                <strong>{{ 'Besoin d’aide ?'|trans }}</strong>
+                <span>{{ 'Si vous rencontrez un problème ou avez des questions, notre équipe est là pour vous aider.'|trans }}</span>
             </div>
-        </div>
-    </div>
-
-    <div class="acc-help">
-        <span class="acc-help__icon">{{ icon.calendar_check(34) }}</span>
-        <div class="acc-help__text">
-            <strong>{{ "Besoin d'aide ?"|trans }}</strong>
-            <span>{{ 'Si vous rencontrez un problème ou avez des questions, notre équipe est là pour vous aider.'|trans }}</span>
-        </div>
-        <a href="{{ path('app_corporate_contact') }}" class="acc-help__btn">{{ icon.mail(16) }} {{ 'Nous contacter'|trans }}</a>
+            <a class="pf-btn" href="{{ path('app_account_contact') }}">{{ icon.mail(16) }} {{ 'Nous contacter'|trans }}</a>
+        </section>
     </div>
 {% endblock %}

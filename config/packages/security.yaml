@@ -99,7 +99,12 @@ security:
         # côté professionnel (§8.3, §10, §11, §17 du CDC). /professionnels
         # (recherche publique, fiche publique) reste volontairement hors de
         # cette liste : c'est un écran public, sans compte.
-        - { path: ^/(pro|en/pro)/(demandes|requests|abonnement|subscription|tableau-de-bord|dashboard|profil|profile|avis|reviews), roles: ROLE_PROVIDER }
+        # Espace professionnel complet (maquettes profil_professionnel, 02/10) :
+        # tout /pro/* hors parcours d'authentification (règle publique plus haut).
+        - { path: ^/(pro|en/pro)/, roles: ROLE_PROVIDER }
+
+        # « Mes favoris » du menu principal (01/10).
+        - { path: ^/(mes-favoris|en/my-favourites), roles: ROLE_USER }
 
 when@test:
     security:

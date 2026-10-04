@@ -37,6 +37,7 @@ final class EventPresenter
             // qui les ignorent simplement).
             'description' => $event->getDescription(),
             'organizer' => $this->organizerName($event),
+            'organizerId' => null !== $event->getOrganizer()?->getId() ? (string) $event->getOrganizer()->getId() : null,
         ];
     }
 

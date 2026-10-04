@@ -190,17 +190,18 @@ final class FaqPagesTest extends WebTestCase
         $client = static::createClient();
 
         $crawler = $client->request('GET', '/');
-        $piedDePage = $crawler->filter('.pl-footer a')->each(static fn ($n): string => (string) $n->attr('href'));
+        $piedDePage = $crawler->filter('.tm-footer a')->each(static fn ($n): string => (string) $n->attr('href'));
         self::assertContains('/centre-d-aide', $piedDePage, "Le pied de page ne mène pas au Centre d'aide.");
         self::assertContains('/faq', $piedDePage, 'Le pied de page ne mène pas à la FAQ.');
 
-        // L'entrée « FAQ » de la barre institutionnelle, qui était le
-        // troisième lien mort.
+        // L'ancienne barre institutionnelle (troisième lien mort) a disparu au
+        // profit de l'en-tête unique (30/09) : la FAQ se rejoint depuis le
+        // pied de page, présent aussi sur les pages institutionnelles.
         $crawler = $client->request('GET', '/a-propos');
         self::assertGreaterThan(
             0,
-            $crawler->filter('.pl-nav__link[href="/faq"]')->count(),
-            "L'entrée FAQ de la barre de navigation institutionnelle ne mène toujours nulle part.",
+            $crawler->filter('.tm-footer a[href="/faq"]')->count(),
+            "La FAQ n'est pas joignable depuis les pages institutionnelles.",
         );
     }
 

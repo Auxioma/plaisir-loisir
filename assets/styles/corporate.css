@@ -12,28 +12,6 @@
  * ======================================================================== */
 
 /* --------------------------------------------------------------------------
- *  <CorporateHeader> — variantes propres au header institutionnel.
- * ------------------------------------------------------------------------ */
-
-/* Maquette : cinq liens de 16px espacés de 35, l'item courant en violet. Le
-   header réutilise `.pl-navbar--home` pour le logo et « Découvrez ⌄ ». */
-.pl-nav--corporate { gap: 19px; }
-.pl-nav--corporate .pl-nav__link {
-    padding: 10px 8px;
-    font-size: 16px;
-    font-weight: var(--pl-fw-semibold);
-    color: var(--pl-text);
-    text-decoration: none;
-    white-space: nowrap;
-}
-.pl-nav--corporate .pl-nav__link:hover { color: var(--pl-action); }
-.pl-nav--corporate .pl-nav__link.is-active { color: var(--pl-action); }
-
-/* Le header institutionnel n'a pas de bouton d'action : les icônes se collent
-   au bord droit du conteneur. */
-.pl-navbar--corporate .pl-navbar__actions { gap: var(--pl-sp-16); }
-
-/* --------------------------------------------------------------------------
  *  <CorporateHero> — photo en fond à droite, texte à gauche.
  * ------------------------------------------------------------------------ */
 

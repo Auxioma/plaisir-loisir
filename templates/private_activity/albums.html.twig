@@ -1,12 +1,13 @@
 {#
-    « Mes albums photos » (§4 de docs/corrections-client-2026-07-27.md).
+    Mes albums photos — maquette docs/maquettes/profil_particulier/
+    profil_album_particulier.jpeg (30/09). Données : AlbumController::index().
 
-    Aucune maquette Figma dédiée à cet écran. Plutôt qu'une mise en page
-    Bootstrap générique, on reprend le composant carte d'album déjà maquetté
-    et livré pour le domaine Événements (templates/event/nav/tabs/photos.html.twig,
-    captures 21-22 — classes `.evn-album*`, chargées globalement via
-    assets/styles/events.css) : même produit, même langage visuel, cohérent
-    avec le reste du site plutôt qu'un habillage improvisé.
+    Un album appartient à une activité privée : « Créer un album » ouvre donc
+    la création d'une activité (l'album vient avec). « Public » = activité
+    visible de tous. Écart assumé : « Vues totales » n'existe pas (aucun
+    compteur de vues) ; l'encart affiche les albums rejoints à la place, et
+    l'espace de stockage ne montre que l'espace réellement occupé (pas de
+    quota défini).
 #}
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -14,33 +15,115 @@
 {% block title %}{{ 'Mes albums photos'|trans }}{% endblock %}
 
 {% block account %}
-    {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Mes albums photos'|trans }],
-        title: 'Mes albums photos'|trans,
-        subtitle: "Chaque activité privée que vous organisez ou rejoignez a son propre album, partagé avec les autres participants."|trans,
-    } %}
+    <header class="pf-head">
+        <div>
+            <h1 class="pf-title">{{ 'Mes albums photos'|trans }}</h1>
+            <p class="pf-sub">{{ 'Gérez tous vos albums et vos photos partagées sur TrouveMoi Plaisirs & Loisirs.'|trans }}</p>
+        </div>
+    </header>
+
+    <div class="pf-tabs-row">
+        <nav class="pf-tabs">
+            {% for key, label in {tous: 'Tous mes albums', publics: 'Albums publics', prives: 'Albums privés'} %}
+                <a class="pf-tab{{ tab == key ? ' is-active' }}" href="{{ path('app_account_albums', {onglet: key}) }}">
+                    {%- if key == 'tous' %}{{ icon.calendar_grid(18) }}{% elseif key == 'publics' %}{{ icon.camera(18) }}{% else %}{{ icon.padlock(18) }}{% endif %} {{ label|trans }}</a>
+            {% endfor %}
+        </nav>
+        <a class="pf-btn pf-btn--primary pf-btn--lg" href="{{ path('app_account_private_activities_new') }}">{{ icon.plus(18) }} {{ 'Créer un album'|trans }}</a>
+    </div>
+
+    <form class="pf-toolbar" method="get">
+        <input type="hidden" name="onglet" value="{{ tab }}">
+        <div class="pf-search">
+            <input type="search" name="q" value="{{ query }}" placeholder="{{ 'Rechercher un album...'|trans }}" aria-label="{{ 'Rechercher un album'|trans }}">
+            <button type="submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(18) }}</button>
+        </div>
+        <div class="pf-select">
+            <select name="tri" onchange="this.form.submit()" aria-label="{{ 'Trier'|trans }}">
+                <option value="recents"{{ sort == 'recents' ? ' selected' }}>{{ 'Trier par : Plus récents'|trans }}</option>
+                <option value="anciens"{{ sort == 'anciens' ? ' selected' }}>{{ 'Trier par : Plus anciens'|trans }}</option>
+                <option value="photos"{{ sort == 'photos' ? ' selected' }}>{{ 'Trier par : Nombre de photos'|trans }}</option>
+            </select>
+        </div>
+        <div class="pf-select">
+            <select name="statut" onchange="this.form.submit()" aria-label="{{ 'Statut'|trans }}">
+                <option value="">{{ 'Tous les statuts'|trans }}</option>
+                <option value="organises"{{ role == 'organises' ? ' selected' }}>{{ 'Organisés par moi'|trans }}</option>
+                <option value="rejoints"{{ role == 'rejoints' ? ' selected' }}>{{ 'Rejoints'|trans }}</option>
+            </select>
+        </div>
+        <div class="pf-views">
+            <a class="{{ view == 'grille' ? 'is-active' }}" href="{{ path('app_account_albums', app.request.query.all|merge({vue: 'grille'})) }}" aria-label="{{ 'Vue en grille'|trans }}">{{ icon.grid(18) }}</a>
+            <a class="{{ view == 'liste' ? 'is-active' }}" href="{{ path('app_account_albums', app.request.query.all|merge({vue: 'liste'})) }}" aria-label="{{ 'Vue en liste'|trans }}">{{ icon.list_view(18) }}</a>
+        </div>
+    </form>
 
     {% if albums is empty %}
-        {% include 'account/_empty.html.twig' with { message: "Vous n'avez aucune activité privée avec un album pour le moment. Organisez ou rejoignez une sortie pour en créer un."|trans } %}
+        <div class="pf-card pf-empty">
+            <strong>{{ query or role or tab != 'tous' ? 'Aucun album ne correspond à votre recherche.'|trans : 'Vous n’avez pas encore d’album.'|trans }}</strong>
+            {{ 'Chaque activité que vous organisez ou rejoignez dispose de son album photo partagé.'|trans }}
+            <br><a class="pf-btn" href="{{ path('app_private_activities') }}">{{ 'Découvrir les activités privées'|trans }}</a>
+        </div>
     {% else %}
-        <div class="card-grid evn-grid evn-albums-grid">
-            {% for entry in albums %}
-                <a href="{{ path('app_account_album_show', {id: entry.activity.id}) }}" class="evn-album">
-                    <span class="evn-album__media{{ entry.cover ? '' : ' evn-album__media--empty' }}">
-                        {% if entry.cover %}
-                            <img src="{{ asset(entry.cover.path) }}" alt="{{ entry.activity.title }}">
+        <div class="pf-albums{{ view == 'liste' ? ' pf-albums--list' }}">
+            {% for album in albums %}
+                <article class="pf-album">
+                    <a class="pf-album__media" href="{{ path('app_account_album_show', {id: album.activity.id}) }}">
+                        {% if album.cover %}
+                            <img src="{{ asset(album.cover) }}" alt="" loading="lazy">
                         {% else %}
-                            {{ icon.camera(28) }}
+                            <span class="pf-album__placeholder">{{ icon.image_frame(34) }}</span>
                         {% endif %}
-                    </span>
-                    <span class="evn-album__location">{{ icon.map_pin(14) }} {{ entry.activity.category.name }}</span>
-                    <span class="evn-album__title">{{ entry.activity.title }}</span>
-                    <span class="evn-album__meta">
-                        {{ entry.photoCount }} {{ entry.photoCount > 1 ? 'photos'|trans : 'photo'|trans }}
-                        {% if entry.activity.scheduledAt %}<i>|</i> {{ entry.activity.scheduledAt|date('d/m/Y') }}{% endif %}
-                    </span>
-                </a>
+                        <span class="pf-album__badge{{ album.public ? '' : ' is-private' }}">{{ album.public ? icon.eye(12) : icon.padlock(12) }} {{ album.public ? 'Public'|trans : 'Privé'|trans }}</span>
+                        <span class="pf-album__count">{{ album.photoCount }} {{ 'photos'|trans }}</span>
+                    </a>
+                    <div class="pf-album__body">
+                        <div>
+                            <a class="pf-album__title" href="{{ path('app_account_album_show', {id: album.activity.id}) }}">{{ album.title }}</a>
+                            <span class="pf-album__meta">{{ album.photoCount }} {{ 'photos'|trans }} <i>•</i> {{ album.date|pf_date('d MMM y') }}</span>
+                        </div>
+                        <details class="pl-dropdown pf-kebab">
+                            <summary aria-label="{{ 'Actions'|trans }}">{{ icon.kebab(18) }}</summary>
+                            <div class="tm-menu tm-menu--right">
+                                <a class="tm-menu__item" href="{{ path('app_account_album_show', {id: album.activity.id}) }}">{{ 'Ouvrir l’album'|trans }}</a>
+                                <a class="tm-menu__item" href="{{ path('app_private_activity_show', {id: album.activity.id}) }}">{{ 'Voir l’activité'|trans }}</a>
+                            </div>
+                        </details>
+                    </div>
+                </article>
             {% endfor %}
         </div>
     {% endif %}
+
+    {% include 'account/_pager.html.twig' with { noun: 'albums'|trans } %}
+{% endblock %}
+
+{% block account_aside %}
+    {% set mo = stats.bytes / 1048576 %}
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Espace de stockage'|trans }}</h2>
+        <p class="pf-storage">
+            <span>{{ mo >= 1024 ? (mo / 1024)|number_format(1, ',', ' ') ~ ' Go' : mo|number_format(1, ',', ' ') ~ ' Mo' }} {{ 'utilisés par vos photos'|trans }}</span>
+        </p>
+        <p class="pf-card__sub">{{ 'Jusqu’à %n% photos par album.'|trans({'%n%': max_photos}) }}</p>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Mes statistiques'|trans }}</h2>
+        <ul class="pf-list pf-statlist">
+            <li><span class="pf-ico pf-ico--xs">{{ icon.calendar_grid(18) }}</span><div class="pf-list__body"><strong>{{ stats.organized }}</strong><small>{{ 'Albums créés'|trans }}</small></div></li>
+            <li><span class="pf-ico pf-ico--xs">{{ icon.image_frame(18) }}</span><div class="pf-list__body"><strong>{{ stats.photos }}</strong><small>{{ 'Photos partagées'|trans }}</small></div></li>
+            <li><span class="pf-ico pf-ico--xs">{{ icon.padlock(18) }}</span><div class="pf-list__body"><strong>{{ mo|number_format(1, ',', ' ') }} Mo</strong><small>{{ 'Espace utilisé'|trans }}</small></div></li>
+            <li><span class="pf-ico pf-ico--xs">{{ icon.users(18) }}</span><div class="pf-list__body"><strong>{{ stats.joined }}</strong><small>{{ 'Albums rejoints'|trans }}</small></div></li>
+        </ul>
+    </section>
+
+    <section class="pf-card pf-card--soft">
+        <h2 class="pf-card__title">{{ 'Conseils'|trans }}</h2>
+        <ul class="pf-list pf-tiplist">
+            <li><span>{{ icon.sparkle_tip(18) }}</span><div class="pf-list__body">{{ 'Créez des albums thématiques pour mieux organiser vos souvenirs.'|trans }}</div></li>
+            <li><span>{{ icon.sparkle_tip(18) }}</span><div class="pf-list__body">{{ 'Partagez vos meilleurs moments en rendant vos albums publics.'|trans }}</div></li>
+            <li><span>{{ icon.sparkle_tip(18) }}</span><div class="pf-list__body">{{ 'Vous pouvez modifier la visibilité de vos albums à tout moment.'|trans }}</div></li>
+        </ul>
+    </section>
 {% endblock %}

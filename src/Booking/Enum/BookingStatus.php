@@ -15,4 +15,29 @@ enum BookingStatus: string
     case Completed = 'completed';
     case Cancelled = 'cancelled';
     case Refunded = 'refunded';
+
+    /** Libellé des pastilles (espace pro, 02/10). */
+    public function label(): string
+    {
+        return match ($this) {
+            self::Pending => 'En attente',
+            self::Confirmed => 'Confirmée',
+            self::InProgress => 'En cours',
+            self::Completed => 'Terminée',
+            self::Cancelled => 'Annulée',
+            self::Refunded => 'Remboursée',
+        };
+    }
+
+    public function tone(): string
+    {
+        return match ($this) {
+            self::Pending => 'blue',
+            self::Confirmed => 'green',
+            self::InProgress => 'orange',
+            self::Completed => 'violet',
+            self::Cancelled => 'red',
+            self::Refunded => 'grey',
+        };
+    }
 }

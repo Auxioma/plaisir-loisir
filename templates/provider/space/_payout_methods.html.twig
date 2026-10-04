@@ -1,0 +1,57 @@
+{#
+    Moyens de versement du professionnel (Revenus & Paiements, Paramètres).
+    Variables : provider.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+{% set methods = [
+    {type: 'bank', label: 'Virement bancaire', value: provider.payoutIban ? '•••• ' ~ provider.payoutIban|slice(-4) : null, ico: icon.building(20)},
+    {type: 'paypal', label: 'PayPal', value: provider.payoutPaypalEmail, ico: icon.pay_paypal()},
+    {type: 'card', label: 'Carte bancaire', value: provider.payoutCardLast4 ? '•••• ' ~ provider.payoutCardLast4 : null, ico: icon.card(20)},
+] %}
+<ul class="pf-list pp-methods">
+    {% for m in methods|filter(m => m.value) %}
+        <li>
+            <span class="pf-ico pf-ico--xs pf-ico--round pf-ico--blue">{{ m.ico }}</span>
+            <div class="pf-list__body"><strong>{{ m.label|trans }}</strong><small>{{ m.value }}</small></div>
+            {% if provider.payoutMethod == m.type %}
+                <span class="pf-pill pf-pill--blue">{{ 'Par défaut'|trans }}</span>
+            {% else %}
+                <form method="post" action="{{ path('app_pro_revenue_payout') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}"><input type="hidden" name="type" value="{{ m.type }}">
+                    <button class="pf-link pp-linkbtn" name="action" value="default">{{ 'Définir par défaut'|trans }}</button>
+                </form>
+            {% endif %}
+            <form method="post" action="{{ path('app_pro_revenue_payout') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}"><input type="hidden" name="type" value="{{ m.type }}">
+                <button class="pp-iconlink" name="action" value="remove" aria-label="{{ 'Retirer'|trans }}" title="{{ 'Retirer'|trans }}" data-confirm="{{ 'Retirer ce moyen de versement ?'|trans }}">{{ icon.trash(16) }}</button>
+            </form>
+        </li>
+    {% else %}
+        <li class="pf-muted">{{ 'Aucun moyen de versement : ajoutez-en un pour recevoir vos revenus.'|trans }}</li>
+    {% endfor %}
+</ul>
+<button type="button" class="pf-btn pf-btn--block pp-soft-btn" data-pp-open="pp-payout">{{ icon.plus(16) }} {{ 'Ajouter un moyen de paiement'|trans }}</button>
+
+<dialog id="pp-payout" class="pp-dialog" aria-labelledby="pp-payout-title">
+    <form method="post" action="{{ path('app_pro_revenue_payout') }}" class="pp-dialog__body">
+        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+        <h2 id="pp-payout-title" class="pf-card__title">{{ 'Ajouter un moyen de paiement'|trans }}</h2>
+        <div class="pf-field">
+            <label for="payout-type">{{ 'Type'|trans }}</label>
+            <select id="payout-type" name="type" required>
+                <option value="bank">{{ 'Virement bancaire (IBAN)'|trans }}</option>
+                <option value="paypal">{{ 'PayPal (adresse e-mail)'|trans }}</option>
+                <option value="card">{{ 'Carte bancaire (numéro)'|trans }}</option>
+            </select>
+        </div>
+        <div class="pf-field">
+            <label for="payout-value">{{ 'IBAN, e-mail PayPal ou numéro de carte'|trans }}</label>
+            <input id="payout-value" name="value" required autocomplete="off">
+            <small class="pf-muted">{{ 'Seuls les 4 derniers chiffres d’une carte sont conservés.'|trans }}</small>
+        </div>
+        <div class="pp-form__actions">
+            <button type="button" class="pf-btn pp-btn-ghost" data-pp-close>{{ 'Annuler'|trans }}</button>
+            <button class="pf-btn pf-btn--primary" name="action" value="save">{{ 'Enregistrer'|trans }}</button>
+        </div>
+    </form>
+</dialog>

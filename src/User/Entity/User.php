@@ -108,6 +108,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $avatarPath = null;
 
     /**
+     * Profil complémentaire (écran « Informations personnelles », maquette
+     * profil_infos_particulier du 30/09) : tous facultatifs.
+     */
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $birthDate = null;
+
+    /** 'femme', 'homme', 'autre' — null : non précisé. */
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $gender = null;
+
+    /** Langue préférée des communications ('fr', 'en'). */
+    #[ORM\Column(length: 5, nullable: true)]
+    private ?string $preferredLocale = null;
+
+    /** Pays de résidence, code ISO 3166-1 alpha-2. */
+    #[ORM\Column(length: 2, nullable: true)]
+    private ?string $country = null;
+
+    /**
      * @var Collection<int, Address>
      */
     #[ORM\OneToMany(targetEntity: Address::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -336,6 +355,65 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->avatarPath = $avatarPath;
 
         return $this;
+    }
+
+    public function getBirthDate(): ?\DateTimeImmutable
+    {
+        return $this->birthDate;
+    }
+
+    public function setBirthDate(?\DateTimeImmutable $birthDate): static
+    {
+        $this->birthDate = $birthDate;
+
+        return $this;
+    }
+
+    public function getGender(): ?string
+    {
+        return $this->gender;
+    }
+
+    public function setGender(?string $gender): static
+    {
+        $this->gender = $gender;
+
+        return $this;
+    }
+
+    public function getPreferredLocale(): ?string
+    {
+        return $this->preferredLocale;
+    }
+
+    public function setPreferredLocale(?string $preferredLocale): static
+    {
+        $this->preferredLocale = $preferredLocale;
+
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(?string $country): static
+    {
+        $this->country = $country;
+
+        return $this;
+    }
+
+    /**
+     * Adresse principale : la première enregistrée, créée à la demande par
+     * l'écran « Informations personnelles ».
+     */
+    public function getMainAddress(): ?Address
+    {
+        $first = $this->addresses->first();
+
+        return false === $first ? null : $first;
     }
 
     /**

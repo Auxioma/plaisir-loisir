@@ -97,7 +97,7 @@ final class AccountCheckerTest extends WebTestCase
     private function submitLogin(object $client, string $email, string $motDePasse): void
     {
         $crawler = $client->request('GET', '/login');
-        $formulaire = $crawler->filter('form')->form();
+        $formulaire = $crawler->filterXPath('//form[.//input[@name="_email"]]')->form();
         $formulaire['_email'] = $email;
         $formulaire['_password'] = $motDePasse;
 

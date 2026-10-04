@@ -1,18 +1,113 @@
 {#
-    Écran 4 — Parrainage : la maquette ne fournit que l'en-tête (le
-    sous-titre est repris de Notifications — placeholder assumé, spec).
-    Contenu (code de parrainage, récompenses, filleuls) à concevoir avec le
-    designer — décision documentée (spec, point 3).
+    Parrainage — maquette docs/maquettes/profil_particulier/
+    profil_parrainages_particulier.jpeg (30/09).
+
+    LE PROGRAMME N'A PAS ENCORE DE BACK : aucun suivi des filleuls ni crédit
+    n'est enregistré. L'écran reprend la maquette avec des valeurs réelles,
+    donc à zéro, et le signale. Le lien d'invitation fonctionne : il mène à
+    l'écran de choix du compte, avec le code du parrain dans l'adresse, prêt
+    à être exploité le jour où le suivi sera développé.
 #}
 {% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ 'Parrainage'|trans }}{% endblock %}
-{% block meta_description %}{{ 'Invitez vos amis sur TrouveMoi et profitez du programme de parrainage.'|trans }}{% endblock %}
+
+{% set code = (user.firstName|upper|replace({' ': ''}))|slice(0, 8) ~ (app.user ? ('' ~ app.user.id)|slice(-4)|upper : '') %}
+{% set link = url('app_auth_choice', {parrain: code}) %}
 
 {% block account %}
-    {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Parrainage'|trans }],
-        title: 'Parrainage'|trans,
-        subtitle: 'Restez informé de toutes les nouveautés et activités qui vous intéressent.'|trans,
-    } %}
+    <header class="pf-head">
+        <div>
+            <h1 class="pf-title">{{ 'Parrainage'|trans }}</h1>
+            <p class="pf-sub pf-sub--accent">{{ 'Invitez vos amis sur TrouveMoi Plaisirs & Loisirs et gagnez des avantages exclusifs !'|trans }}</p>
+        </div>
+    </header>
+
+    <section class="pf-card pf-ref">
+        <div class="pf-ref__hero">
+            <div>
+                <h2 class="pf-card__title">{{ 'Invitez vos amis et soyez récompensé'|trans }}</h2>
+                <p>{{ 'Partagez votre lien de parrainage avec vos amis.'|trans }}<br>{{ 'Dès qu’ils s’inscrivent et font leur première réservation,'|trans }}<br>{{ 'vous gagnez des crédits à utiliser sur vos prochaines activités.'|trans }}</p>
+            </div>
+            <img src="{{ asset('images/account/referral-friends.jpg') }}" alt="" width="402" height="154">
+        </div>
+        <div class="pf-ref__share">
+            <div>
+                <h3>{{ 'Votre lien de parrainage'|trans }}</h3>
+                <p>{{ 'Partagez ce lien unique avec vos amis'|trans }}</p>
+                <div class="pf-ref__link">
+                    <input type="text" value="{{ link }}" readonly aria-label="{{ 'Votre lien de parrainage'|trans }}" id="ref-link">
+                    <button type="button" class="pf-btn" onclick="navigator.clipboard.writeText(document.getElementById('ref-link').value).then(() => { this.querySelector('span').textContent = '{{ 'Lien copié'|trans|e('js') }}'; })">{{ icon.copy(16) }} <span>{{ 'Copier le lien'|trans }}</span></button>
+                </div>
+            </div>
+            <div class="pf-ref__via">
+                <p>{{ 'Partager via'|trans }}</p>
+                <div>
+                    <a class="pf-share pf-share--fb" href="https://www.facebook.com/sharer/sharer.php?u={{ link|url_encode }}" target="_blank" rel="noopener" aria-label="Facebook">{{ icon.facebook(20) }}</a>
+                    <a class="pf-share pf-share--wa" href="https://wa.me/?text={{ ('Rejoins-moi sur TrouveMoi Plaisirs & Loisirs : '|trans ~ link)|url_encode }}" target="_blank" rel="noopener" aria-label="WhatsApp">{{ icon.whatsapp(20) }}</a>
+                    <a class="pf-share" href="mailto:?subject={{ 'Rejoins-moi sur TrouveMoi'|trans|url_encode }}&body={{ link|url_encode }}" aria-label="{{ 'E-mail'|trans }}">{{ icon.mail(20) }}</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Comment ça marche ?'|trans }}</h2>
+        <ol class="pf-steps">
+            <li><span class="pf-steps__n">1</span><span class="pf-steps__ico">{{ icon.person_plus(26) }}</span><div><strong>{{ 'Votre ami s’inscrit'|trans }}</strong><span>{{ 'Il clique sur votre lien et crée son compte.'|trans }}</span></div></li>
+            <li class="pf-steps__arrow" aria-hidden="true">{{ icon.arrow_right(18) }}</li>
+            <li><span class="pf-steps__n">2</span><span class="pf-steps__ico">{{ icon.calendar_grid(26) }}</span><div><strong>{{ 'Il fait sa première réservation'|trans }}</strong><span>{{ 'Il réserve une activité sur TrouveMoi.'|trans }}</span></div></li>
+            <li class="pf-steps__arrow" aria-hidden="true">{{ icon.arrow_right(18) }}</li>
+            <li><span class="pf-steps__n">3</span><span class="pf-steps__ico">{{ icon.gift(26) }}</span><div><strong>{{ 'Vous gagnez !'|trans }}</strong><span>{{ 'Vous recevez des crédits à utiliser comme bon vous semble.'|trans }}</span></div></li>
+        </ol>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Vos filleuls'|trans }}</h2>
+        <div class="pf-empty">
+            <strong>{{ 'Aucun filleul pour le moment.'|trans }}</strong>
+            {{ 'Partagez votre lien : vos amis inscrits apparaîtront ici dès que le suivi du parrainage sera activé.'|trans }}
+        </div>
+    </section>
+{% endblock %}
+
+{% block account_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Vos récompenses'|trans }}</h2>
+        <div class="pf-reward">
+            <div>
+                <small>{{ 'Solde disponible'|trans }}</small>
+                <strong>{{ 0|pf_money }}</strong>
+                <small>{{ 'en crédits'|trans }}</small>
+            </div>
+            <span class="pf-reward__ico">{{ icon.gift(26) }}</span>
+        </div>
+        <div class="pf-reward__totals">
+            <div><small>{{ 'Total gagné'|trans }}</small><strong>{{ 0|pf_money }}</strong></div>
+            <div><small>{{ 'Total utilisé'|trans }}</small><strong>{{ 0|pf_money }}</strong></div>
+        </div>
+        <button type="button" class="pf-btn pf-btn--primary pf-btn--block" disabled>{{ 'Utiliser mes crédits'|trans }}</button>
+        <p class="pf-reward__note">{{ 'Le suivi des récompenses sera bientôt disponible.'|trans }}</p>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Statistiques'|trans }}</h2>
+        <dl class="pf-details">
+            <div class="pf-kv"><dt>{{ 'Amis invités'|trans }}</dt><dd>0</dd></div>
+            <div class="pf-kv"><dt>{{ 'Inscriptions'|trans }}</dt><dd>0</dd></div>
+            <div class="pf-kv"><dt>{{ 'Réservations validées'|trans }}</dt><dd>0</dd></div>
+            <div class="pf-kv"><dt>{{ 'Taux de conversion'|trans }}</dt><dd>—</dd></div>
+        </dl>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Questions fréquentes'|trans }}</h2>
+        <ul class="pf-list pf-helplist">
+            {% for q in ['Comment fonctionne le parrainage ?', 'Quand vais-je recevoir ma récompense ?', 'Comment utiliser mes crédits ?', 'Y a-t-il une limite de parrainage ?'] %}
+                <li><a class="pf-list__link" href="{{ path('app_faq', {q: q|trans}) }}"><span class="pf-helplist__ico">{{ icon.help_circle(16) }}</span>{{ q|trans }}{{ icon.chevron_right(16) }}</a></li>
+            {% endfor %}
+        </ul>
+        <a class="pf-link pf-centered" href="{{ path('app_faq') }}">{{ 'Voir toutes les questions'|trans }}</a>
+    </section>
 {% endblock %}

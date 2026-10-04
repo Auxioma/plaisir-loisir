@@ -1,81 +1,147 @@
 {#
-    Écran 1 — Mes favoris : 3 onglets (Activités/Destinations/Prestataires)
-    × états vide/rempli. Onglets navigués par ?onglet=… ; ?vide=1 force
-    l'état vide (démo des captures).
-    Choix maquette reproduits tels quels : compteur « 0 favoris trouvés »
-    même grille remplie, titres de cartes « Titre ».
-    Coquille « dasn » → dans corrigée (spec). Tri : « Les plus populaires »
-    à l'état vide, « Date d'ajout (Récent) » à l'état rempli (captures).
+    Mes favoris — maquette docs/maquettes/profil_particulier/
+    profil_favoris_particulier.jpeg (30/09). Données : AccountController::favorites().
+
+    Le cœur de chaque carte retire le favori (assets/favorites.js) : la grille
+    porte `data-favorite-list`, la carte disparaît avec un bandeau
+    « Annuler ».
+
+    Écart assumé : seuls les activités et les lieux (destinations) peuvent
+    être mis en favori ; les onglets Événements / Hébergements / Restaurants
+    de la maquette n'ont pas d'équivalent.
 #}
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
+{% import 'account/_ui.html.twig' as ui %}
 
 {% block title %}{{ 'Mes favoris'|trans }}{% endblock %}
-{% block meta_description %}{{ 'Retrouvez toutes les activités, destinations et prestataires que vous avez ajoutés à vos favoris.'|trans }}{% endblock %}
 
-{% set tab_labels = { activites: 'Activités'|trans, destinations: 'Destinations'|trans, prestataires: 'Prestataires'|trans } %}
+{% macro stars(rating) %}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    <span class="pf-stars" aria-label="{{ rating }} / 5">{% for i in 1..5 %}<span class="{{ i <= (rating|round(0, 'floor')) ? 'is-on' }}">{{ icon.star_solid(12) }}</span>{% endfor %}</span>
+{% endmacro %}
 
 {% block account %}
-    {% include 'account/_page_head.html.twig' with {
-        crumbs: [
-            { label: 'Mes favoris'|trans, href: path('app_account_favorites') },
-            { label: 'Mes favoris'|trans ~ ' - ' ~ tab_labels[tab] },
-        ],
-        title: 'Mes favoris'|trans,
-        subtitle: 'Retrouvez ici toutes les activités, lieux et expériences que vous avez ajoutés à vos favoris.'|trans,
-    } %}
-
-    <div class="acc-tabs-row">
-        <nav class="acc-tabs" aria-label="{{ 'Types de favoris'|trans }}">
-            <a href="{{ path('app_account_favorites') }}" class="acc-tab{{ tab == 'activites' ? ' is-active' }}">{{ icon.ferris_wheel(17) }} {{ 'Activités'|trans }}</a>
-            <a href="{{ path('app_account_favorites', { onglet: 'destinations' }) }}" class="acc-tab{{ tab == 'destinations' ? ' is-active' }}">{{ icon.plane_takeoff(17) }} {{ 'Destinations'|trans }}</a>
-            <a href="{{ path('app_account_favorites', { onglet: 'prestataires' }) }}" class="acc-tab{{ tab == 'prestataires' ? ' is-active' }}">{{ icon.person(17) }} {{ 'Prestataires'|trans }}</a>
-        </nav>
-        <div class="acc-view">
-            <button type="button" class="acc-view__map">{{ icon.map(17) }} {{ 'Afficher la carte'|trans }}</button>
-            <button type="button" class="acc-view__btn acc-view__btn--fill" aria-label="{{ "Filtres d'affichage"|trans }}">{{ icon.sliders(17) }}</button>
-            <button type="button" class="acc-view__btn acc-view__btn--bare" aria-label="{{ 'Vue liste'|trans }}">{{ icon.list_view_solid(20) }}</button>
+    <header class="pf-head">
+        <div>
+            <h1 class="pf-title">{{ icon.heart(26) }} {{ 'Mes favoris'|trans }}</h1>
+            <p class="pf-sub">{{ 'Retrouvez ici toutes les activités, lieux et expériences que vous avez ajoutés à vos favoris.'|trans }}</p>
         </div>
+    </header>
+
+    <nav class="pf-tabs pf-tabs--line">
+        {% for key, label in {toutes: 'Toutes', activites: 'Activités', lieux: 'Lieux & destinations'} %}
+            <a class="pf-tab{{ tab == key ? ' is-active' }}" href="{{ path('app_account_favorites', {onglet: key}) }}">{{ label|trans }}</a>
+        {% endfor %}
+    </nav>
+
+    <div class="pf-row pf-row--4">
+        {{ ui.stat('Total des favoris'|trans, counts.all, 'éléments'|trans, '+%n% ce mois-ci'|trans({'%n%': counts.month}), 'violet', 'heart') }}
+        {{ ui.stat('Activités'|trans, counts.activities, 'activités'|trans, counts.all ? (counts.activities * 100 / counts.all)|round ~ '% ' ~ 'du total'|trans : '', 'green', 'calendar') }}
+        {{ ui.stat('Lieux & destinations'|trans, counts.places, 'lieux'|trans, counts.all ? (counts.places * 100 / counts.all)|round ~ '% ' ~ 'du total'|trans : '', 'orange', 'pin') }}
+        {{ ui.stat('Ajoutés ce mois-ci'|trans, counts.month, 'favoris'|trans, '', 'red', 'star') }}
     </div>
 
-    <div class="acc-count-row">
-        <span class="acc-count">{{ '0 favoris trouvés'|trans }}</span>
-        <button type="button" class="acc-sort">{{ icon.funnel(16) }} {{ 'Trier par:'|trans }} <strong>{{ empty ? 'Les plus populaires'|trans : "Date d'ajout (Récent)"|trans }}</strong> {{ icon.chevron_down(15) }}</button>
-    </div>
+    <form class="pf-toolbar" method="get">
+        <input type="hidden" name="onglet" value="{{ tab }}">
+        <div class="pf-search">
+            <input type="search" name="q" value="{{ query }}" placeholder="{{ 'Rechercher dans mes favoris...'|trans }}" aria-label="{{ 'Rechercher dans mes favoris'|trans }}">
+            <button type="submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(18) }}</button>
+        </div>
+        <div class="pf-select">
+            <select name="tri" onchange="this.form.submit()" aria-label="{{ 'Trier'|trans }}">
+                <option value="recents"{{ sort == 'recents' ? ' selected' }}>{{ 'Trier par : Plus récents'|trans }}</option>
+                <option value="note"{{ sort == 'note' ? ' selected' }}>{{ 'Trier par : Mieux notés'|trans }}</option>
+                <option value="nom"{{ sort == 'nom' ? ' selected' }}>{{ 'Trier par : Nom'|trans }}</option>
+            </select>
+        </div>
+    </form>
 
-    {% if empty %}
-        {% if tab == 'destinations' %}
-            {% include 'account/_empty.html.twig' with { message: "Il semblerait que vous n'ayez pas d'activités dans vos<br>favoris pour le moment. Ajoutez des activités à vos favoris<br>en cliquant sur le cœur."|trans } %}
-        {% else %}
-            {% include 'account/_empty.html.twig' with { message: "Il semblerait que vous n'ayez pas d'activités dans vos<br>favoris pour le moment."|trans } %}
-        {% endif %}
+    {% if items is empty %}
+        <div class="pf-card pf-empty">
+            <strong>{{ query or types or region or tab != 'toutes' ? 'Aucun favori ne correspond.'|trans : 'Vous n’avez pas encore de favori.'|trans }}</strong>
+            {{ 'Touchez le cœur d’une activité ou d’une destination pour la retrouver ici.'|trans }}
+            <br><a class="pf-btn" href="{{ path('app_activities') }}">{{ 'Découvrir les activités'|trans }}</a>
+        </div>
     {% else %}
-        {# Sur CET écran, retirer un favori doit faire disparaître la carte :
-           la page ne montre que des favoris, et le bandeau du bas annonce
-           « Vous pouvez la supprimer de vos favoris à tout moment ». Le
-           script lit ces attributs pour savoir qu'il est dans une liste de
-           favoris, et pour disposer des libellés traduits. #}
-        <div class="acc-grid" data-favorite-list
+        <div class="pf-favs" data-favorite-list
              data-favorite-removed="{{ 'Retiré de vos favoris.'|trans }}"
              data-favorite-undo="{{ 'Annuler'|trans }}">
-            {% for f in favorites %}
-                {% if tab == 'destinations' %}
-                    {# La carte de l'espace compte attend la forme d'une
-                       ACTIVITE (lieu, duree, prix a la personne) : une
-                       destination n'a rien de tout cela. La maquette ne montre
-                       cet onglet qu'a l'etat vide, elle ne dit donc pas a quoi
-                       ressemble une destination en favori. On reprend la carte
-                       de destination deja utilisee et validee ailleurs sur le
-                       site, plutot que d'inventer une mise en page. #}
-                    {% include 'destination/_card.html.twig' with { d: f } %}
-                {% else %}
-                    {# `favorite_type` n'est transmis que pour les onglets dont l'entité
-                       Favorite connaît le type : sans lui, le cœur reste décoratif. #}
-                    {% include 'account/_favorite_card.html.twig' with { f: f, hearts: tab == 'prestataires' ? 'outline' : 'red', favorite_type: tab == 'prestataires' ? null : 'activite', lien: f.slug is defined ? (tab == 'destinations' ? path('app_destination_city', { ville: f.slug }) : path('app_activity_show', { slug: f.slug })) : '#' } %}
-                {% endif %}
+            {% for f in items %}
+                {% set is_activity = f.kind == 'activite' %}
+                {% set href = is_activity ? path('app_activity_show', {slug: f.slug}) : path('app_destination_city', {ville: f.slug}) %}
+                <article class="pf-fav">
+                    <a class="pf-fav__media" href="{{ href }}">
+                        <img src="{{ asset(f.image) }}" alt="" loading="lazy">
+                        <span class="pf-fav__type pf-fav__type--{{ is_activity ? 'activity' : 'place' }}">{{ is_activity ? 'Activité'|trans : 'Lieu'|trans }}</span>
+                    </a>
+                    <button type="button" class="pf-fav__heart is-active"
+                            aria-pressed="true" aria-label="{{ 'Retirer des favoris'|trans }}"
+                            data-favorite-slug="{{ f.slug }}"
+                            data-favorite-type="{{ f.kind }}"
+                            data-favorite-url="{{ path('app_favorite_toggle') }}"
+                            data-favorite-token="{{ csrf_token('submit') }}"
+                            data-favorite-label-on="{{ 'Retirer des favoris'|trans }}"
+                            data-favorite-label-off="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart_solid(18) }}</button>
+                    <div class="pf-fav__body">
+                        <a class="pf-fav__title" href="{{ href }}">{{ f.title }}</a>
+                        {% if f.place %}<span class="pf-fav__place">{{ icon.map_pin(13) }} {{ f.place }}</span>{% endif %}
+                        {% if f.rating %}<span class="pf-fav__rating">{{ _self.stars(f.rating) }} {{ f.rating }} ({{ f.reviews }} {{ 'avis'|trans }})</span>{% endif %}
+                    </div>
+                </article>
             {% endfor %}
         </div>
-
-        {% include 'account/_footer_banner.html.twig' %}
     {% endif %}
+{% endblock %}
+
+{% block account_aside %}
+    <section class="pf-card">
+        <form method="get" class="pf-filters">
+            <input type="hidden" name="onglet" value="{{ tab }}">
+            <div class="pf-card__head">
+                <h2 class="pf-card__title">{{ 'Filtres'|trans }}</h2>
+                <a class="pf-link" href="{{ path('app_account_favorites') }}">{{ 'Effacer tout'|trans }}</a>
+            </div>
+            <fieldset>
+                <legend>{{ 'Type'|trans }}</legend>
+                <label><input type="checkbox" name="type[]" value="activite"{{ 'activite' in types ? ' checked' }}> {{ 'Activités'|trans }}<span>{{ counts.activities }}</span></label>
+                <label><input type="checkbox" name="type[]" value="destination"{{ 'destination' in types ? ' checked' }}> {{ 'Lieux & destinations'|trans }}<span>{{ counts.places }}</span></label>
+            </fieldset>
+            <div class="pf-field pf-select">
+                <label for="fav-region">{{ 'Région'|trans }}</label>
+                <select id="fav-region" name="region">
+                    <option value="">{{ 'Toutes les régions'|trans }}</option>
+                    {% for r in regions %}<option value="{{ r }}"{{ region == r ? ' selected' }}>{{ r }}</option>{% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="pf-btn pf-btn--primary pf-btn--block">{{ 'Appliquer les filtres'|trans }}</button>
+        </form>
+    </section>
+
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Suggestions pour vous'|trans }}</h2>
+        {% if suggestions is empty %}
+            <p class="pf-card__sub">{{ 'Vous avez déjà tout mis en favori !'|trans }}</p>
+        {% else %}
+            <ul class="pf-list pf-suggest">
+                {% for s in suggestions %}
+                    <li>
+                        <img src="{{ asset(s.image) }}" alt="" loading="lazy">
+                        <a class="pf-list__body" href="{{ path('app_activity_show', {slug: s.slug}) }}">
+                            <strong>{{ s.title }}</strong>
+                            <small>{{ s.place }}</small>
+                            <small>{{ icon.star_solid(11) }} {{ s.rating }} ({{ s.reviews }} {{ 'avis'|trans }})</small>
+                        </a>
+                        <button type="button" class="pf-suggest__heart" aria-pressed="false" aria-label="{{ 'Ajouter aux favoris'|trans }}"
+                                data-favorite-slug="{{ s.slug }}" data-favorite-type="activite"
+                                data-favorite-url="{{ path('app_favorite_toggle') }}"
+                                data-favorite-token="{{ csrf_token('submit') }}"
+                                data-favorite-label-on="{{ 'Retirer des favoris'|trans }}"
+                                data-favorite-label-off="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(18) }}</button>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <a class="pf-btn pf-btn--block" href="{{ path('app_activities') }}">{{ 'Découvrir plus d’activités'|trans }}</a>
+    </section>
 {% endblock %}

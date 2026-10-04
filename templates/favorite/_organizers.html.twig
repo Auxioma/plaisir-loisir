@@ -1,0 +1,16 @@
+{# Liste des organisateurs mis en favori. Variables : organizers, limit (facultatif). #}
+{% import '_partials/_icons.html.twig' as icon %}
+{% set list = limit is defined ? organizers|slice(0, limit) : organizers %}
+{% if list is empty %}
+    <p class="fv-empty">{{ 'Aucun organisateur en favori. Touchez le cœur sur la page d’un organisateur pour le suivre.'|trans }}</p>
+{% else %}
+    <ul class="pf-list fv-orgs" data-favorite-list data-favorite-removed="{{ 'Retiré de vos favoris.'|trans }}" data-favorite-undo="{{ 'Annuler'|trans }}">
+        {% for o in list %}
+            <li data-favorite-card>
+                <img src="{{ asset(o.user.avatarPath ?? 'images/account/avatar-default.svg') }}" alt="">
+                <span class="pf-list__body"><strong>{{ o.name }}</strong><small>{{ o.events }} {{ o.events > 1 ? 'événements'|trans : 'événement'|trans }}</small></span>
+                {% include '_partials/_event_fav.html.twig' with { type: 'organisateur', key: o.user.id ~ '', class: 'fv-heart fv-heart--boxed' } %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

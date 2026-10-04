@@ -55,6 +55,9 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-1">
                                     <h2 class="h5 mb-0" style="color: var(--pl-text-strong);">{{ activity.title }}</h2>
+                                    {% if app.user and activity.organizer != app.user %}
+                                        {% include '_partials/_event_fav.html.twig' with { type: 'activite-privee', key: activity.id ~ '', class: 'pa-fav' } %}
+                                    {% endif %}
                                     {% if activity.visibility.value == 'members_only' %}
                                         <span class="badge text-bg-light">{{ 'Membres'|trans }}</span>
                                     {% endif %}

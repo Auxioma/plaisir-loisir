@@ -7,13 +7,13 @@ namespace App\PrivateActivity\Controller;
 use App\PrivateActivity\Entity\Photo;
 use App\PrivateActivity\Entity\PrivateActivity;
 use App\PrivateActivity\Repository\AlbumRepository;
-use App\PrivateActivity\Repository\ParticipationRepository;
 use App\PrivateActivity\Repository\PhotoRepository;
 use App\PrivateActivity\Repository\PrivateActivityRepository;
 use App\PrivateActivity\Security\PrivateActivityVoter;
 use App\PrivateActivity\Service\AlbumService;
 use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
+use App\User\Presenter\AccountActivityPresenter;
 use App\User\StaticAccount;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -31,54 +31,92 @@ use Symfony\Component\Uid\Ulid;
  * l'utilisateur peut poster (organisateur ou participant ACCEPTÉ,
  * PrivateActivityVoter::VIEW_ALBUM), puis l'album de chacune.
  *
- * PAS DE MAQUETTE FIGMA POUR CES DEUX ÉCRANS (statut « à maquetter » du
- * document ci-dessus) : l'UI reste volontairement sommaire, à reprendre
- * visuellement une fois l'écran fourni par la designer.
+ * Le listing suit la maquette profil_album_particulier (30/09) ; la page
+ * d'un album n'a pas encore de maquette.
  */
 final class AlbumController extends AbstractController
 {
     public function __construct(
         private readonly PrivateActivityRepository $activities,
-        private readonly ParticipationRepository $participations,
         private readonly AlbumRepository $albums,
         private readonly PhotoRepository $photos,
         private readonly AlbumService $albumService,
         private readonly AccountIdentityPresenter $identity,
+        private readonly AccountActivityPresenter $accountActivity,
+        private readonly string $projectDir,
     ) {
     }
 
+    private const PER_PAGE = 8;
+
+    /**
+     * Onglets Tous / Publics / Privés, recherche, tri, filtre « organisés /
+     * rejoints », pagination par 8 — maquette profil_album_particulier.
+     */
     #[Route(path: ['fr' => '/compte/albums', 'en' => '/en/account/albums'], name: 'app_account_albums')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $user = $this->currentUser();
+        $all = $this->accountActivity->albums($user);
 
-        /** @var array<string, PrivateActivity> $eligible */
-        $eligible = [];
-        foreach ($this->activities->findByOrganizer($user) as $activity) {
-            $eligible[(string) $activity->getId()] = $activity;
-        }
-        foreach ($this->participations->findByParticipant($user) as $participation) {
-            if ($participation->isAccepted()) {
-                $activity = $participation->getPrivateActivity();
-                $eligible[(string) $activity->getId()] = $activity;
+        $tab = (string) $request->query->get('onglet', 'tous');
+        $query = trim((string) $request->query->get('q', ''));
+        $sort = (string) $request->query->get('tri', 'recents');
+        $role = (string) $request->query->get('statut', '');
+        $view = 'liste' === $request->query->get('vue') ? 'liste' : 'grille';
+
+        $albums = array_values(array_filter($all, static function (array $album) use ($tab, $query, $role): bool {
+            return match ($tab) {
+                'publics' => $album['public'],
+                'prives' => !$album['public'],
+                default => true,
             }
+            && ('' === $query || false !== mb_stripos($album['title'], $query))
+            && match ($role) {
+                'organises' => $album['organizer'],
+                'rejoints' => !$album['organizer'],
+                default => true,
+            };
+        }));
+
+        usort($albums, match ($sort) {
+            'anciens' => static fn (array $a, array $b): int => $a['date'] <=> $b['date'],
+            'photos' => static fn (array $a, array $b): int => $b['photoCount'] <=> $a['photoCount'],
+            default => static fn (array $a, array $b): int => $b['date'] <=> $a['date'],
+        });
+
+        $total = \count($albums);
+        $pages = max(1, (int) ceil($total / self::PER_PAGE));
+        $page = min($pages, max(1, $request->query->getInt('page', 1)));
+
+        $photos = $this->photos->findBy(['author' => $user]);
+        $bytes = 0;
+        foreach ($photos as $photo) {
+            $file = $this->projectDir.'/public/'.ltrim($photo->getPath(), '/');
+            $bytes += is_file($file) ? (int) filesize($file) : 0;
         }
-
-        $albums = array_map(function (PrivateActivity $activity): array {
-            $album = $this->albums->findOneByActivity($activity);
-
-            return [
-                'activity' => $activity,
-                'photoCount' => null !== $album ? $this->photos->countForAlbum($album) : 0,
-                'cover' => null !== $album ? $this->photos->findLatestForAlbum($album) : null,
-            ];
-        }, array_values($eligible));
 
         return $this->render('private_activity/albums.html.twig', [
             'user' => $this->identity->identityFor($user),
             'menu' => StaticAccount::menu(),
             'active' => 'Mes albums photos',
-            'albums' => $albums,
+            'albums' => \array_slice($albums, ($page - 1) * self::PER_PAGE, self::PER_PAGE),
+            'total' => $total,
+            'page' => $page,
+            'pages' => $pages,
+            'per_page' => self::PER_PAGE,
+            'tab' => $tab,
+            'query' => $query,
+            'sort' => $sort,
+            'role' => $role,
+            'view' => $view,
+            'stats' => [
+                'organized' => \count(array_filter($all, static fn (array $a): bool => $a['organizer'])),
+                'joined' => \count(array_filter($all, static fn (array $a): bool => !$a['organizer'])),
+                'photos' => \count($photos),
+                'bytes' => $bytes,
+            ],
+            'max_photos' => AlbumService::MAX_PHOTOS_PER_ALBUM,
         ]);
     }
 

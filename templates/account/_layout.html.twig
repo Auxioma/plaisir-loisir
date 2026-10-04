@@ -1,21 +1,30 @@
 {#
-    Layout commun de l'espace compte (spec profil) : header connecté +
-    2 colonnes (sidebar de compte sticky / contenu) + footer.
+    Gabarit de l'espace compte — maquettes docs/maquettes/profil_particulier
+    (30/09) : sidebar bleu nuit pleine hauteur, colonne principale, et une
+    colonne de droite facultative (encarts) remplie par `account_aside`.
+    Styles : assets/styles/profile.css (.pf-*).
+
     Variables attendues partout : user, menu, active (titre de l'item actif).
 #}
 {% extends 'base.html.twig' %}
 
-{% block header %}
-    {% include '_partials/navbar_connected.html.twig' %}
-{% endblock %}
-
 {% block body %}
-<div class="acc-page">
-    <aside class="acc-aside">
-        {% include 'account/_sidebar.html.twig' %}
+{% set aside = block('account_aside') is defined ? block('account_aside')|trim : '' %}
+<div class="pf">
+    {# La colonne garde le fond bleu nuit sur toute la hauteur ; son contenu
+       reste collé sous l'en-tête et défile seul (demande du 30/09). #}
+    <aside class="pf-side">
+        <div class="pf-side__scroll">
+            {% include 'account/_sidebar.html.twig' %}
+        </div>
     </aside>
-    <div class="acc-main">
-        {% block account %}{% endblock %}
+    <div class="pf-main{{ aside ? ' pf-main--aside' }}">
+        <div class="pf-content">
+            {% block account %}{% endblock %}
+        </div>
+        {% if aside %}
+            <aside class="pf-aside">{{ aside|raw }}</aside>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

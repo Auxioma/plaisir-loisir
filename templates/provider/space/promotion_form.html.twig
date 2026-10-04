@@ -1,0 +1,58 @@
+{#
+    Création / modification d'une offre. Données : ProviderPromotionController::form().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ is_new ? 'Créer une offre'|trans : promotion.title }}{% endblock %}
+
+{% macro err(errors, key) %}{% if errors[key] is defined %}<ul><li>{{ errors[key]|trans }}</li></ul>{% endif %}{% endmacro %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <a class="pp-back" href="{{ path('app_pro_promotions') }}">{{ icon.arrow_left(16) }} {{ 'Offres & Promotions'|trans }}</a>
+            <h1 class="pf-title">{{ is_new ? 'Créer une offre'|trans : promotion.title }}</h1>
+            {% if not is_new %}<p class="pf-sub">{{ 'Vues'|trans }} : {{ promotion.viewsCount }} · {{ 'Clics'|trans }} : {{ promotion.clicksCount }}</p>{% endif %}
+        </div>
+    </header>
+
+    <form method="post" class="pp-form" novalidate>
+        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+        <section class="pf-card">
+            <div class="pf-form-grid">
+                <div class="pf-field pf-span-2">
+                    <label for="p-title">{{ 'Nom de l’offre'|trans }} *</label>
+                    <input id="p-title" name="title" value="{{ values.title }}" maxlength="120" placeholder="{{ 'Réduction 20 %'|trans }}" required>
+                    {{ _self.err(errors, 'title') }}
+                </div>
+                <div class="pf-field pf-span-2">
+                    <label for="p-sub">{{ 'Description courte'|trans }}</label>
+                    <input id="p-sub" name="subtitle" value="{{ values.subtitle }}" maxlength="180" placeholder="{{ 'Sur toutes les randonnées guidées'|trans }}">
+                </div>
+                <div class="pf-field">
+                    <label for="p-kind">{{ 'Type d’offre'|trans }}</label>
+                    <select id="p-kind" name="kind">{% for k in kinds %}<option value="{{ k.value }}"{{ values.kind == k.value ? ' selected' }}>{{ k.label|trans }}</option>{% endfor %}</select>
+                </div>
+                <div class="pf-field">
+                    <label for="p-discount">{{ 'Réduction (%)'|trans }}</label>
+                    <input id="p-discount" type="number" min="1" max="90" name="discount" value="{{ values.discount }}">
+                    {{ _self.err(errors, 'discount') }}
+                </div>
+                <div class="pf-field pf-span-2">
+                    <label for="p-service">{{ 'Activité concernée'|trans }}</label>
+                    <select id="p-service" name="service">
+                        <option value="">{{ 'Toutes mes activités'|trans }}</option>
+                        {% for s in services %}<option value="{{ s.id }}"{{ values.service == s.id ~ '' ? ' selected' }}>{{ s.title }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="pf-field"><label for="p-start">{{ 'Début'|trans }}</label><input id="p-start" type="date" name="startsAt" value="{{ values.startsAt }}" required></div>
+                <div class="pf-field"><label for="p-end">{{ 'Fin'|trans }}</label><input id="p-end" type="date" name="endsAt" value="{{ values.endsAt }}" required>{{ _self.err(errors, 'endsAt') }}</div>
+            </div>
+        </section>
+        <div class="pp-form__actions">
+            <a class="pf-btn pp-btn-ghost" href="{{ path('app_pro_promotions') }}">{{ 'Annuler'|trans }}</a>
+            <button class="pf-btn pf-btn--primary">{{ is_new ? 'Créer l’offre'|trans : 'Enregistrer'|trans }}</button>
+        </div>
+    </form>
+{% endblock %}

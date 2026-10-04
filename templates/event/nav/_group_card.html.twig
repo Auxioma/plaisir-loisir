@@ -11,7 +11,7 @@
            l'assistant n'a pas de photo, et `asset(null)` fait tomber la page. #}
         <img src="{{ asset(g.image ?? 'images/events/grp-nature.jpg') }}" alt="{{ g.name }}">
         {% if g.badge %}<span class="evn-badge evn-badge--new">{{ g.badge|trans }}</span>{% endif %}
-        <span class="evn-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</span>
+        {% include '_partials/_event_fav.html.twig' with { type: 'groupe', key: g.slug } %}
     </div>
     <div class="evn-card__body">
         <span class="evn-gcard__rating"><span class="evn-rating-pill">{{ icon.star(13) }} 4.5</span> {{ '142 avis'|trans }}</span>

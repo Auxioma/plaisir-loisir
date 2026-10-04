@@ -1,0 +1,167 @@
+{#
+    Mes favoris (menu principal) — maquette docs/maquettes/favoris.jpeg (01/10).
+    Données : FavoritesPageController. En-tête et pied de page communs à la
+    plateforme (décision du 01/10) : la maquette dessine ceux de « TrouveMoi
+    Event », non repris.
+    Styles : assets/styles/discover.css (.fv-*).
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Mes favoris'|trans }}{% endblock %}
+
+{% set show = {
+    evenements: tab in ['tous', 'evenements'],
+    groupes: tab in ['tous', 'groupes'],
+    activites: tab in ['tous', 'activites'],
+    organisateurs: tab == 'organisateurs',
+} %}
+
+{% block body %}
+<div class="fv">
+    <div class="fv-main">
+        <header class="fv-hero">
+            <img class="fv-hero__bg" src="{{ asset('images/events/favorites-hero.jpg') }}" alt="">
+            <h1>{{ 'Mes favoris'|trans }} <span>{{ icon.heart_solid(34) }}</span></h1>
+            <p>{{ 'Retrouvez facilement tous vos événements, groupes et activités préférés.'|trans }}</p>
+            <div class="fv-hero__stats">
+                <a href="{{ path('app_favorites_page', {onglet: 'evenements'}) }}">{{ icon.calendar_grid(26) }}<span><strong>{{ events|length }}</strong>{{ 'Événements'|trans }}</span></a>
+                <a href="{{ path('app_favorites_page', {onglet: 'groupes'}) }}" class="is-orange">{{ icon.users(26) }}<span><strong>{{ groups|length }}</strong>{{ 'Groupes & Clubs'|trans }}</span></a>
+                <a href="{{ path('app_favorites_page', {onglet: 'activites'}) }}">{{ icon.user_pin(26) }}<span><strong>{{ activities|length }}</strong>{{ 'Activités privées'|trans }}</span></a>
+                <a href="{{ path('app_favorites_page', {onglet: 'organisateurs'}) }}" class="is-orange">{{ icon.star(26) }}<span><strong>{{ organizers|length }}</strong>{{ 'Organisateurs'|trans }}</span></a>
+            </div>
+        </header>
+
+        <nav class="fv-tabs" aria-label="{{ 'Filtrer mes favoris'|trans }}">
+            {% for key, label in {tous: 'Tous mes favoris', evenements: 'Événements', groupes: 'Groupes & Clubs', activites: 'Activités privées', organisateurs: 'Organisateurs'} %}
+                <a class="{{ tab == key ? 'is-active' }}" href="{{ path('app_favorites_page', {onglet: key}) }}">
+                    {%- if key == 'tous' %}{{ icon.heart(18) }}{% elseif key == 'evenements' %}{{ icon.calendar_grid(18) }}{% elseif key == 'groupes' %}{{ icon.users(18) }}{% elseif key == 'activites' %}{{ icon.star(18) }}{% else %}{{ icon.user_round(18) }}{% endif %} {{ label|trans }}</a>
+            {% endfor %}
+        </nav>
+
+        {% if show.evenements %}
+            <section class="fv-section">
+                <div class="fv-section__head">
+                    <h2>{{ icon.calendar_grid(22) }} {{ 'Événements favoris'|trans }}</h2>
+                    {% if events|length > 5 and tab == 'tous' %}<a href="{{ path('app_favorites_page', {onglet: 'evenements'}) }}">{{ 'Voir tous (%n%)'|trans({'%n%': events|length}) }} {{ icon.arrow_right(14) }}</a>{% endif %}
+                </div>
+                {% if events is empty %}
+                    <p class="fv-empty">{{ 'Aucun événement en favori. Touchez le cœur d’un événement pour le retrouver ici.'|trans }} <a href="{{ path('app_events_all') }}">{{ 'Parcourir les événements'|trans }}</a></p>
+                {% else %}
+                    <div class="fv-events" data-favorite-list data-favorite-removed="{{ 'Retiré de vos favoris.'|trans }}" data-favorite-undo="{{ 'Annuler'|trans }}">
+                        {% for e in tab == 'tous' ? events|slice(0, 5) : events %}
+                            <a class="fv-event" data-favorite-card href="{{ path('app_events_detail', {slug: e.slug}) }}">
+                                <span class="fv-event__media">
+                                    <img src="{{ asset(e.image ?? 'images/events/ev-raft-clean.jpg') }}" alt="" loading="lazy">
+                                    {% if e.category %}<span class="fv-event__tag fv-event__tag--{{ e.color }}">{{ e.category }}</span>{% endif %}
+                                    {% include '_partials/_event_fav.html.twig' with { type: 'evenement', key: e.slug, class: 'fv-heart' } %}
+                                    <span class="fv-event__date"><strong>{{ e.startsAt|date('d') }}</strong>{{ e.startsAt|pf_month }}</span>
+                                </span>
+                                <span class="fv-event__body">
+                                    <strong>{{ e.title }}</strong>
+                                    {% if e.location %}<span>{{ icon.map_pin(14) }} {{ e.location }}</span>{% endif %}
+                                    <span>{{ icon.clock(14) }} {{ e.hours }}</span>
+                                    <span class="fv-avatars">{% for a in avatars|slice(0, 4) %}<img src="{{ asset(a) }}" alt="">{% endfor %}<em>+{{ e.participants }}</em></span>
+                                </span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </section>
+        {% endif %}
+
+        {% if show.groupes %}
+            <section class="fv-section">
+                <div class="fv-section__head">
+                    <h2>{{ icon.users(22) }} {{ 'Groupes & Clubs favoris'|trans }}</h2>
+                    {% if groups|length > 4 and tab == 'tous' %}<a href="{{ path('app_favorites_page', {onglet: 'groupes'}) }}">{{ 'Voir tous (%n%)'|trans({'%n%': groups|length}) }} {{ icon.arrow_right(14) }}</a>{% endif %}
+                </div>
+                {% if groups is empty %}
+                    <p class="fv-empty">{{ 'Aucun groupe en favori.'|trans }} <a href="{{ path('app_groups') }}">{{ 'Découvrir les groupes'|trans }}</a></p>
+                {% else %}
+                    <div class="fv-groups" data-favorite-list data-favorite-removed="{{ 'Retiré de vos favoris.'|trans }}" data-favorite-undo="{{ 'Annuler'|trans }}">
+                        {% for g in tab == 'tous' ? groups|slice(0, 4) : groups %}
+                            <a class="fv-group" data-favorite-card href="{{ path('app_group_detail', {slug: g.slug}) }}">
+                                <span class="fv-group__media">
+                                    <img src="{{ asset(g.image ?? 'images/events/grp-nature.jpg') }}" alt="" loading="lazy">
+                                    <span class="fv-group__ico">{{ icon.users(16) }}</span>
+                                    {% include '_partials/_event_fav.html.twig' with { type: 'groupe', key: g.slug, class: 'fv-heart' } %}
+                                </span>
+                                <span class="fv-group__body">
+                                    <strong>{{ g.name }}</strong>
+                                    <span class="fv-group__members">{{ g.members }} {{ 'membres'|trans }}</span>
+                                    {% if g.description %}<span class="fv-group__desc">{{ g.description|striptags|length > 90 ? g.description|striptags|slice(0, 88) ~ '…' : g.description|striptags }}</span>{% endif %}
+                                    <span class="fv-avatars">{% for a in avatars|slice(0, 4) %}<img src="{{ asset(a) }}" alt="">{% endfor %}</span>
+                                </span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </section>
+        {% endif %}
+
+        {% if show.activites %}
+            <section class="fv-section">
+                <div class="fv-section__head">
+                    <h2>{{ icon.star_solid(22) }} {{ 'Activités privées favorites'|trans }}</h2>
+                </div>
+                {% if activities is empty %}
+                    <p class="fv-empty">{{ 'Aucune activité privée en favori.'|trans }} <a href="{{ path('app_private_activities') }}">{{ 'Voir les activités privées'|trans }}</a></p>
+                {% else %}
+                    <div class="fv-acts" data-favorite-list data-favorite-removed="{{ 'Retiré de vos favoris.'|trans }}" data-favorite-undo="{{ 'Annuler'|trans }}">
+                        {% for a in activities %}
+                            <a class="fv-act" data-favorite-card href="{{ path('app_private_activity_show', {id: a.id}) }}">
+                                <img src="{{ asset(a.service ? 'images/activities/canoe-riviere.jpg' : 'images/events/ev-photo1.jpg') }}" alt="" loading="lazy">
+                                <span class="fv-act__body">
+                                    <strong>{{ a.title }}</strong>
+                                    <span>{{ a.city ?: '—' }}</span>
+                                    <span>{{ a.scheduledAt ? a.scheduledAt|pf_date('EEE d MMM, HH:mm')|capitalize : '' }}</span>
+                                </span>
+                                {% include '_partials/_event_fav.html.twig' with { type: 'activite-privee', key: a.id ~ '', class: 'fv-heart fv-heart--boxed' } %}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </section>
+        {% endif %}
+
+        {% if show.organisateurs %}
+            <section class="fv-section">
+                <div class="fv-section__head"><h2>{{ icon.user_round(22) }} {{ 'Organisateurs favoris'|trans }}</h2></div>
+                {% include 'favorite/_organizers.html.twig' %}
+            </section>
+        {% endif %}
+
+        <p class="fv-more">{{ icon.heart(16) }} {{ 'Vos activités et destinations favorites sont dans votre espace :'|trans }} <a href="{{ path('app_account_favorites') }}">{{ 'Mon compte › Favoris'|trans }}</a></p>
+    </div>
+
+    <aside class="fv-aside">
+        <section class="pf-card">
+            <div class="pf-card__head">
+                <h2 class="pf-card__title">{{ 'Organisateurs favoris'|trans }}</h2>
+                <a class="pf-link" href="{{ path('app_favorites_page', {onglet: 'organisateurs'}) }}">{{ 'Voir tout'|trans }}</a>
+            </div>
+            {% include 'favorite/_organizers.html.twig' with { limit: 4 } %}
+        </section>
+
+        <section class="pf-card pf-card--soft fv-notify">
+            <div>
+                <h2 class="pf-card__title">{{ 'Ne manquez rien !'|trans }}</h2>
+                <p>{{ 'Activez les notifications pour vos favoris et soyez informé des nouveautés.'|trans }}</p>
+                <a class="pf-btn pf-btn--primary" href="{{ path('app_account_notification_preferences') }}">{{ 'Gérer mes notifications'|trans }}</a>
+            </div>
+            <span class="fv-notify__bell">{{ icon.bell(54) }}</span>
+        </section>
+
+        <section class="pf-card">
+            <h2 class="pf-card__title">{{ 'Actions rapides'|trans }}</h2>
+            <ul class="pf-list fv-actions">
+                <li><a class="pf-list__link" href="{{ path('app_events_calendar') }}"><span class="pf-ico pf-ico--sm">{{ icon.calendar_grid(20) }}</span><span class="pf-list__body"><strong>{{ 'Voir mon calendrier'|trans }}</strong><small>{{ 'Tous vos événements favoris'|trans }}</small></span>{{ icon.chevron_right(16) }}</a></li>
+                <li><a class="pf-list__link" href="{{ path('app_account_referral') }}"><span class="pf-ico pf-ico--sm">{{ icon.users(20) }}</span><span class="pf-list__body"><strong>{{ 'Inviter des amis'|trans }}</strong><small>{{ 'Partagez vos favoris'|trans }}</small></span>{{ icon.chevron_right(16) }}</a></li>
+                <li><a class="pf-list__link" href="{{ path('app_event_create', {etape: 1}) }}"><span class="pf-ico pf-ico--sm">{{ icon.edit_square(20) }}</span><span class="pf-list__body"><strong>{{ 'Créer un événement'|trans }}</strong><small>{{ 'Organisez votre prochaine activité'|trans }}</small></span>{{ icon.chevron_right(16) }}</a></li>
+                <li><a class="pf-list__link" href="{{ path('app_events_all') }}"><span class="pf-ico pf-ico--sm">{{ icon.rocket(20) }}</span><span class="pf-list__body"><strong>{{ 'Découvrir de nouveaux événements'|trans }}</strong><small>{{ 'Trouvez d’autres activités qui vous plaisent'|trans }}</small></span>{{ icon.chevron_right(16) }}</a></li>
+            </ul>
+        </section>
+    </aside>
+</div>
+{% endblock %}

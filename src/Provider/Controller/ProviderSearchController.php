@@ -8,6 +8,7 @@ use App\Catalog\Repository\CategoryRepository;
 use App\Provider\Repository\ProviderProfileRepository;
 use App\Review\Enum\ReviewStatus;
 use App\Review\Repository\ReviewRepository;
+use App\Stats\Service\PageViewRecorder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -62,13 +63,16 @@ final class ProviderSearchController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/professionnels/{slug}', 'en' => '/en/professionals/{slug}'], name: 'app_provider_profile')]
-    public function profile(string $slug): Response
+    public function profile(string $slug, Request $request, PageViewRecorder $pageViews): Response
     {
         $profile = $this->providers->findVerifiedBySlug($slug);
 
         if (null === $profile) {
             throw new NotFoundHttpException('Ce professionnel est introuvable.');
         }
+
+        // « Vues de profil » de l'espace pro (02/10).
+        $pageViews->recordProfile($request, $profile, $this->getUser());
 
         $reviews = array_values(array_filter(
             $this->reviews->findForProvider($profile),

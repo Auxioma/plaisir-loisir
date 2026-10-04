@@ -1,0 +1,52 @@
+{#
+    Briques des écrans de l'espace compte (maquettes profil_particulier).
+    {% import 'account/_ui.html.twig' as ui %}
+#}
+
+{# Icône par nom court, pour les tuiles et encarts. #}
+{% macro ico(name, size = 26) %}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    {%- if name == 'calendar' %}{{ icon.calendar_grid(size) }}
+    {%- elseif name == 'check' %}{{ icon.check_badge(size) }}
+    {%- elseif name == 'clock' %}{{ icon.clock(size) }}
+    {%- elseif name == 'doc' %}{{ icon.receipt(size) }}
+    {%- elseif name == 'x' %}{{ icon.ban(size) }}
+    {%- elseif name == 'heart' %}{{ icon.heart(size) }}
+    {%- elseif name == 'pin' %}{{ icon.map_pin(size) }}
+    {%- elseif name == 'users' %}{{ icon.users(size) }}
+    {%- elseif name == 'euro' %}{{ icon.euro(size) }}
+    {%- elseif name == 'image' %}{{ icon.image_frame(size) }}
+    {%- elseif name == 'edit' %}{{ icon.edit_square(size) }}
+    {%- elseif name == 'star' %}{{ icon.star(size) }}
+    {%- else %}{{ icon.bell(size) }}
+    {%- endif -%}
+{% endmacro %}
+
+{# Tuile chiffrée : pastille teintée, libellé, valeur, unité, note. #}
+{% macro stat(label, value, unit, note, tone, iconName) %}
+    <article class="pf-card pf-stat">
+        <span class="pf-ico pf-ico--sm pf-ico--{{ tone }}">{{ _self.ico(iconName, 22) }}</span>
+        <div class="pf-stat__body">
+            <span class="pf-stat__label">{{ label }}</span>
+            <span class="pf-stat__value">{{ value }}</span>
+            {% if unit %}<span class="pf-stat__unit">{{ unit }}</span>{% endif %}
+            {% if note %}<span class="pf-stat__note">{{ note }}</span>{% endif %}
+        </div>
+    </article>
+{% endmacro %}
+
+{# Pastille de statut. `tone` : green, orange, red, grey, violet, blue. #}
+{% macro pill(label, tone) %}<span class="pf-pill pf-pill--{{ tone }}">{{ label }}</span>{% endmacro %}
+
+{# Encart « Besoin d'aide ? » : liste de liens vers le centre d'aide. #}
+{% macro help(title, links) %}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ title }}</h2>
+        <ul class="pf-list pf-helplist">
+            {% for link in links %}
+                <li><a class="pf-list__link" href="{{ link.href }}"><span class="pf-helplist__ico">{{ icon.help_circle(16) }}</span>{{ link.label }}{{ icon.chevron_right(16) }}</a></li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endmacro %}

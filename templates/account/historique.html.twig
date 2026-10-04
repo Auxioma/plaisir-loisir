@@ -1,60 +1,181 @@
 {#
-    « Mes réservations » de la sidebar, rebaptisée « Historique » (Lot J,
-    15/09) : le catalogue à réservation directe étant en pause, l'historique
-    s'appuie sur les demandes de devis clôturées et les activités privées
-    passées. Aucune maquette : réutilise le gabarit de l'espace compte.
-    Variables : closed_requests (list de ServiceRequest), past_participations
-    (list de Participation).
+    Mes réservations — maquette docs/maquettes/profil_particulier/
+    profil_reservations_particulier.jpeg (30/09).
+    Données : AccountController::history() — réservations payantes et places
+    dans des activités privées (gratuites), dans un même tableau.
 #}
 {% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+{% import 'account/_ui.html.twig' as ui %}
 
-{% block title %}{{ 'Historique'|trans }}{% endblock %}
+{% block title %}{{ 'Mes réservations'|trans }}{% endblock %}
+
+{% set tones = {upcoming: 'green', pending: 'orange', past: 'grey', cancelled: 'red'} %}
 
 {% block account %}
-    {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Historique'|trans }],
-        title: 'Historique'|trans,
-        subtitle: 'Vos demandes clôturées et vos activités privées passées.'|trans,
-    } %}
+    <header class="pf-head">
+        <div>
+            <h1 class="pf-title">{{ 'Mes réservations'|trans }}</h1>
+            <p class="pf-sub">{{ 'Retrouvez et gérez toutes vos réservations sur TrouveMoi Plaisirs & Loisirs.'|trans }}</p>
+        </div>
+    </header>
 
-    <h2 class="h5 mb-3">{{ 'Demandes de devis clôturées'|trans }}</h2>
-    {% if closed_requests is empty %}
-        {% include 'account/_empty.html.twig' with { message: 'Aucune demande clôturée pour le moment.'|trans } %}
-    {% else %}
-        <div class="list-group mb-4">
-            {% for demande in closed_requests %}
-                {% set accepted = null %}
-                {% for devis in demande.quotes %}
-                    {% if devis.status.value == 'accepted' %}{% set accepted = devis %}{% endif %}
+    <div class="pf-tabs-row">
+        <nav class="pf-tabs">
+            {% for key, label in {'toutes': 'Toutes', 'a-venir': 'À venir', 'passees': 'Passées', 'annulees': 'Annulées'} %}
+                <a class="pf-tab{{ tab == key ? ' is-active' }}" href="{{ path('app_account_history', {onglet: key}) }}">{{ label|trans }}</a>
+            {% endfor %}
+        </nav>
+        <a class="pf-btn" href="{{ path('app_account_history_export') }}">{{ icon.download(18) }} {{ 'Exporter mes réservations'|trans }}</a>
+    </div>
+
+    <form class="pf-toolbar" method="get">
+        <input type="hidden" name="onglet" value="{{ tab }}">
+        <div class="pf-search">
+            <input type="search" name="q" value="{{ query }}" placeholder="{{ 'Rechercher une réservation...'|trans }}" aria-label="{{ 'Rechercher une réservation'|trans }}">
+            <button type="submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(18) }}</button>
+        </div>
+        <div class="pf-select">
+            <select name="tri" onchange="this.form.submit()" aria-label="{{ 'Trier'|trans }}">
+                <option value="recentes"{{ sort == 'recentes' ? ' selected' }}>{{ 'Trier par : Plus récentes'|trans }}</option>
+                <option value="anciennes"{{ sort == 'anciennes' ? ' selected' }}>{{ 'Trier par : Plus anciennes'|trans }}</option>
+                <option value="montant"{{ sort == 'montant' ? ' selected' }}>{{ 'Trier par : Montant'|trans }}</option>
+            </select>
+        </div>
+        <div class="pf-select">
+            <select name="periode" onchange="this.form.submit()" aria-label="{{ 'Période'|trans }}">
+                <option value="">{{ 'Toutes les dates'|trans }}</option>
+                <option value="30j"{{ period == '30j' ? ' selected' }}>{{ '30 derniers jours'|trans }}</option>
+                <option value="annee"{{ period == 'annee' ? ' selected' }}>{{ 'Cette année'|trans }}</option>
+            </select>
+        </div>
+        <div class="pf-select">
+            <select name="statut" onchange="this.form.submit()" aria-label="{{ 'Statut'|trans }}">
+                <option value="">{{ 'Tous les statuts'|trans }}</option>
+                {% for key, label in {upcoming: 'À venir', pending: 'En attente', past: 'Passée', cancelled: 'Annulée'} %}
+                    <option value="{{ key }}"{{ status == key ? ' selected' }}>{{ label|trans }}</option>
                 {% endfor %}
-                <a href="{{ path('app_account_requests_show', {id: demande.id}) }}"
-                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>{{ demande.title }}</strong>
-                        <div class="text-muted small">
-                            {{ demande.category.name }}
-                            {% if accepted %} — {{ accepted.provider.displayName }} — {{ accepted.amount|number_format(2, ',', ' ') }} {{ accepted.currency }}{% endif %}
-                        </div>
-                    </div>
-                    <span class="badge rounded-pill text-bg-secondary">{{ 'Clôturée'|trans }}</span>
-                </a>
-            {% endfor %}
+            </select>
         </div>
-    {% endif %}
+    </form>
 
-    <h2 class="h5 mb-3">{{ 'Activités privées passées'|trans }}</h2>
-    {% if past_participations is empty %}
-        {% include 'account/_empty.html.twig' with { message: "Vous n'avez encore participé à aucune activité privée passée."|trans } %}
-    {% else %}
-        <div class="list-group">
-            {% for participation in past_participations %}
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>{{ participation.privateActivity.title }}</strong>
-                        <div class="text-muted small">{{ participation.privateActivity.scheduledAt|date('d/m/Y') }}</div>
-                    </div>
+    <div class="pf-row pf-row--4">
+        {{ ui.stat('Total des réservations'|trans, counts.all, 'réservations'|trans, '+%n% ce mois-ci'|trans({'%n%': counts.month}), 'violet', 'calendar') }}
+        {{ ui.stat('À venir'|trans, counts.upcoming, 'réservations'|trans, counts.all ? (counts.upcoming * 100 / counts.all)|round ~ '% ' ~ 'du total'|trans : '', 'green', 'calendar') }}
+        {{ ui.stat('Passées'|trans, counts.past, 'réservations'|trans, counts.all ? (counts.past * 100 / counts.all)|round ~ '% ' ~ 'du total'|trans : '', 'orange', 'clock') }}
+        {{ ui.stat('Annulées'|trans, counts.cancelled, counts.cancelled > 1 ? 'réservations'|trans : 'réservation'|trans, counts.all ? (counts.cancelled * 100 / counts.all)|round ~ '% ' ~ 'du total'|trans : '', 'red', 'x') }}
+    </div>
+
+    <div class="pf-card pf-table-wrap">
+        {% if rows is empty %}
+            <div class="pf-empty">
+                <strong>{{ query or status or period or tab != 'toutes' ? 'Aucune réservation ne correspond.'|trans : 'Vous n’avez pas encore de réservation.'|trans }}</strong>
+                {{ 'Réservez une activité ou rejoignez une sortie entre particuliers.'|trans }}
+                <br><a class="pf-btn" href="{{ path('app_activities') }}">{{ 'Découvrir les activités'|trans }}</a>
+            </div>
+        {% else %}
+            <table class="pf-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'Activité'|trans }}</th>
+                        <th>{{ 'Date'|trans }}</th>
+                        <th>{{ 'Participants'|trans }}</th>
+                        <th>{{ 'Montant'|trans }}</th>
+                        <th>{{ 'Statut'|trans }}</th>
+                        <th class="pf-table__th-actions">{{ 'Actions'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in rows %}
+                        <tr>
+                            <td>
+                                <div class="pf-table__item">
+                                    <img src="{{ asset(r.image) }}" alt="" loading="lazy">
+                                    <div><strong>{{ r.title }}</strong><small>{{ r.place ?: '—' }}</small></div>
+                                </div>
+                            </td>
+                            <td>{{ r.date|pf_date('d MMMM y') }}<small>{{ r.date ? r.date|date('H') ~ 'h' ~ r.date|date('i') : '' }}</small></td>
+                            <td>{{ r.participants }} {{ r.participants > 1 ? 'personnes'|trans : 'personne'|trans }}</td>
+                            <td>{{ r.amount is null ? 'Gratuit'|trans : r.amount|pf_money }}</td>
+                            <td class="pf-status">{{ ui.pill(r.statusLabel|trans, tones[r.status]) }}<small>{{ r.statusNote|trans }}</small></td>
+                            <td>
+                                <div class="pf-table__actions">
+                                    {% if r.route %}
+                                        <a class="pf-iconbtn" href="{{ path(r.route, r.routeParams) }}" aria-label="{{ 'Voir'|trans }}" title="{{ 'Voir'|trans }}">{{ icon.eye(18) }}</a>
+                                    {% endif %}
+                                    <details class="pl-dropdown pf-kebab pf-kebab--btn">
+                                        <summary class="pf-iconbtn" aria-label="{{ 'Plus d’actions'|trans }}">{{ icon.dots(18) }}</summary>
+                                        <div class="tm-menu tm-menu--right">
+                                            {% if r.route %}<a class="tm-menu__item" href="{{ path(r.route, r.routeParams) }}">{{ 'Voir l’activité'|trans }}</a>{% endif %}
+                                            {% if r.kind == 'participation' and r.status in ['upcoming', 'past'] %}
+                                                <a class="tm-menu__item" href="{{ path('app_account_album_show', {id: r.routeParams.id}) }}">{{ 'Voir l’album'|trans }}</a>
+                                            {% endif %}
+                                            {% if r.kind == 'booking' and r.status == 'past' %}
+                                                <a class="tm-menu__item" href="{{ path('app_account_booking_review', {id: r.id}) }}">{{ 'Donner mon avis'|trans }}</a>
+                                            {% endif %}
+                                            <a class="tm-menu__item" href="{{ path('app_account_contact') }}">{{ 'Signaler un problème'|trans }}</a>
+                                        </div>
+                                    </details>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+    {% include 'account/_pager.html.twig' with { noun: 'réservations'|trans } %}
+{% endblock %}
+
+{% block account_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Résumé de vos réservations'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Sur les 30 derniers jours'|trans }}</p>
+        <ul class="pf-list pf-summary">
+            <li>
+                <span class="pf-ico pf-ico--xs">{{ icon.euro(16) }}</span>
+                <span class="pf-list__body"><strong>{{ 'Dépensé'|trans }}</strong></span>
+                <span class="pf-list__end">{{ summary.spent|pf_money }}</span>
+                {% if summary.spentTrend is not null %}<span class="pf-trend{{ summary.spentTrend < 0 ? ' is-down' }}">{{ summary.spentTrend > 0 ? '+' }}{{ summary.spentTrend }}%</span>{% endif %}
+            </li>
+            <li>
+                <span class="pf-ico pf-ico--xs">{{ icon.calendar_grid(16) }}</span>
+                <span class="pf-list__body"><strong>{{ 'Réservations'|trans }}</strong></span>
+                <span class="pf-list__end">{{ summary.count }}</span>
+                {% if summary.countTrend is not null %}<span class="pf-trend{{ summary.countTrend < 0 ? ' is-down' }}">{{ summary.countTrend > 0 ? '+' }}{{ summary.countTrend }}%</span>{% endif %}
+            </li>
+            <li>
+                <span class="pf-ico pf-ico--xs">{{ icon.edit_square(16) }}</span>
+                <span class="pf-list__body"><strong>{{ 'Activités différentes'|trans }}</strong></span>
+                <span class="pf-list__end">{{ summary.distinct }}</span>
+            </li>
+        </ul>
+        <a class="pf-btn pf-btn--block" href="{{ path('app_account_dashboard') }}">{{ 'Voir mes statistiques'|trans }}</a>
+    </section>
+
+    {{ ui.help('Besoin d’aide ?'|trans, [
+        {label: 'Comment modifier ma réservation ?'|trans, href: path('app_help_center')},
+        {label: 'Comment annuler une réservation ?'|trans, href: path('app_help_center')},
+        {label: 'Quels sont les délais d’annulation ?'|trans, href: path('app_help_center')},
+        {label: 'Voir le guide complet'|trans, href: path('app_faq')},
+    ]) }}
+
+    <section class="pf-card pf-card--soft">
+        <h2 class="pf-card__title">{{ 'Activité à venir'|trans }}</h2>
+        {% if next %}
+            <div class="pf-next">
+                <img src="{{ asset(next.image) }}" alt="" loading="lazy">
+                <div>
+                    <strong>{{ next.title }}</strong>
+                    <span>{{ next.date|pf_date('d MMMM y') }} {{ 'à'|trans }} {{ next.date|date('H') }}h{{ next.date|date('i') }}</span>
+                    <span>{{ next.place }}</span>
                 </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+            </div>
+            {% if next.route %}<a class="pf-btn pf-btn--block" href="{{ path(next.route, next.routeParams) }}">{{ 'Voir la réservation'|trans }}</a>{% endif %}
+        {% else %}
+            <p class="pf-card__sub">{{ 'Aucune activité à venir pour le moment.'|trans }}</p>
+            <a class="pf-btn pf-btn--block" href="{{ path('app_activities') }}">{{ 'Trouver une activité'|trans }}</a>
+        {% endif %}
+    </section>
 {% endblock %}

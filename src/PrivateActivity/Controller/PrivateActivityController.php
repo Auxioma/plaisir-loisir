@@ -17,6 +17,7 @@ use App\PrivateActivity\Security\PrivateActivityVoter;
 use App\PrivateActivity\Service\PrivateActivityService;
 use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
+use App\User\Presenter\AccountActivityPresenter;
 use App\User\StaticAccount;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,6 +46,7 @@ final class PrivateActivityController extends AbstractController
         private readonly CategoryRepository $categories,
         private readonly PrivateActivityService $service,
         private readonly AccountIdentityPresenter $identity,
+        private readonly AccountActivityPresenter $accountActivity,
     ) {
     }
 
@@ -116,17 +118,73 @@ final class PrivateActivityController extends AbstractController
         return $this->redirectToRoute('app_private_activity_show', ['id' => $id]);
     }
 
+    /**
+     * « Mes activités créées » — maquette profil_activites_particulier (30/09) :
+     * les activités privées organisées par l'utilisateur. Celles qu'il a
+     * rejointes sont suivies dans « Mes réservations ».
+     *
+     * Les onglets de la maquette (En attente, Brouillons) n'ont pas
+     * d'équivalent : une activité privée est publiée dès sa création. Ils
+     * sont remplacés par les états réels (Complètes, Annulées).
+     */
     #[Route(path: ['fr' => '/compte/activites-privees', 'en' => '/en/account/private-activities'], name: 'app_account_private_activities')]
-    public function myActivities(): Response
+    public function myActivities(Request $request): Response
     {
         $user = $this->currentUser();
+        $all = $this->accountActivity->createdActivities($user);
+
+        $tabs = ['toutes' => null, 'en-ligne' => 'online', 'completes' => 'full', 'passees' => 'past', 'annulees' => 'cancelled'];
+        $tab = (string) $request->query->get('onglet', 'toutes');
+        if (!\array_key_exists($tab, $tabs)) {
+            $tab = 'toutes';
+        }
+        $query = trim((string) $request->query->get('q', ''));
+        $sort = (string) $request->query->get('tri', 'recentes');
+
+        $rows = array_values(array_filter($all, static fn (array $row): bool => (null === $tabs[$tab] || $row['status'] === $tabs[$tab])
+            && ('' === $query || false !== mb_stripos($row['title'].' '.$row['place'], $query))));
+
+        usort($rows, match ($sort) {
+            'anciennes' => static fn (array $a, array $b): int => $a['date'] <=> $b['date'],
+            'participants' => static fn (array $a, array $b): int => $b['participants'] <=> $a['participants'],
+            default => static fn (array $a, array $b): int => $b['date'] <=> $a['date'],
+        });
+
+        $perPage = 6;
+        $total = \count($rows);
+        $pages = max(1, (int) ceil($total / $perPage));
+        $page = min($pages, max(1, $request->query->getInt('page', 1)));
+
+        $count = static fn (string $status): int => \count(array_filter($all, static fn (array $r): bool => $r['status'] === $status));
+        $participants = array_sum(array_column($all, 'participants'));
+        $capacity = array_sum(array_map(static fn (array $r): int => $r['capacity'] ?? 0, $all));
+        $monthStart = new \DateTimeImmutable('first day of this month 00:00');
 
         return $this->render('private_activity/mes_activites.html.twig', [
-            'user' => $this->identity->identityFor($this->currentUser()),
+            'user' => $this->identity->identityFor($user),
             'menu' => StaticAccount::menu(),
-            'active' => 'Mes activités privées',
-            'organized' => $this->activities->findByOrganizer($user),
-            'joined' => array_filter($this->participations->findByParticipant($user), static fn (Participation $p): bool => ParticipationStatus::Cancelled !== $p->getStatus()),
+            'active' => 'Mes activités créées',
+            'rows' => \array_slice($rows, ($page - 1) * $perPage, $perPage),
+            'tab' => $tab,
+            'query' => $query,
+            'sort' => $sort,
+            'page' => $page,
+            'pages' => $pages,
+            'total' => $total,
+            'per_page' => $perPage,
+            'counts' => [
+                'all' => \count($all),
+                'online' => $count('online'),
+                'full' => $count('full'),
+                'cancelled' => $count('cancelled'),
+                'past' => $count('past'),
+                'month' => \count(array_filter($all, static fn (array $r): bool => $r['activity']->getCreatedAt() >= $monthStart)),
+            ],
+            'global' => [
+                'participants' => $participants,
+                'pending' => array_sum(array_column($all, 'pending')),
+                'fill' => $capacity > 0 ? (int) round($participants * 100 / $capacity) : null,
+            ],
         ]);
     }
 
@@ -200,7 +258,7 @@ final class PrivateActivityController extends AbstractController
         return $this->render('private_activity/nouvelle.html.twig', [
             'user' => $this->identity->identityFor($this->currentUser()),
             'menu' => StaticAccount::menu(),
-            'active' => 'Mes activités privées',
+            'active' => 'Mes activités créées',
             'categories' => $this->categories->findRoots(),
             'visibilities' => PrivateActivityVisibility::cases(),
             'modes' => ParticipationMode::cases(),
