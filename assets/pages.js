@@ -196,11 +196,6 @@ function initLandingSearch() {
     form.addEventListener('submit', () => {
         form.querySelectorAll('input[name="lieu"], input[name="q"], input[name="date"]').forEach((i) => { if (!i.value) i.disabled = true; });
     });
-    document.querySelectorAll('[data-ld-focus-search]').forEach((a) => a.addEventListener('click', (e) => {
-        e.preventDefault();
-        form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        form.querySelector('input[name="q"]')?.focus({ preventScroll: true });
-    }));
     sync();
 }
 

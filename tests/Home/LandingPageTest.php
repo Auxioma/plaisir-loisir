@@ -42,7 +42,7 @@ final class LandingPageTest extends WebTestCase
         $crawler = $client->request('GET', '/');
 
         $hrefs = array_unique(array_filter(
-            $crawler->filter('.ld a[href], .ld-nav a[href]')->each(static fn ($a): string => (string) $a->attr('href')),
+            $crawler->filter('.ld a[href], .tm-header a[href]')->each(static fn ($a): string => (string) $a->attr('href')),
             static fn (string $h): bool => str_starts_with($h, '/'),
         ));
         self::assertGreaterThan(15, \count($hrefs));

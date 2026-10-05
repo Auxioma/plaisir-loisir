@@ -163,8 +163,8 @@ Europe/Paris (`Kernel::TIMEZONE` + `SessionTimezoneMiddleware` côté PostgreSQL
 
 **Page d'accueil unique** (maquette `docs/maquettes/landing_page.jpeg`, 05/10) : `/` est la
 même page pour visiteurs et membres (`HomeController`, `home/index.html.twig`, `landing.css`).
-Elle a son propre en-tête blanc (`_partials/navbar_landing.html.twig`) ; les autres pages gardent
-l'en-tête bleu nuit. Recherche à 3 modes : `type=gratuites` est renvoyé vers `/activites-privees`,
+Elle garde l'en-tête bleu nuit commun à tout le site (l'en-tête blanc de la maquette n'est
+volontairement PAS repris, décision du 05/10). Recherche à 3 modes : `type=gratuites` est renvoyé vers `/activites-privees`,
 `type=toutes` affiche sur `/activites` le nombre d'activités gratuites correspondantes. L'ancien
 accueil « connecté » (`home/connected.html.twig`) n'existe plus.
 

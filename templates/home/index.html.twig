@@ -11,9 +11,9 @@
 {% block title %}{{ 'Explorez vos envies, partagez vos passions'|trans }}{% endblock %}
 {% block meta_description %}{{ 'Découvrez des activités avec nos prestataires ou créez et rejoignez gratuitement des activités entre particuliers près de chez vous.'|trans }}{% endblock %}
 
-{% block header %}
-    {% include '_partials/navbar_landing.html.twig' %}
-{% endblock %}
+{# En-tête : celui de tout le site (bleu nuit, _partials/navbar.html.twig).
+   La maquette montre un en-tête blanc différent ; on garde l'en-tête commun
+   pour que la navigation reste la même d'une page à l'autre (choix du 05/10). #}
 
 {% block body %}
 <div class="ld">

@@ -1,41 +1,11 @@
 /*
  * ============================================================================
  *  PAGE D'ACCUEIL — maquette docs/maquettes/landing_page.jpeg (05/10).
- *  Préfixe .ld-* ; en-tête blanc propre à cette page (.ld-nav*).
+ *  Préfixe .ld-* ; en-tête commun du site (bleu nuit).
  * ============================================================================
  */
 .ld { --ld-ink: #0b1437; --ld-blue: #1f4fe0; --ld-green: #16a34a; --ld-orange: #f97316; --ld-violet: #4f17e8; --ld-line: #e6e8ef; color: var(--ld-ink); }
 .ld-wrap { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
-
-/* ---- En-tête ---- */
-.ld-nav { position: sticky; top: 0; z-index: 1030; background: #fff !important; border-bottom: 1px solid #eef0f4; box-shadow: 0 2px 12px rgba(11, 20, 55, .05); }
-.ld-nav__inner { display: flex; align-items: center; gap: 22px; max-width: 1440px; min-height: 64px; margin: 0 auto; padding: 0 24px; }
-.ld-nav__logo img { display: block; height: 44px; width: auto; }
-.ld-nav__panel { flex: 1; }
-.ld-nav__links { display: flex; align-items: center; gap: 22px; }
-.ld-nav__link { display: inline-flex; align-items: center; gap: 6px; color: #1e2a5a; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; list-style: none; }
-.ld-nav__link::-webkit-details-marker { display: none; }
-.ld-nav__link:hover { color: var(--ld-blue, #1f4fe0); }
-.ld-nav__link .pl-icon { color: #1f4fe0; }
-.ld-nav__create { display: inline-flex; align-items: center; height: 36px; padding: 0 16px; border: 1.5px solid #16a34a; border-radius: 6px; color: #15803d; font-size: 14px; font-weight: 700; text-decoration: none; }
-.ld-nav__create:hover { background: #16a34a; color: #fff; }
-.ld-nav__dropdown { position: relative; }
-.ld-nav__icons { display: flex; align-items: center; gap: 14px; margin-left: auto; }
-.ld-nav__icon { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; background: none; border: 0; color: #1e2a5a; cursor: pointer; list-style: none; }
-.ld-nav__icon::-webkit-details-marker { display: none; }
-.ld-nav__icon:hover { color: #1f4fe0; }
-.ld-nav__count { position: absolute; top: 0; right: -2px; min-width: 16px; height: 16px; padding: 0 4px; background: #e5324b; border-radius: 999px; color: #fff; font-size: 10px; font-weight: 700; line-height: 16px; text-align: center; }
-.ld-nav .tm-account__toggle { color: #1e2a5a; }
-.ld-nav .tm-account__id strong, .ld-nav .tm-account__id small { color: #1e2a5a; }
-.ld-nav__burger span { background: #1e2a5a !important; }
-@media (min-width: 1200px) {
-    .ld-nav__panel { position: static; visibility: visible !important; transform: none !important; background: none; border: 0; width: auto !important; }
-    .ld-nav__panel .tm-header__panel-head, .ld-nav__burger { display: none; }
-}
-@media (max-width: 1199.98px) {
-    .ld-nav__panel { flex: none; }
-    .ld-nav__links { flex-direction: column; align-items: flex-start; gap: 16px; padding: 20px; }
-}
 
 /* ---- Héros ---- */
 .ld-hero { position: relative; overflow: hidden; padding: 56px 0 72px; color: #fff; }
