@@ -30,7 +30,7 @@ final class PasswordResetFlowTest extends WebTestCase
      * à personne — et le code saisi à l'étape 2 doit être refusé avec un
      * message clair, pas une erreur serveur ni un silence.
      */
-    public function testAnUnknownEmailQueuesNoEmailAndTheCodeStepClearlyRejectsAnyCode(): void
+    public function testAnUnknownEmailIsToldThereIsNoAccountAndSendsNothing(): void
     {
         $client = static::createClient();
         $email = sprintf('jamais-inscrit-%s@example.com', uniqid());
@@ -38,17 +38,16 @@ final class PasswordResetFlowTest extends WebTestCase
         $crawler = $client->request('GET', '/mot-de-passe-oublie');
         $token = (string) $crawler->filter('input[name="_token"]')->attr('value');
 
+        // Depuis le 05/10 : pas d'écran de code pour une adresse sans compte.
         $client->request('POST', '/mot-de-passe-oublie', ['email' => $email, '_token' => $token]);
-        self::assertResponseRedirects('/mot-de-passe-oublie/verification');
+        self::assertResponseRedirects('/mot-de-passe-oublie');
         self::assertEmailCount(0, message: 'Une adresse sans compte ne doit déclencher AUCUN envoi.');
-
-        $crawler = $client->request('GET', '/mot-de-passe-oublie/verification');
-        $token = (string) $crawler->filter('input[name="_token"]')->attr('value');
-        $client->request('POST', '/mot-de-passe-oublie/verification', ['code' => 'AAAAAAAA', '_token' => $token]);
-
-        self::assertResponseRedirects('/mot-de-passe-oublie/verification');
         $client->followRedirect();
-        self::assertSelectorTextContains('.toast-body', 'code est incorrect ou périmé');
+        self::assertSelectorTextContains('.toast-body', 'Aucun compte');
+
+        // Et l'écran du code reste fermé.
+        $client->request('GET', '/mot-de-passe-oublie/verification');
+        self::assertResponseRedirects('/mot-de-passe-oublie');
     }
 
     /**

@@ -4,26 +4,19 @@ declare(strict_types=1);
 
 namespace App\Provider\Controller\Space;
 
-use App\Catalog\Entity\Media;
 use App\Catalog\Entity\Service;
-use App\Catalog\Entity\ServicePackage;
-use App\Catalog\Enum\BookingType;
-use App\Catalog\Enum\PricingUnit;
 use App\Catalog\Enum\ServiceStatus;
-use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Repository\ServiceRepository;
+use App\Catalog\Service\ActivityDraftService;
 use App\Catalog\Service\ActivityPublishingService;
 use App\Provider\Service\ProviderSpace;
 use App\Provider\StaticProviderSpace;
-use App\Shared\Service\PublicImageStorage;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\String\Slugger\AsciiSlugger;
 use Symfony\Component\Uid\Ulid;
 
 /**
@@ -53,8 +46,8 @@ final class ProviderActivityController extends AbstractProviderSpaceController
         private readonly ServiceRepository $services,
         private readonly CategoryRepository $categories,
         private readonly ActivityPublishingService $publishing,
-        private readonly PublicImageStorage $images,
         private readonly EntityManagerInterface $entityManager,
+        private readonly ActivityDraftService $drafts,
     ) {
     }
 
@@ -149,29 +142,6 @@ final class ProviderActivityController extends AbstractProviderSpaceController
         return self::csv('mes-activites-'.date('Y-m-d').'.csv', ['Activité', 'Catégorie', 'Lieu', 'Statut', 'Créée le', 'Durée', 'Prix (€)', 'Vues', 'Réservations', 'Note'], $rows);
     }
 
-    #[Route(path: ['fr' => '/pro/activites/nouvelle', 'en' => '/en/pro/activities/new'], name: 'app_pro_activities_new', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
-    {
-        $service = new Service();
-        $service->setProvider($this->currentProvider())->setBookingType(BookingType::ServiceProduct)->setCurrency('EUR');
-
-        return $this->form($request, $service, true);
-    }
-
-    #[Route(path: ['fr' => '/pro/activites/{id}/modifier', 'en' => '/en/pro/activities/{id}/edit'], name: 'app_pro_activities_edit', methods: ['GET', 'POST'])]
-    public function edit(string $id, Request $request): Response
-    {
-        $service = $this->own($id);
-
-        if (ServiceStatus::Suspended === $service->getStatus()) {
-            $this->addFlash('error', 'Cette activité est suspendue par l’équipe TrouveMoi : contactez le support pour la débloquer.');
-
-            return $this->redirectToRoute('app_pro_activities');
-        }
-
-        return $this->form($request, $service, false);
-    }
-
     /**
      * Actions en ligne et groupées : soumettre, repasser en brouillon,
      * dupliquer, supprimer (suppression logique).
@@ -225,198 +195,20 @@ final class ProviderActivityController extends AbstractProviderSpaceController
         return $this->back($request, 'app_pro_activities');
     }
 
-    private function form(Request $request, Service $service, bool $isNew): Response
-    {
-        $errors = [];
-        $values = [
-            'title' => $isNew ? '' : $service->getTitle(),
-            'category' => $service->getCategory()?->getSlug() ?? '',
-            'shortDescription' => $service->getShortDescription() ?? '',
-            'description' => $isNew ? '' : $service->getDescription(),
-            'city' => $service->getCity() ?? '',
-            'placeLabel' => $service->getPlaceLabel() ?? '',
-            'address' => $service->getAddress() ?? '',
-            'postalCode' => $service->getPostalCode() ?? '',
-            'durationMinutes' => $service->getDurationMinutes() ?? '',
-            'capacity' => $service->getCapacity() ?? '',
-            'minimumAge' => $service->getMinimumAge() ?? '',
-            'price' => null !== ($p = ProviderSpace::price($service)) ? number_format($p, 2, '.', '') : '',
-            'included' => $service->getIncluded() ?? '',
-            'meetingPoint' => $service->getMeetingPoint() ?? '',
-        ];
-
-        if ($request->isMethod('POST')) {
-            if (!$this->csrfOk($request)) {
-                return $this->redirectToRoute($isNew ? 'app_pro_activities_new' : 'app_pro_activities_edit', $isNew ? [] : ['id' => (string) $service->getId()]);
-            }
-
-            foreach (array_keys($values) as $key) {
-                $values[$key] = trim((string) $request->request->get($key, ''));
-            }
-
-            $category = '' !== $values['category'] ? $this->categories->findOneBy(['slug' => $values['category']]) : null;
-            if ('' === $values['title']) {
-                $errors['title'] = 'Le titre est obligatoire.';
-            }
-            if (null === $category) {
-                $errors['category'] = 'Choisissez une catégorie.';
-            }
-            if (mb_strlen($values['description']) < 20) {
-                $errors['description'] = 'Décrivez votre activité en quelques phrases (20 caractères minimum).';
-            }
-            $price = str_replace(',', '.', $values['price']);
-            if ('' === $price || !is_numeric($price) || (float) $price < 0) {
-                $errors['price'] = 'Indiquez un prix valide (0 pour une activité gratuite).';
-            }
-
-            /** @var UploadedFile|null $cover */
-            $cover = $request->files->get('cover');
-            $gallery = array_filter((array) $request->files->get('gallery', []));
-
-            if ([] === $errors) {
-                \assert(null !== $category);
-                $service
-                    ->setTitle(mb_substr($values['title'], 0, 180))
-                    ->setCategory($category)
-                    ->setShortDescription(self::nullIfEmpty($values['shortDescription'], 255))
-                    ->setDescription($values['description'])
-                    ->setCity(self::nullIfEmpty($values['city'], 120))
-                    ->setPlaceLabel(self::nullIfEmpty($values['placeLabel'] ?: $values['city'], 120))
-                    ->setAddress(self::nullIfEmpty($values['address']))
-                    ->setPostalCode(self::nullIfEmpty($values['postalCode'], 10))
-                    ->setCountry($service->getCountry() ?? 'FR')
-                    ->setDurationMinutes('' !== $values['durationMinutes'] ? max(5, (int) $values['durationMinutes']) : null)
-                    ->setCapacity('' !== $values['capacity'] ? max(1, (int) $values['capacity']) : null)
-                    ->setMinimumAge('' !== $values['minimumAge'] ? max(0, (int) $values['minimumAge']) : null)
-                    ->setIncluded(self::nullIfEmpty($values['included'], 2000))
-                    ->setMeetingPoint(self::nullIfEmpty($values['meetingPoint'], 2000));
-
-                if (null !== $service->getDurationMinutes()) {
-                    $m = $service->getDurationMinutes();
-                    $service->setDurationLabel(intdiv($m, 60) > 0 ? intdiv($m, 60).'h'.($m % 60 > 0 ? sprintf('%02d', $m % 60) : '') : $m.' min');
-                }
-
-                $this->applyPrice($service, number_format((float) $price, 2, '.', ''));
-
-                if ($isNew) {
-                    $service->setSlug($this->uniqueSlug($service->getTitle()));
-                    $this->entityManager->persist($service);
-                }
-
-                try {
-                    if ($cover instanceof UploadedFile) {
-                        $this->replaceCover($service, $this->images->store($cover, 'activities'));
-                    }
-                    $position = $service->getMedia()->count();
-                    foreach ($gallery as $file) {
-                        if ($file instanceof UploadedFile) {
-                            $service->addMedia((new Media())->setPath($this->images->store($file, 'activities'))->setType(ActivityPresenter::MEDIA_GALLERY)->setPosition($position++));
-                        }
-                    }
-                } catch (\InvalidArgumentException $e) {
-                    $errors['cover'] = $e->getMessage();
-                }
-
-                if ([] === $errors) {
-                    $this->entityManager->flush();
-
-                    if ('soumettre' === $request->request->get('intent')) {
-                        try {
-                            $this->publishing->submit($service);
-                            $this->addFlash('success', 'Activité enregistrée et envoyée en validation : notre équipe la publie sous 24 h.');
-                        } catch (\InvalidArgumentException $e) {
-                            $this->addFlash('error', $e->getMessage());
-                        }
-                    } else {
-                        $this->addFlash('success', $isNew ? 'Activité enregistrée en brouillon.' : 'Activité mise à jour.');
-                    }
-
-                    return $this->redirectToRoute('app_pro_activities');
-                }
-            }
-        }
-
-        return $this->renderSpace('provider/space/activity_form.html.twig', 'Mes activités', [
-            'service' => $service,
-            'is_new' => $isNew,
-            'values' => $values,
-            'errors' => $errors,
-            'categories' => $this->categories->findRoots(),
-            'cover' => $isNew ? null : ProviderSpace::cover($service),
-        ], new Response(null, [] === $errors ? 200 : 422));
-    }
-
-    private function applyPrice(Service $service, string $price): void
-    {
-        $package = $service->getPackages()->first() ?: null;
-        if (null === $package) {
-            $package = (new ServicePackage())->setName('Tarif unique')->setCurrency('EUR')->setPricingUnit(PricingUnit::PerPerson);
-            $service->addPackage($package);
-        }
-        $package->setPrice($price);
-    }
-
-    private function replaceCover(Service $service, string $path): void
-    {
-        foreach ($service->getMedia() as $media) {
-            if (ActivityPresenter::MEDIA_COVER === $media->getType()) {
-                $this->images->delete($media->getPath());
-                $media->setPath($path);
-
-                return;
-            }
-        }
-        $service->addMedia((new Media())->setPath($path)->setType(ActivityPresenter::MEDIA_COVER)->setPosition(0));
-    }
-
     private function duplicate(Service $source): void
     {
-        $copy = (new Service())
-            ->setProvider($source->getProvider())
-            ->setCategory($source->getCategory())
-            ->setTitle(mb_substr($source->getTitle().' (copie)', 0, 180))
-            ->setDescription($source->getDescription())
-            ->setShortDescription($source->getShortDescription())
-            ->setBookingType($source->getBookingType())
-            ->setCurrency($source->getCurrency())
-            ->setCity($source->getCity())
-            ->setPlaceLabel($source->getPlaceLabel())
-            ->setAddress($source->getAddress())
-            ->setPostalCode($source->getPostalCode())
-            ->setCountry($source->getCountry())
-            ->setDurationMinutes($source->getDurationMinutes())
-            ->setDurationLabel($source->getDurationLabel())
-            ->setCapacity($source->getCapacity())
-            ->setMinimumAge($source->getMinimumAge())
-            ->setLatitude($source->getLatitude())
-            ->setLongitude($source->getLongitude());
-        $copy->setSlug($this->uniqueSlug($copy->getTitle()));
-        foreach ($source->getPackages() as $package) {
-            $copy->addPackage((new ServicePackage())->setName($package->getName())->setPrice($package->getPrice())->setCurrency($package->getCurrency())->setPricingUnit($package->getPricingUnit()));
-        }
-        foreach ($source->getMedia() as $media) {
-            $copy->addMedia((new Media())->setPath($media->getPath())->setType($media->getType())->setPosition($media->getPosition()));
-        }
-        $this->entityManager->persist($copy);
-        $this->entityManager->flush();
+        // Même chemin que l'assistant : la copie reprend TOUT (fiche
+        // détaillée, photos, formules), et repart en brouillon.
+        $draft = $this->drafts->fromService($source);
+        $draft['id'] = null;
+        $draft['title'] = mb_substr($source->getTitle().' (copie)', 0, 180);
+        $this->drafts->persist($draft, $this->currentProvider());
     }
 
     private function softDelete(Service $service): void
     {
         $service->softDelete();
         $this->entityManager->flush();
-    }
-
-    private function uniqueSlug(string $title): string
-    {
-        $base = strtolower((string) (new AsciiSlugger('fr'))->slug($title)) ?: 'activite';
-        $base = mb_substr($base, 0, 150);
-        $slug = $base;
-        for ($i = 2; null !== $this->services->findOneBy(['slug' => $slug]); ++$i) {
-            $slug = $base.'-'.$i;
-        }
-
-        return $slug;
     }
 
     private function own(string $id): Service

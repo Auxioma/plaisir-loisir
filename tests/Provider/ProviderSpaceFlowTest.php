@@ -29,7 +29,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 final class ProviderSpaceFlowTest extends WebTestCase
 {
     private const PAGES = [
-        '/pro/tableau-de-bord', '/pro/tableau-de-bord?periode=30', '/pro/activites', '/pro/activites/nouvelle',
+        '/pro/tableau-de-bord', '/pro/tableau-de-bord?periode=30', '/pro/activites', '/pro/activites/assistant/1', '/pro/notifications', '/pro/evenements',
         '/pro/reservations', '/pro/reservations?onglet=en-attente', '/pro/reservations/rapport',
         '/pro/calendrier', '/pro/calendrier?vue=semaine', '/pro/calendrier?vue=jour',
         '/pro/messages', '/pro/avis', '/pro/revenus', '/pro/revenus?toutes=1&par=semaine',
@@ -73,29 +73,76 @@ final class ProviderSpaceFlowTest extends WebTestCase
         }
     }
 
-    public function testCreatingAnActivitySubmitsItForValidation(): void
+    public function testTheActivityWizardCreatesACompleteActivity(): void
     {
         $client = $this->loggedProvider();
         $category = $this->em()->getRepository(Category::class)->findOneBy([]);
         self::assertNotNull($category);
+        $title = 'Atelier test assistant '.uniqid();
 
-        $client->request('POST', '/pro/activites/nouvelle', $this->token($client, '/pro/activites/nouvelle') + [
-            'title' => 'Atelier test espace pro',
-            'category' => $category->getSlug(),
-            'description' => 'Une description suffisamment longue pour passer la validation.',
-            'price' => '42,50',
-            'city' => 'Lyon',
-            'durationMinutes' => '90',
-            'capacity' => '8',
-            'intent' => 'soumettre',
-        ]);
+        $client->request('GET', '/pro/activites/nouvelle?vierge=1');
+        self::assertResponseRedirects('/pro/activites/assistant/1');
+        // Pas d'étape sautée.
+        $client->request('GET', '/pro/activites/assistant/4');
+        self::assertResponseRedirects('/pro/activites/assistant/1');
+
+        // Étape 1 incomplète : refusée, erreurs sous les champs.
+        $client->request('POST', '/pro/activites/assistant/1', $this->token($client, '/pro/activites/assistant/1') + ['action' => 'next', 'title' => 'Ab']);
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorExists('.ew-error');
+
+        $this->step($client, 1, ['title' => $title, 'category' => $category->getSlug(), 'activity_type' => 'supervised', 'level' => 'beginner', 'languages' => ['Français', 'Anglais'], 'subtitle' => 'Une accroche de test assez longue.']);
+        $this->step($client, 2, ['address' => '12 rue de la République, Lyon', 'city' => 'Lyon', 'postal_code' => '69002', 'lat' => '45.76', 'lng' => '4.83', 'meeting_point' => 'Devant l’entrée principale', 'opening_period' => 'all_year']);
+
+        // Étape 3 : la photo principale est obligatoire.
+        $client->request('POST', '/pro/activites/assistant/3', $this->token($client, '/pro/activites/assistant/3') + ['action' => 'next', 'description' => str_repeat('Une description détaillée. ', 5)]);
+        self::assertResponseStatusCodeSame(422);
+        $image = tempnam(sys_get_temp_dir(), 'aw').'.png';
+        imagepng(imagecreatetruecolor(40, 30), $image);
+        $client->request('POST', '/pro/activites/assistant/3', $this->token($client, '/pro/activites/assistant/3') + ['action' => 'next', 'description' => str_repeat('Une description détaillée. ', 5)], ['cover' => new \Symfony\Component\HttpFoundation\File\UploadedFile($image, 'cover.png', 'image/png', null, true)]);
+        self::assertResponseRedirects('/pro/activites/assistant/4');
+
+        $this->step($client, 4, ['duration' => '90', 'capacity' => '8', 'highlights' => "Point fort un\nPoint fort deux", 'included' => 'Matériel', 'to_bring' => 'Bonne humeur']);
+        $this->step($client, 5, ['cancellation' => 'moderate', 'booking_type' => 'calendar', 'packages' => [
+            ['name' => 'Solo', 'price' => '42,50', 'unit' => 'per_person', 'description' => ''],
+            ['name' => 'Groupe', 'price' => '150', 'unit' => 'per_group', 'description' => 'Jusqu’à 6 personnes'],
+        ]]);
+
+        // Sans la case d'engagement : refus.
+        $client->request('POST', '/pro/activites/assistant/6', $this->token($client, '/pro/activites/assistant/6') + ['action' => 'next']);
+        self::assertResponseStatusCodeSame(422);
+        $client->request('POST', '/pro/activites/assistant/6', $this->token($client, '/pro/activites/assistant/6') + ['action' => 'next', 'accept_charter' => '1']);
         self::assertResponseRedirects('/pro/activites');
 
-        $service = $this->em()->getRepository(Service::class)->findOneBy(['title' => 'Atelier test espace pro']);
+        $this->em()->clear();
+        $service = $this->em()->getRepository(Service::class)->findOneBy(['title' => $title]);
         self::assertNotNull($service);
         self::assertSame(ServiceStatus::Pending, $service->getStatus());
         self::assertSame('1h30', $service->getDurationLabel());
+        self::assertSame(['Français', 'Anglais'], $service->getLanguages());
+        self::assertCount(2, $service->getPackages());
         self::assertSame('42.50', $service->getPackages()->first()->getPrice());
+        self::assertSame(['Point fort un', 'Point fort deux'], $service->getDetail()?->getHighlights());
+        self::assertGreaterThan(0, $service->getMedia()->count());
+    }
+
+    public function testAProviderNeverLandsInTheMemberAccount(): void
+    {
+        $client = $this->loggedProvider();
+        foreach (['/compte/notifications' => '/pro/notifications', '/compte/tableau-de-bord' => '/pro/tableau-de-bord', '/compte/mes-evenements' => '/pro/evenements', '/compte/activites-privees/nouvelle' => '/pro/activites/nouvelle', '/en/account/notifications' => '/en/pro/notifications'] as $url => $target) {
+            $client->request('GET', $url);
+            self::assertResponseRedirects($target, null, $url);
+        }
+        $crawler = $client->request('GET', '/pro/tableau-de-bord');
+        self::assertGreaterThan(0, $crawler->filter('header a[href="/pro/notifications"]')->count(), 'La cloche de l’en-tête doit mener aux notifications pro.');
+    }
+
+    /** @param array<string, mixed> $data */
+    private function step(KernelBrowser $client, int $step, array $data): void
+    {
+        $page = '/pro/activites/assistant/'.$step;
+        $client->request('POST', $page, $this->token($client, $page) + ['action' => 'next'] + $data);
+        self::assertResponseRedirects('/pro/activites/assistant/'.($step + 1), null, 'Étape '.$step);
     }
 
     public function testConfirmingABookingNotifiesTheClient(): void
@@ -103,7 +150,7 @@ final class ProviderSpaceFlowTest extends WebTestCase
         $client = $this->loggedProvider();
         // Réservation créée pour le test : les données de démo évoluent
         // d'une exécution à l'autre (la base de test n'est pas remise à zéro).
-        $service = $this->em()->getRepository(Service::class)->findOneBy(['status' => ServiceStatus::Published]);
+        $service = $this->em()->getRepository(Service::class)->findOneBy(['status' => ServiceStatus::Published, 'provider' => $this->demoProvider()]);
         $buyer = $this->em()->getRepository(User::class)->findOneBy(['email' => 'julie.martin@client.trouvemoi.test']);
         self::assertNotNull($service);
         self::assertNotNull($buyer);
@@ -124,7 +171,7 @@ final class ProviderSpaceFlowTest extends WebTestCase
     public function testReplyingToAClientAddsTheMessageToTheThread(): void
     {
         $client = $this->loggedProvider();
-        $conversation = $this->em()->getRepository(Conversation::class)->findOneBy([]);
+        $conversation = $this->em()->getRepository(Conversation::class)->findOneBy(['provider' => $this->demoProvider()]);
         self::assertNotNull($conversation);
         $count = $conversation->getMessages()->count();
 
@@ -138,7 +185,7 @@ final class ProviderSpaceFlowTest extends WebTestCase
     public function testCreatingAnOfferAndOpeningASlot(): void
     {
         $client = $this->loggedProvider();
-        $service = $this->em()->getRepository(Service::class)->findOneBy(['status' => ServiceStatus::Published]);
+        $service = $this->em()->getRepository(Service::class)->findOneBy(['status' => ServiceStatus::Published, 'provider' => $this->demoProvider()]);
         self::assertNotNull($service);
 
         $client->request('POST', '/pro/offres/nouvelle', $this->token($client, '/pro/offres/nouvelle') + [
@@ -200,6 +247,16 @@ final class ProviderSpaceFlowTest extends WebTestCase
         $crawler = $client->request('GET', $page);
 
         return ['_token' => (string) $crawler->filter('input[name="_token"]')->first()->attr('value')];
+    }
+
+    /** Le dossier du compte de démonstration : d'autres prestataires existent en base (05/10). */
+    private function demoProvider(): \App\Provider\Entity\ProviderProfile
+    {
+        $user = $this->em()->getRepository(User::class)->findOneBy(['email' => 'annonceur@trouvemoi.test']);
+        $provider = static::getContainer()->get(ProviderProfileRepository::class)->findOneByUser($user);
+        self::assertNotNull($provider);
+
+        return $provider;
     }
 
     private function em(): EntityManagerInterface

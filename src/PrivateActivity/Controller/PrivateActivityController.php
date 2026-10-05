@@ -7,13 +7,12 @@ namespace App\PrivateActivity\Controller;
 use App\Catalog\Repository\CategoryRepository;
 use App\PrivateActivity\Entity\Participation;
 use App\PrivateActivity\Entity\PrivateActivity;
-use App\PrivateActivity\Enum\ParticipationMode;
 use App\PrivateActivity\Enum\ParticipationStatus;
-use App\PrivateActivity\Enum\PrivateActivityVisibility;
 use App\PrivateActivity\Repository\ParticipationRepository;
 use App\PrivateActivity\Repository\PrivateActivityRepository;
 use App\PrivateActivity\Security\ParticipationVoter;
 use App\PrivateActivity\Security\PrivateActivityVoter;
+use App\PrivateActivity\Service\PrivateActivityDraftService;
 use App\PrivateActivity\Service\PrivateActivityService;
 use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
@@ -55,15 +54,19 @@ final class PrivateActivityController extends AbstractController
     {
         $categorySlug = (string) $request->query->get('metier', '');
         $category = '' !== $categorySlug ? $this->categories->findOneBy(['slug' => $categorySlug]) : null;
+        $place = trim((string) $request->query->get('lieu', ''));
+        $keywords = trim((string) $request->query->get('q', ''));
+        $date = (string) $request->query->get('date', '');
+        $day = preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $date) ? (\DateTimeImmutable::createFromFormat('!Y-m-d', $date) ?: null) : null;
 
-        $results = $this->isGranted('ROLE_USER')
-            ? $this->activities->findVisibleToMembers($category)
-            : $this->activities->findPublic($category);
+        // Activités à venir seulement (05/10) : une sortie passée ne se rejoint plus.
+        $results = $this->activities->findUpcomingDiscoverable($this->isGranted('ROLE_USER'), $category, $place, $keywords, $day);
 
         return $this->render('private_activity/index.html.twig', [
             'activities' => $results,
             'categories' => $this->categories->findRoots(),
             'selected_category' => $category,
+            'filters' => ['lieu' => $place, 'q' => $keywords, 'date' => null !== $day ? $date : ''],
         ]);
     }
 
@@ -133,7 +136,7 @@ final class PrivateActivityController extends AbstractController
         $user = $this->currentUser();
         $all = $this->accountActivity->createdActivities($user);
 
-        $tabs = ['toutes' => null, 'en-ligne' => 'online', 'completes' => 'full', 'passees' => 'past', 'annulees' => 'cancelled'];
+        $tabs = ['toutes' => null, 'en-ligne' => 'online', 'brouillons' => 'draft', 'completes' => 'full', 'passees' => 'past', 'annulees' => 'cancelled'];
         $tab = (string) $request->query->get('onglet', 'toutes');
         if (!\array_key_exists($tab, $tabs)) {
             $tab = 'toutes';
@@ -188,81 +191,100 @@ final class PrivateActivityController extends AbstractController
         ]);
     }
 
-    #[Route(path: ['fr' => '/compte/activites-privees/nouvelle', 'en' => '/en/account/private-activities/new'], name: 'app_account_private_activities_new', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
+    /**
+     * « Organiser une activité » : assistant en 5 étapes (05/10), qui
+     * remplace le formulaire d'une page (sans photo ni lieu géolocalisé).
+     */
+    #[Route(path: ['fr' => '/compte/activites-privees/nouvelle', 'en' => '/en/account/private-activities/new'], name: 'app_account_private_activities_new', methods: ['GET'])]
+    public function new(Request $request, PrivateActivityDraftService $drafts): Response
     {
+        if ($request->query->getBoolean('vierge')) {
+            $drafts->clear($request->getSession());
+        }
+
+        return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => 1]);
+    }
+
+    /** Reprendre un brouillon dans l'assistant (05/10). */
+    #[Route(path: ['fr' => '/compte/activites-privees/{id}/reprendre', 'en' => '/en/account/private-activities/{id}/resume'], name: 'app_account_private_activity_resume', methods: ['GET'])]
+    public function resume(string $id, Request $request, PrivateActivityDraftService $drafts): Response
+    {
+        $activity = $this->findOrFail($id);
+        $this->denyAccessUnlessGranted(PrivateActivityVoter::MANAGE, $activity);
+        $drafts->load($request->getSession(), $activity);
+
+        return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => 1]);
+    }
+
+    #[Route(path: ['fr' => '/compte/activites-privees/creer/{etape}', 'en' => '/en/account/private-activities/create/{etape}'], name: 'app_account_private_activity_wizard', requirements: ['etape' => '[1-5]'], methods: ['GET', 'POST'])]
+    public function wizard(int $etape, Request $request, PrivateActivityDraftService $drafts): Response
+    {
+        $session = $request->getSession();
+        $errors = [];
+
         if ($request->isMethod('POST')) {
-            if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
-                $this->addFlash('error', 'Votre session a expiré, merci de renvoyer le formulaire.');
+            if (!$this->isCsrfTokenValid('private_activity_wizard', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Votre session a expiré, merci de recommencer cette étape.');
 
-                return $this->redirectToRoute('app_account_private_activities_new');
+                return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => $etape]);
             }
+            $action = (string) $request->request->get('action', 'next');
+            $errors = $drafts->submitStep($session, $etape, $request);
 
-            $categorySlug = (string) $request->request->get('metier', '');
-            $title = trim((string) $request->request->get('titre', ''));
-            $description = trim((string) $request->request->get('description', ''));
-            $city = trim((string) $request->request->get('ville', ''));
-            $location = trim((string) $request->request->get('lieu', ''));
-            $scheduledAtRaw = trim((string) $request->request->get('date', ''));
-            $minRaw = trim((string) $request->request->get('min', ''));
-            $maxRaw = trim((string) $request->request->get('max', ''));
-            $visibility = PrivateActivityVisibility::tryFrom((string) $request->request->get('visibilite', '')) ?? PrivateActivityVisibility::Public;
-            $participationMode = ParticipationMode::tryFrom((string) $request->request->get('mode', '')) ?? ParticipationMode::Validation;
-            $showExactAddress = $request->request->getBoolean('afficher_adresse', true);
-
-            $category = '' !== $categorySlug ? $this->categories->findOneBy(['slug' => $categorySlug]) : null;
-
-            $errors = [];
-            if (null === $category) {
-                $errors[] = 'Veuillez choisir une catégorie.';
+            if ('prev' === $action) {
+                return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => max(1, $etape - 1)]);
             }
-            if ('' === $title) {
-                $errors[] = 'Veuillez donner un titre à votre activité.';
-            }
-
-            $scheduledAt = null;
-            if ('' !== $scheduledAtRaw) {
+            // Brouillon (05/10) : la saisie est gardée en base, même incomplète.
+            if ('draft' === $action) {
                 try {
-                    $scheduledAt = new \DateTimeImmutable($scheduledAtRaw);
-                } catch (\Exception) {
-                    $errors[] = 'La date saisie n\'est pas valide.';
+                    $activity = $drafts->saveDraft($session, $drafts->current($session), $this->currentUser());
+                    $this->addFlash('success', sprintf('Brouillon « %s » enregistré : reprenez-le quand vous voulez depuis « Mes activités créées ».', $activity->getTitle()));
+
+                    return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => $etape]);
+                } catch (\InvalidArgumentException $e) {
+                    $this->addFlash('error', $e->getMessage());
                 }
-            }
+            } elseif ([] === $errors) {
+                if (PrivateActivityDraftService::STEPS !== $etape) {
+                    return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => $etape + 1]);
+                }
+                [$invalid, $stepErrors] = $drafts->firstInvalidStep($drafts->current($session));
+                if (null !== $invalid) {
+                    $this->addFlash('error', sprintf('Complétez l’étape %d avant de publier : %s', $invalid, reset($stepErrors)));
 
-            if ([] === $errors) {
-                $activity = $this->service->create(
-                    organizer: $this->currentUser(),
-                    title: mb_substr($title, 0, 150),
-                    category: $category,
-                    description: '' !== $description ? $description : null,
-                    scheduledAt: $scheduledAt,
-                    city: '' !== $city ? $city : null,
-                    location: '' !== $location ? $location : null,
-                    showExactAddress: $showExactAddress,
-                    visibility: $visibility,
-                    participationMode: $participationMode,
-                    minParticipants: ctype_digit($minRaw) ? (int) $minRaw : null,
-                    maxParticipants: ctype_digit($maxRaw) ? (int) $maxRaw : null,
-                );
-
-                $this->addFlash('success', 'Votre activité a été publiée.');
+                    return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => $invalid]);
+                }
+                $activity = $drafts->publish($drafts->current($session), $this->currentUser());
+                $drafts->clear($session);
+                $this->addFlash('success', 'Votre activité est publiée ! Partagez-la pour réunir vos participants.');
 
                 return $this->redirectToRoute('app_private_activity_show', ['id' => (string) $activity->getId()]);
             }
-
-            foreach ($errors as $error) {
-                $this->addFlash('error', $error);
-            }
+        } elseif ($etape > $drafts->maxReachable($session)) {
+            return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => $drafts->maxReachable($session)]);
         }
 
-        return $this->render('private_activity/nouvelle.html.twig', [
+        $draft = $drafts->current($session);
+
+        return $this->render('private_activity/wizard.html.twig', [
             'user' => $this->identity->identityFor($this->currentUser()),
             'menu' => StaticAccount::menu(),
             'active' => 'Mes activités créées',
+            'step' => $etape,
+            'steps' => [
+                ['title' => 'L’activité', 'subtitle' => 'Titre, catégorie, description'],
+                ['title' => 'Date et lieu', 'subtitle' => 'Quand et où'],
+                ['title' => 'Photo et infos', 'subtitle' => 'Image, à apporter'],
+                ['title' => 'Participants', 'subtitle' => 'Nombre, inscription, visibilité'],
+                ['title' => 'Publication', 'subtitle' => 'Vérifier et publier'],
+            ],
+            'draft' => $draft,
+            'done' => (array) $draft['done'],
+            'errors' => $errors,
             'categories' => $this->categories->findRoots(),
-            'visibilities' => PrivateActivityVisibility::cases(),
-            'modes' => ParticipationMode::cases(),
-        ]);
+            'category' => $this->categories->findOneBy(['slug' => (string) ($draft['category'] ?? '')]),
+            'all_categories' => $this->categories->findRoots(),
+        ], new Response(null, [] === $errors ? 200 : 422));
     }
 
     #[Route(path: ['fr' => '/compte/activites-privees/{id}/annuler', 'en' => '/en/account/private-activities/{id}/cancel'], name: 'app_account_private_activity_cancel', methods: ['POST'])]

@@ -1,0 +1,32 @@
+{# Étape 4 — Participants : nombre, mode d'inscription, visibilité. #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+<h2 class="ew-main__title">4. {{ 'Participants'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Combien de personnes, et comment elles vous rejoignent.'|trans }}</p>
+
+<div class="ew-row">
+    <div class="ew-field{{ errors.min is defined ? ' has-error' }}">
+        <label for="pa-min">{{ 'Minimum'|trans }} ({{ 'optionnel'|trans }})</label>
+        <input id="pa-min" type="number" name="min" min="1" max="500" value="{{ draft.min ?? '' }}" placeholder="2">
+        {{ ui.err(errors, 'min') }}
+    </div>
+    <div class="ew-field{{ errors.max is defined ? ' has-error' }}">
+        <label for="pa-max">{{ 'Maximum'|trans }} ({{ 'vide = sans limite'|trans }})</label>
+        <input id="pa-max" type="number" name="max" min="1" max="500" value="{{ draft.max ?? '' }}" placeholder="10">
+        {{ ui.err(errors, 'max') }}
+    </div>
+</div>
+
+<h3 class="ew-main__label">{{ 'Inscription'|trans }} <em>*</em></h3>
+<div class="ew-choices aw-choices--2" role="radiogroup">
+    {{ ui.choice('mode', 'validation', draft.mode, 'Sur validation', 'Vous acceptez chaque demande', 'check') }}
+    {{ ui.choice('mode', 'automatic', draft.mode, 'Automatique', 'Les membres rejoignent directement', 'zap') }}
+</div>
+{{ ui.err(errors, 'mode') }}
+
+<h3 class="ew-main__label">{{ 'Visibilité'|trans }} <em>*</em></h3>
+<div class="ew-choices ew-choices--3" role="radiogroup">
+    {{ ui.choice('visibility', 'public', draft.visibility, 'Publique', 'Visible de tous les visiteurs', 'globe') }}
+    {{ ui.choice('visibility', 'members_only', draft.visibility, 'Membres', 'Visible des membres connectés', 'users') }}
+    {{ ui.choice('visibility', 'private', draft.visibility, 'Privée', 'Seulement par lien ou invitation', 'lock') }}
+</div>
+{{ ui.err(errors, 'visibility') }}

@@ -201,6 +201,25 @@
                 {% endif %}
                 <p class="act-booking__price">{{ 'À partir de'|trans }} {% if unit != full %}<s>{{ full|number_format(full == full|round ? 0 : 2, ',', ' ') }}€</s> {% endif %}<strong>{{ unit|number_format(unit == unit|round ? 0 : 2, ',', ' ') }}€</strong> / {{ 'personne'|trans }}</p>
 
+                {# Formules du professionnel (assistant de création, 05/10). #}
+                {% set discount = promotion is defined and promotion and promotion.kind.value == 'reduction' and promotion.discountPercent ? promotion.discountPercent : 0 %}
+                {% if booking.packages|length > 1 %}
+                    <label class="act-booking__field" for="booking-package">
+                        <span>{{ 'Formule'|trans }}</span>
+                        <span class="act-booking__input act-booking__input--control">
+                            {{ icon.tag(18) }}
+                            <select id="booking-package" name="formule" data-booking-package>
+                                {% for p in booking.packages %}
+                                    {% set pp = discount ? ((p.price * (100 - discount)) / 100)|round(2) : p.price %}
+                                    <option value="{{ p.id }}" data-price="{{ pp }}" data-unit="{{ p.unit }}"{{ (draft.package ?? '') == p.id ? ' selected' }}>{{ p.name }} — {{ pp|number_format(pp == pp|round ? 0 : 2, ',', ' ') }}€ {{ p.unit == 'per_person' ? '/ pers.'|trans : '/ groupe'|trans }}</option>
+                                {% endfor %}
+                            </select>
+                        </span>
+                    </label>
+                {% elseif booking.packages|length == 1 %}
+                    <input type="hidden" name="formule" value="{{ booking.packages[0].id }}">
+                {% endif %}
+
                 <label class="act-booking__field" for="booking-date">
                     <span>{{ 'Date'|trans }}</span>
                     <span class="act-booking__input act-booking__input--control">
@@ -259,14 +278,14 @@
                 <p class="act-booking__total">{{ 'Total'|trans }} <strong data-booking-total>{{ unit * (adults + children) }}€</strong></p>
 
                 <button type="submit" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Réservez maintenant'|trans }}</button>
-                <p class="act-booking__note"><span aria-hidden="true">✓</span> <strong>{{ 'Annulation gratuite'|trans }}</strong> {{ "Jusqu'à 7 jours avant"|trans }}</p>
+                <p class="act-booking__note"><span aria-hidden="true">✓</span> <strong>{{ 'Annulation gratuite'|trans }}</strong> {{ booking.cancellation.deadline|trans }}</p>
             </form>
 
             <div class="act-booking__gift">
                 <h3>{{ "C'est pour offrir ?"|trans }}</h3>
                 <p>{{ 'Choisissez le bon cadeau Plaisirs & Loisirs et offrez cette expérience en quelques minutes !'|trans }}</p>
                 {# Maquette : bouton violet plein, pleine largeur (et non un contour). #}
-                <a href="{{ path('app_gifts_offer') }}" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Offrir maintenant'|trans }}</a>
+                <a href="{{ path('app_gifts_offer', {activite: activity.slug}) }}" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Offrir maintenant'|trans }}</a>
             </div>
         </aside>
     </div>

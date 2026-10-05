@@ -49,7 +49,12 @@ function initBookingPanel(root = document) {
     if (!panel || panel.dataset.bookingReady) return;
     panel.dataset.bookingReady = '1';
 
-    const price = parseFloat(panel.dataset.price) || 0;
+    // Formule choisie (05/10) : prix et unité (par personne / par groupe).
+    const packageEl = panel.querySelector('[data-booking-package]');
+    const unitPrice = () => {
+        const opt = packageEl?.selectedOptions?.[0];
+        return { price: parseFloat(opt?.dataset.price ?? panel.dataset.price) || 0, perPerson: (opt?.dataset.unit ?? 'per_person') === 'per_person' };
+    };
     const capacity = parseInt(panel.dataset.capacity, 10) || 0;
     const slots = JSON.parse(panel.dataset.slots || '{}');
     const hasSlots = !Array.isArray(slots) && Object.keys(slots).length > 0;
@@ -74,7 +79,8 @@ function initBookingPanel(root = document) {
     const refresh = () => {
         const max = limit();
         const total = travellers();
-        if (totalEl) totalEl.textContent = format(price * total);
+        const { price, perPerson } = unitPrice();
+        if (totalEl) totalEl.textContent = format(perPerson ? price * total : price);
         steppers.forEach((s) => {
             const min = parseInt(s.dataset.min, 10);
             const count = parseInt(s.dataset.count, 10);
@@ -104,6 +110,7 @@ function initBookingPanel(root = document) {
     };
 
     dateEl?.addEventListener('change', () => { if (timeEl) timeEl.value = ''; fillTimes(); refresh(); });
+    packageEl?.addEventListener('change', refresh);
     timeEl?.addEventListener('change', () => {
         // Trop de voyageurs pour le créneau : on ramène au maximum possible.
         let excess = travellers() - limit();

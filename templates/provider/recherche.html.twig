@@ -1,87 +1,142 @@
 {#
-    Recherche de professionnels (§5, §9 du CDC) : filtre métier + ville +
-    rayon, liste des prestataires VÉRIFIÉS. Pas de maquette Figma pour cet
-    écran — mise en page Bootstrap 5 sobre plutôt qu'une reconstitution
-    approximative au pixel.
-    Le rayon (Lot K, 16/09) ne s'applique que si la ville saisie est connue
-    de FrenchCityCoordinates — sinon la recherche reste la correspondance
-    texte habituelle, sans message d'erreur : voir le commentaire de
-    ProviderProfileRepository::search().
+    « Trouver un professionnel » (§5, §9 du CDC) — refonte du 05/10 sur le
+    modèle des pages Explorer / Activités : filtres à gauche, cartes de
+    prestataires avec leurs vraies données (activités publiées, note, prix
+    d'appel), carte des prestataires. Données : ProviderSearchController::
+    search() et ProviderDirectory. Styles : pages.css (.gc-*, .ex2-*) et
+    .pd-* ci-dessous.
+    Le rayon s'appuie sur les coordonnées des activités du prestataire, à
+    défaut sur sa ville (FrenchCityCoordinates).
 #}
 {% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ 'Trouver un professionnel'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Trouvez un professionnel du loisir vérifié près de chez vous : activités, avis, tarifs, demande de devis.'|trans }}{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <h1 class="mb-4" style="color: var(--pl-text-display); font-weight: var(--pl-fw-bold);">
-        {{ 'Trouver un professionnel'|trans }}
-    </h1>
-
-    <form method="get" class="row g-3 align-items-end mb-5">
-        <div class="col-sm-4">
-            <label class="form-label" for="metier">{{ 'Métier'|trans }}</label>
-            <select class="form-select" id="metier" name="metier">
-                <option value="">{{ 'Tous les métiers'|trans }}</option>
-                {% for category in categories %}
-                    <option value="{{ category.slug }}" {{ selected_category and selected_category.slug == category.slug ? 'selected' }}>
-                        {{ category.name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-sm-4">
-            <label class="form-label" for="ville">{{ 'Ville'|trans }}</label>
-            <input class="form-control" type="text" id="ville" name="ville" value="{{ city }}" placeholder="{{ 'Ex. Lyon'|trans }}">
-        </div>
-        <div class="col-sm-2">
-            <label class="form-label" for="rayon">{{ 'Rayon'|trans }}</label>
-            <select class="form-select" id="rayon" name="rayon">
-                <option value="0">{{ 'Peu importe'|trans }}</option>
-                <option value="10" {{ radius == 10 ? 'selected' }}>10 km</option>
-                <option value="25" {{ radius == 25 ? 'selected' }}>25 km</option>
-                <option value="50" {{ radius == 50 ? 'selected' }}>50 km</option>
-                <option value="100" {{ radius == 100 ? 'selected' }}>100 km</option>
-            </select>
-        </div>
-        <div class="col-sm-2">
-            <button type="submit" class="btn pl-btn pl-btn--primary w-100">{{ 'Rechercher'|trans }}</button>
-        </div>
-        {% if radius > 0 %}
-            <div class="col-12 text-muted small">{{ 'Le rayon ne s\'applique que pour les villes reconnues ; sinon la recherche par texte reste utilisée.'|trans }}</div>
-        {% endif %}
-    </form>
-
-    {% if results is empty %}
-        <p class="text-muted">{{ 'Aucun professionnel ne correspond à cette recherche pour le moment.'|trans }}</p>
-    {% else %}
-        <p class="text-muted mb-4">{{ results|length }} {{ results|length > 1 ? 'professionnels trouvés'|trans : 'professionnel trouvé'|trans }}</p>
-        <div class="row g-4">
-            {% for provider in results %}
-                <div class="col-sm-6 col-lg-4">
-                    <a href="{{ path('app_provider_profile', {slug: provider.slug}) }}" class="text-decoration-none">
-                        <div class="card h-100 shadow-sm">
-                            <div class="card-body">
-                                <h2 class="h5 mb-1" style="color: var(--pl-text-strong);">{{ provider.displayName }}</h2>
-                                {% if provider.mainCategory %}
-                                    <span class="badge rounded-pill mb-2" style="background: var(--pl-action-light); color: var(--pl-action);">
-                                        {{ provider.mainCategory.name }}
-                                    </span>
-                                {% endif %}
-                                {% if provider.city %}
-                                    <p class="text-muted small mb-2">📍 {{ provider.city }}</p>
-                                {% endif %}
-                                {% if provider.bio %}
-                                    <p class="text-muted small mb-0">
-                                        {{ provider.bio|length > 110 ? provider.bio|slice(0, 110) ~ '…' : provider.bio }}
-                                    </p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </a>
+<div class="pg gc pd">
+    <aside class="gc-filters">
+        <form method="get" action="{{ path('app_provider_search') }}">
+            {% if filters.sort != 'pertinence' %}<input type="hidden" name="tri" value="{{ filters.sort }}">{% endif %}
+            <div class="ofm-filters__head"><h2>{{ 'Filtres'|trans }}</h2><a href="{{ path('app_provider_search') }}">{{ 'Réinitialiser'|trans }}</a></div>
+            <label class="ex2-field">{{ 'Nom ou activité'|trans }}
+                <span class="ex2-input"><input name="q" value="{{ filters.q }}" placeholder="{{ 'Ex : kayak, escape game…'|trans }}" maxlength="80">{{ icon.search(16) }}</span></label>
+            <label class="ex2-field">{{ 'Ville'|trans }}
+                <span class="ex2-input"><input name="ville" value="{{ filters.city }}" placeholder="{{ 'Ex : Rouen'|trans }}" maxlength="80">{{ icon.map_pin(16) }}</span></label>
+            <label class="ex2-field">{{ 'Rayon'|trans }}
+                <select name="rayon">
+                    <option value="0">{{ 'Dans la ville'|trans }}</option>
+                    {% for r in [10, 25, 50, 100, 200, 500] %}<option value="{{ r }}"{{ filters.radius == r ? ' selected' }}>{{ 'Jusqu’à'|trans }} {{ r }} km</option>{% endfor %}
+                </select>
+            </label>
+            <fieldset>
+                <legend>{{ 'Catégorie'|trans }}</legend>
+                <label class="ofm-check"><input type="radio" name="metier" value=""{{ selected_category ? '' : ' checked' }}> {{ 'Toutes'|trans }}</label>
+                {% for c in categories %}<label class="ofm-check"><input type="radio" name="metier" value="{{ c.slug }}"{{ selected_category and selected_category.slug == c.slug ? ' checked' }}> {{ c.name|trans }}</label>{% endfor %}
+            </fieldset>
+            <fieldset>
+                <legend>{{ 'Note des clients'|trans }}</legend>
+                <div class="ex2-stars">
+                    {% for n in [4.5, 4, 3] %}<label><input type="radio" name="note" value="{{ n }}"{{ filters.rating == n ? ' checked' }}><span>{{ icon.star_solid(13) }} {{ n|number_format(n == n|round ? 0 : 1, ',') }} {{ 'et +'|trans }}</span></label>{% endfor %}
                 </div>
-            {% endfor %}
+            </fieldset>
+            <button class="pg-btn pg-btn--block">{{ 'Afficher les résultats'|trans }}</button>
+            {% if filters.radius > 0 %}<p class="ex2-total">{{ 'Le rayon se calcule depuis les grandes villes françaises connues.'|trans }}</p>{% endif %}
+        </form>
+    </aside>
+
+    <div class="gc-main ex2-main">
+        <header class="ex2-head pd-head">
+            <div>
+                <h1>{{ 'Trouver un professionnel'|trans }}</h1>
+                <p>{{ 'Des prestataires vérifiés par notre équipe, notés par leurs clients. Réservez une activité, contactez-les ou demandez un devis.'|trans }}</p>
+            </div>
+            <ul class="pd-badges">
+                <li>{{ icon.check_badge(18) }} {{ 'Profils vérifiés'|trans }}</li>
+                <li>{{ icon.star(18) }} {{ 'Avis authentiques'|trans }}</li>
+                <li>{{ icon.receipt(18) }} {{ 'Devis gratuits'|trans }}</li>
+            </ul>
+        </header>
+
+        <div class="pd-bar">
+            <strong>{{ total }} {{ total > 1 ? 'professionnels trouvés'|trans : 'professionnel trouvé'|trans }}</strong>
+            <form method="get" class="ofm-sort">
+                {% for k, v in params|filter((v, k) => k != 'tri') %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+                <label for="pd-tri">{{ 'Trier par'|trans }}</label>
+                <select id="pd-tri" name="tri" onchange="this.form.submit()">{% for k, label in sorts %}<option value="{{ k }}"{{ filters.sort == k ? ' selected' }}>{{ label|trans }}</option>{% endfor %}</select>
+                <noscript><button class="pg-link">OK</button></noscript>
+            </form>
         </div>
-    {% endif %}
+
+        <div class="pd-cols">
+            <div>
+                {% if results is empty %}
+                    <div class="ofm-empty">
+                        {{ icon.users(32) }}
+                        <strong>{{ 'Aucun professionnel ne correspond à cette recherche pour le moment.'|trans }}</strong>
+                        <span>{{ 'Décrivez votre besoin : les professionnels concernés vous envoient leur devis.'|trans }}</span>
+                        <a class="pg-btn" href="{{ path('app_account_requests_new', selected_category ? {metier: selected_category.slug} : {}) }}">{{ 'Déposer une demande'|trans }}</a>
+                    </div>
+                {% else %}
+                    <div class="pd-grid">
+                        {% for r in results %}
+                            <article class="pd-card" id="pro-{{ loop.index }}">
+                                <a class="pd-card__cover" href="{{ path('app_provider_profile', {slug: r.slug}) }}">
+                                    {% if r.cover %}<img src="{{ asset(r.cover) }}" alt="" loading="lazy">{% endif %}
+                                    <span class="pd-card__verified">{{ icon.check_badge(14) }} {{ 'Vérifié'|trans }}</span>
+                                </a>
+                                <div class="pd-card__body">
+                                    <div class="pd-card__id">
+                                        <span class="pd-avatar">{% if r.avatar %}<img src="{{ asset(r.avatar) }}" alt="">{% else %}{{ r.name|first|upper }}{% endif %}</span>
+                                        <span>
+                                            <a class="pd-card__name" href="{{ path('app_provider_profile', {slug: r.slug}) }}">{{ r.name }}</a>
+                                            <small>{% if r.category %}{{ r.category|trans }}{% endif %}{% if r.city %} · {{ icon.map_pin(12) }} {{ r.city }}{% endif %}{% if r.distance is not null %} · {{ r.distance }} km{% endif %}</small>
+                                        </span>
+                                    </div>
+                                    <div class="pd-card__stats">
+                                        <span>{% if r.rating %}{{ icon.star_solid(14) }} <b>{{ r.rating|number_format(1, ',') }}</b> ({{ r.reviews }} {{ 'avis'|trans }}){% else %}<em>{{ 'Nouveau sur TrouveMoi'|trans }}</em>{% endif %}</span>
+                                        <span>{{ r.activities|length }} {{ r.activities|length > 1 ? 'activités'|trans : 'activité'|trans }}</span>
+                                        {% if r.priceFrom is not null %}<span>{{ 'dès'|trans }} <b>{{ r.priceFrom|number_format(r.priceFrom == r.priceFrom|round ? 0 : 2, ',', ' ') }} €</b></span>{% endif %}
+                                    </div>
+                                    {% if r.activities is not empty %}
+                                        <ul class="pd-card__acts">
+                                            {% for a in r.activities|slice(0, 3) %}<li><a href="{{ path('app_activity_show', {slug: a.slug}) }}">{{ a.title }}</a></li>{% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                    <div class="pd-card__actions">
+                                        <a class="pg-btn pd-btn" href="{{ path('app_provider_profile', {slug: r.slug}) }}">{{ 'Voir le profil'|trans }}</a>
+                                        <a class="pg-btn pg-btn--outline pd-btn" href="{{ path('app_account_requests_new', r.provider.mainCategory ? {metier: r.provider.mainCategory.slug} : {}) }}">{{ 'Demander un devis'|trans }}</a>
+                                    </div>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                    {% if has_more %}
+                        <a class="ofm-more" href="{{ path('app_provider_search', params|merge({page: page + 1})) }}#pro-{{ results|length + 1 }}">{{ 'Voir plus de professionnels'|trans }} {{ icon.chevron_down(16) }}</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <aside class="pd-side">
+                <section class="pg-card">
+                    <h2 class="pg-h3">{{ icon.map_pin(18) }} {{ 'Sur la carte'|trans }}</h2>
+                    <div class="pd-map" data-pg-map data-markers="{{ markers|json_encode }}" aria-label="{{ 'Carte des professionnels'|trans }}"></div>
+                </section>
+                <section class="pg-card pd-cta">
+                    <h2 class="pg-h3">{{ 'Un besoin précis ?'|trans }}</h2>
+                    <p>{{ 'Décrivez votre projet (séminaire, anniversaire, sortie de groupe…) : les professionnels concernés vous envoient leur devis.'|trans }}</p>
+                    <a class="pg-btn pg-btn--block" href="{{ path('app_account_requests_new', selected_category ? {metier: selected_category.slug} : {}) }}">{{ 'Déposer une demande'|trans }}</a>
+                </section>
+                {% if not is_granted('ROLE_PROVIDER') %}
+                    <section class="pg-card pd-cta pd-cta--pro">
+                        <h2 class="pg-h3">{{ 'Vous êtes professionnel ?'|trans }}</h2>
+                        <p>{{ 'Rejoignez TrouveMoi et proposez vos activités à des milliers de clients.'|trans }}</p>
+                        <a class="pg-btn pg-btn--outline pg-btn--block" href="{{ path('app_corporate_partner') }}">{{ 'Devenir partenaire'|trans }}</a>
+                    </section>
+                {% endif %}
+            </aside>
+        </div>
+    </div>
 </div>
 {% endblock %}

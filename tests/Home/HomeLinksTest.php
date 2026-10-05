@@ -104,21 +104,22 @@ final class HomeLinksTest extends WebTestCase
     }
 
     /**
-     * Les huit cartes doivent mener à LEUR fiche, pas à une liste.
+     * Chaque carte doit mener à SA fiche, pas à une liste.
      */
     public function testTheCardsLeadToTheirOwnPage(): void
     {
         $client = static::createClient();
         $crawler = $client->request('GET', '/');
 
-        $fiches = [];
-        foreach ($crawler->filter('a.pl-card')->extract(['href']) as $href) {
-            if (str_starts_with($href, '/activites/') || str_starts_with($href, '/destinations/')) {
-                $fiches[] = $href;
-            }
+        // Cartes de la maquette landing_page (05/10) : activités coup de cœur,
+        // activités gratuites, destinations.
+        $fiches = array_values(array_unique($crawler->filter('a.ld-card__title, a.ld-dest')->extract(['href'])));
+        $prefixes = ['/activites/', '/activites-privees/', '/destinations/'];
+        foreach ($fiches as $href) {
+            self::assertTrue((bool) array_filter($prefixes, static fn (string $p): bool => str_starts_with($href, $p)), sprintf('La carte mène à %s, qui n\'est pas une fiche.', $href));
         }
 
-        self::assertCount(8, $fiches, 'Les huit cartes de l\'accueil ne mènent pas toutes à une fiche.');
+        self::assertGreaterThanOrEqual(8, \count($fiches), 'Les cartes de l\'accueil ne mènent pas à leur fiche.');
 
         foreach ($fiches as $fiche) {
             $client->request('GET', $fiche);

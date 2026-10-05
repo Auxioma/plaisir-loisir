@@ -1,33 +1,11 @@
 {#
-    « Mes activités créées » de la sidebar (Lot J, 15/09). Aucune maquette :
-    réutilise le gabarit de l'espace compte et une liste Bootstrap.
-    Variable : events (list d'Event, domaine Event).
+    « Mes événements » de l'espace particulier. Données :
+    AccountController::events(). Liste : event/_organizer_list.html.twig.
 #}
 {% extends 'account/_layout.html.twig' %}
 
-{% block title %}{{ 'Mes activités créées'|trans }}{% endblock %}
+{% block title %}{{ 'Mes événements'|trans }}{% endblock %}
 
 {% block account %}
-    {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Mes activités créées'|trans }],
-        title: 'Mes activités créées'|trans,
-        subtitle: 'Les événements que vous avez organisés.'|trans,
-    } %}
-
-    {% if events is empty %}
-        {% include 'account/_empty.html.twig' with { message: "Vous n'avez encore créé aucun événement."|trans } %}
-    {% else %}
-        <div class="list-group">
-            {% for event in events %}
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>{{ event.title }}</strong>
-                        <div class="text-muted small">
-                            {{ event.startsAt|date('d/m/Y') }}{% if event.location %} — {{ event.location }}{% endif %}
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+    {% include 'event/_organizer_list.html.twig' %}
 {% endblock %}

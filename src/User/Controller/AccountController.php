@@ -19,6 +19,7 @@ use App\Notification\Entity\NotificationPreference;
 use App\Notification\Presenter\NotificationPresenter;
 use App\Notification\Repository\NotificationPreferenceRepository;
 use App\Notification\Repository\NotificationRepository;
+use App\Notification\Service\NotificationFeed;
 use App\Notification\Service\NotificationService;
 use App\Payment\Entity\Payment;
 use App\Payment\Enum\PaymentStatus;
@@ -398,48 +399,14 @@ final class AccountController extends AbstractController
      * par type, 8 par page.
      */
     #[Route(path: ['fr' => '/compte/notifications', 'en' => '/en/account/notifications'], name: 'app_account_notifications')]
-    public function notifications(Request $request): Response
+    public function notifications(Request $request, NotificationFeed $feed): Response
     {
         $user = $this->currentUser();
-        $all = $this->notificationRepository->findByRecipient($user);
-        $unread = \count(array_filter($all, static fn (Notification $n): bool => !$n->isRead()));
 
-        $filter = (string) $request->query->get('filtre', 'toutes');
-        if (!\in_array($filter, ['toutes', 'non-lues', 'archives'], true)) {
-            $filter = 'toutes';
-        }
-        $query = trim((string) $request->query->get('q', ''));
-        $type = (string) $request->query->get('type', '');
-
-        $filtered = array_values(array_filter($all, static fn (Notification $n): bool => match ($filter) {
-            'non-lues' => !$n->isRead(),
-            'archives' => $n->isRead(),
-            default => true,
-        }
-            && ('' === $type || $n->getCategory()->value === $type)
-            && ('' === $query || false !== mb_stripos($n->getTitle().' '.$n->getMessage(), $query))));
-
-        $perPage = 8;
-        $total = \count($filtered);
-        $pages = max(1, (int) ceil($total / $perPage));
-        $page = min($pages, max(1, $request->query->getInt('page', 1)));
-
-        $preference = $this->notificationPreferences->findOneByUser($user);
-
-        return $this->render('account/notifications.html.twig', [
+        return $this->render('account/notifications.html.twig', $feed->page($user, $request) + [
             'user' => $this->accountUser(),
             'menu' => $this->menuFor($user),
             'active' => 'Notifications',
-            'filter' => $filter,
-            'query' => $query,
-            'type' => $type,
-            'unread' => $unread,
-            'items' => $this->notificationPresenter->items(\array_slice($filtered, ($page - 1) * $perPage, $perPage)),
-            'page' => $page,
-            'pages' => $pages,
-            'total' => $total,
-            'per_page' => $perPage,
-            'email_enabled' => $preference?->isEmailEnabled() ?? true,
         ]);
     }
 

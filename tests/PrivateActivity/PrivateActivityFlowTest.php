@@ -220,6 +220,56 @@ final class PrivateActivityFlowTest extends WebTestCase
     /**
      * @return list<\App\PrivateActivity\Entity\Participation>
      */
+    public function testTheCreationWizardPublishesACompleteActivity(): void
+    {
+        $client = static::createClient();
+        $client->loginUser($this->makeUser());
+        $category = $this->findOrMakeCategory();
+        $title = 'Sortie assistant '.uniqid();
+        $base = '/compte/activites-privees/creer/';
+        $post = function (int $step, array $data) use ($client, $base): void {
+            $crawler = $client->request('GET', $base.$step);
+            $token = (string) $crawler->filter('form[data-ew-form] input[name="_token"]')->attr('value');
+            $client->request('POST', $base.$step, ['_token' => $token, 'action' => 'next'] + $data);
+        };
+
+        $client->request('GET', '/compte/activites-privees/nouvelle?vierge=1');
+        self::assertResponseRedirects($base.'1');
+
+        $post(1, ['title' => 'Ab']);
+        self::assertResponseStatusCodeSame(422);
+        $post(1, ['title' => $title, 'category' => $category->getSlug(), 'description' => 'Une sortie conviviale entre membres, ouverte à tous.']);
+        self::assertResponseRedirects($base.'2');
+
+        // Une date passée est refusée.
+        $post(2, ['date' => '2020-01-01', 'start_time' => '10:00', 'address' => 'Place Bellecour, Lyon', 'city' => 'Lyon']);
+        self::assertResponseStatusCodeSame(422);
+        $day = (new \DateTimeImmutable('+6 days'))->format('Y-m-d');
+        $post(2, ['date' => $day, 'start_time' => '10:00', 'end_time' => '12:30', 'address' => 'Place Bellecour, Lyon', 'city' => 'Lyon', 'postal_code' => '69002', 'lat' => '45.7578', 'lng' => '4.8320', 'show_exact' => '1']);
+        self::assertResponseRedirects($base.'3');
+        $post(3, ['to_bring' => 'De l’eau']);
+        self::assertResponseRedirects($base.'4');
+        $post(4, ['min' => '5', 'max' => '3', 'mode' => 'automatic', 'visibility' => 'public']);
+        self::assertResponseStatusCodeSame(422);
+        $post(4, ['min' => '2', 'max' => '8', 'mode' => 'automatic', 'visibility' => 'public']);
+        self::assertResponseRedirects($base.'5');
+        $post(5, []);
+        self::assertResponseStatusCodeSame(422);
+        $post(5, ['accept_terms' => '1']);
+        self::assertResponseRedirects();
+
+        $activity = static::getContainer()->get(PrivateActivityRepository::class)->findOneBy(['title' => $title]);
+        self::assertNotNull($activity);
+        self::assertSame($day.' 10:00', $activity->getScheduledAt()?->format('Y-m-d H:i'));
+        self::assertSame('12:30', $activity->getEndsAt()?->format('H:i'));
+        self::assertSame(8, $activity->getMaxParticipants());
+        self::assertSame('45.7578000', $activity->getLatitude());
+
+        // Visible dans la liste publique.
+        $client->request('GET', '/activites-privees');
+        self::assertSelectorTextContains('.pa-grid', $title);
+    }
+
     private function reloadParticipations(string $activityId, User ...$users): array
     {
         $activity = $this->reloadActivity($activityId);

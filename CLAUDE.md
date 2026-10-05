@@ -148,6 +148,44 @@ Europe/Paris (`Kernel::TIMEZONE` + `SessionTimezoneMiddleware` côté PostgreSQL
   + e-mails acheteur/bénéficiaire ; page `/cadeaux/bon/{id}` ; webhook Stripe géré).
 - **Explorer** (`/explorer`) : filtres → `/activites` (paramètre `langue` ajouté).
 
+**Trois types de contenus, à ne pas confondre** (05/10) :
+- *Activité publique* = `Catalog\Service` : proposée par un **professionnel**, payante,
+  réservable, validée par l'équipe. Créée dans l'assistant pro `/pro/activites/assistant/{1-6}`
+  (`ActivityDraftService`) qui remplit Service + ServiceDetail + Media + formules
+  (`ServicePackage`, choisies par le client dans le panneau de réservation ; tarif par
+  personne / groupe / forfait géré par `BookingService`).
+- *Activité privée* = `PrivateActivity` : sortie **gratuite entre membres**, inscription
+  automatique ou sur validation, album photo. Assistant `/compte/activites-privees/creer/{1-5}`
+  (`PrivateActivityDraftService`) ; l'adresse exacte et la carte ne sont montrées qu'aux
+  participants acceptés.
+- *Événement* = `Event\Event` : événement entre membres (public, privé ou de groupe), avec
+  inscription / liste d'attente. Assistant `/evenements/creer`.
+
+**Page d'accueil unique** (maquette `docs/maquettes/landing_page.jpeg`, 05/10) : `/` est la
+même page pour visiteurs et membres (`HomeController`, `home/index.html.twig`, `landing.css`).
+Elle garde l'en-tête bleu nuit commun à tout le site (l'en-tête blanc de la maquette n'est
+volontairement PAS repris, décision du 05/10). Recherche à 3 modes : `type=gratuites` est renvoyé vers `/activites-privees`,
+`type=toutes` affiche sur `/activites` le nombre d'activités gratuites correspondantes. L'ancien
+accueil « connecté » (`home/connected.html.twig`) n'existe plus.
+
+**Connexion et comptes inconnus** (05/10, demande du client) : la connexion distingue « aucun
+compte avec cette adresse » de « mot de passe incorrect » (`expose_security_errors: all`,
+`LoginErrorPresenter`) ; « mot de passe oublié » et le renvoi du code de vérification refusent une
+adresse sans compte au lieu d'avancer. En contrepartie : `login_throttling` (5 essais / 15 min) et
+limiteur `password_reset_request` (`PASSWORD_RESET_REQUEST_LIMIT`) ; neutralisés en test (cache
+`array`, `config/packages/rate_limiter.yaml`).
+
+**Catégories proposées** (05/10) : dans les assistants, la catégorie se choisit dans une liste
+filtrable (`_partials/_category_picker.html.twig`) ; si elle manque, elle est proposée
+(`CategorySuggestion`, validée ou refusée dans EasyAdmin « Catégories proposées », auteur
+notifié). Une activité privée peut être enregistrée en **brouillon** (`PrivateActivityStatus::Draft`,
+catégorie facultative) et reprise depuis « Mes activités créées ». Adresses : Base Adresse
+Nationale puis Photon (OSM, monde entier) ; une adresse tapée à la main est acceptée.
+
+**Un professionnel reste dans son espace** : `ProviderAccountRedirectSubscriber` renvoie toute
+page `/compte/*` vers son équivalent `/pro/*` (notifications `/pro/notifications`, événements
+`/pro/evenements`…). Après connexion, un pro arrive sur `/pro/tableau-de-bord`.
+
 **Reste** : Stripe réel (clés), sous-pages Destinations ; liens réseaux sociaux officiels à
 confirmer (variables `SOCIAL_*_URL` du `.env`, global Twig `social_links`), vérif d'email,
 utilisation d'un bon cadeau au paiement (aujourd'hui : statut « utilisé » posé dans le

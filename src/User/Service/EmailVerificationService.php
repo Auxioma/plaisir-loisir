@@ -60,23 +60,29 @@ final class EmailVerificationService
     /**
      * Renvoie un code à une adresse déjà en attente de vérification.
      *
-     * Muet si l'adresse est inconnue ou déjà vérifiée : même politique que
-     * PasswordResetService::requestCode(), pour ne rien révéler à un tiers.
+     * Renvoie « unknown » (aucun compte), « verified » (déjà vérifiée : rien à
+     * envoyer) ou « sent » (05/10) : l'écran le dit au lieu d'attendre un code
+     * qui ne partira pas. Même logique que PasswordResetService::requestCode().
      *
      * Le critère est le statut « en attente », PAS la présence d'un code en
      * cours : confirm() efface le code quand il a expiré ou après trop
      * d'essais. Tester l'empreinte rendait le renvoi muet justement dans ces
      * cas-là, et le compte restait bloqué en attente sans aucune issue.
      */
-    public function resend(string $email): void
+    public function resend(string $email): string
     {
         $user = $this->findUser($email);
 
-        if (null === $user || $user->isDeleted() || UserStatus::Pending !== $user->getStatus()) {
-            return;
+        if (null === $user || $user->isDeleted()) {
+            return 'unknown';
+        }
+        if (UserStatus::Pending !== $user->getStatus()) {
+            return 'verified';
         }
 
         $this->sendCode($user);
+
+        return 'sent';
     }
 
     /**

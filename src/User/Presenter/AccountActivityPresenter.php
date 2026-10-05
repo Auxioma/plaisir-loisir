@@ -148,6 +148,7 @@ final class AccountActivityPresenter
 
             $date = $activity->getScheduledAt();
             [$status, $label] = match (true) {
+                PrivateActivityStatus::Draft === $activity->getStatus() => ['draft', 'Brouillon'],
                 PrivateActivityStatus::Cancelled === $activity->getStatus() => ['cancelled', 'Annulée'],
                 null !== $date && $date < $now => ['past', 'Terminée'],
                 PrivateActivityStatus::Full === $activity->getStatus() => ['full', 'Complète'],

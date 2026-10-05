@@ -9,6 +9,7 @@ use App\Booking\Entity\Booking;
 use App\Booking\Entity\BookingItem;
 use App\Catalog\Entity\Service;
 use App\Catalog\Entity\ServicePackage;
+use App\Catalog\Enum\PricingUnit;
 use App\Catalog\Enum\PromotionKind;
 use App\Catalog\Enum\ServiceStatus;
 use App\Catalog\Repository\PromotionRepository;
@@ -58,12 +59,16 @@ final class BookingService
             $label .= sprintf(' (offre -%d %%)', $promotion->getDiscountPercent());
         }
 
+        // Tarif « par groupe » ou « forfait » (05/10) : un seul prix pour le
+        // groupe, quel que soit le nombre de participants.
+        $perPerson = PricingUnit::PerPerson === $package->getPricingUnit();
+
         // Snapshot : on fige le libellé et le prix de la formule au moment de l'achat.
         $item = (new BookingItem())
             ->setServicePackage($package)
             ->setLabel($label)
             ->setUnitPrice($unitPrice)
-            ->setQuantity($quantity)
+            ->setQuantity($perPerson ? $quantity : 1)
             ->setCurrency($package->getCurrency());
 
         if (null !== $startsAt && $startsAt < new \DateTimeImmutable()) {
@@ -85,7 +90,7 @@ final class BookingService
             ->setParticipants($quantity)
             ->setStartsAt($startsAt)
             ->setCurrency($package->getCurrency())
-            ->setTotalPrice($this->multiply($unitPrice, $quantity));
+            ->setTotalPrice($this->multiply($unitPrice, $perPerson ? $quantity : 1));
         $booking->addItem($item);
 
         $this->entityManager->persist($booking);

@@ -44,8 +44,13 @@ class PrivateActivity
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
+    /**
+     * Nullable depuis le 05/10 : un brouillon peut attendre la validation
+     * d'une catégorie proposée (CategorySuggestion). Une activité publiée en
+     * a toujours une (PrivateActivityDraftService::validateStep).
+     */
     #[ORM\ManyToOne(targetEntity: Category::class)]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?Category $category = null;
 
     #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
@@ -74,6 +79,34 @@ class PrivateActivity
      */
     #[ORM\Column(options: ['default' => true])]
     private bool $showExactAddress = true;
+
+    /** Fin prévue (assistant de création, 05/10). */
+    #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
+    private ?\DateTimeImmutable $endsAt = null;
+
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $postalCode = null;
+
+    /**
+     * Coordonnées du lieu EXACT : soumises aux mêmes règles que `location`
+     * (carte affichée seulement à qui peut voir l'adresse exacte).
+     */
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 7, nullable: true)]
+    private ?string $latitude = null;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 7, nullable: true)]
+    private ?string $longitude = null;
+
+    /** Précisions de rendez-vous (mêmes règles de visibilité que `location`). */
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $meetingPoint = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $toBring = null;
+
+    /** Photo de couverture (chemin public, uploads/private-activities). */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $coverImage = null;
 
     #[ORM\Column(enumType: PrivateActivityVisibility::class)]
     private PrivateActivityVisibility $visibility = PrivateActivityVisibility::Public;
@@ -331,6 +364,90 @@ class PrivateActivity
             $this->participations->add($participation);
             $participation->setPrivateActivity($this);
         }
+
+        return $this;
+    }
+
+    public function getEndsAt(): ?\DateTimeImmutable
+    {
+        return $this->endsAt;
+    }
+
+    public function setEndsAt(?\DateTimeImmutable $endsAt): static
+    {
+        $this->endsAt = $endsAt;
+
+        return $this;
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->postalCode;
+    }
+
+    public function setPostalCode(?string $postalCode): static
+    {
+        $this->postalCode = $postalCode;
+
+        return $this;
+    }
+
+    public function getLatitude(): ?string
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?string $latitude): static
+    {
+        $this->latitude = $latitude;
+
+        return $this;
+    }
+
+    public function getLongitude(): ?string
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?string $longitude): static
+    {
+        $this->longitude = $longitude;
+
+        return $this;
+    }
+
+    public function getMeetingPoint(): ?string
+    {
+        return $this->meetingPoint;
+    }
+
+    public function setMeetingPoint(?string $meetingPoint): static
+    {
+        $this->meetingPoint = $meetingPoint;
+
+        return $this;
+    }
+
+    public function getToBring(): ?string
+    {
+        return $this->toBring;
+    }
+
+    public function setToBring(?string $toBring): static
+    {
+        $this->toBring = $toBring;
+
+        return $this;
+    }
+
+    public function getCoverImage(): ?string
+    {
+        return $this->coverImage;
+    }
+
+    public function setCoverImage(?string $coverImage): static
+    {
+        $this->coverImage = $coverImage;
 
         return $this;
     }

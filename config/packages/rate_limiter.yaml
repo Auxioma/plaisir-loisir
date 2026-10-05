@@ -1,0 +1,19 @@
+framework:
+    rate_limiter:
+        # Demandes de code « mot de passe oublié » (05/10) : la page dit si
+        # une adresse a un compte, elle ne doit pas servir à en tester des
+        # milliers. 5 demandes par IP toutes les 15 minutes.
+        password_reset_request:
+            policy: 'sliding_window'
+            limit: '%env(int:PASSWORD_RESET_REQUEST_LIMIT)%'
+            interval: '15 minutes'
+
+# En test, les compteurs (connexion, mot de passe oublié) vivent en mémoire et
+# repartent de zéro à chaque requête : la suite enchaîne les connexions depuis
+# la même IP sans jamais être bloquée.
+when@test:
+    framework:
+        cache:
+            pools:
+                cache.rate_limiter:
+                    adapter: cache.adapter.array

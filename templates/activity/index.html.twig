@@ -88,6 +88,12 @@
             <h1>{{ 'Activités'|trans }}</h1>
             <p>{{ 'Découvrez et réservez des activités inoubliables partout en France.'|trans }}</p>
         </header>
+        {# Recherche « Toutes » de l'accueil : les activités gratuites qui répondent aussi. #}
+        {% if free_matches %}
+            <a class="ex-free-banner" href="{{ path('app_private_activities', free_params) }}">
+                {{ icon.users(18) }} <span><strong>{{ free_matches }} {{ free_matches > 1 ? 'activités gratuites entre membres correspondent aussi à votre recherche'|trans : 'activité gratuite entre membres correspond aussi à votre recherche'|trans }}</strong></span> {{ icon.arrow_right(16) }}
+            </a>
+        {% endif %}
 
         <nav class="ex-tabs" aria-label="{{ 'Catégories'|trans }}">
             <a class="{{ selected is empty ? 'is-active' }}" href="{{ path('app_activities', app.request.query.all|merge({categorie: null, 'categories': null, page: null})) }}">{{ icon.grid(20) }} {{ 'Toutes'|trans }}</a>

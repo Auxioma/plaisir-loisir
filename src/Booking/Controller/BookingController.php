@@ -69,6 +69,7 @@ final class BookingController extends AbstractController
             'time' => (string) $request->request->get('time', ''),
             'adults' => max(0, $request->request->getInt('adults', 1)),
             'children' => max(0, $request->request->getInt('children', 0)),
+            'package' => (string) $request->request->get('formule', ''),
         ];
 
         // Visiteur : on garde sa sélection, il se connecte, puis retrouve la
@@ -90,7 +91,8 @@ final class BookingController extends AbstractController
 
         $participants = $draft['adults'] + $draft['children'];
         $startsAt = \DateTimeImmutable::createFromFormat('Y-m-d H:i', $draft['date'].' '.$draft['time']);
-        $package = $this->cheapestPackage($service);
+        // Formule choisie sur la fiche (05/10) ; à défaut, la moins chère.
+        $package = $this->chosenPackage($service, $draft['package']) ?? $this->cheapestPackage($service);
 
         $error = match (true) {
             '' === $draft['date'] => 'Choisissez une date.',
@@ -204,6 +206,17 @@ final class BookingController extends AbstractController
                 $booking->getParticipants(),
             ));
         }
+    }
+
+    private function chosenPackage(Service $service, string $id): ?ServicePackage
+    {
+        foreach ($service->getPackages() as $package) {
+            if ('' !== $id && (string) $package->getId() === $id) {
+                return $package;
+            }
+        }
+
+        return null;
     }
 
     private function cheapestPackage(Service $service): ?ServicePackage

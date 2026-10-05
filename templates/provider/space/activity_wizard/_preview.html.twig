@@ -1,0 +1,37 @@
+{# Aperçu de la carte telle qu'elle apparaîtra dans le catalogue (/activites). #}
+{% import '_partials/_icons.html.twig' as icon %}
+{% set prices = draft.packages|map(p => p.price ~ '')|filter(v => v matches '/^\\d+(\\.\\d+)?$/') %}
+{% set from = prices is empty ? null : min(prices) %}
+<section class="pf-card aw-preview">
+    <h2 class="pf-card__title">{{ 'Aperçu dans le catalogue'|trans }}</h2>
+    <article class="aw-card">
+        <span class="aw-card__media">
+            {% if draft.cover %}<img src="{{ asset(draft.cover) }}" alt="" data-ew-preview="cover">{% else %}<img alt="" data-ew-preview="cover" hidden><span class="aw-card__placeholder">{{ icon.image_frame(36) }}</span>{% endif %}
+            {% if category %}<span class="aw-card__badge">{{ category.name|trans }}</span>{% endif %}
+        </span>
+        <span class="aw-card__body">
+            <small>{{ icon.map_pin(12) }} <span data-ew-preview="place">{{ draft.place_label ?? '' ?: (draft.city ?? '') ?: 'Lieu'|trans }}</span></small>
+            <strong data-ew-preview="title">{{ draft.title ?? '' ?: 'Titre de votre activité'|trans }}</strong>
+            <em data-ew-preview="subtitle">{{ draft.subtitle ?? '' }}</em>
+            <span class="aw-card__row">
+                <small>{{ icon.clock(12) }} {{ (draft.duration ?? '') ? durations[draft.duration] ?? '—' : '—' }}</small>
+                <b>{% if from is not null %}{{ 'dès'|trans }} {{ from|number_format(from == from|round ? 0 : 2, ',', ' ') }} €{% else %}— €{% endif %}</b>
+            </span>
+        </span>
+    </article>
+    <ul class="aw-check">
+        {% for item in [
+            ['Titre et catégorie', (draft.title ?? '') and category],
+            ['Adresse sur la carte', (draft.lat ?? '') is not empty],
+            ['Photo principale', draft.cover],
+            ['Galerie (' ~ draft.gallery|length ~ '/' ~ max_gallery ~ ')', draft.gallery|length > 0],
+            ['Points forts et inclus', (draft.highlights ?? '') and (draft.included ?? '')],
+            ['Au moins une formule', from is not null],
+        ] %}
+            <li class="{{ item[1] ? 'is-ok' }}">{{ item[1] ? icon.check(14) : icon.minus(14) }} {{ item[0]|trans }}</li>
+        {% endfor %}
+    </ul>
+    {% if service and service.status.value == 'published' %}
+        <a class="pf-link" href="{{ path('app_activity_show', {slug: service.slug}) }}" target="_blank" rel="noopener">{{ 'Voir la fiche en ligne'|trans }} {{ icon.arrow_up_right(14) }}</a>
+    {% endif %}
+</section>

@@ -1,0 +1,28 @@
+{# Étape 3 — Photo et infos pratiques. #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+<h2 class="ew-main__title">3. {{ 'Photo et infos pratiques'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Une belle photo attire deux fois plus de participants.'|trans }}</p>
+
+<div class="ew-field{{ errors.cover is defined ? ' has-error' }}">
+    <label for="ew-cover">{{ 'Photo de couverture'|trans }} ({{ 'conseillé'|trans }})</label>
+    <label class="ew-drop{{ draft.cover ? ' has-image' }}" data-ew-drop>
+        {% if draft.cover %}<img src="{{ asset(draft.cover) }}" alt="" data-ew-drop-img>{% else %}<img alt="" data-ew-drop-img hidden>{% endif %}
+        <span class="ew-drop__body">
+            {{ icon.download(30) }}
+            <span>{{ 'Glissez-déposez une image ici'|trans }}</span>
+            <small>{{ 'ou'|trans }}</small>
+            <span class="ew-btn ew-btn--primary ew-btn--sm">{{ draft.cover ? 'Changer l’image'|trans : 'Choisir une image'|trans }}</span>
+        </span>
+        <input id="ew-cover" type="file" name="cover" accept="image/jpeg,image/png,image/webp" data-ew-cover>
+    </label>
+    <p class="ew-hint ew-hint--center">{{ 'JPG, PNG ou WebP • 6 Mo maximum'|trans }}</p>
+    {% if draft.cover %}<label class="aw-accept"><input type="checkbox" name="remove_cover" value="1"> <span>{{ 'Retirer la photo'|trans }}</span></label>{% endif %}
+    {{ ui.err(errors, 'cover') }}
+</div>
+
+<div class="ew-field{{ errors.to_bring is defined ? ' has-error' }}">
+    <label for="pa-bring">{{ 'À apporter'|trans }} ({{ 'optionnel'|trans }})</label>
+    <span class="ew-textarea"><textarea id="pa-bring" name="to_bring" rows="3" maxlength="1000" data-ew-count placeholder="{{ 'Ex : chaussures de marche, 1,5 L d’eau, pique-nique'|trans }}">{{ draft.to_bring ?? '' }}</textarea><small class="ew-count"><b>{{ (draft.to_bring ?? '')|length }}</b>/1000</small></span>
+    {{ ui.err(errors, 'to_bring') }}
+</div>

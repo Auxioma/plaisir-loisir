@@ -1,0 +1,39 @@
+{#
+    Choix de la catégorie dans les assistants de création (05/10) : liste
+    filtrable (recherche sans accents), sous-catégories rangées sous leur
+    catégorie, et « Ma catégorie n'existe pas » pour la proposer à l'équipe
+    (CategorySuggestionController) — plutôt qu'un « Autre » trop vague.
+    Variables : categories (racines), selected (slug), suggestion (nom en
+    attente ou null), context ('private' | 'pro'), errors.
+#}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+<div class="ew-field cp{{ errors.category is defined ? ' has-error' }}" id="categorie" data-cp>
+    <label for="cp-search">{{ 'Catégorie'|trans }} <em>*</em></label>
+    <span class="ew-search cp-search"><input id="cp-search" type="search" placeholder="{{ 'Rechercher une catégorie…'|trans }}" autocomplete="off" data-cp-search>{{ icon.search(18) }}</span>
+    <div class="cp-list" role="radiogroup" aria-label="{{ 'Catégories'|trans }}" data-cp-list>
+        {% for c in categories %}
+            <label class="cp-opt" data-cp-opt data-cp-text="{{ c.name }}"><input type="radio" name="category" value="{{ c.slug }}"{{ selected == c.slug ? ' checked' }}> <span>{{ c.name|trans }}</span></label>
+            {% for child in c.children %}
+                <label class="cp-opt cp-opt--child" data-cp-opt data-cp-text="{{ child.name }} {{ c.name }}"><input type="radio" name="category" value="{{ child.slug }}"{{ selected == child.slug ? ' checked' }}> <span>{{ child.name|trans }} <small>{{ c.name|trans }}</small></span></label>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    <p class="cp-empty" data-cp-empty hidden>{{ 'Aucune catégorie ne correspond. Proposez-la ci-dessous.'|trans }}</p>
+    {{ ui.err(errors, 'category') }}
+
+    {% if suggestion %}
+        <p class="cp-pending">{{ icon.hourglass(16) }} <span>{{ 'Catégorie proposée :'|trans }} <strong>{{ suggestion }}</strong> — {{ 'en attente de validation. Enregistrez votre activité en brouillon : vous serez prévenu dès qu’elle sera disponible.'|trans }}</span></p>
+    {% endif %}
+
+    <details class="cp-suggest" data-cp-suggest>
+        <summary>{{ icon.plus(14) }} {{ 'Ma catégorie n’existe pas : la proposer'|trans }}</summary>
+        <div class="cp-suggest__body">
+            <input type="hidden" name="suggest_context" value="{{ context }}">
+            <label>{{ 'Nom de la catégorie'|trans }}<input name="suggest_name" maxlength="60" placeholder="{{ 'Ex : Escalade, Pêche, Jeux de société…'|trans }}" data-cp-suggest-name></label>
+            <label>{{ 'Pourquoi cette catégorie ? (facultatif)'|trans }}<textarea name="suggest_description" rows="2" maxlength="500" placeholder="{{ 'Quelques mots pour aider notre équipe'|trans }}"></textarea></label>
+            <button type="submit" class="pf-btn" formaction="{{ path('app_category_suggest') }}" formnovalidate name="action" value="suggest">{{ icon.send(14) }} {{ 'Envoyer la proposition'|trans }}</button>
+            <small class="pf-muted">{{ 'Notre équipe la valide sous 48 h. En attendant, enregistrez votre activité en brouillon pour la reprendre ensuite.'|trans }}</small>
+        </div>
+    </details>
+</div>

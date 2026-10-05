@@ -1,0 +1,17 @@
+{# Étape 1 — L'activité. #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+<h2 class="ew-main__title">1. {{ 'Votre activité'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Donnez envie aux membres de vous rejoindre.'|trans }}</p>
+
+<div class="ew-field{{ errors.title is defined ? ' has-error' }}">
+    <label for="pa-title">{{ 'Titre'|trans }} <em>*</em></label>
+    <span class="ew-textarea"><input id="pa-title" name="title" value="{{ draft.title ?? '' }}" required minlength="5" maxlength="150" placeholder="{{ 'Ex : Randonnée au lac Blanc et pique-nique'|trans }}" data-ew-bind="title" data-ew-count><small class="ew-count"><b>{{ (draft.title ?? '')|length }}</b>/150</small></span>
+    {{ ui.err(errors, 'title') }}
+</div>
+{% include '_partials/_category_picker.html.twig' with { categories: all_categories, selected: draft.category ?? '', suggestion: draft.category_suggestion ?? null, context: 'private' } %}
+<div class="ew-field{{ errors.description is defined ? ' has-error' }}">
+    <label for="pa-description">{{ 'Description'|trans }} <em>*</em></label>
+    <p class="ew-hint">{{ 'Le programme, le niveau attendu, l’ambiance…'|trans }}</p>
+    <span class="ew-textarea"><textarea id="pa-description" name="description" rows="7" required minlength="30" maxlength="3000" data-ew-count placeholder="{{ 'Ex : Boucle de 12 km, 600 m de dénivelé, rythme tranquille. Pique-nique tiré du sac au bord du lac.'|trans }}">{{ draft.description ?? '' }}</textarea><small class="ew-count"><b>{{ (draft.description ?? '')|length }}</b>/3000</small></span>
+    {{ ui.err(errors, 'description') }}
+</div>

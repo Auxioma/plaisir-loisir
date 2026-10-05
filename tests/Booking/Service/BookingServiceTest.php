@@ -31,6 +31,18 @@ final class BookingServiceTest extends TestCase
             ->setService($service);
     }
 
+    public function testAGroupPriceIsChargedOnceWhateverTheNumberOfParticipants(): void
+    {
+        $service = $this->publishedService();
+        $package = $this->packageFor($service)->setPrice('150.00')->setPricingUnit(\App\Catalog\Enum\PricingUnit::PerGroup);
+
+        $booking = (new BookingService($this->createStub(EntityManagerInterface::class)))->createBooking(new User(), $service, $package, 4);
+
+        self::assertSame('150.00', $booking->getTotalPrice());
+        self::assertSame(4, $booking->getParticipants());
+        self::assertSame(1, $booking->getItems()->first()->getQuantity());
+    }
+
     public function testCreateBookingSnapshotsPackageAndComputesTotal(): void
     {
         $client = new User();

@@ -415,16 +415,19 @@
     font-family: var(--tm-font);
 }
 
-/* Maquette : contenu de x62 à x1776 sur 1920 (marges 62 / 144). */
+/* Contenu centré, marges égales des deux côtés (05/10) : les marges de la
+   maquette (62 à gauche, 144 à droite) et une dernière colonne très large
+   faisaient pencher tout le pied de page vers la gauche. */
 .tm-footer__inner {
-    max-width: 1920px;
+    max-width: 1440px;
     margin: 0 auto;
-    padding: 18px clamp(20px, 7.5vw, 144px) 36px clamp(20px, 3.23vw, 62px);
+    padding: 18px clamp(20px, 5vw, 72px) 36px;
 }
 
 .tm-footer__grid {
     display: grid;
-    grid-template-columns: 352fr 301fr 301fr 298fr 462fr;
+    grid-template-columns: 1.3fr 1fr 1fr 1fr 1.2fr;
+    gap: 24px;
 }
 
 .tm-footer__logo { display: block; height: 45px; width: auto; margin-top: -3px; }

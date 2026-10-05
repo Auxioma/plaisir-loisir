@@ -172,7 +172,35 @@ function initBudget() {
     });
 }
 
+/*
+ * Recherche de l'accueil (05/10) : le mode choisi décide de la page de
+ * résultats — activités des prestataires (/activites) ou activités gratuites
+ * (/activites-privees, sans le champ « participants »). « Toutes » part vers
+ * /activites, qui signale aussi les activités gratuites correspondantes.
+ */
+function initLandingSearch() {
+    const form = document.querySelector('[data-ld-search]');
+    if (!form || form.dataset.pgReady) return;
+    form.dataset.pgReady = '1';
+    const participants = form.querySelector('[data-ld-participants]');
+    const sync = () => {
+        const mode = form.querySelector('input[name="type"]:checked')?.value;
+        const free = mode === 'gratuites';
+        form.action = free ? form.dataset.urlFree : form.dataset.urlPro;
+        participants?.classList.toggle('is-disabled', free);
+        const select = participants?.querySelector('select');
+        if (select) select.disabled = free;
+    };
+    form.querySelectorAll('input[name="type"]').forEach((r) => r.addEventListener('change', sync));
+    // Champs vides : pas de paramètres inutiles dans l'adresse de résultats.
+    form.addEventListener('submit', () => {
+        form.querySelectorAll('input[name="lieu"], input[name="q"], input[name="date"]').forEach((i) => { if (!i.value) i.disabled = true; });
+    });
+    sync();
+}
+
 function start() {
+    initLandingSearch();
     initBudget();
     initNewsletter();
     initForms();

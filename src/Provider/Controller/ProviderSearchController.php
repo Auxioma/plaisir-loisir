@@ -6,6 +6,7 @@ namespace App\Provider\Controller;
 
 use App\Catalog\Repository\CategoryRepository;
 use App\Provider\Repository\ProviderProfileRepository;
+use App\Provider\Service\ProviderDirectory;
 use App\Review\Enum\ReviewStatus;
 use App\Review\Repository\ReviewRepository;
 use App\Stats\Service\PageViewRecorder;
@@ -41,29 +42,48 @@ final class ProviderSearchController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/professionnels', 'en' => '/en/professionals'], name: 'app_provider_search')]
-    public function search(Request $request): Response
+    public function search(Request $request, ProviderDirectory $directory): Response
     {
-        $categorySlug = (string) $request->query->get('metier', '');
-        $city = trim((string) $request->query->get('ville', ''));
-        $radiusKm = $request->query->getInt('rayon', 0);
+        $q = $request->query;
+        $categorySlug = (string) $q->get('metier', '');
+        $category = '' !== $categorySlug ? $this->categories->findOneBy(['slug' => $categorySlug]) : null;
+        $filters = [
+            'q' => trim((string) $q->get('q', '')),
+            'category' => $category,
+            'city' => trim((string) $q->get('ville', '')),
+            'radius' => max(0, min(1000, $q->getInt('rayon'))),
+            'rating' => \in_array((float) $q->get('note', 0), [3.0, 4.0, 4.5], true) ? (float) $q->get('note') : 0.0,
+            'sort' => \array_key_exists((string) $q->get('tri'), ProviderDirectory::SORTS) ? (string) $q->get('tri') : 'pertinence',
+        ];
+        $results = $directory->search($filters);
+        $page = max(1, $q->getInt('page', 1));
+        $perPage = 12;
 
-        $category = '' !== $categorySlug
-            ? $this->categories->findOneBy(['slug' => $categorySlug])
-            : null;
-
-        $results = $this->providers->search($category, '' !== $city ? $city : null, $radiusKm > 0 ? $radiusKm : null);
+        $params = array_filter([
+            'q' => $filters['q'] ?: null, 'metier' => $categorySlug ?: null, 'ville' => $filters['city'] ?: null,
+            'rayon' => $filters['radius'] ?: null, 'note' => $filters['rating'] ?: null,
+            'tri' => 'pertinence' !== $filters['sort'] ? $filters['sort'] : null,
+        ], static fn (mixed $v): bool => null !== $v);
 
         return $this->render('provider/recherche.html.twig', [
-            'results' => $results,
+            'results' => \array_slice($results, 0, $page * $perPage),
+            'total' => \count($results),
+            'has_more' => \count($results) > $page * $perPage,
+            'page' => $page,
             'categories' => $this->categories->findRoots(),
             'selected_category' => $category,
-            'city' => $city,
-            'radius' => $radiusKm,
+            'filters' => $filters,
+            'params' => $params,
+            'sorts' => ProviderDirectory::SORTS,
+            'markers' => array_values(array_filter(array_map(fn (array $r): ?array => null !== $r['lat'] ? [
+                'lat' => $r['lat'], 'lng' => $r['lng'], 'title' => $r['name'], 'where' => $r['city'],
+                'url' => $this->generateUrl('app_provider_profile', ['slug' => $r['slug']]),
+            ] : null, $results))),
         ]);
     }
 
     #[Route(path: ['fr' => '/professionnels/{slug}', 'en' => '/en/professionals/{slug}'], name: 'app_provider_profile')]
-    public function profile(string $slug, Request $request, PageViewRecorder $pageViews): Response
+    public function profile(string $slug, Request $request, PageViewRecorder $pageViews, ProviderDirectory $directory): Response
     {
         $profile = $this->providers->findVerifiedBySlug($slug);
 
@@ -81,6 +101,7 @@ final class ProviderSearchController extends AbstractController
 
         return $this->render('provider/profil_public.html.twig', [
             'provider' => $profile,
+            'card' => $directory->card($profile),
             'reviews' => $reviews,
             'average_rating' => $this->reviews->averageRatingForProvider($profile),
         ]);

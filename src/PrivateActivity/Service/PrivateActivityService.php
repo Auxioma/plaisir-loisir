@@ -81,6 +81,12 @@ final class PrivateActivityService
         return $activity;
     }
 
+    /** Enregistre les compléments posés après create() (assistant, 05/10). */
+    public function save(): void
+    {
+        $this->entityManager->flush();
+    }
+
     public function cancel(PrivateActivity $activity, User $organizer): void
     {
         if ($activity->getOrganizer() !== $organizer) {
