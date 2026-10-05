@@ -63,9 +63,12 @@
                         <a href="{{ path('app_gifts') }}" class="tm-menu__item">{{ 'Bons cadeaux'|trans }}</a>
                         <a href="{{ path('app_events') }}" class="tm-menu__item">{{ 'Événements'|trans }}</a>
                         <a href="{{ path('app_private_activities') }}" class="tm-menu__item">{{ 'Activités privées'|trans }}</a>
-                        <a href="{{ path('app_account_private_activities_new') }}" class="tm-menu__item">{{ 'Organiser une activité'|trans }}</a>
+                        {# Un professionnel crée ses activités depuis son espace pro ; il
+                           ne doit jamais être renvoyé dans l'espace particulier (05/10). #}
+                        <a href="{{ is_provider ? path('app_pro_activities_new') : path('app_account_private_activities_new') }}" class="tm-menu__item">{{ (is_provider ? 'Créer une activité' : 'Organiser une activité')|trans }}</a>
+                        <a href="{{ path('app_event_guide') }}" class="tm-menu__item">{{ 'Créer un événement'|trans }}</a>
                         <a href="{{ path('app_provider_search') }}" class="tm-menu__item">{{ 'Trouver un professionnel'|trans }}</a>
-                        <a href="{{ path('app_account_requests_new') }}" class="tm-menu__item">{{ 'Déposer une demande'|trans }}</a>
+                        {% if not is_provider %}<a href="{{ path('app_account_requests_new') }}" class="tm-menu__item">{{ 'Déposer une demande'|trans }}</a>{% endif %}
                     </div>
                 </details>
 
@@ -80,7 +83,7 @@
                     <span class="tm-nav__badge">{{ 'Nouveau'|trans }}</span>
                 </a>
 
-                <a href="{{ path('app_account_notifications') }}" class="tm-nav__link{{ active == 'notifications' ? ' is-active' }}">
+                <a href="{{ is_provider ? path('app_pro_notifications') : path('app_account_notifications') }}" class="tm-nav__link{{ active == 'notifications' ? ' is-active' }}">
                     <span class="tm-nav__icon">{{ icon.bell(20) }}</span>
                     {{ 'Notifications'|trans }}
                     {# Maquette : pastille rouge en exposant après le libellé. #}
@@ -95,56 +98,11 @@
         </div>
 
         <div class="tm-header__actions">
-            {% if connected %}
-                <details class="pl-dropdown tm-account">
-                    {# Maquettes profil_particulier : pastille avatar + nom + « Mon compte ». #}
-                    <summary class="tm-account__toggle" aria-label="{{ 'Menu du compte'|trans }}">
-                        <span class="tm-account__avatar">
-                            <img src="{{ asset(app.user.avatarPath ?? 'images/account/avatar-default.svg') }}" alt="">
-                            {% set unreadMessages = app.user ? unread_messages_count(app.user) : 0 %}
-                            {% if unreadMessages > 0 %}<span class="tm-account__dot" aria-hidden="true"></span>{% endif %}
-                        </span>
-                        <span class="tm-account__id">
-                            <strong>{{ app.user ? (app.user.firstName ~ ' ' ~ app.user.lastName) : 'Thomas Martin' }}</strong>
-                            <small>{{ 'Mon compte'|trans }}</small>
-                        </span>
-                        {{ icon.chevron_down(14) }}
-                    </summary>
-                    <div class="tm-menu tm-menu--right">
-                        <a href="{{ is_provider ? path('app_pro_dashboard') : path('app_account_dashboard') }}" class="tm-menu__item">{{ icon.person(16) }} {{ 'Profil'|trans }}</a>
-                        <a href="{{ is_provider ? path('app_pro_messages') : path('app_account_messages') }}" class="tm-menu__item">
-                            {{ icon.mail(16) }} {{ 'Messagerie'|trans }}
-                            {% if unreadMessages > 0 %}<span class="tm-menu__count">{{ unreadMessages > 99 ? '99+' : unreadMessages }}</span>{% endif %}
-                        </a>
-                        {% if is_provider %}
-                            {% set pendingRequests = pending_requests_count(app.user) %}
-                            <a href="{{ path('app_pro_requests') }}" class="tm-menu__item">
-                                {{ icon.receipt(16) }} {{ 'Demandes reçues'|trans }}
-                                {% if pendingRequests > 0 %}<span class="tm-menu__count">{{ pendingRequests > 99 ? '99+' : pendingRequests }}</span>{% endif %}
-                            </a>
-                            <a href="{{ path('app_pro_subscription') }}" class="tm-menu__item">{{ icon.card(16) }} {{ 'Abonnement'|trans }}</a>
-                        {% endif %}
-                        {% if app.user %}
-                            <button type="button" class="tm-menu__item tm-menu__item--danger" data-bs-toggle="modal" data-bs-target="#confirm-logout">{{ icon.logout(16) }} {{ 'Déconnexion'|trans }}</button>
-                        {% endif %}
-                    </div>
-                </details>
-            {% else %}
-                {# Même bouton que la maquette ; il ouvre le choix Client /
-                   Prestataire, les deux écrans de connexion étant distincts. #}
-                <details class="pl-dropdown tm-signin">
-                    <summary class="tm-btn tm-btn--dark">{{ 'Se connecter'|trans }}</summary>
-                    <div class="tm-menu tm-menu--right">
-                        <a href="{{ path('app_login') }}" class="tm-menu__item">{{ 'Client'|trans }}</a>
-                        <a href="{{ path('app_pro_login') }}" class="tm-menu__item">{{ 'Prestataire'|trans }}</a>
-                    </div>
-                </details>
-            {% endif %}
+            {% include '_partials/_account_menu.html.twig' %}
 
-            {# Pas encore d'écran de création d'activité côté pro : le
-               prestataire atterrit sur son tableau de bord, le visiteur sur
-               la présentation de l'offre professionnelle. #}
-            <a href="{{ is_provider ? path('app_pro_dashboard') : path('app_corporate_partner') }}" class="tm-btn tm-btn--cta">{{ 'Déposer une activité'|trans }}</a>
+            {# Le professionnel ouvre l'assistant de création (05/10) ; le
+               visiteur, la présentation de l'offre professionnelle. #}
+            <a href="{{ is_provider ? path('app_pro_activities_new') : path('app_corporate_partner') }}" class="tm-btn tm-btn--cta">{{ 'Déposer une activité'|trans }}</a>
 
             <button class="tm-burger" type="button" data-bs-toggle="offcanvas" data-bs-target="#tmNav"
                     aria-controls="tmNav" aria-label="{{ 'Ouvrir le menu'|trans }}">

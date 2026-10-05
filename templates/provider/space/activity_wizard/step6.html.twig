@@ -1,0 +1,57 @@
+{# Étape 6 — Vérification : récapitulatif de chaque étape, avec lien pour corriger. #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ew-main__title">6. {{ 'Vérification'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Relisez votre activité avant de l’envoyer : notre équipe la valide sous 24 h.'|trans }}</p>
+
+{% macro block(n, title, rows) %}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    <section class="aw-recap">
+        <header><h3>{{ n }}. {{ title|trans }}</h3><a class="pf-link" href="{{ path('app_pro_activity_wizard', {etape: n}) }}">{{ icon.edit_square(14) }} {{ 'Modifier'|trans }}</a></header>
+        <dl>{% for label, value in rows %}<div><dt>{{ label|trans }}</dt><dd>{{ value ?: '—' }}</dd></div>{% endfor %}</dl>
+    </section>
+{% endmacro %}
+
+{{ _self.block(1, 'Informations', {
+    'Titre': draft.title ?? '',
+    'Catégorie': category ? category.name : '',
+    'Type': types[draft.activity_type] ?? '',
+    'Niveau': levels[draft.level] ?? '',
+    'Accroche': draft.subtitle ?? '',
+    'Langues': draft.languages|join(', '),
+    'Âge minimum': (draft.minimum_age ?? '') ? draft.minimum_age ~ ' ans' : '',
+}) }}
+{{ _self.block(2, 'Lieu', {
+    'Adresse': draft.address ?? '',
+    'Lieu affiché': (draft.place_label ?? '') ?: (draft.city ?? ''),
+    'Rendez-vous': draft.meeting_point ?? '',
+    'Ouverture': periods[draft.opening_period] ?? '',
+}) }}
+<section class="aw-recap">
+    <header><h3>3. {{ 'Photos et description'|trans }}</h3><a class="pf-link" href="{{ path('app_pro_activity_wizard', {etape: 3}) }}">{{ icon.edit_square(14) }} {{ 'Modifier'|trans }}</a></header>
+    <div class="aw-recap__photos">
+        {% if draft.cover %}<img src="{{ asset(draft.cover) }}" alt="">{% endif %}
+        {% for p in draft.gallery %}<img src="{{ asset(p) }}" alt="">{% endfor %}
+    </div>
+    <p class="aw-recap__text">{% set text = (draft.description ?? '')|striptags %}{{ text|slice(0, 320) }}{{ text|length > 320 ? '…' }}</p>
+</section>
+{{ _self.block(4, 'Déroulé et conditions', {
+    'Durée': (draft.duration ?? '') ? durations[draft.duration] ?? '' : '',
+    'Places par séance': draft.capacity ?? '',
+    'Points forts': (draft.highlights ?? '')|split('\n')|join(' · '),
+    'Inclus': (draft.included ?? '')|split('\n')|join(' · '),
+}) }}
+<section class="aw-recap">
+    <header><h3>5. {{ 'Tarifs et réservation'|trans }}</h3><a class="pf-link" href="{{ path('app_pro_activity_wizard', {etape: 5}) }}">{{ icon.edit_square(14) }} {{ 'Modifier'|trans }}</a></header>
+    <ul class="aw-recap__packages">
+        {% for p in draft.packages %}<li><strong>{{ p.name }}</strong> — {{ p.price }} € {{ units[p.unit] is defined ? units[p.unit]|lower|trans : '' }}{% if p.description %} <small>{{ p.description }}</small>{% endif %}</li>{% endfor %}
+    </ul>
+    <p class="aw-recap__text">{{ 'Annulation'|trans }} : {{ {flexible: 'Flexible', moderate: 'Modérée', strict: 'Stricte'}[draft.cancellation] ?? '' }} · {{ 'Réservation'|trans }} : {{ draft.booking_type == 'calendar' ? 'Sur créneaux'|trans : 'Date libre'|trans }}</p>
+</section>
+
+<label class="aw-accept{{ errors.accept_charter is defined ? ' has-error' }}">
+    <input type="checkbox" name="accept_charter" value="1" required{{ (draft.accept_charter ?? '') == '1' ? ' checked' }}>
+    <span>{{ 'Je certifie que ces informations sont exactes et j’accepte les'|trans }} <a href="{{ path('app_corporate_terms') }}" target="_blank">{{ 'conditions générales'|trans }}</a> {{ 'de TrouveMoi.'|trans }}</span>
+</label>
+{{ ui.err(errors, 'accept_charter') }}

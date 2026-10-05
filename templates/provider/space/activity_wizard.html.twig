@@ -1,0 +1,68 @@
+{#
+    Assistant « Créer une activité » de l'espace pro (05/10).
+    Données : ProviderActivityWizardController::step(). Validation serveur à
+    chaque étape (ActivityDraftService), erreurs sous les champs.
+    Composants repris de l'assistant des événements (.ew-*, event-wizard.js) ;
+    mise en page propre : assets/styles/pro.css (.aw-*).
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+{% import 'provider/space/_ico.html.twig' as ico %}
+
+{% block title %}{{ (service ? 'Modifier une activité' : 'Créer une activité')|trans }} — {{ steps[step - 1].title|trans }}{% endblock %}
+
+{% block space %}
+<form class="ew-form aw" method="post" action="{{ path('app_pro_activity_wizard', {etape: step}) }}" enctype="multipart/form-data" novalidate data-ew-form>
+    <input type="hidden" name="_token" value="{{ csrf_token('activity_wizard') }}">
+
+    <header class="pf-head pp-head aw-head">
+        <div>
+            <a class="pp-back" href="{{ path('app_pro_activities') }}">{{ icon.arrow_left(16) }} {{ 'Mes activités'|trans }}</a>
+            <h1 class="pf-title">{{ service ? service.title : 'Créer une activité'|trans }}</h1>
+            <p class="pf-sub">
+                {% if service %}{{ 'Statut actuel :'|trans }} <span class="pf-pill pf-pill--{{ service.status.tone }}">{{ service.status.label|trans }}</span>
+                {% else %}{{ 'Décrivez votre activité en 6 étapes : elle sera publiée après validation par notre équipe.'|trans }}{% endif %}
+            </p>
+        </div>
+        <div class="aw-head__actions">
+            <button type="submit" name="action" value="draft" class="pf-btn" formnovalidate>{{ 'Enregistrer en brouillon'|trans }}</button>
+            {% if step > 1 %}<button type="submit" name="action" value="prev" class="pf-btn" formnovalidate>{{ 'Précédent'|trans }}</button>{% endif %}
+            {% if step < 6 %}
+                <button type="submit" name="action" value="next" class="pf-btn pf-btn--primary">{{ 'Suivant'|trans }} {{ icon.arrow_right(14) }}</button>
+            {% else %}
+                <button type="submit" name="action" value="next" class="pf-btn pf-btn--primary">{{ (service and service.status.value not in ['draft', 'archived'] ? 'Enregistrer les modifications' : 'Envoyer en validation')|trans }}</button>
+            {% endif %}
+        </div>
+    </header>
+
+    <nav class="aw-steps" aria-label="{{ 'Étapes de création'|trans }}">
+        {% for s in steps %}
+            {% set n = loop.index %}
+            {% set is_done = n in done and n != step %}
+            {% if is_done %}<a class="aw-step is-done" href="{{ path('app_pro_activity_wizard', {etape: n}) }}">{% else %}<span class="aw-step{{ n == step ? ' is-active' }}"{% if n == step %} aria-current="step"{% endif %}>{% endif %}
+                <span class="aw-step__dot">{% if is_done %}{{ icon.check(14) }}{% else %}{{ n }}{% endif %}</span>
+                <span class="aw-step__text"><strong>{{ s.title|trans }}</strong><small>{{ s.subtitle|trans }}</small></span>
+            {% if is_done %}</a>{% else %}</span>{% endif %}
+        {% endfor %}
+    </nav>
+
+    {% if errors is not empty %}
+        <div class="ew-alert" role="alert">{{ icon.info(18) }} {{ 'Certaines informations sont manquantes ou incorrectes : corrigez les champs signalés pour continuer.'|trans }}</div>
+    {% endif %}
+    {% if not verified %}
+        <p class="ew-tip">{{ icon.info(16) }} <span>{{ 'Votre compte professionnel est en cours de vérification : vous pouvez préparer vos activités, elles pourront être envoyées en validation dès la vérification terminée.'|trans }}</span></p>
+    {% endif %}
+
+    <section class="pf-card ew-main aw-main">
+        {% include 'provider/space/activity_wizard/step' ~ step ~ '.html.twig' %}
+    </section>
+</form>
+{% endblock %}
+
+{% block space_aside %}
+    {% include 'provider/space/activity_wizard/_preview.html.twig' %}
+    <section class="pf-card aw-advice">
+        <h2 class="pf-card__title">{{ advice.title|trans }}</h2>
+        <ul>{% for item in advice.items %}<li>{{ icon.check_square(16) }} {{ item|trans }}</li>{% endfor %}</ul>
+    </section>
+{% endblock %}

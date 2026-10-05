@@ -347,8 +347,16 @@ final class ActivityPresenter
         }
 
         usort($items, static fn (array $a, array $b): int => $a['position'] <=> $b['position']);
+        $paths = array_map(static fn (array $item): string => $item['path'], $items);
 
-        return array_map(static fn (array $item): string => $item['path'], $items);
+        // Activité créée avec sa seule photo principale (05/10) : la fiche
+        // l'affiche en grand au lieu d'un bandeau d'images vide.
+        $cover = $this->coverImage($service);
+        if (null !== $cover && !\in_array($cover, $paths, true) && \count($paths) < 5) {
+            array_unshift($paths, $cover);
+        }
+
+        return $paths;
     }
 
     private function firstPathOfType(Service $service, string $type): ?string

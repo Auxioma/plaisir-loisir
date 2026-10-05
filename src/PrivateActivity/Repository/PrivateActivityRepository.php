@@ -82,4 +82,57 @@ class PrivateActivityRepository extends ServiceEntityRepository
 
         return $results;
     }
+
+    /**
+     * Activités à venir que l'on peut découvrir (05/10) : publiques, plus
+     * celles réservées aux membres si `$members`. Filtres de la recherche de
+     * l'accueil et de /activites-privees : lieu (ville ou code postal),
+     * mot-clé (titre), jour, catégorie.
+     *
+     * @return list<PrivateActivity>
+     */
+    public function findUpcomingDiscoverable(
+        bool $members,
+        ?Category $category = null,
+        ?string $place = null,
+        ?string $keywords = null,
+        ?\DateTimeImmutable $day = null,
+        ?int $limit = null,
+    ): array {
+        $qb = $this->createQueryBuilder('a')
+            ->leftJoin('a.category', 'c')->addSelect('c')
+            ->andWhere('a.visibility IN (:visibilities)')
+            ->andWhere('a.status != :cancelled')
+            ->andWhere('a.scheduledAt IS NULL OR a.scheduledAt >= :now')
+            ->setParameter('visibilities', $members ? [PrivateActivityVisibility::Public, PrivateActivityVisibility::MembersOnly] : [PrivateActivityVisibility::Public])
+            ->setParameter('cancelled', PrivateActivityStatus::Cancelled)
+            ->setParameter('now', new \DateTimeImmutable())
+            ->orderBy('a.scheduledAt', 'ASC');
+
+        if (null !== $category) {
+            $qb->andWhere('a.category = :category')->setParameter('category', $category->getId(), 'ulid');
+        }
+        if (null !== $place && '' !== trim($place)) {
+            $qb->andWhere('LOWER(a.city) LIKE :place OR a.postalCode LIKE :placeStart')
+                ->setParameter('place', '%'.mb_strtolower(trim($place)).'%')
+                ->setParameter('placeStart', trim($place).'%');
+        }
+        if (null !== $keywords && '' !== trim($keywords)) {
+            $qb->andWhere('LOWER(a.title) LIKE :kw OR LOWER(a.description) LIKE :kw')
+                ->setParameter('kw', '%'.mb_strtolower(trim($keywords)).'%');
+        }
+        if (null !== $day) {
+            $qb->andWhere('a.scheduledAt >= :dayStart AND a.scheduledAt < :dayEnd')
+                ->setParameter('dayStart', $day->setTime(0, 0))
+                ->setParameter('dayEnd', $day->setTime(0, 0)->modify('+1 day'));
+        }
+        if (null !== $limit) {
+            $qb->setMaxResults($limit);
+        }
+
+        /** @var list<PrivateActivity> $results */
+        $results = $qb->getQuery()->getResult();
+
+        return $results;
+    }
 }

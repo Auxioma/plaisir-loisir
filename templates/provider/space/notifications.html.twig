@@ -1,0 +1,19 @@
+{#
+    Notifications de l'espace professionnel (05/10) : même liste que
+    l'espace particulier (NotificationFeed), dans la coquille pro — un
+    professionnel ne quitte plus son espace pour lire ses notifications.
+    Données : ProviderNotificationController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+
+{% block title %}{{ 'Notifications'|trans }}{% endblock %}
+
+{% set routes = {list: 'app_pro_notifications', mark_all: 'app_pro_notifications_mark_all_read', preferences: 'app_pro_settings'} %}
+
+{% block space %}
+    {% include 'notification/_feed.html.twig' with { part: 'main' } %}
+{% endblock %}
+
+{% block space_aside %}
+    {% include 'notification/_feed.html.twig' with { part: 'aside' } %}
+{% endblock %}

@@ -27,27 +27,18 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 final class HomeSearchTest extends WebTestCase
 {
-    public function testTheFourFieldsCanOpenTheirPanel(): void
+    public function testTheSearchBarCarriesItsFourCriteriaAndThreeModes(): void
     {
         $client = static::createClient();
         $crawler = $client->request('GET', '/');
 
         self::assertResponseIsSuccessful();
-
-        foreach (['destination', 'activite', 'date', 'participants'] as $nom) {
-            self::assertSame(
-                1,
-                $crawler->filter(sprintf('[data-search-field="%s"]', $nom))->count(),
-                sprintf('Le champ « %s » ne porte pas son attribut : son panneau ne s\'ouvrira pas.', $nom),
-            );
-            self::assertSame(
-                1,
-                $crawler->filter(sprintf('[data-search-panel="%s"]', $nom))->count(),
-                sprintf('Le panneau « %s » est absent de la page.', $nom),
-            );
+        $form = $crawler->filter('form[data-ld-search]');
+        self::assertCount(1, $form, 'La barre de recherche de l\'accueil est absente.');
+        foreach (['lieu', 'q', 'date', 'participants'] as $nom) {
+            self::assertCount(1, $form->filter(sprintf('[name="%s"]', $nom)), sprintf('Le critère « %s » a disparu.', $nom));
         }
-
-        self::assertSame(1, $crawler->filter('[data-search-submit]')->count(), 'Le bouton « Recherche » n\'emporte plus les critères choisis.');
+        self::assertSame(['toutes', 'prestataires', 'gratuites'], $form->filter('input[name="type"]')->each(static fn (Crawler $n): string => (string) $n->attr('value')));
     }
 
     /**
@@ -119,9 +110,12 @@ final class HomeSearchTest extends WebTestCase
      */
     private function options(Crawler $crawler, string $panneau): array
     {
+        // Suggestions de la recherche de l'accueil (maquette landing_page, 05/10).
+        $liste = 'destination' === $panneau ? '#ld-places' : '#ld-titles';
+
         return $crawler
-            ->filter(sprintf('[data-search-panel="%s"] [data-option]', $panneau))
-            ->each(static fn (Crawler $n): string => trim($n->text()));
+            ->filter($liste.' option')
+            ->each(static fn (Crawler $n): string => trim((string) $n->attr('value')));
     }
 
     private function countResults(Crawler $crawler): int

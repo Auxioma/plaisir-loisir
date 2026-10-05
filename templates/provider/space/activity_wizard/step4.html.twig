@@ -1,0 +1,37 @@
+{# Étape 4 — Déroulé et conditions : durée, places, listes affichées sur la fiche. #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% macro list(errors, name, value, label, hint, placeholder, required) %}
+    {%- import 'event/wizard/_ui.html.twig' as ui -%}
+    <div class="ew-field{{ errors[name] is defined ? ' has-error' }}">
+        <label for="aw-{{ name }}">{{ label|trans }} {% if required %}<em>*</em>{% else %}({{ 'optionnel'|trans }}){% endif %}</label>
+        <p class="ew-hint">{{ hint|trans }}</p>
+        <textarea id="aw-{{ name }}" name="{{ name }}" rows="4"{{ required ? ' required' }} placeholder="{{ placeholder|trans }}">{{ value }}</textarea>
+        {{ ui.err(errors, name) }}
+    </div>
+{% endmacro %}
+
+<h2 class="ew-main__title">4. {{ 'Déroulé et conditions'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Tout ce que vos clients doivent savoir avant de réserver. Une ligne par élément.'|trans }}</p>
+
+<div class="ew-row">
+    <div class="ew-field{{ errors.duration is defined ? ' has-error' }}">
+        <label for="aw-duration">{{ 'Durée'|trans }} <em>*</em></label>
+        <span class="ew-select"><select id="aw-duration" name="duration" required><option value="">{{ 'Choisir la durée'|trans }}</option>{% for m, l in durations %}<option value="{{ m }}"{{ (draft.duration ?? '') == m ~ '' ? ' selected' }}>{{ l|trans }}</option>{% endfor %}</select></span>
+        {{ ui.err(errors, 'duration') }}
+    </div>
+    <div class="ew-field{{ errors.capacity is defined ? ' has-error' }}">
+        <label for="aw-capacity">{{ 'Places par séance'|trans }} <em>*</em></label>
+        <input id="aw-capacity" type="number" name="capacity" min="1" max="500" required value="{{ draft.capacity ?? '' }}" placeholder="12">
+        {{ ui.err(errors, 'capacity') }}
+    </div>
+</div>
+
+<div class="ew-row">
+    {{ _self.list(errors, 'highlights', draft.highlights ?? '', 'Points forts', 'Ce que l’activité permet de vivre.', 'Découvrir les gorges depuis la rivière', true) }}
+    {{ _self.list(errors, 'included', draft.included ?? '', 'Ce qui est inclus', 'Matériel, encadrement, collation…', 'Canoë et pagaies', true) }}
+    {{ _self.list(errors, 'excluded', draft.excluded ?? '', 'Non inclus', 'Pour éviter toute surprise.', 'Transport jusqu’au point de départ', false) }}
+    {{ _self.list(errors, 'to_bring', draft.to_bring ?? '', 'À apporter', 'Tenue, documents, équipement.', 'Maillot de bain', false) }}
+</div>
+{{ _self.list(errors, 'cannot_participate', draft.cannot_participate ?? '', 'Conditions de participation', 'Contre-indications, âge, aptitudes requises.', 'Savoir nager 25 mètres', false) }}

@@ -1,0 +1,79 @@
+{#
+    En-tête de la page d'accueil — maquette docs/maquettes/landing_page.jpeg
+    (05/10) : fond blanc, logo, Activités & Loisirs ▾, Activités gratuites,
+    Photos, « Créer une activité » (contour vert), Événements, Devenir
+    prestataire, puis recherche / favoris / compte en icônes.
+    Les autres pages gardent l'en-tête bleu nuit (_partials/navbar.html.twig).
+
+    « Créer une activité » mène à l'assistant adapté : professionnel →
+    assistant pro ; membre → activité gratuite ; visiteur → connexion, puis
+    retour sur l'assistant (cible mémorisée par le pare-feu).
+    Styles : assets/styles/landing.css (.ld-nav*).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+{% set connected = app.user is not null or (app.debug and app.request.query.getBoolean('connecte')) %}
+{% set is_provider = app.user is not null and is_granted('ROLE_PROVIDER') %}
+
+<header class="tm-header ld-nav">
+    <div class="tm-header__inner ld-nav__inner">
+        <a href="{{ path('app_home') }}" class="ld-nav__logo" aria-label="{{ 'Accueil TrouveMoi'|trans }}">
+            <img src="{{ asset('images/logo-trouvemoi.png') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="170" height="48">
+        </a>
+
+        <div class="tm-header__panel offcanvas offcanvas-end ld-nav__panel" id="ldNav" tabindex="-1" aria-label="{{ 'Menu'|trans }}">
+            <div class="tm-header__panel-head">
+                <img src="{{ asset('images/logo-trouvemoi.png') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="150" height="42">
+                <button type="button" class="tm-header__panel-close" data-bs-dismiss="offcanvas" aria-label="{{ 'Fermer'|trans }}">{{ icon.x(18) }}</button>
+            </div>
+            <nav class="ld-nav__links" aria-label="{{ 'Navigation principale'|trans }}">
+                <details class="pl-dropdown ld-nav__dropdown">
+                    <summary class="ld-nav__link">{{ 'Activités & Loisirs'|trans }} {{ icon.chevron_down(14) }}</summary>
+                    <div class="tm-menu">
+                        <a href="{{ path('app_activities') }}" class="tm-menu__item">{{ 'Toutes les activités'|trans }}</a>
+                        <a href="{{ path('app_explore') }}" class="tm-menu__item">{{ 'Explorer'|trans }}</a>
+                        <a href="{{ path('app_destinations') }}" class="tm-menu__item">{{ 'Destinations'|trans }}</a>
+                        <a href="{{ path('app_offers') }}" class="tm-menu__item">{{ 'Offres du moment'|trans }}</a>
+                        <a href="{{ path('app_gifts') }}" class="tm-menu__item">{{ 'Bons cadeaux'|trans }}</a>
+                        <a href="{{ path('app_provider_search') }}" class="tm-menu__item">{{ 'Trouver un professionnel'|trans }}</a>
+                    </div>
+                </details>
+                <a href="{{ path('app_private_activities') }}" class="ld-nav__link">{{ 'Activités gratuites'|trans }}</a>
+                <a href="{{ path('app_photo_albums') }}" class="ld-nav__link">{{ icon.image_frame(18) }} {{ 'Photos'|trans }}</a>
+                <a href="{{ is_provider ? path('app_pro_activities_new') : path('app_account_private_activities_new', {vierge: 1}) }}" class="ld-nav__create">{{ 'Créer une activité'|trans }}</a>
+                <a href="{{ path('app_events') }}" class="ld-nav__link">{{ 'Événements'|trans }}</a>
+                {% if is_provider %}
+                    <a href="{{ path('app_pro_dashboard') }}" class="ld-nav__link">{{ 'Espace pro'|trans }}</a>
+                {% else %}
+                    <a href="{{ path('app_corporate_partner') }}" class="ld-nav__link">{{ 'Devenir prestataire'|trans }}</a>
+                {% endif %}
+            </nav>
+        </div>
+
+        <div class="ld-nav__icons">
+            <a href="#recherche" class="ld-nav__icon" data-ld-focus-search aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(22) }}</a>
+            <a href="{{ path('app_favorites_page') }}" class="ld-nav__icon" aria-label="{{ 'Mes favoris'|trans }}">{{ icon.heart(22) }}</a>
+            {% if app.user %}
+                <a href="{{ is_provider ? path('app_pro_notifications') : path('app_account_notifications') }}" class="ld-nav__icon" aria-label="{{ 'Notifications'|trans }}">
+                    {{ icon.bell(22) }}
+                    {% set unread = unread_notifications_count(app.user) %}
+                    {% if unread > 0 %}<span class="ld-nav__count">{{ unread > 99 ? '99+' : unread }}</span>{% endif %}
+                </a>
+            {% endif %}
+            {% if connected %}
+                {% include '_partials/_account_menu.html.twig' %}
+            {% else %}
+                <details class="pl-dropdown tm-signin ld-nav__signin">
+                    <summary class="ld-nav__icon" aria-label="{{ 'Se connecter'|trans }}">{{ icon.person(22) }}</summary>
+                    <div class="tm-menu tm-menu--right">
+                        <a href="{{ path('app_login') }}" class="tm-menu__item">{{ 'Se connecter (client)'|trans }}</a>
+                        <a href="{{ path('app_pro_login') }}" class="tm-menu__item">{{ 'Se connecter (prestataire)'|trans }}</a>
+                        <a href="{{ path('app_register') }}" class="tm-menu__item">{{ 'Créer un compte'|trans }}</a>
+                    </div>
+                </details>
+            {% endif %}
+            <button class="tm-burger ld-nav__burger" type="button" data-bs-toggle="offcanvas" data-bs-target="#ldNav" aria-controls="ldNav" aria-label="{{ 'Ouvrir le menu'|trans }}">
+                <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+            </button>
+        </div>
+    </div>
+</header>

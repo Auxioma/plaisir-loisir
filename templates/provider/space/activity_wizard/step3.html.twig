@@ -1,0 +1,55 @@
+{# Étape 3 — Photos et description (photo principale obligatoire, galerie, présentation). #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ew-main__title">3. {{ 'Photos et description'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Les photos sont la première chose que regardent vos futurs clients.'|trans }}</p>
+
+<div class="ew-field{{ errors.cover is defined ? ' has-error' }}">
+    <label for="ew-cover">{{ 'Photo principale'|trans }} <em>*</em></label>
+    <p class="ew-hint">{{ 'Elle illustre l’activité dans le catalogue et en tête de sa fiche.'|trans }}</p>
+    <label class="ew-drop{{ draft.cover ? ' has-image' }}" data-ew-drop>
+        {% if draft.cover %}<img src="{{ asset(draft.cover) }}" alt="" data-ew-drop-img>{% else %}<img alt="" data-ew-drop-img hidden>{% endif %}
+        <span class="ew-drop__body">
+            {{ icon.download(30) }}
+            <span>{{ 'Glissez-déposez une image ici'|trans }}</span>
+            <small>{{ 'ou'|trans }}</small>
+            <span class="ew-btn ew-btn--primary ew-btn--sm">{{ draft.cover ? 'Changer l’image'|trans : 'Choisir une image'|trans }}</span>
+        </span>
+        <input id="ew-cover" type="file" name="cover" accept="image/jpeg,image/png,image/webp" data-ew-cover{{ not draft.cover ? ' required' }}>
+    </label>
+    <p class="ew-hint ew-hint--center">{{ 'Formats acceptés : JPG, PNG, WebP • 6 Mo maximum • format paysage conseillé (1600 x 1000 px)'|trans }}</p>
+    {{ ui.err(errors, 'cover') }}
+</div>
+
+<div class="ew-field{{ errors.gallery is defined ? ' has-error' }}">
+    <label>{{ 'Galerie de la fiche'|trans }} ({{ 'conseillé'|trans }})</label>
+    <p class="ew-hint">{{ 'Jusqu’à'|trans }} {{ max_gallery }} {{ 'photos : le lieu, l’activité en action, l’équipement, les participants.'|trans }}</p>
+    <div class="ew-gallery aw-gallery" data-ew-gallery data-max="{{ max_gallery }}">
+        {% for path in draft.gallery %}
+            <span class="ew-gallery__item">
+                <img src="{{ asset(path) }}" alt="">
+                <label class="ew-gallery__remove" title="{{ 'Retirer'|trans }}"><input type="checkbox" name="remove_gallery[]" value="{{ path }}"> {{ icon.x(12) }}</label>
+            </span>
+        {% endfor %}
+        {% if draft.gallery|length < max_gallery %}
+            {% for i in 1..(max_gallery - draft.gallery|length) %}
+                <label class="ew-gallery__add" data-ew-gallery-slot><input type="file" name="gallery[]" accept="image/jpeg,image/png,image/webp"><span>{{ icon.plus(18) }}</span></label>
+            {% endfor %}
+        {% endif %}
+    </div>
+    {{ ui.err(errors, 'gallery') }}
+</div>
+
+<div class="ew-field{{ errors.description is defined ? ' has-error' }}">
+    <label for="aw-description">{{ 'Description'|trans }} <em>*</em></label>
+    <p class="ew-hint">{{ 'Présentez l’expérience : le cadre, l’ambiance, l’encadrement, ce qui la rend unique.'|trans }}</p>
+    {% include 'event/wizard/_editor.html.twig' with {id: 'aw-description', name: 'description', max: 5000, placeholder: 'Décrivez votre activité en détail…', required: true} %}
+    {{ ui.err(errors, 'description') }}
+</div>
+
+<div class="ew-field{{ errors.programme is defined ? ' has-error' }}">
+    <label for="aw-programme">{{ 'Programme / déroulé'|trans }} ({{ 'optionnel'|trans }})</label>
+    <span class="ew-textarea"><textarea id="aw-programme" name="programme" rows="5" maxlength="3000" data-ew-count placeholder="{{ '9h00 : accueil et briefing&#10;9h30 : départ en canoë&#10;12h00 : pause pique-nique…'|trans|raw }}">{{ draft.programme ?? '' }}</textarea><small class="ew-count"><b>{{ (draft.programme ?? '')|length }}</b>/3000</small></span>
+    {{ ui.err(errors, 'programme') }}
+</div>

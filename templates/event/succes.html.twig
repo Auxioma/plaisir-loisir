@@ -27,7 +27,7 @@
             <a href="{{ path('app_events_detail', {slug: event.slug}) }}" class="pl-btn ev-btn-ghost">{{ 'Voir votre événement'|trans }}</a>
             <button type="button" class="pl-btn pl-btn--primary" data-share-url="{{ url('app_events_detail', {slug: event.slug}) }}" data-share-title="{{ event.title }}" data-share-done="{{ 'Lien copié !'|trans }}">{{ 'Partager votre événement'|trans }} {{ icon.share(16) }}</button>
         {% endif %}
-        <a href="{{ path('app_account_events') }}" class="pl-btn ev-btn-ghost">{{ 'Mes événements'|trans }}</a>
+        <a href="{{ is_granted('ROLE_PROVIDER') ? path('app_pro_events') : path('app_account_events') }}" class="pl-btn ev-btn-ghost">{{ 'Mes événements'|trans }}</a>
     </div>
 </div>
 {% endblock %}

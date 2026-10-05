@@ -1,0 +1,75 @@
+{#
+    Assistant « Organiser une activité » (activités privées entre membres,
+    05/10). Données : PrivateActivityController::wizard(). Validation serveur
+    à chaque étape (PrivateActivityDraftService). Composants .ew-* et
+    event-wizard.js partagés avec les assistants des événements et du pro.
+#}
+{% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Organiser une activité'|trans }} — {{ steps[step - 1].title|trans }}{% endblock %}
+
+{% block account %}
+<form class="ew-form aw" method="post" action="{{ path('app_account_private_activity_wizard', {etape: step}) }}" enctype="multipart/form-data" novalidate data-ew-form>
+    <input type="hidden" name="_token" value="{{ csrf_token('private_activity_wizard') }}">
+
+    <header class="pf-head aw-head">
+        <div>
+            <h1 class="pf-title">{{ 'Organiser une activité'|trans }}</h1>
+            <p class="pf-sub">{{ 'Proposez une sortie entre membres, gratuite : randonnée, jeux, visite, pique-nique…'|trans }}</p>
+        </div>
+        <div class="aw-head__actions">
+            {% if step > 1 %}<button type="submit" name="action" value="prev" class="pf-btn" formnovalidate>{{ 'Précédent'|trans }}</button>{% endif %}
+            <button type="submit" name="action" value="next" class="pf-btn pf-btn--primary">{{ step == 5 ? 'Publier l’activité'|trans : 'Suivant'|trans }}{% if step < 5 %} {{ icon.arrow_right(14) }}{% endif %}</button>
+        </div>
+    </header>
+
+    <nav class="aw-steps aw-steps--5" aria-label="{{ 'Étapes de création'|trans }}">
+        {% for s in steps %}
+            {% set n = loop.index %}
+            {% set is_done = n in done and n != step %}
+            {% if is_done %}<a class="aw-step is-done" href="{{ path('app_account_private_activity_wizard', {etape: n}) }}">{% else %}<span class="aw-step{{ n == step ? ' is-active' }}"{% if n == step %} aria-current="step"{% endif %}>{% endif %}
+                <span class="aw-step__dot">{% if is_done %}{{ icon.check(14) }}{% else %}{{ n }}{% endif %}</span>
+                <span class="aw-step__text"><strong>{{ s.title|trans }}</strong><small>{{ s.subtitle|trans }}</small></span>
+            {% if is_done %}</a>{% else %}</span>{% endif %}
+        {% endfor %}
+    </nav>
+
+    {% if errors is not empty %}
+        <div class="ew-alert" role="alert">{{ icon.info(18) }} {{ 'Certaines informations sont manquantes ou incorrectes : corrigez les champs signalés pour continuer.'|trans }}</div>
+    {% endif %}
+
+    <section class="pf-card ew-main aw-main">
+        {% include 'private_activity/wizard/step' ~ step ~ '.html.twig' %}
+    </section>
+</form>
+{% endblock %}
+
+{% block account_aside %}
+    <section class="pf-card aw-preview">
+        <h2 class="pf-card__title">{{ 'Aperçu'|trans }}</h2>
+        <article class="aw-card">
+            <span class="aw-card__media">
+                {% if draft.cover %}<img src="{{ asset(draft.cover) }}" alt="" data-ew-preview="cover">{% else %}<img alt="" data-ew-preview="cover" hidden><span class="aw-card__placeholder">{{ icon.image_frame(36) }}</span>{% endif %}
+                {% if category %}<span class="aw-card__badge">{{ category.name|trans }}</span>{% endif %}
+            </span>
+            <span class="aw-card__body">
+                <small>{{ icon.map_pin(12) }} {{ (draft.city ?? '') ?: 'Lieu'|trans }}</small>
+                <strong data-ew-preview="title">{{ (draft.title ?? '') ?: 'Titre de votre activité'|trans }}</strong>
+                <span class="aw-card__row">
+                    <small>{{ icon.calendar(12) }} {{ (draft.date ?? '') matches '/^\\d{4}-\\d{2}-\\d{2}$/' ? date(draft.date)|pf_date('EEE d MMM') : '—' }}{{ (draft.start_time ?? '') ? ' · ' ~ draft.start_time }}</small>
+                    <b>{{ 'Gratuit'|trans }}</b>
+                </span>
+            </span>
+        </article>
+    </section>
+    <section class="pf-card aw-advice">
+        <h2 class="pf-card__title">{{ 'Bon à savoir'|trans }}</h2>
+        <ul>
+            <li>{{ icon.check_square(16) }} {{ 'Les activités entre membres sont gratuites et sans prestataire.'|trans }}</li>
+            <li>{{ icon.check_square(16) }} {{ 'L’adresse exacte n’est montrée qu’aux participants acceptés.'|trans }}</li>
+            <li>{{ icon.check_square(16) }} {{ 'Après l’activité, un album photo commun est ouvert aux participants.'|trans }}</li>
+            <li>{{ icon.check_square(16) }} {{ 'Une activité encadrée et payante ? Faites appel à un professionnel du catalogue.'|trans }}</li>
+        </ul>
+    </section>
+{% endblock %}

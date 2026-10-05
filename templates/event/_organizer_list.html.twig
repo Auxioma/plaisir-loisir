@@ -1,0 +1,42 @@
+{#
+    Événements organisés par le membre (brouillons compris), commun à
+    l'espace particulier et à l'espace professionnel (05/10).
+    Variable : events (list d'Event).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+<div class="pf-head">
+    <div>
+        <h1 class="pf-title">{{ 'Mes événements'|trans }}</h1>
+        <p class="pf-sub">{{ 'Les événements que vous organisez : brouillons, programmés et publiés.'|trans }}</p>
+    </div>
+    <a class="pf-btn pf-btn--primary" href="{{ path('app_event_guide') }}">{{ icon.plus(16) }} {{ 'Créer un événement'|trans }}</a>
+</div>
+{% if events is empty %}
+    <div class="pf-card pf-empty"><strong>{{ "Vous n'avez encore créé aucun événement."|trans }}</strong><a class="pf-link" href="{{ path('app_event_guide') }}">{{ 'Créer mon premier événement'|trans }}</a></div>
+{% else %}
+    <section class="pf-card pf-table-wrap">
+        <table class="pf-table">
+            <thead><tr><th>{{ 'Événement'|trans }}</th><th>{{ 'Date'|trans }}</th><th>{{ 'Statut'|trans }}</th><th>{{ 'Participants'|trans }}</th><th></th></tr></thead>
+            <tbody>
+                {% for e in events %}
+                    {% set status = e.status == 'draft' ? ['Brouillon', 'grey'] : (e.status == 'scheduled' ? ['Programmé', 'orange'] : (e.startsAt < date() ? ['Terminé', 'grey'] : ['Publié', 'green'])) %}
+                    <tr>
+                        <td><strong>{{ e.title }}</strong>{% if e.location %}<br><small class="pf-muted">{{ e.location }}</small>{% endif %}</td>
+                        <td>{{ e.startsAt|date('d/m/Y H:i') }}</td>
+                        <td><span class="pf-pill pf-pill--{{ status[1] }}">{{ status[0]|trans }}</span>{% if e.status == 'scheduled' and e.publishAt %}<br><small class="pf-muted">{{ 'le'|trans }} {{ e.publishAt|date('d/m H:i') }}</small>{% endif %}</td>
+                        <td>{{ e.participantsCount }}{% if e.capacity %} / {{ e.capacity }}{% endif %}</td>
+                        <td class="pf-table__actions">
+                            {% if e.status == 'draft' %}
+                                <a class="pf-btn" href="{{ path('app_event_resume', {slug: e.slug}) }}">{{ 'Reprendre'|trans }}</a>
+                            {% else %}
+                                <a class="pf-btn" href="{{ path('app_events_detail', {slug: e.slug}) }}">{{ 'Voir'|trans }}</a>
+                                <a class="pf-link" href="{{ path('app_events_participants', {slug: e.slug}) }}">{{ 'Participants'|trans }}</a>
+                                <a class="pf-link" href="{{ path('app_event_resume', {slug: e.slug}) }}">{{ 'Modifier'|trans }}</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endif %}

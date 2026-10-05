@@ -1,0 +1,11 @@
+{#
+    « Mes événements » dans l'espace professionnel (05/10).
+    Données : ProviderEventController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+
+{% block title %}{{ 'Mes événements'|trans }}{% endblock %}
+
+{% block space %}
+    {% include 'event/_organizer_list.html.twig' %}
+{% endblock %}

@@ -1,0 +1,69 @@
+{# Étape 1 — Informations principales. #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ew-main__title">1. {{ 'Informations principales'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Ce qui apparaît en premier sur la carte et la fiche de votre activité.'|trans }}</p>
+
+<div class="ew-field{{ errors.title is defined ? ' has-error' }}">
+    <label for="aw-title">{{ 'Titre de l’activité'|trans }} <em>*</em></label>
+    <span class="ew-textarea"><input id="aw-title" name="title" value="{{ draft.title ?? '' }}" required minlength="5" maxlength="120" placeholder="{{ 'Ex : Descente en canoë dans les gorges de l’Ardèche'|trans }}" data-ew-bind="title" data-ew-count><small class="ew-count"><b>{{ (draft.title ?? '')|length }}</b>/120</small></span>
+    {{ ui.err(errors, 'title') }}
+</div>
+
+<div class="ew-row">
+    <div class="ew-field{{ errors.category is defined ? ' has-error' }}">
+        <label for="aw-category">{{ 'Catégorie'|trans }} <em>*</em></label>
+        <span class="ew-select">
+            <select id="aw-category" name="category" required>
+                <option value="">{{ 'Choisir une catégorie'|trans }}</option>
+                {% for c in categories %}
+                    <option value="{{ c.slug }}"{{ (draft.category ?? '') == c.slug ? ' selected' }}>{{ c.name|trans }}</option>
+                    {% for child in c.children %}<option value="{{ child.slug }}"{{ (draft.category ?? '') == child.slug ? ' selected' }}>&nbsp;&nbsp;— {{ child.name|trans }}</option>{% endfor %}
+                {% endfor %}
+            </select>
+        </span>
+        {{ ui.err(errors, 'category') }}
+    </div>
+    <div class="ew-field{{ errors.level is defined ? ' has-error' }}">
+        <label for="aw-level">{{ 'Niveau'|trans }} <em>*</em></label>
+        <span class="ew-select"><select id="aw-level" name="level" required>{% for k, l in levels %}<option value="{{ k }}"{{ draft.level == k ? ' selected' }}>{{ l|trans }}</option>{% endfor %}</select></span>
+        {{ ui.err(errors, 'level') }}
+    </div>
+</div>
+
+<h3 class="ew-main__label">{{ 'Type d’activité'|trans }} <em>*</em></h3>
+<div class="ew-choices ew-choices--3" role="radiogroup">
+    {{ ui.choice('activity_type', 'supervised', draft.activity_type, 'Activité encadrée', 'Avec un moniteur ou un animateur', 'users') }}
+    {{ ui.choice('activity_type', 'guided_tour', draft.activity_type, 'Visite guidée', 'Un guide accompagne le groupe', 'footprints') }}
+    {{ ui.choice('activity_type', 'free', draft.activity_type, 'Activité libre', 'Accès ou location en autonomie', 'sun') }}
+</div>
+{{ ui.err(errors, 'activity_type') }}
+
+<div class="ew-field{{ errors.subtitle is defined ? ' has-error' }}">
+    <label for="aw-subtitle">{{ 'Accroche'|trans }} <em>*</em></label>
+    <p class="ew-hint">{{ 'Une phrase qui résume l’expérience ; elle s’affiche sous le titre.'|trans }}</p>
+    <span class="ew-textarea"><textarea id="aw-subtitle" name="subtitle" rows="2" required minlength="10" maxlength="160" data-ew-bind="subtitle" data-ew-count placeholder="{{ 'Ex : 3 heures de pagaie entre falaises et plages de galets, encadrées par un moniteur diplômé.'|trans }}">{{ draft.subtitle ?? '' }}</textarea><small class="ew-count"><b>{{ (draft.subtitle ?? '')|length }}</b>/160</small></span>
+    {{ ui.err(errors, 'subtitle') }}
+</div>
+
+<fieldset class="ew-field{{ errors.languages is defined ? ' has-error' }}">
+    <legend>{{ 'Langues parlées'|trans }} <em>*</em></legend>
+    <div class="aw-tags">
+        {% for l in languages %}<label class="aw-tag"><input type="checkbox" name="languages[]" value="{{ l }}"{{ l in draft.languages ? ' checked' }}> {{ l|trans }}</label>{% endfor %}
+    </div>
+    {{ ui.err(errors, 'languages') }}
+</fieldset>
+
+<div class="ew-row">
+    <div class="ew-field{{ errors.audience is defined ? ' has-error' }}">
+        <label for="aw-audience">{{ 'Public concerné'|trans }} ({{ 'optionnel'|trans }})</label>
+        <input id="aw-audience" name="audience" value="{{ draft.audience ?? '' }}" maxlength="255" placeholder="{{ 'Ex : familles, groupes d’amis, séminaires'|trans }}">
+        {{ ui.err(errors, 'audience') }}
+    </div>
+    <div class="ew-field{{ errors.minimum_age is defined ? ' has-error' }}">
+        <label for="aw-age">{{ 'Âge minimum'|trans }} ({{ 'optionnel'|trans }})</label>
+        <input id="aw-age" type="number" name="minimum_age" min="0" max="99" value="{{ draft.minimum_age ?? '' }}" placeholder="8">
+        {{ ui.err(errors, 'minimum_age') }}
+    </div>
+</div>

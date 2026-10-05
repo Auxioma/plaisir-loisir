@@ -1,0 +1,57 @@
+{#
+    Étape 2 — Lieu : adresse (Base Adresse Nationale) et carte Leaflet,
+    mêmes composants que l'assistant des événements. Les coordonnées placent
+    l'activité sur la carte du catalogue et de la page Explorer.
+#}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ew-main__title">2. {{ 'Lieu de l’activité'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Où se déroule l’activité et où vos clients vous retrouvent.'|trans }}</p>
+
+{# Le script de localisation attend un type de lieu : une activité a toujours une adresse précise. #}
+<input type="radio" name="location_type" value="precise" checked hidden>
+
+<div data-ew-loc="precise">
+    <div class="ew-field{{ errors.address is defined ? ' has-error' }}">
+        <label for="ew-address">{{ 'Adresse'|trans }} <em>*</em></label>
+        <span class="ew-search">
+            <input id="ew-address" name="address" value="{{ draft.address ?? '' }}" autocomplete="off" required placeholder="{{ 'Recherchez une adresse ou un lieu…'|trans }}" data-ew-address>
+            {{ icon.search(18) }}
+            <ul class="ew-suggest" data-ew-suggest hidden></ul>
+        </span>
+        <input type="hidden" name="city" value="{{ draft.city ?? '' }}" data-ew-city>
+        <input type="hidden" name="postal_code" value="{{ draft.postal_code ?? '' }}" data-ew-postcode>
+        <input type="hidden" name="lat" value="{{ draft.lat ?? '' }}" data-ew-lat>
+        <input type="hidden" name="lng" value="{{ draft.lng ?? '' }}" data-ew-lng>
+        {{ ui.err(errors, 'address') }}
+    </div>
+    <div class="ew-place" data-ew-place{{ not (draft.address ?? '') ? ' hidden' }}>
+        <span class="ew-place__ico">{{ icon.map_pin(20) }}</span>
+        <span><strong data-ew-place-name>{{ draft.address ?? '' }}</strong><small data-ew-place-city>{{ draft.postal_code ?? '' }} {{ draft.city ?? '' }}</small></span>
+        <button type="button" data-ew-place-clear aria-label="{{ 'Effacer le lieu'|trans }}">{{ icon.x(16) }}</button>
+    </div>
+    <div class="ew-map" data-ew-map data-lat="{{ draft.lat ?? '' }}" data-lng="{{ draft.lng ?? '' }}"></div>
+    <a class="ew-maplink" data-ew-gmaps href="https://www.google.com/maps/search/?api=1&query={{ (draft.address ?? '')|url_encode }}" target="_blank" rel="noopener"{{ not (draft.address ?? '') ? ' hidden' }}>{{ 'Voir sur Google Maps'|trans }} {{ icon.arrow_up_right(14) }}</a>
+</div>
+
+<div class="ew-row">
+    <div class="ew-field{{ errors.place_label is defined ? ' has-error' }}">
+        <label for="aw-place">{{ 'Lieu affiché sur la carte'|trans }} ({{ 'optionnel'|trans }})</label>
+        <p class="ew-hint">{{ 'Région ou site connu ; à défaut, la ville.'|trans }}</p>
+        <input id="aw-place" name="place_label" value="{{ draft.place_label ?? '' }}" maxlength="120" placeholder="{{ 'Ex : Gorges de l’Ardèche'|trans }}" data-ew-bind="place">
+        {{ ui.err(errors, 'place_label') }}
+    </div>
+    <div class="ew-field{{ errors.opening_period is defined ? ' has-error' }}">
+        <label for="aw-period">{{ 'Période d’ouverture'|trans }} <em>*</em></label>
+        <p class="ew-hint">{{ 'Quand l’activité est-elle proposée ?'|trans }}</p>
+        <span class="ew-select"><select id="aw-period" name="opening_period" required>{% for k, l in periods %}<option value="{{ k }}"{{ draft.opening_period == k ? ' selected' }}>{{ l|trans }}</option>{% endfor %}</select></span>
+        {{ ui.err(errors, 'opening_period') }}
+    </div>
+</div>
+
+<div class="ew-field{{ errors.meeting_point is defined ? ' has-error' }}">
+    <label for="aw-meeting">{{ 'Point de rendez-vous'|trans }} <em>*</em></label>
+    <span class="ew-textarea"><textarea id="aw-meeting" name="meeting_point" rows="3" required minlength="5" maxlength="500" data-ew-count placeholder="{{ 'Ex : Parking de la base nautique, 15 minutes avant le départ. Accès fléché depuis le village.'|trans }}">{{ draft.meeting_point ?? '' }}</textarea><small class="ew-count"><b>{{ (draft.meeting_point ?? '')|length }}</b>/500</small></span>
+    {{ ui.err(errors, 'meeting_point') }}
+</div>

@@ -1,0 +1,57 @@
+{# Étape 2 — Date et lieu (adresse géolocalisée, comme les événements). #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+<h2 class="ew-main__title">2. {{ 'Date et lieu'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Quand et où retrouver les participants.'|trans }}</p>
+
+<div class="ew-row ew-row--3">
+    <div class="ew-field{{ errors.date is defined ? ' has-error' }}">
+        <label for="pa-date">{{ 'Date'|trans }} <em>*</em></label>
+        <input id="pa-date" type="date" name="date" value="{{ draft.date ?? '' }}" min="{{ 'today'|date('Y-m-d') }}" required>
+        {{ ui.err(errors, 'date') }}
+    </div>
+    <div class="ew-field{{ errors.start_time is defined ? ' has-error' }}">
+        <label for="pa-start">{{ 'Heure de début'|trans }} <em>*</em></label>
+        <input id="pa-start" type="time" name="start_time" value="{{ draft.start_time ?? '' }}" required>
+        {{ ui.err(errors, 'start_time') }}
+    </div>
+    <div class="ew-field{{ errors.end_time is defined ? ' has-error' }}">
+        <label for="pa-end">{{ 'Heure de fin'|trans }} ({{ 'optionnel'|trans }})</label>
+        <input id="pa-end" type="time" name="end_time" value="{{ draft.end_time ?? '' }}">
+        {{ ui.err(errors, 'end_time') }}
+    </div>
+</div>
+
+<input type="radio" name="location_type" value="precise" checked hidden>
+<div data-ew-loc="precise">
+    <div class="ew-field{{ errors.address is defined ? ' has-error' }}">
+        <label for="ew-address">{{ 'Lieu'|trans }} <em>*</em></label>
+        <span class="ew-search">
+            <input id="ew-address" name="address" value="{{ draft.address ?? '' }}" autocomplete="off" required placeholder="{{ 'Recherchez une adresse ou un lieu…'|trans }}" data-ew-address>
+            {{ icon.search(18) }}
+            <ul class="ew-suggest" data-ew-suggest hidden></ul>
+        </span>
+        <input type="hidden" name="city" value="{{ draft.city ?? '' }}" data-ew-city>
+        <input type="hidden" name="postal_code" value="{{ draft.postal_code ?? '' }}" data-ew-postcode>
+        <input type="hidden" name="lat" value="{{ draft.lat ?? '' }}" data-ew-lat>
+        <input type="hidden" name="lng" value="{{ draft.lng ?? '' }}" data-ew-lng>
+        {{ ui.err(errors, 'address') }}
+    </div>
+    <div class="ew-place" data-ew-place{{ not (draft.address ?? '') ? ' hidden' }}>
+        <span class="ew-place__ico">{{ icon.map_pin(20) }}</span>
+        <span><strong data-ew-place-name>{{ draft.address ?? '' }}</strong><small data-ew-place-city>{{ draft.postal_code ?? '' }} {{ draft.city ?? '' }}</small></span>
+        <button type="button" data-ew-place-clear aria-label="{{ 'Effacer le lieu'|trans }}">{{ icon.x(16) }}</button>
+    </div>
+    <div class="ew-map" data-ew-map data-lat="{{ draft.lat ?? '' }}" data-lng="{{ draft.lng ?? '' }}"></div>
+</div>
+
+<label class="aw-accept">
+    <input type="checkbox" name="show_exact" value="1"{{ (draft.show_exact ?? '') == '1' ? ' checked' }}>
+    <span><strong>{{ 'Communiquer l’adresse exacte aux participants acceptés'|trans }}</strong><br><small class="pf-muted">{{ 'Les visiteurs ne voient que la ville. Décochez si vous préférez donner l’adresse autrement.'|trans }}</small></span>
+</label>
+
+<div class="ew-field{{ errors.meeting_point is defined ? ' has-error' }}">
+    <label for="pa-meeting">{{ 'Point de rendez-vous'|trans }} ({{ 'optionnel'|trans }})</label>
+    <span class="ew-textarea"><textarea id="pa-meeting" name="meeting_point" rows="2" maxlength="500" data-ew-count placeholder="{{ 'Ex : Parking du col, devant le panneau d’information'|trans }}">{{ draft.meeting_point ?? '' }}</textarea><small class="ew-count"><b>{{ (draft.meeting_point ?? '')|length }}</b>/500</small></span>
+    {{ ui.err(errors, 'meeting_point') }}
+</div>

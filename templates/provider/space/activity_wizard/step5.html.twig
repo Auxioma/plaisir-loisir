@@ -1,0 +1,46 @@
+{#
+    Étape 5 — Tarifs et réservation : formules (proposées au client sur la
+    fiche, au choix), politique d'annulation (affichée sous le bouton
+    « Réservez »), mode de réservation.
+#}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+<h2 class="ew-main__title">5. {{ 'Tarifs et réservation'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Vos formules apparaissent dans le module de réservation de la fiche ; le client choisit la sienne.'|trans }}</p>
+
+<div class="ew-field{{ errors.packages is defined ? ' has-error' }}">
+    <label>{{ 'Formules'|trans }} <em>*</em></label>
+    <div class="aw-packages" data-aw-packages data-max="{{ max_packages }}">
+        {% set rows = draft.packages is empty ? [{name: 'Tarif unique', price: '', unit: 'per_person', description: ''}] : draft.packages %}
+        {% for i in 0..(max_packages - 1) %}
+            {% set p = rows[i] ?? null %}
+            <div class="aw-package" data-aw-package{{ p is null ? ' hidden' }}>
+                <input name="packages[{{ i }}][name]" value="{{ p.name ?? '' }}" maxlength="80" placeholder="{{ 'Nom (ex : Parcours 8 km)'|trans }}" aria-label="{{ 'Nom de la formule'|trans }}"{{ loop.first ? ' required' }}>
+                <span class="aw-price"><input name="packages[{{ i }}][price]" value="{{ p.price ?? '' }}" inputmode="decimal" placeholder="25" aria-label="{{ 'Prix'|trans }}"{{ loop.first ? ' required' }}><b>€</b></span>
+                <select name="packages[{{ i }}][unit]" aria-label="{{ 'Unité'|trans }}">{% for k, l in units %}<option value="{{ k }}"{{ (p.unit ?? 'per_person') == k ? ' selected' }}>{{ l|trans }}</option>{% endfor %}</select>
+                <input class="aw-package__desc" name="packages[{{ i }}][description]" value="{{ p.description ?? '' }}" maxlength="255" placeholder="{{ 'Détail (optionnel) : ce que comprend cette formule'|trans }}" aria-label="{{ 'Description de la formule'|trans }}">
+                {% if not loop.first %}<button type="button" class="aw-package__remove" data-aw-package-remove aria-label="{{ 'Retirer la formule'|trans }}">{{ icon.x(14) }}</button>{% endif %}
+            </div>
+        {% endfor %}
+    </div>
+    <button type="button" class="pf-btn aw-add" data-aw-package-add>{{ icon.plus(14) }} {{ 'Ajouter une formule'|trans }}</button>
+    <p class="ew-hint">{{ 'Prix TTC. Indiquez 0 pour une activité gratuite. Une offre promotionnelle se crée ensuite depuis « Offres & Promotions ».'|trans }}</p>
+    {{ ui.err(errors, 'packages') }}
+</div>
+
+<h3 class="ew-main__label">{{ 'Politique d’annulation'|trans }} <em>*</em></h3>
+<div class="ew-choices ew-choices--3" role="radiogroup">
+    {{ ui.choice('cancellation', 'flexible', draft.cancellation, 'Flexible', 'Annulation gratuite jusqu’à 24 h avant', 'clock') }}
+    {{ ui.choice('cancellation', 'moderate', draft.cancellation, 'Modérée', 'Annulation gratuite jusqu’à 7 jours avant', 'calendar') }}
+    {{ ui.choice('cancellation', 'strict', draft.cancellation, 'Stricte', 'Annulation gratuite jusqu’à 30 jours avant', 'lock') }}
+</div>
+{{ ui.err(errors, 'cancellation') }}
+
+<h3 class="ew-main__label">{{ 'Mode de réservation'|trans }} <em>*</em></h3>
+<div class="ew-choices aw-choices--2" role="radiogroup">
+    {{ ui.choice('booking_type', 'calendar', draft.booking_type, 'Sur créneaux', 'Le client choisit parmi les créneaux ouverts dans votre calendrier', 'calendar_days') }}
+    {{ ui.choice('booking_type', 'service_product', draft.booking_type, 'Date libre', 'Le client propose une date et une heure, vous la confirmez', 'edit') }}
+</div>
+{{ ui.err(errors, 'booking_type') }}
+<p class="ew-tip">{{ icon.info(16) }} <span>{{ 'Sur créneaux : ouvrez vos créneaux dans « Calendrier » une fois l’activité publiée. Tant qu’aucun créneau n’est ouvert, le client propose une heure.'|trans }}</span></p>

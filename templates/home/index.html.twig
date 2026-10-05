@@ -1,392 +1,206 @@
 {#
-    Page d'accueil, d'après la maquette Figma « Acceuil - Plaisirs & Loisirs ».
-    ⚠️ Front-end : le contenu (activités, destinations, catégories) est pour
-    l'instant STATIQUE et d'exemple. On branchera les vraies données
-    (Category / Service / Destination) à la phase de câblage.
+    Page d'accueil — maquette docs/maquettes/landing_page.jpeg (05/10).
+    Une seule page pour visiteurs et membres connectés (voir HomeController).
+    Toutes les données viennent de la base : activités des prestataires
+    (Service), activités gratuites entre membres (PrivateActivity),
+    destinations. Styles : assets/styles/landing.css (.ld-*).
 #}
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}{{ 'Accueil'|trans }}{% endblock %}
+{% block title %}{{ 'Explorez vos envies, partagez vos passions'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Découvrez des activités avec nos prestataires ou créez et rejoignez gratuitement des activités entre particuliers près de chez vous.'|trans }}{% endblock %}
 
-{# En-tête propre à l'accueil plateforme : « Découvrez » + langue + S'inscrire,
-   sans les entrées Activités/Destinations (précision client du 27/07). #}
 {% block header %}
-    {% include '_partials/navbar_home.html.twig' %}
+    {% include '_partials/navbar_landing.html.twig' %}
 {% endblock %}
 
 {% block body %}
+<div class="ld">
+    {# ===================== HÉROS + 3 ENTRÉES ===================== #}
+    <section class="ld-hero">
+        <img class="ld-hero__bg" src="{{ asset('images/home/hero.png') }}" alt="">
+        <div class="ld-hero__shade" aria-hidden="true"></div>
+        <div class="ld-wrap ld-hero__inner">
+            <h1 class="ld-hero__title">{{ 'Explorez vos envies,'|trans }}<br><span>{{ 'partagez vos passions.'|trans }}</span></h1>
+            <p class="ld-hero__lead">{{ 'Découvrez des activités avec nos prestataires ou créez et rejoignez gratuitement des activités entre particuliers près de chez vous.'|trans }}</p>
 
-    {# ===================== HERO ===================== #}
-    <section class="home-hero">
-        <img class="home-hero__bg" src="{{ asset('images/home/hero.png') }}" alt="">
-        <div class="home-hero__overlay"></div>
-        <div class="container home-hero__inner">
-            <h1 class="home-hero__title">
-                {{ 'Explore tes envies et Crée des'|trans }} <span class="is-accent">{{ 'souvenirs'|trans }}&nbsp;!</span>
-            </h1>
-            <p class="home-hero__subtitle">
-                {{ 'Découvrez des lieux, des événements exceptionnels, à des prix exclusifs et vivez des expériences inoubliables'|trans }}
-            </p>
-            {# Destinations reprises de l'accueil CONNECTÉ, qui porte les mêmes
-               libellés déjà câblés (home/connected.html.twig, lignes 28-29) :
-               « Découvrez nos événements » y mène à app_events. Aucune cible
-               n'est inventée ici, la convention existait déjà. #}
-            <div class="home-hero__actions">
-                <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--cta">{{ 'Explorez nos activités'|trans }} {{ icon.chevron_right(18) }}</a>
-                <a href="{{ path('app_events') }}" class="pl-btn pl-btn--hero-ghost">{{ 'Découvrez nos événements'|trans }} {{ icon.chevron_right(18) }}</a>
-            </div>
-            {# Preuve sociale : 4 avatars empilés + compteur d'utilisateurs. #}
-            <div class="home-hero__proof">
-                <div class="home-hero__avatars" aria-hidden="true">
-                    <img class="home-avatar" src="{{ asset('images/home/avatar-1.png') }}" alt="">
-                    <img class="home-avatar" src="{{ asset('images/home/avatar-2.png') }}" alt="">
-                    <img class="home-avatar" src="{{ asset('images/home/avatar-3.png') }}" alt="">
-                    <img class="home-avatar" src="{{ asset('images/home/avatar-4.png') }}" alt="">
-                </div>
-                <span class="home-hero__proof-text"><strong>+250.000</strong> {{ 'utilisateurs satisfaits.'|trans }}</span>
+            <div class="ld-entries">
+                <article class="ld-entry">
+                    <div class="ld-entry__head">
+                        <span class="ld-entry__ico is-blue">{{ icon.store(30) }}</span>
+                        <span><strong>{{ 'Trouver une activité'|trans }}</strong><small>{{ 'Découvrez des activités proposées par nos prestataires'|trans }}</small></span>
+                    </div>
+                    <a class="ld-btn ld-btn--blue" href="{{ path('app_activities') }}">{{ 'Découvrir les activités'|trans }} {{ icon.chevron_right(14) }}</a>
+                </article>
+                <article class="ld-entry">
+                    <div class="ld-entry__head">
+                        <span class="ld-entry__ico is-green">{{ icon.users_solid(30) }}</span>
+                        <span><strong>{{ 'Activités gratuites'|trans }}</strong><small>{{ 'Créez, rejoignez et partagez des activités près de chez vous'|trans }}</small></span>
+                    </div>
+                    <a class="ld-btn ld-btn--green-outline" href="{{ path('app_private_activities') }}">{{ 'Voir les activités gratuites'|trans }} {{ icon.chevron_right(14) }}</a>
+                </article>
+                <article class="ld-entry">
+                    <div class="ld-entry__head">
+                        <span class="ld-entry__ico is-violet">{{ icon.image_frame(30) }}</span>
+                        <span><strong>{{ 'Voir les photos'|trans }}</strong><small>{{ 'Découvrez les photos de la communauté'|trans }}</small></span>
+                    </div>
+                    <div class="ld-entry__pair">
+                        <a class="ld-btn ld-btn--soft" href="{{ path('app_photo_albums') }}">{{ icon.camera(14) }} {{ 'Photos publiques'|trans }}</a>
+                        {# Les albums privés sont ceux des activités auxquelles on a participé : connexion requise. #}
+                        <a class="ld-btn ld-btn--violet" href="{{ path('app_account_albums') }}">{{ icon.padlock(14) }} {{ 'Photos privées'|trans }}</a>
+                    </div>
+                </article>
             </div>
         </div>
     </section>
 
-    {# ===================== BARRE DE RECHERCHE ===================== #}
-    {# .container--search : la carte est hors grille (x=68 sur 1304) et chevauche
-       la photo du héros de 73px. Les onglets sont DANS la carte, qui est en
-       verre : c'est elle qui produit le bandeau translucide de la maquette. #}
-    <div class="container container--search">
-        <div class="home-search-wrap">
-            <div class="home-search">
-                {# Maquette : deux onglets courts, « Événements » actif (blanc,
-                   violet). Les libellés longs « Consulter Vos Plaisirs… »
-                   venaient d'un commentaire de Loïc du 27/07 : ils ne sont pas
-                   dans la maquette et sont donc retirés (note-revue-11-08 §4). #}
-                {# Des LIENS et non des boutons : ces deux onglets n'ouvrent
-                   aucun panneau, ils annoncent deux univers du site. En
-                   <button type="button"> ils ne faisaient rien du tout. #}
-                <div class="home-search__tabs">
-                    <a href="{{ path('app_activities') }}" class="home-search__tab">{{ icon.ferris_wheel(20) }} {{ 'Activités'|trans }}</a>
-                    <a href="{{ path('app_events') }}" class="home-search__tab is-active">{{ icon.cat_culture(20) }} {{ 'Événements'|trans }}</a>
-                </div>
-                {# LES QUATRE CHAMPS SONT DES BOUTONS, PAS DES <div>.
-                   Ils étaient inertes : le fichier assets/home_search.js, chargé
-                   sur toutes les pages, ouvre pourtant leurs panneaux depuis le
-                   23/07 — il attend les attributs data-search-field et
-                   data-search-panel. L'accueil connecté les portait, celui-ci
-                   non. Même oubli que pour les liens, corrigé le 29/08. #}
-                <div class="home-search__fields">
-                    <button type="button" class="home-search__field" data-search-field="destination">
-                        {{ icon.map_pin(20) }}
-                        <span>
-                            <span class="home-search__field-label">{{ 'Où voulez-vous aller ?'|trans }}</span>
-                            <span class="home-search__field-value" data-field-value>{{ 'Destination, ville, lieu…'|trans }} {{ icon.chevron_down(16) }}</span>
-                        </span>
-                    </button>
-                    <button type="button" class="home-search__field" data-search-field="activite">
-                        {{ icon.ferris_wheel(20) }}
-                        <span>
-                            <span class="home-search__field-label">{{ 'Activité ou loisir ?'|trans }}</span>
-                            <span class="home-search__field-value" data-field-value>{{ 'Canoë, musée, VTT…'|trans }} {{ icon.chevron_down(16) }}</span>
-                        </span>
-                    </button>
-                    <button type="button" class="home-search__field" data-search-field="date">
-                        {{ icon.calendar_days(20) }}
-                        <span>
-                            <span class="home-search__field-label">{{ 'Date'|trans }}</span>
-                            <span class="home-search__field-value" data-field-value>{{ 'Choisissez une date'|trans }} {{ icon.chevron_down(16) }}</span>
-                        </span>
-                    </button>
-                    <button type="button" class="home-search__field" data-search-field="participants">
-                        {{ icon.person(20) }}
-                        <span>
-                            <span class="home-search__field-label">{{ 'Participant(s)'|trans }}</span>
-                            <span class="home-search__field-value" data-field-value>{{ '1 participant'|trans }} {{ icon.chevron_down(16) }}</span>
-                        </span>
-                    </button>
-                    {# Maquette : bouton VIOLET, loupe après le libellé (l'accueil
-                       connecté, lui, le porte en orange — ne pas uniformiser).
-                       Reste un <a> : sans JavaScript il mène au catalogue complet
-                       plutôt que nulle part. data-search-submit lui fait porter
-                       les critères choisis. #}
-                    <a href="{{ path('app_activities') }}" class="pl-btn pl-btn--primary home-search__submit" data-search-submit>{{ 'Recherche'|trans }} {{ icon.search(20) }}</a>
-                </div>
-
-                {# Panneau 1 : les lieux QUI ONT des activités, pris en base.
-                   Les libellés de la maquette (« Île-de-France », « Toulouse »)
-                   ne correspondaient au lieu d'aucune activité : la recherche
-                   renvoyait zéro résultat et paraissait cassée. #}
-                <div class="home-search__panel" data-search-panel="destination" hidden>
-                    {% for lieu in searchPlaces %}
-                        <button type="button" class="home-search__option" data-option>{{ lieu }}</button>
-                    {% else %}
-                        <p class="home-search__option">{{ 'Aucun lieu au catalogue pour le moment.'|trans }}</p>
-                    {% endfor %}
-                </div>
-
-                {# Panneau 2 : les activités publiées, pour la même raison. #}
-                <div class="home-search__panel" data-search-panel="activite" hidden>
-                    {% for titre in searchActivities %}
-                        <button type="button" class="home-search__option" data-option>{{ titre }}</button>
-                    {% else %}
-                        <p class="home-search__option">{{ 'Aucune activité publiée pour le moment.'|trans }}</p>
-                    {% endfor %}
-                </div>
-
-                {# Panneau 3 : calendrier. Le jour choisi part en critère « date »
-                   et s'appuie sur les créneaux déclarés (entité Availability).
-                   Une activité qui n'a déclaré AUCUN créneau reste proposée :
-                   on ne sait pas si elle est ouverte, ce n'est pas la même
-                   chose que fermée. #}
-                <div class="home-search__panel home-search__panel--calendar" data-search-panel="date" hidden>
-                    <div class="home-cal" data-calendar data-year="2026" data-month="7" data-selected="16">
-                        <div class="home-cal__head">
-                            <button type="button" data-cal-prev aria-label="{{ 'Mois précédent'|trans }}">{{ icon.chevron_left(18) }}</button>
-                            <strong data-cal-title>{{ 'Juillet'|trans }} 2026</strong>
-                            <button type="button" data-cal-next aria-label="{{ 'Mois suivant'|trans }}">{{ icon.chevron_right(18) }}</button>
-                        </div>
-                        <div class="home-cal__days" aria-hidden="true">
-                            <span>{{ 'lun'|trans }}</span><span>{{ 'mar'|trans }}</span><span>{{ 'mer'|trans }}</span><span>{{ 'jeu'|trans }}</span><span>{{ 'ven'|trans }}</span><span>{{ 'sam'|trans }}</span><span>{{ 'dim'|trans }}</span>
-                        </div>
-                        <div class="home-cal__grid" data-cal-grid></div>
-                    </div>
-                </div>
-
-                {# Panneau 4 : participants. Le total part en critère et se
-                   compare au « Nombre de places » de l'activité, celui que le
-                   back-office expose. Une capacité non renseignée n'exclut
-                   pas. #}
-                <div class="home-search__panel home-search__panel--travellers" data-search-panel="participants" hidden>
-                    <div class="act-stepper" data-stepper data-min="1" data-count="1">
-                        <span>{{ 'Adulte'|trans }} <small>{{ '(18 et +)'|trans }}</small></span>
-                        <span class="act-stepper__controls">
-                            <button type="button" data-step="-1" aria-label="{{ "Moins d'adultes"|trans }}">{{ icon.minus(14) }}</button>
-                            <output data-stepper-value>1</output>
-                            <button type="button" data-step="1" aria-label="{{ "Plus d'adultes"|trans }}">{{ icon.plus(14) }}</button>
-                        </span>
-                    </div>
-                    <div class="act-stepper" data-stepper data-min="0" data-count="0">
-                        <span>{{ 'Enfants'|trans }} <small>{{ '(0 à 17 ans)'|trans }}</small></span>
-                        <span class="act-stepper__controls">
-                            <button type="button" data-step="-1" aria-label="{{ "Moins d'enfants"|trans }}">{{ icon.minus(14) }}</button>
-                            <output data-stepper-value>0</output>
-                            <button type="button" data-step="1" aria-label="{{ "Plus d'enfants"|trans }}">{{ icon.plus(14) }}</button>
-                        </span>
-                    </div>
-                    <button type="button" class="pl-btn pl-btn--outline-action pl-btn--block" data-travellers-validate>{{ 'Valider'|trans }}</button>
-                </div>
-            </div>
+    {# ===================== RECHERCHE ===================== #}
+    {# Sans JavaScript, tout part vers /activites, qui renvoie les recherches
+       « Activités gratuites » vers /activites-privees (ActivityController). #}
+    <form class="ld-wrap ld-search" id="recherche" action="{{ path('app_activities') }}" method="get" role="search" data-ld-search
+          data-url-pro="{{ path('app_activities') }}" data-url-free="{{ path('app_private_activities') }}">
+        <fieldset class="ld-search__modes">
+            <legend class="visually-hidden">{{ 'Type d’activités'|trans }}</legend>
+            {% for value, label in {toutes: 'Toutes', prestataires: 'Activités avec prestataires', gratuites: 'Activités gratuites'} %}
+                <label class="ld-radio"><input type="radio" name="type" value="{{ value }}"{{ loop.first ? ' checked' }}> {{ label|trans }}</label>
+            {% endfor %}
+        </fieldset>
+        <div class="ld-search__fields">
+            <label class="ld-field">
+                {{ icon.map_pin(22) }}
+                <span><strong>{{ 'Où souhaitez-vous aller ?'|trans }}</strong><input name="lieu" list="ld-places" placeholder="{{ 'Destination, ville…'|trans }}" autocomplete="off"></span>
+            </label>
+            <label class="ld-field">
+                {{ icon.cat_hiking(22) }}
+                <span><strong>{{ 'Quelle activité ?'|trans }}</strong><input name="q" list="ld-titles" placeholder="{{ 'Ex : Randonnée, Parc, Musée…'|trans }}" autocomplete="off"></span>
+            </label>
+            <label class="ld-field">
+                {{ icon.calendar_grid(22) }}
+                <span><strong>{{ 'Quand ?'|trans }}</strong><input type="date" name="date" min="{{ 'today'|date('Y-m-d') }}" aria-label="{{ 'Date'|trans }}"></span>
+            </label>
+            <label class="ld-field" data-ld-participants>
+                {{ icon.users(22) }}
+                <span><strong>{{ 'Participants'|trans }}</strong>
+                    <select name="participants">{% for n in 1..10 %}<option value="{{ n }}"{{ n == 2 ? ' selected' }}>{{ n }} {{ n > 1 ? 'personnes'|trans : 'personne'|trans }}</option>{% endfor %}</select>
+                </span>
+            </label>
+            <button class="ld-search__submit">{{ 'Rechercher'|trans }}</button>
         </div>
-    </div>
+        <datalist id="ld-places">{% for p in search_places %}<option value="{{ p }}">{% endfor %}</datalist>
+        <datalist id="ld-titles">{% for t in search_titles %}<option value="{{ t }}">{% endfor %}</datalist>
+    </form>
 
     {# ===================== ACTIVITÉS COUP DE CŒUR ===================== #}
-    {% set activities = [
-        {img: 'act-canoe.jpg', slug: 'descente-en-canoe',      title: 'Descente en Canoë',      place: 'Gorges de l\'Ardèche',         reviews: 256, extra: '2h-3h',   price: 25, tag: 'Bestseller'},
-        {img: 'act-vtt.jpg', slug: 'location-vtt-electrique',        title: 'Location VTT électrique', place: 'Massif du Vercors',            reviews: 178, extra: 'Journée', price: 45, tag: null},
-        {img: 'act-labyrinthe.jpg', slug: 'visite-guidee-de-labyrinthe', title: 'Visite de labyrinthe',    place: 'Labyrinthe en Provence',       reviews: 124, extra: '1h30',    price: 12, tag: null},
-        {img: 'act-musee.jpg', slug: 'visite-du-musee',      title: 'Visite du Musée',         place: 'Muséum d\'Histoire Naturelle', reviews: 312, extra: '2h',      price: 16, tag: null},
-    ] %}
-    <div class="container">
-        <section class="home-section">
-            <div class="home-section__head">
-                <div>
-                    <h2 class="home-section__title">{{ 'Activités coup de coeur'|trans }}</h2>
-                    <p class="home-section__subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.</p>
+    <section class="ld-section" data-pg-carousel>
+        <div class="ld-wrap">
+            <header class="ld-section__head">
+                <span class="ld-section__ico is-red">{{ icon.heart_solid(34) }}</span>
+                <div><h2>{{ 'Activités coup de cœur'|trans }}</h2><p>{{ 'Nos meilleures offres du moment avec nos prestataires'|trans }}</p></div>
+                <a class="ld-more" href="{{ path('app_activities') }}">{{ 'Voir toutes les activités'|trans }} {{ icon.arrow_right(16) }}</a>
+            </header>
+            {% if featured is empty %}
+                <p class="ld-empty">{{ 'Les premières activités arrivent bientôt.'|trans }}</p>
+            {% else %}
+                <div class="ld-carousel">
+                    <button type="button" class="ld-arrow is-prev" data-pg-dir="-1" aria-label="{{ 'Précédent'|trans }}">{{ icon.chevron_left(18) }}</button>
+                    <div class="ld-track" data-pg-track>
+                        {% for a in featured %}
+                            <article class="ld-card">
+                                <a class="ld-card__media" href="{{ path('app_activity_show', {slug: a.slug}) }}">
+                                    <img src="{{ asset(a.image) }}" alt="{{ a.title }}" loading="lazy">
+                                    {% if a.price is not null %}<span class="ld-card__price">{{ a.price|number_format(a.price == a.price|round ? 0 : 2, ',', ' ') }} €</span>{% endif %}
+                                </a>
+                                {% include '_partials/_event_fav.html.twig' with { type: 'activite', key: a.slug, class: 'ld-card__fav' } %}
+                                <div class="ld-card__body">
+                                    <a class="ld-card__title" href="{{ path('app_activity_show', {slug: a.slug}) }}">{{ a.title }}</a>
+                                    <small>{{ icon.map_pin(13) }} {{ a.place }}</small>
+                                    {% if a.rating %}<small class="ld-card__rating">{{ icon.star_solid(13) }} <b>{{ a.rating }}</b> ({{ a.reviews }})</small>{% endif %}
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="ld-arrow is-next" data-pg-dir="1" aria-label="{{ 'Suivant'|trans }}">{{ icon.chevron_right(18) }}</button>
                 </div>
-                <a href="{{ path('app_activities') }}" class="btn-see-all">{{ 'Voir toutes les activités'|trans }} {{ icon.arrow_up_right(16) }}</a>
-            </div>
-            <div class="card-grid">
-                {# Le champ `slug` relie chaque carte a SA fiche : les quatre
-                   activites existent en base sous ces noms, elles avaient ete
-                   recopiees ici a la main sans leur identifiant. Un test verifie
-                   que les adresses repondent, pour qu'un renommage en base ne
-                   les casse pas en silence. #}
-                {% for a in activities %}
-                    <a href="{{ path('app_activity_show', {slug: a.slug}) }}" class="pl-card">
-                        <div class="pl-card__media">
-                            <img src="{{ asset('images/home/' ~ a.img) }}" alt="{{ a.title }}">
-                            {% if a.tag %}<span class="pl-card__tag pl-card__tag--bestseller">{{ a.tag }}</span>{% endif %}
-                            {% include '_partials/_event_fav.html.twig' with { type: 'activite', key: a.slug, class: 'pl-card__fav' } %}
-                        </div>
-                        <div class="pl-card__body">
-                            <div class="pl-card__title">{{ a.title }}</div>
-                            <div class="pl-card__place">{{ icon.map_pin(14) }} {{ a.place }}</div>
-                            <div class="pl-card__meta">
-                                <span class="pl-card__rating">{{ icon.star(14) }} {{ a.reviews }} <span>{{ 'reviews'|trans }}</span></span>
-                                <span class="pl-card__extra">{{ icon.clock(14) }} {{ a.extra }}</span>
-                            </div>
-                            <div class="pl-card__foot">
-                                <span class="pl-card__from">{{ 'À partir de'|trans }}</span>
-                                <span class="pl-card__price">{{ a.price }}€</span>
-                            </div>
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
-        </section>
-    </div>
+            {% endif %}
+        </div>
+    </section>
 
-    {# ===================== DESTINATIONS POPULAIRES ===================== #}
-    {% set destinations = [
-        {img: 'dest-paris.png', slug: 'paris-france',        title: 'Paris, France',   desc: 'Ville lumière et capitale de la culture', reviews: 256, count: '32 activités', price: 25, tag: 'Populaire'},
-        {img: 'dest-annecy.png', slug: 'annecy-france',       title: 'Annecy, France',  desc: 'Entre lac et Montagnes',                  reviews: 178, count: '24 activités', price: 20, tag: 'Bestseller'},
-        {img: 'dest-cinqueterre.jpg', slug: 'cinque-italie',  title: 'Cinque, Italie',  desc: 'Vue à couper le souffle',                 reviews: 134, count: '18 activités', price: 30, tag: 'Tendance'},
-        {img: 'dest-bali.png', slug: 'bali-indonesie',         title: 'Bali, Indonésie', desc: 'Détente, nature et spiritualité',         reviews: 312, count: '27 activités', price: 35, tag: null},
-    ] %}
-    <div class="container">
-        <section class="home-section">
-            <div class="home-section__head">
-                <div>
-                    <h2 class="home-section__title">{{ 'Destinations populaires'|trans }}</h2>
-                    <p class="home-section__subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.</p>
+    {# ===================== ACTIVITÉS GRATUITES ===================== #}
+    <section class="ld-section ld-section--green" data-pg-carousel>
+        <div class="ld-wrap">
+            <header class="ld-section__head">
+                <span class="ld-section__ico is-green">{{ icon.users_solid(34) }}</span>
+                <div><h2>{{ 'Activités gratuites populaires à partager'|trans }}</h2><p>{{ 'Rejoignez des activités entre particuliers ou créez la vôtre gratuitement !'|trans }}</p></div>
+                <a class="ld-more" href="{{ path('app_private_activities') }}">{{ 'Voir toutes les activités gratuites'|trans }} {{ icon.arrow_right(16) }}</a>
+            </header>
+            {% if free is empty %}
+                <div class="ld-empty">
+                    <p>{{ 'Aucune activité gratuite à venir pour le moment.'|trans }}</p>
+                    <a class="ld-btn ld-btn--green-outline" href="{{ path('app_account_private_activities_new', {vierge: 1}) }}">{{ 'Proposer la première'|trans }}</a>
                 </div>
-                <a href="{{ path('app_destinations') }}" class="btn-see-all">{{ 'Voir toutes les destinations'|trans }} {{ icon.arrow_up_right(16) }}</a>
+            {% else %}
+                <div class="ld-carousel">
+                    <button type="button" class="ld-arrow is-prev" data-pg-dir="-1" aria-label="{{ 'Précédent'|trans }}">{{ icon.chevron_left(18) }}</button>
+                    <div class="ld-track" data-pg-track>
+                        {% for row in free %}
+                            {% set activity = row.activity %}
+                            <article class="ld-card">
+                                <a class="ld-card__media" href="{{ path('app_private_activity_show', {id: activity.id}) }}">
+                                    <img src="{% include 'private_activity/_cover.html.twig' %}" alt="{{ activity.title }}" loading="lazy">
+                                    <span class="ld-card__free">{{ 'Gratuit'|trans }}</span>
+                                </a>
+                                {% if not app.user or activity.organizer != app.user %}
+                                    {% include '_partials/_event_fav.html.twig' with { type: 'activite-privee', key: activity.id ~ '', class: 'ld-card__fav' } %}
+                                {% endif %}
+                                <div class="ld-card__body">
+                                    <a class="ld-card__title" href="{{ path('app_private_activity_show', {id: activity.id}) }}">{{ activity.title }}</a>
+                                    {% if activity.city %}<small>{{ icon.map_pin(13) }} {{ activity.city }}{{ activity.postalCode ? ' (' ~ activity.postalCode|slice(0, 2) ~ ')' }}</small>{% endif %}
+                                    <small>{{ icon.users(13) }} {% if activity.scheduledAt %}{{ activity.scheduledAt|pf_date('EEE d MMM')|capitalize }} • {% endif %}{{ row.going }} {{ row.going > 1 ? 'participants'|trans : 'participant'|trans }}</small>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="ld-arrow is-next" data-pg-dir="1" aria-label="{{ 'Suivant'|trans }}">{{ icon.chevron_right(18) }}</button>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    {# ===================== DESTINATIONS ===================== #}
+    <section class="ld-section" data-pg-carousel>
+        <div class="ld-wrap">
+            <header class="ld-section__head">
+                <span class="ld-section__ico is-blue">{{ icon.map_pin_solid(34) }}</span>
+                <div><h2>{{ 'Destinations populaires'|trans }}</h2><p>{{ 'Découvrez les meilleures activités par ville et région'|trans }}</p></div>
+                <a class="ld-more" href="{{ path('app_destinations') }}">{{ 'Voir toutes les destinations'|trans }} {{ icon.arrow_right(16) }}</a>
+            </header>
+            <div class="ld-carousel">
+                <button type="button" class="ld-arrow is-prev" data-pg-dir="-1" aria-label="{{ 'Précédent'|trans }}">{{ icon.chevron_left(18) }}</button>
+                <div class="ld-track ld-track--dest" data-pg-track>
+                    {% for d in destinations %}
+                        <a class="ld-dest" href="{{ path('app_destination_city', {ville: d.slug}) }}">
+                            <img src="{{ asset(d.image) }}" alt="" loading="lazy">
+                            <span><strong>{{ d.name|split(',')|first }}</strong><small>{{ d.count }} {{ d.count > 1 ? 'activités'|trans : 'activité'|trans }}</small></span>
+                        </a>
+                    {% endfor %}
+                </div>
+                <button type="button" class="ld-arrow is-next" data-pg-dir="1" aria-label="{{ 'Suivant'|trans }}">{{ icon.chevron_right(18) }}</button>
             </div>
-            <div class="card-grid">
-                {% for d in destinations %}
-                    <a href="{{ path('app_destination_city', {ville: d.slug}) }}" class="pl-card">
-                        <div class="pl-card__media">
-                            <img src="{{ asset('images/home/' ~ d.img) }}" alt="{{ d.title }}">
-                            {% if d.tag %}<span class="pl-card__tag {{ d.tag == 'Bestseller' ? 'pl-card__tag--bestseller' : 'pl-card__tag--popular' }}">{{ d.tag }}</span>{% endif %}
-                            {% include '_partials/_event_fav.html.twig' with { type: 'destination', key: d.slug, class: 'pl-card__fav' } %}
-                        </div>
-                        <div class="pl-card__body">
-                            <div class="pl-card__title">{{ d.title }}</div>
-                            <div class="pl-card__place">{{ d.desc }}</div>
-                            <div class="pl-card__meta">
-                                <span class="pl-card__rating">{{ icon.star(14) }} {{ d.reviews }} <span>{{ 'reviews'|trans }}</span></span>
-                                <span class="pl-card__extra">{{ d.count }}</span>
-                            </div>
-                            <div class="pl-card__foot">
-                                <span class="pl-card__from">{{ 'À partir de'|trans }}</span>
-                                <span class="pl-card__price">{{ d.price }}€</span>
-                            </div>
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
-        </section>
-    </div>
+        </div>
+    </section>
 
     {# ===================== POURQUOI NOUS CHOISIR ===================== #}
-    <section class="home-provider">
-        <div class="container home-section">
-            <div class="home-provider__inner">
-                <div>
-                    <h2 class="home-provider__title">{{ 'Pourquoi nous choisir !'|trans }}</h2>
-                    <p class="home-provider__text">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget
-                        magna gravida consequat. Nunc dictum facilisis dolor ac luctus.
-                    </p>
-                    <div class="home-provider__list">
-                        <div class="home-provider__arg">{{ icon.check_badge(22) }} {{ 'Réservez en quelques clics'|trans }}</div>
-                        <div class="home-provider__arg">{{ icon.check_badge(22) }} {{ 'Meilleurs prix garantis'|trans }}</div>
-                        <div class="home-provider__arg">{{ icon.check_badge(22) }} {{ 'Transactions 100% sécurisées'|trans }}</div>
-                        <div class="home-provider__arg">{{ icon.check_badge(22) }} {{ "Des milliers d'avis authentiques"|trans }}</div>
-                        <div class="home-provider__arg">{{ icon.check_badge(22) }} {{ 'Notre équipe est à votre écoute 7j/7'|trans }}</div>
-                    </div>
-                    {# La section s'intitule « Pourquoi nous choisir ! » et
-                       s'adresse au visiteur : « en savoir plus » mene donc a la
-                       page qui presente la societe. A redire si vous visiez
-                       plutot l'espace prestataire. #}
-                    <a href="{{ path('app_corporate_about') }}" class="pl-btn pl-btn--cta">{{ 'En savoir plus !'|trans }} {{ icon.arrow_up_right(16) }}</a>
-                </div>
-                <div class="home-provider__media">
-                    <div class="home-provider__circles"></div>
-                    <img src="{{ asset('images/home/provider.png') }}" alt="Rejoignez TrouveMoi">
-                </div>
-            </div>
+    <section class="ld-section ld-why">
+        <div class="ld-wrap">
+            <h2 class="ld-why__title"><span class="ld-why__badge">{{ icon.user_round(18) }}</span> {{ 'Pourquoi nous choisir ?'|trans }}</h2>
+            <ul class="ld-why__list">
+                <li><span class="ld-why__ico is-orange">{{ icon.store(28) }}</span><span><strong>{{ 'Large choix d’activités'|trans }}</strong><small>{{ 'Des centaines d’activités avec nos prestataires et entre particuliers'|trans }}</small></span></li>
+                <li><span class="ld-why__ico is-green-plain">{{ icon.users_solid(34) }}</span><span><strong>{{ 'Activités gratuites'|trans }}</strong><small>{{ 'Créez et rejoignez gratuitement des activités près de chez vous'|trans }}</small></span></li>
+                <li><span class="ld-why__ico is-blue-plain">{{ icon.shield_check(34) }}</span><span><strong>{{ 'Prestataires de confiance'|trans }}</strong><small>{{ 'Des professionnels sélectionnés pour des expériences de qualité'|trans }}</small></span></li>
+                <li><span class="ld-why__ico is-pink">{{ icon.heart(28) }}</span><span><strong>{{ 'Une communauté active'|trans }}</strong><small>{{ 'Des passionnés comme vous pour partager vos loisirs'|trans }}</small></span></li>
+            </ul>
         </div>
     </section>
-
-    {# ===================== ÉVÉNEMENTS POPULAIRES ===================== #}
-    {# Slugs des événements correspondants dans EventFixtures : le lien de
-       chaque carte doit désigner un événement réel (route /evenements/
-       detail/{slug} depuis le 17/09), pas juste reprendre son titre. #}
-    {% set events = [
-        {img: 'event-1.jpg', cat: 'Randonnée', title: 'Randonnée dans le Vercors',  place: 'Autrans, 38880',  time: '9h00 - 16h00',  participants: 12, date: '15 Mai 2026', slug: 'randonnee-dans-le-vercors'},
-        {img: 'event-2.jpg', cat: 'Sports',    title: 'Match de foot amical',        place: 'Toulouse, 31000', time: '10h00 - 12h00', participants: 8,  date: '15 Mai 2026', slug: 'match-de-foot-amical'},
-        {img: 'event-3.jpg', cat: 'Repas',     title: 'Barbecue entre amis',         place: 'Lyon, 69000',     time: '12h00 - 18h00', participants: 12, date: '18 Mai 2026', slug: 'barbecue-entre-amis'},
-        {img: 'event-4.jpg', cat: 'Bien-être', title: 'Séance de yoga en plein air', place: 'Nantes, 44000',   time: '10h00 - 11h30', participants: 12, date: '02 Juin 2026', slug: 'seance-de-yoga-en-plein-air'},
-    ] %}
-    <div class="container">
-        <section class="home-section">
-            <div class="home-section__head">
-                <div>
-                    <h2 class="home-section__title">{{ 'Évènements gratuits populaires à partager'|trans }}</h2>
-                    <p class="home-section__subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.</p>
-                </div>
-                <a href="{{ path('app_events_all') }}" class="btn-see-all">{{ 'Voir tous les événements'|trans }} {{ icon.arrow_up_right(16) }}</a>
-            </div>
-            <div class="card-grid">
-                {% for e in events %}
-                    <a href="{{ path('app_events_detail', { slug: e.slug }) }}" class="pl-card pl-card--event">
-                        <div class="pl-card__media">
-                            <img src="{{ asset('images/home/' ~ e.img) }}" alt="{{ e.title }}">
-                            <span class="pl-card__tag pl-card__tag--cat">{{ e.cat }}</span>
-                            {% include '_partials/_event_fav.html.twig' with { type: 'evenement', key: e.slug, class: 'pl-card__fav' } %}
-                            <span class="pl-card__date">{{ e.date }}</span>
-                        </div>
-                        <div class="pl-card__body">
-                            <div class="pl-card__title">{{ e.title }}</div>
-                            <div class="pl-card__place">{{ icon.map_pin(14) }} {{ e.place }}</div>
-                            <div class="pl-card__meta">
-                                <span class="pl-card__extra">{{ icon.clock(14) }} {{ e.time }}</span>
-                            </div>
-                            <div class="pl-card__event-foot">
-                                <span class="pl-card__participants">{{ icon.users(16) }} {{ e.participants }} {{ 'Participants'|trans }}</span>
-                                <span class="home-mini-avatars" aria-hidden="true"><img src="{{ asset('images/home/avatar-1.png') }}" alt=""><img src="{{ asset('images/home/avatar-2.png') }}" alt=""><img src="{{ asset('images/home/avatar-3.png') }}" alt=""></span>
-                            </div>
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
-        </section>
-    </div>
-
-    {# ===================== CE QUE DISENT NOS CLIENTS ===================== #}
-    {% set reviews = [
-        {rating: 5, title: 'Efficient and Reliable', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat.', author: 'John Mans',   place: 'France, Nantes', date: '10 Juillet 2026', avatar: 'avatar-1.png'},
-        {rating: 4, title: 'Une expérience au top',  text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc dictum facilisis dolor ac luctus, sit amet.', author: 'Marie Leroy', place: 'France, Lyon',   date: '08 Juillet 2026', avatar: 'avatar-3.png'},
-    ] %}
-    <section class="home-reviews">
-        <div class="container home-section">
-            <div class="home-reviews__head">
-                <h2 class="home-section__title">{{ 'Ce que disent nos clients'|trans }}</h2>
-                <div class="home-reviews__score">
-                    <div class="home-reviews__score-box">
-                        <div class="home-reviews__score-label">{{ 'Note globale'|trans }}</div>
-                        <div class="home-reviews__score-value">4.5<span>/5</span></div>
-                        <div class="home-reviews__stars">{{ icon.star(18) }}{{ icon.star(18) }}{{ icon.star(18) }}{{ icon.star(18) }}{{ icon.star(18) }}</div>
-                        <div class="home-reviews__score-count">{{ 'Basé sur %count% avis'|trans({'%count%': '8955'}) }}</div>
-                    </div>
-                    <a href="{{ path('app_activities', {tri: 'note'}) }}" class="btn-see-all">{{ "Voir plus d'avis"|trans }} {{ icon.arrow_up_right(16) }}</a>
-                </div>
-            </div>
-            <div class="home-reviews__grid">
-                {% for r in reviews %}
-                    <article class="review-card">
-                        <div class="review-card__top">
-                            <div class="review-card__stars">
-                                {% for i in 1..5 %}<span class="{{ i <= r.rating ? 'is-on' : 'is-off' }}">{{ icon.star(16) }}</span>{% endfor %}
-                            </div>
-                            <button type="button" class="review-card__more" aria-label="{{ 'Options'|trans }}">{{ icon.dots(20) }}</button>
-                        </div>
-                        <h3 class="review-card__title">{{ r.title }}</h3>
-                        <p class="review-card__text">{{ r.text }}</p>
-                        <div class="review-card__author">
-                            <img class="review-card__avatar" src="{{ asset('images/home/' ~ r.avatar) }}" alt="">
-                            <div>
-                                <div class="review-card__name">{{ r.author }}</div>
-                                <div class="review-card__meta">{{ r.place }} · {{ r.date }}</div>
-                            </div>
-                        </div>
-                        <div class="review-card__foot">
-                            <span>{{ 'Est-ce que ça vous a aidé ?'|trans }} {{ icon.thumbs_up(16) }}</span>
-                            <a href="https://translate.google.com/?sl=auto&tl={{ app.request.locale == 'en' ? 'fr' : 'en' }}&op=translate&text={{ r.text|url_encode }}" target="_blank" rel="noopener">{{ 'Traduire'|trans }}</a>
-                        </div>
-                    </article>
-                {% endfor %}
-            </div>
-        </div>
-    </section>
-
+</div>
 {% endblock %}

@@ -1,0 +1,51 @@
+{#
+    Menu du compte (avatar connecté, ou « Se connecter » Client / Prestataire),
+    partagé par l'en-tête du site et celui de l'accueil (05/10).
+    Variables : connected, is_provider.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+{% if connected %}
+    <details class="pl-dropdown tm-account">
+        {# Maquettes profil_particulier : pastille avatar + nom + « Mon compte ». #}
+        <summary class="tm-account__toggle" aria-label="{{ 'Menu du compte'|trans }}">
+            <span class="tm-account__avatar">
+                <img src="{{ asset(app.user.avatarPath ?? 'images/account/avatar-default.svg') }}" alt="">
+                {% set unreadMessages = app.user ? unread_messages_count(app.user) : 0 %}
+                {% if unreadMessages > 0 %}<span class="tm-account__dot" aria-hidden="true"></span>{% endif %}
+            </span>
+            <span class="tm-account__id">
+                <strong>{{ app.user ? (app.user.firstName ~ ' ' ~ app.user.lastName) : 'Thomas Martin' }}</strong>
+                <small>{{ 'Mon compte'|trans }}</small>
+            </span>
+            {{ icon.chevron_down(14) }}
+        </summary>
+        <div class="tm-menu tm-menu--right">
+            <a href="{{ is_provider ? path('app_pro_dashboard') : path('app_account_dashboard') }}" class="tm-menu__item">{{ icon.person(16) }} {{ 'Profil'|trans }}</a>
+            <a href="{{ is_provider ? path('app_pro_messages') : path('app_account_messages') }}" class="tm-menu__item">
+                {{ icon.mail(16) }} {{ 'Messagerie'|trans }}
+                {% if unreadMessages > 0 %}<span class="tm-menu__count">{{ unreadMessages > 99 ? '99+' : unreadMessages }}</span>{% endif %}
+            </a>
+            {% if is_provider %}
+                {% set pendingRequests = pending_requests_count(app.user) %}
+                <a href="{{ path('app_pro_requests') }}" class="tm-menu__item">
+                    {{ icon.receipt(16) }} {{ 'Demandes reçues'|trans }}
+                    {% if pendingRequests > 0 %}<span class="tm-menu__count">{{ pendingRequests > 99 ? '99+' : pendingRequests }}</span>{% endif %}
+                </a>
+                <a href="{{ path('app_pro_subscription') }}" class="tm-menu__item">{{ icon.card(16) }} {{ 'Abonnement'|trans }}</a>
+            {% endif %}
+            {% if app.user %}
+                <button type="button" class="tm-menu__item tm-menu__item--danger" data-bs-toggle="modal" data-bs-target="#confirm-logout">{{ icon.logout(16) }} {{ 'Déconnexion'|trans }}</button>
+            {% endif %}
+        </div>
+    </details>
+{% else %}
+    {# Même bouton que la maquette ; il ouvre le choix Client /
+       Prestataire, les deux écrans de connexion étant distincts. #}
+    <details class="pl-dropdown tm-signin">
+        <summary class="tm-btn tm-btn--dark">{{ 'Se connecter'|trans }}</summary>
+        <div class="tm-menu tm-menu--right">
+            <a href="{{ path('app_login') }}" class="tm-menu__item">{{ 'Client'|trans }}</a>
+            <a href="{{ path('app_pro_login') }}" class="tm-menu__item">{{ 'Prestataire'|trans }}</a>
+        </div>
+    </details>
+{% endif %}

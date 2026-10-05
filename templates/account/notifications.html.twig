@@ -1,105 +1,22 @@
 {#
     Notifications — maquette docs/maquettes/profil_particulier/
     profil_notifications_particulier.jpeg (30/09).
-    Données : AccountController::notifications().
+    Données : AccountController::notifications() (NotificationFeed).
 
     « Archives » = notifications déjà lues. Seul le canal e-mail est
     réellement câblé (NotificationEmailListener) : push, SMS et rappels sont
     affichés comme « Bientôt disponible ».
 #}
 {% extends 'account/_layout.html.twig' %}
-{% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ 'Notifications'|trans }}{% endblock %}
 
-{% set tones = {violet: 'violet', yellow: 'orange', green: 'green', blue: 'blue'} %}
+{% set routes = {list: 'app_account_notifications', mark_all: 'app_account_notifications_mark_all_read', preferences: 'app_account_notification_preferences'} %}
 
 {% block account %}
-    <header class="pf-head">
-        <div>
-            <h1 class="pf-title">{{ 'Notifications'|trans }}</h1>
-            <p class="pf-sub">{{ 'Restez informé de tout ce qui compte pour vous sur TrouveMoi Plaisirs & Loisirs.'|trans }}</p>
-        </div>
-    </header>
-
-    <nav class="pf-tabs pf-tabs--line">
-        <a class="pf-tab{{ filter == 'toutes' ? ' is-active' }}" href="{{ path('app_account_notifications') }}">{{ 'Toutes'|trans }}</a>
-        <a class="pf-tab{{ filter == 'non-lues' ? ' is-active' }}" href="{{ path('app_account_notifications', {filtre: 'non-lues'}) }}">{{ 'Non lues'|trans }}{% if unread > 0 %}<span class="pf-tab__count">{{ unread }}</span>{% endif %}</a>
-        <a class="pf-tab{{ filter == 'archives' ? ' is-active' }}" href="{{ path('app_account_notifications', {filtre: 'archives'}) }}">{{ 'Archives'|trans }}</a>
-    </nav>
-
-    <div class="pf-toolbar">
-        <form class="pf-toolbar pf-toolbar--inline" method="get">
-            <input type="hidden" name="filtre" value="{{ filter }}">
-            <div class="pf-search">
-                <input type="search" name="q" value="{{ query }}" placeholder="{{ 'Rechercher une notification...'|trans }}" aria-label="{{ 'Rechercher une notification'|trans }}">
-                <button type="submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(18) }}</button>
-            </div>
-            <div class="pf-select">
-                <select name="type" onchange="this.form.submit()" aria-label="{{ 'Type'|trans }}">
-                    <option value="">{{ 'Tous les types'|trans }}</option>
-                    {% for key, label in {booking: 'Réservations', payment: 'Paiements', review: 'Avis', messaging: 'Messages', quote: 'Demandes et devis', activity: 'Activités privées', system: 'Compte'} %}
-                        <option value="{{ key }}"{{ type == key ? ' selected' }}>{{ label|trans }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </form>
-        <form method="post" action="{{ path('app_account_notifications_mark_all_read') }}" class="pf-toolbar__end">
-            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-            <button type="submit" class="pf-btn"{{ unread == 0 ? ' disabled' }}>{{ icon.check(16) }} {{ 'Marquer tout comme lu'|trans }}</button>
-        </form>
-    </div>
-
-    {% if items is empty %}
-        <div class="pf-card pf-empty">
-            <strong>{{ query or type or filter != 'toutes' ? 'Aucune notification ne correspond.'|trans : 'Aucune notification pour le moment.'|trans }}</strong>
-            {{ 'Vous serez prévenu ici de vos réservations, messages et activités.'|trans }}
-        </div>
-    {% else %}
-        <ul class="pf-notifs">
-            {% for n in items %}
-                <li class="pf-notif{{ n.muted ? '' : ' is-unread' }}">
-                    <span class="pf-ico pf-ico--sm pf-ico--{{ tones[n.tone] ?? 'violet' }}">{% include 'account/_notification_icon.html.twig' with { name: n.icon, size: 20 } %}</span>
-                    <div class="pf-notif__body">
-                        <strong>{{ n.title }}</strong>
-                        <span>{{ n.detail }}</span>
-                    </div>
-                    <span class="pf-notif__time">{{ n.time }}</span>
-                    <span class="pf-notif__dot" aria-label="{{ n.muted ? '' : 'Non lue'|trans }}"></span>
-                </li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-
-    {% include 'account/_pager.html.twig' with { noun: 'notifications'|trans } %}
+    {% include 'notification/_feed.html.twig' with { part: 'main' } %}
 {% endblock %}
 
 {% block account_aside %}
-    <section class="pf-card">
-        <h2 class="pf-card__title">{{ 'Paramètres des notifications'|trans }}</h2>
-        <p class="pf-card__sub">{{ 'Gérez vos préférences de notification'|trans }}</p>
-        <ul class="pf-list pf-channels-list">
-            <li>
-                <span class="pf-ico pf-ico--xs">{{ icon.mail(16) }}</span>
-                <a class="pf-list__link" href="{{ path('app_account_notification_preferences') }}"><span class="pf-list__body"><strong>{{ 'Email'|trans }}</strong><small>{{ email_enabled ? 'Activé'|trans : 'Désactivé'|trans }}</small></span>{{ icon.chevron_right(16) }}</a>
-            </li>
-            {% for label in ['Notifications push', 'SMS', 'Rappels d’activité'] %}
-                <li>
-                    <span class="pf-ico pf-ico--xs">{{ loop.index == 1 ? icon.bell(16) : (loop.index == 2 ? icon.chat_bubble(16) : icon.clock(16)) }}</span>
-                    <span class="pf-list__body"><strong>{{ label|trans }}</strong><small>{{ 'Bientôt disponible'|trans }}</small></span>
-                </li>
-            {% endfor %}
-        </ul>
-        <a class="pf-btn pf-btn--block" href="{{ path('app_account_notification_preferences') }}">{{ 'Gérer mes préférences'|trans }}</a>
-    </section>
-
-    <section class="pf-card">
-        <h2 class="pf-card__title">{{ 'Informations'|trans }}</h2>
-        <ul class="pf-list pf-tiplist">
-            <li><span>{{ icon.info(16) }}</span><div class="pf-list__body">{{ 'Les notifications vous aident à rester informé de l’essentiel.'|trans }}</div></li>
-            <li><span>{{ icon.info(16) }}</span><div class="pf-list__body">{{ 'Personnalisez vos préférences pour recevoir uniquement ce qui vous intéresse.'|trans }}</div></li>
-            <li><span>{{ icon.info(16) }}</span><div class="pf-list__body">{{ 'Vous pouvez vous désabonner à tout moment.'|trans }}</div></li>
-            <li><span>{{ icon.help_circle(16) }}</span><div class="pf-list__body"><a class="pf-link" href="{{ path('app_faq') }}">{{ 'Voir la FAQ'|trans }}</a></div></li>
-        </ul>
-    </section>
+    {% include 'notification/_feed.html.twig' with { part: 'aside' } %}
 {% endblock %}

@@ -66,13 +66,21 @@ final class ActivityController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/activites', 'en' => '/en/activities'], name: 'app_activities')]
-    public function index(Request $request): Response
+    public function index(Request $request, \App\PrivateActivity\Repository\PrivateActivityRepository $privateActivities): Response
     {
         // La barre de recherche de la maquette poste « q » et « lieu » en GET.
         // Jusqu'au 21/08 le contrôleur ne les lisait pas : on tapait un
         // mot-clé, on validait, et la page revenait identique.
         $keywords = trim((string) $request->query->get('q', ''));
         $place = trim((string) $request->query->get('lieu', ''));
+
+        // Recherche de l'accueil (05/10), mode « Activités gratuites » sans
+        // JavaScript : les résultats sont les activités entre membres.
+        if ('gratuites' === $request->query->get('type')) {
+            return $this->redirectToRoute('app_private_activities', array_filter([
+                'lieu' => $place, 'q' => $keywords, 'date' => (string) $request->query->get('date', ''),
+            ]));
+        }
         // Les pastilles de categorie posent « categorie » dans l'URL : le
         // filtre se partage et survit au bouton Precedent. Le panneau lateral,
         // lui, coche plusieurs cases et envoie « categories[] ». Les deux
@@ -131,8 +139,17 @@ final class ActivityController extends AbstractController
             favoriteSlugs: $this->favorites->activitySlugs(),
         );
 
+        // Mode « Toutes » de l'accueil : on signale aussi les activités
+        // gratuites entre membres qui répondent à la même recherche.
+        $freeMatches = null;
+        if ('toutes' === $request->query->get('type')) {
+            $freeMatches = \count($privateActivities->findUpcomingDiscoverable($this->isGranted('ROLE_USER'), null, $place, $keywords, $date));
+        }
+
         return $this->render('activity/index.html.twig', [
             'activities' => $activities,
+            'free_matches' => $freeMatches,
+            'free_params' => array_filter(['lieu' => $place, 'q' => $keywords, 'date' => $date?->format('Y-m-d')]),
             // Les champs doivent afficher ce qui a été cherché : sinon la barre
             // se réinitialise et l'on ne sait plus ce qui a produit la liste.
             'q' => $keywords,
@@ -248,9 +265,12 @@ final class ActivityController extends AbstractController
     private function bookingPanel(Service $service, Request $request, AvailabilityRepository $availabilities): array
     {
         $price = null;
+        $packages = [];
         foreach ($service->getPackages() as $package) {
             $price = null === $price ? (float) $package->getPrice() : min($price, (float) $package->getPrice());
+            $packages[] = ['id' => (string) $package->getId(), 'name' => $package->getName(), 'description' => $package->getDescription(), 'price' => (float) $package->getPrice(), 'unit' => $package->getPricingUnit()->value];
         }
+        usort($packages, static fn (array $a, array $b): int => $a['price'] <=> $b['price']);
 
         $slots = [];
         foreach ($availabilities->findUpcomingByService($service, new \DateTimeImmutable('+1 hour')) as $slot) {
@@ -263,6 +283,8 @@ final class ActivityController extends AbstractController
 
         return [
             'price' => $price,
+            'packages' => $packages,
+            'cancellation' => $service->getCancellationPolicy(),
             'capacity' => $service->getCapacity(),
             'slots' => $slots,
             'times' => BookingController::DEFAULT_TIMES,

@@ -2,157 +2,158 @@
     Fiche d'une activité privée : visiteur, participant ou organisateur — un
     seul gabarit, les blocs affichés dépendent des Voters (voir le
     commentaire de PrivateActivityController). §12-13 du CDC.
+    Refonte 05/10 sur le modèle de la fiche événement (.evn-*) : photo,
+    infos pratiques, carte. L'adresse exacte, le rendez-vous et la carte ne
+    sont montrés qu'à qui peut voir le lieu exact (VIEW_EXACT_LOCATION).
 #}
 {% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ activity.title }}{% endblock %}
+{% block meta_description %}{{ activity.title }}{{ activity.city ? ' — ' ~ activity.city }} : {{ 'activité gratuite entre membres.'|trans }}{% endblock %}
 
 {% block body %}
-<div class="container py-5" style="max-width: 760px;">
-    <p class="mb-3">
-        <a href="{{ path('app_private_activities') }}" class="text-decoration-none">&larr; {{ 'Retour aux activités privées'|trans }}</a>
-    </p>
+<div class="evn-page evn-detail">
+    <div class="container">
+        <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+            <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
+            <span aria-hidden="true">|</span>
+            <a href="{{ path('app_private_activities') }}">{{ 'Activités privées'|trans }}</a>
+            <span aria-hidden="true">|</span>
+            <span aria-current="page" class="evn-crumb-current">{{ activity.title }}</span>
+        </nav>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
-                <h1 class="h3 mb-0" style="color: var(--pl-text-display); font-weight: var(--pl-fw-bold);">
+        <div class="evn-detail__layout">
+            <div class="evn-detail__main">
+                <h1 class="evn-detail__title">
                     {{ activity.title }}
+                    {% if activity.status.value == 'cancelled' %}<span class="pa-pill pa-pill--red">{{ 'Annulée'|trans }}</span>{% elseif activity.status.value == 'full' %}<span class="pa-pill">{{ 'Complet'|trans }}</span>{% endif %}
                 </h1>
-                {% if activity.status.value == 'cancelled' %}
-                    <span class="badge text-bg-danger">{{ 'Annulée'|trans }}</span>
-                {% elseif activity.status.value == 'full' %}
-                    <span class="badge text-bg-secondary">{{ 'Complet'|trans }}</span>
-                {% endif %}
-            </div>
-
-            <div class="d-flex flex-wrap gap-2 mb-3">
-                <span class="badge rounded-pill" style="background: var(--pl-action-light); color: var(--pl-action);">
-                    {{ activity.category.name }}
-                </span>
-                {% if activity.visibility.value == 'members_only' %}
-                    <span class="badge rounded-pill text-bg-light">{{ 'Réservée aux membres'|trans }}</span>
-                {% elseif activity.visibility.value == 'private' %}
-                    <span class="badge rounded-pill text-bg-light">{{ 'Privée'|trans }}</span>
-                {% endif %}
-            </div>
-
-            {% if activity.scheduledAt %}
-                <p class="mb-1">🗓️ {{ activity.scheduledAt|date('d/m/Y à H:i') }}</p>
-            {% endif %}
-            {% if activity.city %}
-                <p class="mb-1">📍 {{ activity.city }}{{ can_view_exact_location and activity.location ? ' — ' ~ activity.location }}</p>
-            {% elseif can_view_exact_location and activity.location %}
-                <p class="mb-1">📍 {{ activity.location }}</p>
-            {% endif %}
-            {% if not can_view_exact_location and activity.showsExactAddress and activity.location %}
-                <p class="text-muted small mb-1">{{ 'L\'adresse exacte sera communiquée une fois votre participation acceptée.'|trans }}</p>
-            {% endif %}
-            {% if (activity.minParticipants or activity.maxParticipants) %}
-                <p class="text-muted small mb-1">
-                    {{ 'Participants'|trans }} :
-                    {% if activity.minParticipants %}{{ 'min.'|trans }} {{ activity.minParticipants }}{% endif %}
-                    {% if activity.minParticipants and activity.maxParticipants %} — {% endif %}
-                    {% if activity.maxParticipants %}{{ 'max.'|trans }} {{ activity.maxParticipants }}{% endif %}
-                    ({{ accepted|length }} {{ 'confirmé(s)'|trans }})
+                <p class="evn-organizer">
+                    <img src="{{ asset(activity.organizer and activity.organizer.avatarPath ? activity.organizer.avatarPath : 'images/account/avatar-default.svg') }}" alt="">
+                    {{ 'Organisé par'|trans }} <strong>{{ activity.organizer.firstName }} {{ activity.organizer.lastName|first }}.</strong>
+                    <span class="pa-pill">{{ activity.category.name|trans }}</span>
+                    {% if activity.visibility.value == 'members_only' %}<span class="pa-pill">{{ 'Réservée aux membres'|trans }}</span>{% elseif activity.visibility.value == 'private' %}<span class="pa-pill">{{ 'Privée'|trans }}</span>{% endif %}
                 </p>
-            {% endif %}
 
-            {% if activity.description %}
-                <p class="mt-3 mb-0">{{ activity.description|nl2br }}</p>
-            {% endif %}
+                {% if activity.description %}
+                    <h2 class="evn-h2">{{ 'Détails'|trans }}</h2>
+                    <div class="evn-detail__text">{{ activity.description|nl2br }}</div>
+                {% endif %}
+
+                <h2 class="evn-h2">{{ 'Infos pratiques'|trans }}</h2>
+                <ul class="evn-facts">
+                    {% if activity.scheduledAt %}<li>{{ icon.calendar(16) }} <span>{{ activity.scheduledAt|pf_date('EEEE d MMMM y')|capitalize }} · {{ activity.scheduledAt|date('H\\hi') }}{% if activity.endsAt %} – {{ activity.endsAt|date('H\\hi') }}{% endif %}</span></li>{% endif %}
+                    <li>{{ icon.map_pin(16) }} <span>
+                        {% if can_view_exact_location and activity.location %}{{ activity.location }}{% else %}{{ activity.city ?? 'Lieu communiqué aux participants'|trans }}{% endif %}
+                    </span></li>
+                    {% if can_view_exact_location and activity.meetingPoint %}<li>{{ icon.users(16) }} <span>{{ 'Rendez-vous :'|trans }} {{ activity.meetingPoint }}</span></li>{% endif %}
+                    {% if not can_view_exact_location and activity.showsExactAddress and activity.location %}<li>{{ icon.padlock(16) }} <span>{{ 'L\'adresse exacte sera communiquée une fois votre participation acceptée.'|trans }}</span></li>{% endif %}
+                    {% if activity.minParticipants or activity.maxParticipants %}
+                        <li>{{ icon.users(16) }} <span>{{ accepted|length }} {{ 'confirmé(s)'|trans }}{% if activity.minParticipants %} · {{ 'min.'|trans }} {{ activity.minParticipants }}{% endif %}{% if activity.maxParticipants %} · {{ 'max.'|trans }} {{ activity.maxParticipants }}{% endif %}</span></li>
+                    {% endif %}
+                    <li>{{ icon.check_badge(16) }} <span>{{ activity.participationMode.value == 'automatic' ? 'Inscription directe'|trans : 'Inscription sur validation de l’organisateur'|trans }}</span></li>
+                    {% if activity.toBring %}<li>{{ icon.info(16) }} <span>{{ 'À apporter :'|trans }} {{ activity.toBring }}</span></li>{% endif %}
+                </ul>
+                {% if can_view_exact_location and activity.latitude and activity.longitude %}
+                    <div class="evn-detail__map" data-evl-map data-markers="{{ [{lat: activity.latitude + 0, lng: activity.longitude + 0, title: activity.title, url: path('app_private_activity_show', {id: activity.id}), date: activity.scheduledAt ? activity.scheduledAt|date('d/m') : '', where: activity.city}]|json_encode }}"></div>
+                    <a class="evn-maplink" href="https://www.google.com/maps/search/?api=1&query={{ activity.latitude }},{{ activity.longitude }}" target="_blank" rel="noopener">{{ 'Itinéraire Google Maps'|trans }} {{ icon.arrow_up_right(14) }}</a>
+                {% endif %}
+
+                {% if can_manage %}
+                    <section class="pf-card pa-manage">
+                        <h2 class="evn-h2">{{ 'Gestion de l\'activité'|trans }}</h2>
+
+                        {% if pending is not empty %}
+                            <h3 class="pa-h3">{{ 'Demandes en attente'|trans }} ({{ pending|length }})</h3>
+                            <ul class="pa-people">
+                                {% for participation in pending %}
+                                    <li>
+                                        <span>{{ participation.participant.firstName }} {{ participation.participant.lastName }}</span>
+                                        <span class="pa-people__actions">
+                                            <form method="post" action="{{ path('app_account_private_activity_decide', {id: activity.id, participationId: participation.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                                <input type="hidden" name="decision" value="accepter">
+                                                <button type="submit" class="pl-btn pl-btn--primary pa-sm">{{ 'Accepter'|trans }}</button>
+                                            </form>
+                                            <form method="post" action="{{ path('app_account_private_activity_decide', {id: activity.id, participationId: participation.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                                <input type="hidden" name="decision" value="refuser">
+                                                <button type="submit" class="pl-btn pl-btn--outline-dark pa-sm">{{ 'Refuser'|trans }}</button>
+                                            </form>
+                                        </span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+
+                        <h3 class="pa-h3">{{ 'Participants confirmés'|trans }} ({{ accepted|length }})</h3>
+                        {% if accepted is empty %}
+                            <p class="evn-muted">{{ 'Personne pour le moment.'|trans }}</p>
+                        {% else %}
+                            <ul class="pa-people">{% for participation in accepted %}<li>{{ participation.participant.firstName }} {{ participation.participant.lastName }}</li>{% endfor %}</ul>
+                        {% endif %}
+
+                        {% if waiting is not empty %}
+                            <h3 class="pa-h3">{{ 'Liste d\'attente'|trans }} ({{ waiting|length }})</h3>
+                            <ul class="pa-people">{% for participation in waiting %}<li>{{ participation.participant.firstName }} {{ participation.participant.lastName }}</li>{% endfor %}</ul>
+                        {% endif %}
+
+                        {% if activity.status.value != 'cancelled' %}
+                            <form method="post" action="{{ path('app_account_private_activity_cancel', {id: activity.id}) }}" onsubmit="return confirm('{{ 'Annuler cette activité ? Les participants seront prévenus.'|trans|e('js') }}')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                <button type="submit" class="pl-btn pl-btn--outline-dark pa-sm">{{ 'Annuler l\'activité'|trans }}</button>
+                            </form>
+                        {% endif %}
+                    </section>
+                {% endif %}
+
+                {% if not can_manage %}
+                    {% include '_partials/_report_form.html.twig' with {
+                        subject_type: 'activity',
+                        subject_id: activity.id,
+                        subject_label: activity.title,
+                    } %}
+                {% endif %}
+            </div>
+
+            <aside class="evn-detail__side">
+                <div class="evn-cover">
+                    <img src="{% include 'private_activity/_cover.html.twig' %}" alt="">
+                    <button type="button" class="evn-cover__flyer" data-share-url="{{ url('app_private_activity_show', {id: activity.id}) }}" data-share-title="{{ activity.title }}" data-share-done="{{ 'Lien copié !'|trans }}">{{ icon.share(16) }} {{ 'Partager'|trans }}</button>
+                </div>
+
+                <section class="pf-card pa-join">
+                    <p class="pa-join__price">{{ 'Gratuit'|trans }} <small>· {{ 'entre membres'|trans }}</small></p>
+                    {% if my_participation %}
+                        <p class="pa-join__state is-{{ my_participation.status.value }}">
+                            {% if my_participation.status.value == 'accepted' %}{{ 'Votre place est confirmée.'|trans }}
+                            {% elseif my_participation.status.value == 'pending' %}{{ 'Votre demande est en attente de validation par l\'organisateur.'|trans }}
+                            {% elseif my_participation.status.value == 'waiting_list' %}{{ 'Vous êtes sur liste d\'attente.'|trans }}
+                            {% elseif my_participation.status.value == 'refused' %}{{ 'Votre demande a été refusée.'|trans }}
+                            {% else %}{{ 'Vous avez annulé votre participation.'|trans }}{% endif %}
+                        </p>
+                        {% if my_participation.status.value in ['accepted', 'pending', 'waiting_list'] %}
+                            <form method="post" action="{{ path('app_account_private_activity_participation_cancel', {id: activity.id, participationId: my_participation.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                <button type="submit" class="pl-btn pl-btn--outline-dark pl-btn--block">{{ 'Annuler ma participation'|trans }}</button>
+                            </form>
+                        {% endif %}
+                    {% elseif can_participate %}
+                        <form method="post" action="{{ path('app_private_activity_participate', {id: activity.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                            <button type="submit" class="pl-btn pl-btn--primary pl-btn--block">{{ activity.participationMode.value == 'automatic' ? 'Participer'|trans : 'Demander à participer'|trans }}</button>
+                        </form>
+                    {% elseif can_manage %}
+                        <p class="pa-join__state">{{ 'Vous organisez cette activité.'|trans }}</p>
+                    {% elseif not is_granted('ROLE_USER') %}
+                        <a href="{{ path('app_login') }}" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Se connecter pour participer'|trans }}</a>
+                    {% elseif activity.status.value != 'open' %}
+                        <p class="pa-join__state">{{ activity.status.value == 'full' ? 'Cette activité est complète.'|trans : 'Cette activité est annulée.'|trans }}</p>
+                    {% endif %}
+                </section>
+            </aside>
         </div>
     </div>
-
-    {% if my_participation %}
-        <div class="alert {{ my_participation.status.value == 'accepted' ? 'alert-success' : (my_participation.status.value == 'refused' or my_participation.status.value == 'cancelled' ? 'alert-secondary' : 'alert-info') }}">
-            {% if my_participation.status.value == 'accepted' %}{{ 'Votre place est confirmée.'|trans }}
-            {% elseif my_participation.status.value == 'pending' %}{{ 'Votre demande est en attente de validation par l\'organisateur.'|trans }}
-            {% elseif my_participation.status.value == 'waiting_list' %}{{ 'Vous êtes sur liste d\'attente.'|trans }}
-            {% elseif my_participation.status.value == 'refused' %}{{ 'Votre demande a été refusée.'|trans }}
-            {% else %}{{ 'Vous avez annulé votre participation.'|trans }}
-            {% endif %}
-
-            {% if my_participation.status.value in ['accepted', 'pending', 'waiting_list'] %}
-                <form method="post" action="{{ path('app_account_private_activity_participation_cancel', {id: activity.id, participationId: my_participation.id}) }}" class="mt-2">
-                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                    <button type="submit" class="btn btn-sm pl-btn pl-btn--outline-dark">{{ 'Annuler ma participation'|trans }}</button>
-                </form>
-            {% endif %}
-        </div>
-    {% elseif can_participate %}
-        <form method="post" action="{{ path('app_private_activity_participate', {id: activity.id}) }}" class="mb-4">
-            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-            <button type="submit" class="btn pl-btn pl-btn--cta">{{ 'Participer'|trans }}</button>
-        </form>
-    {% elseif not is_granted('ROLE_USER') %}
-        <a href="{{ path('app_login') }}" class="btn pl-btn pl-btn--cta mb-4">{{ 'Se connecter pour participer'|trans }}</a>
-    {% endif %}
-
-    {% if can_manage %}
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h2 class="h5 mb-3">{{ 'Gestion de l\'activité'|trans }}</h2>
-
-                {% if activity.status.value != 'cancelled' %}
-                    <form method="post" action="{{ path('app_account_private_activity_cancel', {id: activity.id}) }}" class="mb-4">
-                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                        <button type="submit" class="btn btn-sm pl-btn pl-btn--outline-dark">{{ 'Annuler l\'activité'|trans }}</button>
-                    </form>
-                {% endif %}
-
-                {% if pending is not empty %}
-                    <h3 class="h6">{{ 'Demandes en attente'|trans }}</h3>
-                    <ul class="list-group mb-4">
-                        {% for participation in pending %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <span>{{ participation.participant.firstName }} {{ participation.participant.lastName }}</span>
-                                <div class="d-flex gap-2">
-                                    <form method="post" action="{{ path('app_account_private_activity_decide', {id: activity.id, participationId: participation.id}) }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                                        <input type="hidden" name="decision" value="accepter">
-                                        <button type="submit" class="btn btn-sm pl-btn pl-btn--primary">{{ 'Accepter'|trans }}</button>
-                                    </form>
-                                    <form method="post" action="{{ path('app_account_private_activity_decide', {id: activity.id, participationId: participation.id}) }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                                        <input type="hidden" name="decision" value="refuser">
-                                        <button type="submit" class="btn btn-sm pl-btn pl-btn--outline-dark">{{ 'Refuser'|trans }}</button>
-                                    </form>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-
-                <h3 class="h6">{{ 'Participants confirmés'|trans }} ({{ accepted|length }})</h3>
-                {% if accepted is empty %}
-                    <p class="text-muted small">{{ 'Personne pour le moment.'|trans }}</p>
-                {% else %}
-                    <ul class="list-group mb-4">
-                        {% for participation in accepted %}
-                            <li class="list-group-item">{{ participation.participant.firstName }} {{ participation.participant.lastName }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-
-                {% if waiting is not empty %}
-                    <h3 class="h6">{{ 'Liste d\'attente'|trans }} ({{ waiting|length }})</h3>
-                    <ul class="list-group">
-                        {% for participation in waiting %}
-                            <li class="list-group-item">{{ participation.participant.firstName }} {{ participation.participant.lastName }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
-        </div>
-    {% endif %}
-
-    {% if not can_manage %}
-        {% include '_partials/_report_form.html.twig' with {
-            subject_type: 'activity',
-            subject_id: activity.id,
-            subject_label: activity.title,
-        } %}
-    {% endif %}
 </div>
 {% endblock %}

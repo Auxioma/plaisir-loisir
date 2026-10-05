@@ -150,7 +150,7 @@
                         {{ _self.hidden('notifications', 'notifications') }}
                         <label class="pp-switch"><input type="checkbox" name="email_enabled" value="1"{{ (preference ? preference.emailEnabled : true) ? ' checked' }}><span></span>{{ 'Recevoir les notifications par e-mail (réservations, messages, avis)'|trans }}</label>
                         <label class="pp-switch"><input type="checkbox" name="push_enabled" value="1"{{ (preference ? preference.pushEnabled : true) ? ' checked' }}><span></span>{{ 'Recevoir les notifications sur le site (cloche)'|trans }}</label>
-                        <div><button class="pf-btn pf-btn--primary">{{ 'Enregistrer'|trans }}</button> <a class="pf-link" href="{{ path('app_account_notifications') }}">{{ 'Voir mes notifications'|trans }}</a></div>
+                        <div><button class="pf-btn pf-btn--primary">{{ 'Enregistrer'|trans }}</button> <a class="pf-link" href="{{ path('app_pro_notifications') }}">{{ 'Voir mes notifications'|trans }}</a></div>
                     </form>
                 </section>
             {% endif %}

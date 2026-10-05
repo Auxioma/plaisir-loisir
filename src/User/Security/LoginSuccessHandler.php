@@ -37,6 +37,9 @@ final class LoginSuccessHandler extends DefaultAuthenticationSuccessHandler
 
         if ($targetUrl === $this->options['default_target_path'] && \in_array('ROLE_ADMIN', $token->getRoleNames(), true)) {
             $targetUrl = $this->urlGenerator->generate('admin');
+        } elseif ($targetUrl === $this->options['default_target_path'] && \in_array('ROLE_PROVIDER', $token->getRoleNames(), true)) {
+            // Professionnel : son espace pro plutôt que l'accueil public.
+            $targetUrl = $this->urlGenerator->generate('app_pro_dashboard');
         }
 
         return $this->httpUtils->createRedirectResponse($request, $targetUrl);

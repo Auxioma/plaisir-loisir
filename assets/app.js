@@ -18,6 +18,8 @@ import './styles/components.css';
 import './styles/auth.css';
 import './styles/provider-auth.css';   // parcours d'authentification professionnel
 import './styles/home.css';
+// Page d'accueil (maquette landing_page, 05/10).
+import './styles/landing.css';
 import './styles/activities.css';
 import './styles/destinations.css';
 import './styles/offers.css';
@@ -52,7 +54,6 @@ import './home_header.js';
 import './activities.js';
 
 // Barre de recherche de l'accueil connecté (panneaux déroulants, calendrier).
-import './home_search.js';
 
 // Comportements du parcours Destinations (dropdown localisation, filtres…).
 import './destinations.js';

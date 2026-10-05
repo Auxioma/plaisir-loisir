@@ -309,6 +309,27 @@ function initSubmit(form) {
     });
 }
 
+/* Assistant « Créer une activité » (05/10) : formules ajoutées / retirées. */
+function initPackages(form) {
+    const wrap = qs(form, '[data-aw-packages]');
+    if (!wrap) return;
+    const rows = qsa(wrap, '[data-aw-package]');
+    const add = qs(form, '[data-aw-package-add]');
+    const sync = () => { if (add) add.hidden = rows.every((r) => !r.hidden); };
+    add?.addEventListener('click', () => {
+        const next = rows.find((r) => r.hidden);
+        if (next) { next.hidden = false; qs(next, 'input')?.focus(); }
+        sync();
+    });
+    qsa(wrap, '[data-aw-package-remove]').forEach((btn) => btn.addEventListener('click', () => {
+        const row = btn.closest('[data-aw-package]');
+        qsa(row, 'input').forEach((i) => { i.value = ''; });
+        row.hidden = true;
+        sync();
+    }));
+    sync();
+}
+
 const start = () => {
     const form = document.querySelector('[data-ew-form]');
     if (!form || form.dataset.ewReady) return;
@@ -322,6 +343,7 @@ const start = () => {
     initImages(form);
     initInvites(form);
     initPublish(form);
+    initPackages(form);
     initSubmit(form);
 };
 

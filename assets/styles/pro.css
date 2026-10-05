@@ -602,3 +602,75 @@ a.pp-minitile:hover { border-color: var(--pp-blue); }
     .pp-msg { max-width: 92%; }
     .pp-photos { flex-direction: column; }
 }
+
+/* ===== Assistant « Créer une activité » (.aw-*, 05/10) =====
+   Composants .ew-* de l'assistant des événements, dans la coquille pro. */
+.aw-head { flex-wrap: wrap; gap: 14px; }
+.aw-head__actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.aw-steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 0 0 16px; }
+.aw-step { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #fff; border: 1px solid #e6e8ef; border-radius: 10px; color: #0b1437; text-decoration: none; }
+.aw-step__dot { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #eef0f6; color: #4b4f66; font-size: 13px; font-weight: 800; }
+.aw-step__text { display: flex; flex-direction: column; min-width: 0; }
+.aw-step__text strong { font-size: 12.5px; line-height: 16px; }
+.aw-step__text small { overflow: hidden; color: #6b6f85; font-size: 11px; white-space: nowrap; text-overflow: ellipsis; }
+.aw-step.is-active { border-color: #2563eb; box-shadow: 0 0 0 1px #2563eb; }
+.aw-step.is-active .aw-step__dot { background: #2563eb; color: #fff; }
+.aw-step.is-done .aw-step__dot { background: #16a34a; color: #fff; }
+.aw-step.is-done:hover { border-color: #16a34a; }
+.aw-main { padding: 24px 26px; }
+.aw-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.aw-tag { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid #d5d8e3; border-radius: 999px; font-size: 13px; cursor: pointer; }
+.aw-tag:has(input:checked) { border-color: #2563eb; background: #eff4ff; color: #1d4ed8; }
+.aw-tag input { accent-color: #2563eb; }
+.aw-choices--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.aw-gallery { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.aw-packages { display: flex; flex-direction: column; gap: 10px; }
+.aw-package { position: relative; display: grid; grid-template-columns: minmax(0, 2fr) 120px 150px; gap: 8px; padding: 12px; background: #f8f9fc; border: 1px solid #e6e8ef; border-radius: 10px; }
+.aw-package input, .aw-package select { height: 40px; padding: 0 12px; border: 1px solid #d5d8e3; border-radius: 8px; background: #fff; font-size: 13.5px; }
+.aw-package__desc { grid-column: 1 / -1; }
+.aw-price { position: relative; display: flex; }
+.aw-price input { width: 100%; padding-right: 28px; }
+.aw-price b { position: absolute; right: 12px; top: 50%; color: #6b6f85; transform: translateY(-50%); }
+.aw-package__remove { position: absolute; top: -8px; right: -8px; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; background: #fff; border: 1px solid #e6e8ef; border-radius: 50%; color: #dc2626; }
+.aw-add { margin-top: 10px; }
+.aw-recap { margin-bottom: 14px; padding: 14px 16px; border: 1px solid #e6e8ef; border-radius: 10px; }
+.aw-recap header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.aw-recap h3 { margin: 0; font-size: 15px; font-weight: 800; }
+.aw-recap dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 18px; margin: 0; }
+.aw-recap dt { color: #6b6f85; font-size: 11.5px; font-weight: 600; }
+.aw-recap dd { margin: 0; font-size: 13px; }
+.aw-recap__photos { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.aw-recap__photos img { width: 84px; height: 60px; border-radius: 6px; object-fit: cover; }
+.aw-recap__photos img:first-child { outline: 2px solid #2563eb; }
+.aw-recap__text { margin: 0; font-size: 13px; color: #374151; }
+.aw-recap__packages { margin: 0 0 6px; padding-left: 18px; font-size: 13px; }
+.aw-recap__packages small { color: #6b6f85; }
+.aw-accept { display: flex; gap: 10px; align-items: flex-start; margin-top: 6px; font-size: 13.5px; cursor: pointer; }
+.aw-accept input { margin-top: 3px; accent-color: #2563eb; }
+.aw-accept.has-error span { color: #dc2626; }
+.aw-accept a { color: #2563eb; }
+.aw-preview { display: flex; flex-direction: column; gap: 12px; }
+.aw-card { overflow: hidden; border: 1px solid #e6e8ef; border-radius: 10px; }
+.aw-card__media { position: relative; display: flex; align-items: center; justify-content: center; height: 150px; background: #eef0f6; color: #9aa0b8; }
+.aw-card__media img { width: 100%; height: 100%; object-fit: cover; }
+.aw-card__badge { position: absolute; top: 8px; left: 8px; padding: 2px 8px; background: #2563eb; border-radius: 4px; color: #fff; font-size: 11px; font-weight: 700; }
+.aw-card__body { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; }
+.aw-card__body small { color: #6b6f85; font-size: 11.5px; }
+.aw-card__body strong { font-size: 14px; }
+.aw-card__body em { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: #374151; font-size: 12px; font-style: normal; }
+.aw-card__row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px; }
+.aw-card__row b { color: #2563eb; font-size: 15px; }
+.aw-check { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 12.5px; color: #9aa0b8; }
+.aw-check li.is-ok { color: #16a34a; }
+.aw-advice ul { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; font-size: 12.5px; }
+.aw-advice .pl-icon { color: #2563eb; }
+@media (max-width: 1399.98px) { .aw-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 767.98px) {
+    .aw-steps, .aw-choices--2, .aw-recap dl { grid-template-columns: 1fr; }
+    .aw-package { grid-template-columns: 1fr 1fr; }
+    .aw-package > input:first-child { grid-column: 1 / -1; }
+    .aw-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.aw-steps--5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.ew-row--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 767.98px) { .aw-steps--5, .ew-row--3 { grid-template-columns: 1fr; } }

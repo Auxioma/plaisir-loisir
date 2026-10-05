@@ -1,0 +1,29 @@
+{# Étape 5 — Vérification et publication. #}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+{% import '_partials/_icons.html.twig' as icon %}
+<h2 class="ew-main__title">5. {{ 'Vérifier et publier'|trans }}</h2>
+<p class="ew-main__lead">{{ 'Relisez votre activité : elle sera visible dès la publication.'|trans }}</p>
+
+{% set rows = [
+    [1, 'Titre', draft.title ?? ''],
+    [1, 'Catégorie', category ? category.name : ''],
+    [2, 'Date', ((draft.date ?? '') matches '/^\\d{4}-\\d{2}-\\d{2}$/' ? date(draft.date)|pf_date('EEEE d MMMM y') : '') ~ ((draft.start_time ?? '') ? ' · ' ~ draft.start_time ~ ((draft.end_time ?? '') ? ' – ' ~ draft.end_time : '') : '')],
+    [2, 'Lieu', draft.address ?? ''],
+    [2, 'Adresse communiquée', (draft.show_exact ?? '') == '1' ? 'Aux participants acceptés' : 'Non (vous la donnerez autrement)'],
+    [3, 'Photo', draft.cover ? 'Ajoutée' : 'Aucune'],
+    [4, 'Participants', ((draft.min ?? '') ? 'min. ' ~ draft.min ~ ' ' : '') ~ ((draft.max ?? '') ? 'max. ' ~ draft.max : 'sans limite')],
+    [4, 'Inscription', (draft.mode ?? '') == 'automatic' ? 'Automatique' : 'Sur validation'],
+    [4, 'Visibilité', {public: 'Publique', members_only: 'Membres', private: 'Privée'}[draft.visibility] ?? ''],
+] %}
+<section class="aw-recap">
+    <dl>
+        {% for r in rows %}<div><dt>{{ r[1]|trans }} <a class="pf-link" href="{{ path('app_account_private_activity_wizard', {etape: r[0]}) }}">{{ icon.edit_square(12) }}</a></dt><dd>{{ r[2] ? r[2]|trans : '—' }}</dd></div>{% endfor %}
+    </dl>
+</section>
+<section class="aw-recap"><p class="aw-recap__text">{{ draft.description ?? '' }}</p></section>
+
+<label class="aw-accept{{ errors.accept_terms is defined ? ' has-error' }}">
+    <input type="checkbox" name="accept_terms" value="1" required{{ (draft.accept_terms ?? '') == '1' ? ' checked' }}>
+    <span>{{ 'J’accepte les'|trans }} <a href="{{ path('app_corporate_terms') }}" target="_blank">{{ 'conditions générales d’utilisation'|trans }}</a> {{ 'et je m’engage à organiser cette activité dans le respect des participants.'|trans }}</span>
+</label>
+{{ ui.err(errors, 'accept_terms') }}
