@@ -693,3 +693,17 @@ a.pp-minitile:hover { border-color: var(--pp-blue); }
 .cp-suggest__body label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; }
 .cp-suggest__body input, .cp-suggest__body textarea { padding: 8px 12px; border: 1px solid #d5d8e3; border-radius: 8px; font-size: 13.5px; font-weight: 400; }
 .cp-suggest__body .pf-btn { align-self: flex-start; }
+
+/* Les composants .ew-* (cartes de choix, champs, dépôt d'image…) lisent leurs
+   couleurs dans des variables définies sur .ew (page des événements). Sans
+   elles, dans les assistants d'activités, une carte sélectionnée ne changeait
+   pas d'aspect : les choix semblaient non cliquables (05/10). */
+.aw {
+    --ew-violet: #2563eb;
+    --ew-violet-soft: #eef4ff;
+    --ew-line: #e6e8ef;
+    --ew-ink: #0b1437;
+    --ew-muted: #6b6f85;
+    --ew-green: #16a34a;
+    --ew-red: #e5324b;
+}
