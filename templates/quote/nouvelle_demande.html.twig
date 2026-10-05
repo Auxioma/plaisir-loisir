@@ -1,48 +1,80 @@
 {#
-    Formulaire de dépôt d'une demande de devis (§10 du CDC). Simple formulaire
-    HTML + CSRF, comme CorporateController::contact()/partnerForm() — pas de
-    FormType Symfony : ni maquette ni data_class ne le justifient ici.
+    « Nouvelle demande » de devis (§10 du CDC), refaite le 05/10 : catégorie
+    avec recherche, précisions utiles au chiffrage (ville, date, nombre de
+    personnes, budget), erreurs affichées sous chaque champ.
+    Données : ServiceRequestController::new().
 #}
 {% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+{% import 'event/wizard/_ui.html.twig' as ui %}
 
 {% block title %}{{ 'Nouvelle demande'|trans }}{% endblock %}
 
 {% block account %}
-    {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Mes demandes'|trans, href: path('app_account_requests') }, { label: 'Nouvelle demande'|trans }],
-        title: 'Poser une demande'|trans,
-        subtitle: 'Décrivez votre besoin : les professionnels du métier choisi pourront vous répondre par un devis.'|trans,
-    } %}
+    <header class="pf-head">
+        <div>
+            <a class="pf-link" href="{{ path('app_account_requests') }}">{{ icon.arrow_left(14) }} {{ 'Mes demandes'|trans }}</a>
+            <h1 class="pf-title">{{ 'Poser une demande'|trans }}</h1>
+            <p class="pf-sub">{{ 'Plus votre demande est précise, plus les devis seront justes.'|trans }}</p>
+        </div>
+    </header>
 
-    <form method="post" class="card shadow-sm" style="max-width: 640px;">
-        <div class="card-body p-4">
-            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+    {% if errors is not empty %}<div class="ew-alert" role="alert">{{ icon.info(18) }} {{ (errors._token ?? 'Certaines informations sont manquantes ou incorrectes : corrigez les champs signalés pour continuer.')|trans }}</div>{% endif %}
 
-            <div class="mb-3">
-                <label class="form-label" for="metier">{{ 'Métier recherché'|trans }}</label>
-                <select class="form-select" id="metier" name="metier" required>
-                    <option value="">{{ 'Sélectionnez un métier'|trans }}</option>
-                    {% for category in categories %}
-                        <option value="{{ category.slug }}" {{ preselected == category.slug ? 'selected' }}>
-                            {{ category.name }}
-                        </option>
-                    {% endfor %}
-                </select>
+    <form method="post" class="pf-card ew-form aw rq-form" novalidate data-ew-form>
+        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+
+        {% include '_partials/_category_picker.html.twig' with { categories: categories, selected: values.category, suggestion: null, context: 'private', allow_suggest: false } %}
+
+        <div class="ew-field{{ errors.title is defined ? ' has-error' }}">
+            <label for="rq-title">{{ 'Titre de votre demande'|trans }} <em>*</em></label>
+            <input id="rq-title" name="title" value="{{ values.title }}" maxlength="180" required minlength="5" placeholder="{{ 'Ex : Séminaire d’équipe de 2 jours avec activités'|trans }}">
+            {{ ui.err(errors, 'title') }}
+        </div>
+
+        <div class="ew-field{{ errors.description is defined ? ' has-error' }}">
+            <label for="rq-description">{{ 'Décrivez votre besoin'|trans }} <em>*</em></label>
+            <span class="ew-textarea"><textarea id="rq-description" name="description" rows="6" required minlength="20" maxlength="5000" data-ew-count placeholder="{{ 'Programme souhaité, attentes, contraintes (accessibilité, horaires, matériel)…'|trans }}">{{ values.description }}</textarea><small class="ew-count"><b>{{ values.description|length }}</b>/5000</small></span>
+            {{ ui.err(errors, 'description') }}
+        </div>
+
+        <h3 class="ew-main__label">{{ 'Précisions'|trans }} <small class="pf-muted">({{ 'facultatif, mais très utile pour chiffrer'|trans }})</small></h3>
+        <div class="ew-row">
+            <div class="ew-field{{ errors.city is defined ? ' has-error' }}">
+                <label for="rq-city">{{ 'Ville ou lieu'|trans }}</label>
+                <input id="rq-city" name="city" value="{{ values.city }}" maxlength="120" placeholder="{{ 'Ex : Rouen'|trans }}">
             </div>
-
-            <div class="mb-3">
-                <label class="form-label" for="titre">{{ 'Titre de votre demande'|trans }}</label>
-                <input class="form-control" type="text" id="titre" name="titre" maxlength="180" required
-                       placeholder="{{ 'Ex. Photographe pour mariage le 12 juin'|trans }}">
+            <div class="ew-field{{ errors.date is defined ? ' has-error' }}">
+                <label for="rq-date">{{ 'Date souhaitée'|trans }}</label>
+                <input id="rq-date" type="date" name="date" value="{{ values.date }}" min="{{ 'today'|date('Y-m-d') }}">
+                {{ ui.err(errors, 'date') }}
             </div>
-
-            <div class="mb-4">
-                <label class="form-label" for="description">{{ 'Décrivez votre besoin'|trans }}</label>
-                <textarea class="form-control" id="description" name="description" rows="5" required
-                          placeholder="{{ 'Date, lieu, nombre de personnes, budget envisagé…'|trans }}"></textarea>
+            <div class="ew-field{{ errors.participants is defined ? ' has-error' }}">
+                <label for="rq-people">{{ 'Nombre de personnes'|trans }}</label>
+                <input id="rq-people" type="number" name="participants" value="{{ values.participants }}" min="1" max="1000" placeholder="12">
+                {{ ui.err(errors, 'participants') }}
             </div>
+            <div class="ew-field{{ errors.budget is defined ? ' has-error' }}">
+                <label for="rq-budget">{{ 'Budget indicatif (€)'|trans }}</label>
+                <input id="rq-budget" name="budget" value="{{ values.budget }}" inputmode="decimal" placeholder="500">
+                {{ ui.err(errors, 'budget') }}
+            </div>
+        </div>
 
-            <button type="submit" class="btn pl-btn pl-btn--cta">{{ 'Publier ma demande'|trans }}</button>
+        <div class="rq-form__actions">
+            <a class="pf-btn" href="{{ path('app_account_requests') }}">{{ 'Annuler'|trans }}</a>
+            <button type="submit" name="action" value="next" class="pf-btn pf-btn--primary">{{ icon.send(16) }} {{ 'Publier ma demande'|trans }}</button>
         </div>
     </form>
+{% endblock %}
+
+{% block account_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Bon à savoir'|trans }}</h2>
+        <ul class="rq-tips">
+            <li>{{ icon.check(14) }} {{ 'Votre demande est envoyée aux professionnels vérifiés de la catégorie choisie.'|trans }}</li>
+            <li>{{ icon.check(14) }} {{ 'Vos coordonnées ne sont pas affichées : vous échangez par la messagerie.'|trans }}</li>
+            <li>{{ icon.check(14) }} {{ 'Vous restez libre : accepter un devis ne vous engage qu’avec ce professionnel.'|trans }}</li>
+        </ul>
+    </section>
 {% endblock %}

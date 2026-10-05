@@ -33,13 +33,20 @@ final class QuoteService
      * « nouvelle demande pertinente »). Même filtre que ProviderRequestController
      * (métier uniquement, pas de rayon — cf. ProviderSearchController).
      */
-    public function createRequest(User $client, Category $category, string $title, string $description): ServiceRequest
+    /**
+     * @param array{city?: ?string, date?: ?\DateTimeImmutable, participants?: ?int, budget?: ?string} $details
+     */
+    public function createRequest(User $client, Category $category, string $title, string $description, array $details = []): ServiceRequest
     {
         $request = (new ServiceRequest())
             ->setClient($client)
             ->setCategory($category)
             ->setTitle($title)
-            ->setDescription($description);
+            ->setDescription($description)
+            ->setCity($details['city'] ?? null)
+            ->setDesiredDate($details['date'] ?? null)
+            ->setParticipants($details['participants'] ?? null)
+            ->setBudget($details['budget'] ?? null);
 
         $this->entityManager->persist($request);
         $this->entityManager->flush();
@@ -131,6 +138,27 @@ final class QuoteService
     public function decline(Quote $quote): void
     {
         $quote->decline();
+        $this->entityManager->flush();
+    }
+
+    /**
+     * Le client clôture sa demande sans retenir de devis (05/10) : les devis
+     * en attente sont refusés et leurs auteurs prévenus.
+     */
+    public function close(ServiceRequest $request): void
+    {
+        if (!$request->isOpen()) {
+            return;
+        }
+        $request->close();
+        foreach ($request->getQuotes() as $quote) {
+            if (\App\Quote\Enum\QuoteStatus::Pending === $quote->getStatus()) {
+                $quote->decline();
+                if (null !== ($owner = $quote->getProvider()?->getUser())) {
+                    $this->notifications->notify($owner, NotificationCategory::Quote, 'Demande clôturée', \sprintf('Le client a clôturé la demande « %s » sans retenir de devis.', $request->getTitle()));
+                }
+            }
+        }
         $this->entityManager->flush();
     }
 }

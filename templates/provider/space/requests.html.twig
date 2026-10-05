@@ -1,0 +1,66 @@
+{#
+    « Demandes reçues » dans l'espace pro (05/10) : demandes de devis des
+    clients dans les catégories du professionnel, à traiter / devis envoyés.
+    Données : ProviderRequestController::index().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Demandes reçues'|trans }}{% endblock %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Demandes reçues'|trans }}</h1>
+            <p class="pf-sub">{{ 'Les besoins des clients dans vos catégories : répondez par un devis pour décrocher la prestation.'|trans }}</p>
+        </div>
+    </header>
+
+    {% if not verified %}<p class="ew-tip">{{ icon.info(16) }} <span>{{ 'Votre compte est en cours de vérification : vous pourrez envoyer des devis dès qu’il sera validé.'|trans }}</span></p>{% endif %}
+
+    <div class="rq-stats rq-stats--4">
+        <div class="pf-card rq-stat"><span class="rq-stat__ico is-orange">{{ icon.bell(20) }}</span><span><b>{{ counts.todo }}</b><small>{{ 'à traiter'|trans }}</small></span></div>
+        <div class="pf-card rq-stat"><span class="rq-stat__ico">{{ icon.receipt(20) }}</span><span><b>{{ counts.open }}</b><small>{{ 'demandes ouvertes'|trans }}</small></span></div>
+        <div class="pf-card rq-stat"><span class="rq-stat__ico">{{ icon.send(20) }}</span><span><b>{{ counts.sent }}</b><small>{{ 'devis envoyés'|trans }}</small></span></div>
+        <div class="pf-card rq-stat"><span class="rq-stat__ico is-green">{{ icon.check_badge(20) }}</span><span><b>{{ counts.accepted }}</b><small>{{ 'devis acceptés'|trans }}</small></span></div>
+    </div>
+
+    <nav class="pf-tabs pf-tabs--line">
+        {% for key, label in {'a-traiter': 'À traiter', envoyes: 'Devis envoyés', toutes: 'Toutes les demandes ouvertes'} %}
+            <a class="pf-tab{{ tab == key ? ' is-active' }}" href="{{ path('app_pro_requests', key == 'a-traiter' ? {} : {onglet: key}) }}">{{ label|trans }}</a>
+        {% endfor %}
+    </nav>
+
+    {% if requests is empty %}
+        <div class="pf-card pf-empty rq-empty">
+            {{ icon.receipt(36) }}
+            <strong>{{ tab == 'envoyes' ? 'Vous n’avez encore envoyé aucun devis.'|trans : 'Aucune demande à traiter pour le moment.'|trans }}</strong>
+            <span>{{ 'Les demandes des clients dans vos catégories apparaissent ici ; vous êtes aussi prévenu par notification.'|trans }}</span>
+        </div>
+    {% else %}
+        <div class="rq-list">
+            {% for demande in requests %}
+                {% set mine = my_quotes[demande.id ~ ''] ?? null %}
+                <a class="pf-card rq-item" href="{{ path('app_pro_requests_show', {id: demande.id}) }}">
+                    <span class="rq-item__main">
+                        <strong>{{ demande.title }}</strong>
+                        <small>
+                            {% if demande.category %}{{ demande.category.name|trans }}{% endif %}
+                            {% if demande.city %} · {{ icon.map_pin(12) }} {{ demande.city }}{% endif %}
+                            {% if demande.desiredDate %} · {{ icon.calendar(12) }} {{ demande.desiredDate|pf_date('d MMM y') }}{% endif %}
+                            {% if demande.participants %} · {{ icon.users(12) }} {{ demande.participants }}{% endif %}
+                            {% if demande.budget %} · {{ 'budget'|trans }} {{ (demande.budget + 0)|number_format(0, ',', ' ') }} €{% endif %}
+                        </small>
+                    </span>
+                    <span class="rq-item__quotes"><b>{{ demande.quotes|length }}</b> {{ 'devis'|trans }}<small class="pf-muted">{{ demande.createdAt|date('d/m/Y') }}</small></span>
+                    <span class="rq-item__status">
+                        {% if mine %}<span class="pf-pill pf-pill--{{ mine.status.value == 'accepted' ? 'green' : (mine.status.value == 'declined' ? 'grey' : 'blue') }}">{{ mine.status.value == 'accepted' ? 'Accepté'|trans : (mine.status.value == 'declined' ? 'Refusé'|trans : 'Devis envoyé'|trans) }}</span>
+                        {% elseif not demande.open %}<span class="pf-pill pf-pill--grey">{{ 'Clôturée'|trans }}</span>
+                        {% else %}<span class="pf-pill pf-pill--orange">{{ 'À traiter'|trans }}</span>{% endif %}
+                        {{ icon.chevron_right(16) }}
+                    </span>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

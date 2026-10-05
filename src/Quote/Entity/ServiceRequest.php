@@ -41,6 +41,19 @@ class ServiceRequest
     #[ORM\Column(enumType: ServiceRequestStatus::class)]
     private ServiceRequestStatus $status = ServiceRequestStatus::Open;
 
+    /** Précisions de la demande (05/10) : ce qu'un professionnel doit savoir pour chiffrer. */
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $city = null;
+
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $desiredDate = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $participants = null;
+
+    #[ORM\Column(type: 'decimal', precision: 12, scale: 2, nullable: true)]
+    private ?string $budget = null;
+
     /**
      * @var Collection<int, Quote>
      */
@@ -138,6 +151,54 @@ class ServiceRequest
         if ($this->quotes->removeElement($quote) && $quote->getServiceRequest() === $this) {
             $quote->setServiceRequest(null);
         }
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(?string $city): static
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+
+    public function getDesiredDate(): ?\DateTimeImmutable
+    {
+        return $this->desiredDate;
+    }
+
+    public function setDesiredDate(?\DateTimeImmutable $desiredDate): static
+    {
+        $this->desiredDate = $desiredDate;
+
+        return $this;
+    }
+
+    public function getParticipants(): ?int
+    {
+        return $this->participants;
+    }
+
+    public function setParticipants(?int $participants): static
+    {
+        $this->participants = $participants;
+
+        return $this;
+    }
+
+    public function getBudget(): ?string
+    {
+        return $this->budget;
+    }
+
+    public function setBudget(?string $budget): static
+    {
+        $this->budget = $budget;
 
         return $this;
     }

@@ -1,0 +1,64 @@
+{#
+    Détail d'une demande de devis côté professionnel (05/10) : besoin du
+    client, devis envoyé ou formulaire de devis (erreurs sous les champs).
+    Données : ProviderRequestController::show().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+{% import 'event/wizard/_ui.html.twig' as ui %}
+
+{% block title %}{{ demande.title }}{% endblock %}
+
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <a class="pp-back" href="{{ path('app_pro_requests') }}">{{ icon.arrow_left(16) }} {{ 'Demandes reçues'|trans }}</a>
+            <h1 class="pf-title">{{ demande.title }}</h1>
+            <p class="pf-sub">{{ 'Demande de'|trans }} {{ demande.client ? demande.client.firstName : '' }} · {{ 'publiée le'|trans }} {{ demande.createdAt|date('d/m/Y') }} · {{ competitors }} {{ competitors > 1 ? 'autres devis'|trans : 'autre devis'|trans }}</p>
+        </div>
+    </header>
+
+    <section class="pf-card rq-summary">
+        <ul class="rq-facts">
+            {% if demande.category %}<li>{{ icon.grid(16) }} <span><small>{{ 'Catégorie'|trans }}</small>{{ demande.category.name|trans }}</span></li>{% endif %}
+            {% if demande.city %}<li>{{ icon.map_pin(16) }} <span><small>{{ 'Lieu'|trans }}</small>{{ demande.city }}</span></li>{% endif %}
+            {% if demande.desiredDate %}<li>{{ icon.calendar(16) }} <span><small>{{ 'Date souhaitée'|trans }}</small>{{ demande.desiredDate|pf_date('EEEE d MMMM y')|capitalize }}</span></li>{% endif %}
+            {% if demande.participants %}<li>{{ icon.users(16) }} <span><small>{{ 'Personnes'|trans }}</small>{{ demande.participants }}</span></li>{% endif %}
+            {% if demande.budget %}<li>{{ icon.euro(16) }} <span><small>{{ 'Budget indicatif'|trans }}</small>{{ (demande.budget + 0)|number_format(0, ',', ' ') }} €</span></li>{% endif %}
+        </ul>
+        <p class="rq-summary__text">{{ demande.description|nl2br }}</p>
+    </section>
+
+    {% if devis_existant %}
+        <section class="pf-card rq-summary">
+            <h2 class="pf-card__title">{{ 'Votre devis'|trans }}</h2>
+            <p class="rq-quote__amount">{{ (devis_existant.amount + 0)|number_format(2, ',', ' ') }} <small>{{ devis_existant.currency }}</small></p>
+            {% if devis_existant.message %}<p class="rq-quote__msg">{{ devis_existant.message|nl2br }}</p>{% endif %}
+            <p><span class="pf-pill pf-pill--{{ devis_existant.status.value == 'accepted' ? 'green' : (devis_existant.status.value == 'declined' ? 'grey' : 'blue') }}">
+                {{ devis_existant.status.value == 'accepted' ? 'Accepté par le client'|trans : (devis_existant.status.value == 'declined' ? 'Non retenu'|trans : 'En attente de la réponse du client'|trans) }}</span></p>
+            {% if demande.client %}
+                <a class="pf-btn" href="{{ path('app_pro_messages', {client: demande.client.id}) }}">{{ icon.chat_bubble(14) }} {{ 'Écrire au client'|trans }}</a>
+            {% endif %}
+        </section>
+    {% elseif not demande.open %}
+        <p class="ew-tip">{{ icon.info(16) }} <span>{{ 'Cette demande est clôturée : le client a retenu un devis ou l’a fermée.'|trans }}</span></p>
+    {% elseif not peut_repondre %}
+        <p class="ew-tip">{{ icon.info(16) }} <span>{{ 'Votre compte doit être vérifié pour envoyer un devis.'|trans }}</span></p>
+    {% else %}
+        <form method="post" class="pf-card ew-form aw rq-form rq-quote-form" novalidate>
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+            <h2 class="pf-card__title">{{ 'Envoyer un devis'|trans }}</h2>
+            <div class="ew-field{{ errors.montant is defined ? ' has-error' }}">
+                <label for="rq-amount">{{ 'Montant proposé (€ TTC)'|trans }} <em>*</em></label>
+                <input id="rq-amount" name="montant" value="{{ values.montant }}" inputmode="decimal" required placeholder="450">
+                {{ ui.err(errors, 'montant') }}
+            </div>
+            <div class="ew-field{{ errors.message is defined ? ' has-error' }}">
+                <label for="rq-message">{{ 'Message au client'|trans }} ({{ 'conseillé'|trans }})</label>
+                <span class="ew-textarea"><textarea id="rq-message" name="message" rows="5" maxlength="3000" data-ew-count placeholder="{{ 'Ce que comprend votre proposition, déroulé, conditions, disponibilités…'|trans }}">{{ values.message }}</textarea><small class="ew-count"><b>{{ values.message|length }}</b>/3000</small></span>
+                {{ ui.err(errors, 'message') }}
+            </div>
+            <div class="rq-form__actions"><button type="submit" class="pf-btn pf-btn--primary">{{ icon.send(16) }} {{ 'Envoyer mon devis'|trans }}</button></div>
+        </form>
+    {% endif %}
+{% endblock %}
