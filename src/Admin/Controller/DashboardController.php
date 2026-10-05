@@ -107,6 +107,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Classement');
         yield MenuItem::linkTo(DestinationCrudController::class, 'Destinations', 'fa fa-map-location-dot');
         yield MenuItem::linkTo(CategoryCrudController::class, 'Catégories', 'fa fa-tags');
+        yield MenuItem::linkTo(CategorySuggestionCrudController::class, 'Catégories proposées', 'fa fa-lightbulb');
 
         // Demande du CTO le 31/08 : Loïc doit avoir la main sur le site depuis
         // le back-office. Donner le rôle administrateur passait jusqu'ici par

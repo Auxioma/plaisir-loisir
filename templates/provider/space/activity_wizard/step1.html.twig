@@ -11,20 +11,9 @@
     {{ ui.err(errors, 'title') }}
 </div>
 
+{% include '_partials/_category_picker.html.twig' with { categories: categories, selected: draft.category ?? '', suggestion: draft.category_suggestion ?? null, context: 'pro' } %}
+
 <div class="ew-row">
-    <div class="ew-field{{ errors.category is defined ? ' has-error' }}">
-        <label for="aw-category">{{ 'Catégorie'|trans }} <em>*</em></label>
-        <span class="ew-select">
-            <select id="aw-category" name="category" required>
-                <option value="">{{ 'Choisir une catégorie'|trans }}</option>
-                {% for c in categories %}
-                    <option value="{{ c.slug }}"{{ (draft.category ?? '') == c.slug ? ' selected' }}>{{ c.name|trans }}</option>
-                    {% for child in c.children %}<option value="{{ child.slug }}"{{ (draft.category ?? '') == child.slug ? ' selected' }}>&nbsp;&nbsp;— {{ child.name|trans }}</option>{% endfor %}
-                {% endfor %}
-            </select>
-        </span>
-        {{ ui.err(errors, 'category') }}
-    </div>
     <div class="ew-field{{ errors.level is defined ? ' has-error' }}">
         <label for="aw-level">{{ 'Niveau'|trans }} <em>*</em></label>
         <span class="ew-select"><select id="aw-level" name="level" required>{% for k, l in levels %}<option value="{{ k }}"{{ draft.level == k ? ' selected' }}>{{ l|trans }}</option>{% endfor %}</select></span>

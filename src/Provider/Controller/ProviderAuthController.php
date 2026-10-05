@@ -245,7 +245,8 @@ final class ProviderAuthController extends AbstractController
 
         return $this->render('provider/auth/login.html.twig', [
             'last_username' => $authenticationUtils->getLastUsername(),
-            'error' => $authenticationUtils->getLastAuthenticationError(),
+            'error' => $error = $authenticationUtils->getLastAuthenticationError(),
+            'login_error' => \App\User\Security\LoginErrorPresenter::describe($error),
         ]);
     }
 
@@ -269,7 +270,7 @@ final class ProviderAuthController extends AbstractController
         name: 'app_pro_forgot_password',
         methods: ['GET', 'POST'],
     )]
-    public function forgotPassword(Request $request, PasswordResetService $passwordReset): Response
+    public function forgotPassword(Request $request, PasswordResetService $passwordReset, #[\Symfony\Component\DependencyInjection\Attribute\Autowire(service: 'limiter.password_reset_request')] \Symfony\Component\RateLimiter\RateLimiterFactory $passwordResetRequestLimiter): Response
     {
         $session = $request->getSession();
 
@@ -288,9 +289,23 @@ final class ProviderAuthController extends AbstractController
                 return $this->redirectToRoute('app_pro_forgot_password');
             }
 
-            // Volontairement muet sur l'existence du compte : même message et
-            // même écran suivant, que l'adresse soit connue ou non.
-            $passwordReset->requestCode($email);
+            // Demandes limitées par IP : la réponse dit si l'adresse a un compte.
+            if (!$passwordResetRequestLimiter->create((string) $request->getClientIp())->consume()->isAccepted()) {
+                $this->addFlash('error', 'Trop de demandes. Réessayez dans quelques minutes.');
+
+                return $this->redirectToRoute('app_pro_forgot_password');
+            }
+
+            // Adresse inconnue (05/10) : on le dit et on propose l'inscription,
+            // au lieu d'envoyer vers la saisie d'un code qui ne partira jamais.
+            if (!$passwordReset->requestCode($email)) {
+                // Saisie gardée pour pré-remplir le champ, sans ouvrir l'écran du code.
+                $session->remove(self::SESSION_RESET_EMAIL);
+                $session->set('password_reset_typed', $email);
+                $this->addFlash('error', 'Aucun compte n’est associé à cette adresse e-mail. Vérifiez l’adresse ou créez un compte.');
+
+                return $this->redirectToRoute('app_pro_forgot_password');
+            }
 
             $session->set(self::SESSION_RESET_EMAIL, $email);
             $session->remove(self::SESSION_RESET_CODE);
@@ -299,7 +314,7 @@ final class ProviderAuthController extends AbstractController
         }
 
         return $this->render('provider/auth/password_forgot.html.twig', [
-            'email' => (string) $session->get(self::SESSION_RESET_EMAIL, ''),
+            'email' => (string) $session->get(self::SESSION_RESET_EMAIL, $session->get('password_reset_typed', '')),
         ]);
     }
 

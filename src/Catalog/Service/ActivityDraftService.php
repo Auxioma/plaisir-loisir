@@ -81,6 +81,16 @@ final class ActivityDraftService
         $session->set(self::SESSION_KEY, []);
     }
 
+    /**
+     * Enregistre des valeurs dans le brouillon en session (catégorie proposée…).
+     *
+     * @param array<string, mixed> $values
+     */
+    public function patch(SessionInterface $session, array $values): void
+    {
+        $session->set(self::SESSION_KEY, $values + $this->current($session));
+    }
+
     public function clear(SessionInterface $session): void
     {
         $session->remove(self::SESSION_KEY);
@@ -111,6 +121,9 @@ final class ActivityDraftService
                 $draft[$field] = trim((string) $request->request->get($field));
             }
         }
+        if (2 === $step) {
+            self::cityFromAddress($draft);
+        }
         if (1 === $step) {
             $draft['languages'] = array_values(array_intersect(array_map('strval', $request->request->all('languages')), StaticActivityWizard::languages()));
         }
@@ -137,6 +150,10 @@ final class ActivityDraftService
         }
 
         $errors += $this->validateStep($step, $draft);
+        // Une catégorie existante est choisie : la proposition en attente n'a plus à s'afficher.
+        if (1 === $step && !isset($errors['category'])) {
+            $draft['category_suggestion'] = null;
+        }
 
         $done = array_values(array_diff((array) $draft['done'], [$step]));
         if ([] === $errors) {
@@ -193,8 +210,6 @@ final class ActivityDraftService
             case 2:
                 if ($len('address') < 5) {
                     $e['address'] = "Indiquez l'adresse de l'activité.";
-                } elseif ($len('city') < 2) {
-                    $e['address'] = 'Choisissez l’adresse dans la liste proposée pour la placer sur la carte.';
                 }
                 if ($len('place_label') > 120) {
                     $e['place_label'] = '120 caractères maximum.';
@@ -561,5 +576,18 @@ final class ActivityDraftService
         }
 
         return $slug;
+    }
+
+    /**
+     * Adresse tapée sans choisir de suggestion : la ville est le début du
+     * texte (« Dassa-Zoumè, Bénin »).
+     *
+     * @param array<string, mixed> $draft
+     */
+    private static function cityFromAddress(array &$draft): void
+    {
+        if ('' === trim((string) ($draft['city'] ?? '')) && '' !== trim((string) ($draft['address'] ?? ''))) {
+            $draft['city'] = mb_substr(trim(explode(',', (string) $draft['address'])[0]), 0, 120);
+        }
     }
 }

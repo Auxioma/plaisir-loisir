@@ -136,7 +136,7 @@ final class PrivateActivityController extends AbstractController
         $user = $this->currentUser();
         $all = $this->accountActivity->createdActivities($user);
 
-        $tabs = ['toutes' => null, 'en-ligne' => 'online', 'completes' => 'full', 'passees' => 'past', 'annulees' => 'cancelled'];
+        $tabs = ['toutes' => null, 'en-ligne' => 'online', 'brouillons' => 'draft', 'completes' => 'full', 'passees' => 'past', 'annulees' => 'cancelled'];
         $tab = (string) $request->query->get('onglet', 'toutes');
         if (!\array_key_exists($tab, $tabs)) {
             $tab = 'toutes';
@@ -205,6 +205,17 @@ final class PrivateActivityController extends AbstractController
         return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => 1]);
     }
 
+    /** Reprendre un brouillon dans l'assistant (05/10). */
+    #[Route(path: ['fr' => '/compte/activites-privees/{id}/reprendre', 'en' => '/en/account/private-activities/{id}/resume'], name: 'app_account_private_activity_resume', methods: ['GET'])]
+    public function resume(string $id, Request $request, PrivateActivityDraftService $drafts): Response
+    {
+        $activity = $this->findOrFail($id);
+        $this->denyAccessUnlessGranted(PrivateActivityVoter::MANAGE, $activity);
+        $drafts->load($request->getSession(), $activity);
+
+        return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => 1]);
+    }
+
     #[Route(path: ['fr' => '/compte/activites-privees/creer/{etape}', 'en' => '/en/account/private-activities/create/{etape}'], name: 'app_account_private_activity_wizard', requirements: ['etape' => '[1-5]'], methods: ['GET', 'POST'])]
     public function wizard(int $etape, Request $request, PrivateActivityDraftService $drafts): Response
     {
@@ -223,7 +234,17 @@ final class PrivateActivityController extends AbstractController
             if ('prev' === $action) {
                 return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => max(1, $etape - 1)]);
             }
-            if ([] === $errors) {
+            // Brouillon (05/10) : la saisie est gardée en base, même incomplète.
+            if ('draft' === $action) {
+                try {
+                    $activity = $drafts->saveDraft($session, $drafts->current($session), $this->currentUser());
+                    $this->addFlash('success', sprintf('Brouillon « %s » enregistré : reprenez-le quand vous voulez depuis « Mes activités créées ».', $activity->getTitle()));
+
+                    return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => $etape]);
+                } catch (\InvalidArgumentException $e) {
+                    $this->addFlash('error', $e->getMessage());
+                }
+            } elseif ([] === $errors) {
                 if (PrivateActivityDraftService::STEPS !== $etape) {
                     return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => $etape + 1]);
                 }
@@ -262,6 +283,7 @@ final class PrivateActivityController extends AbstractController
             'errors' => $errors,
             'categories' => $this->categories->findRoots(),
             'category' => $this->categories->findOneBy(['slug' => (string) ($draft['category'] ?? '')]),
+            'all_categories' => $this->categories->findRoots(),
         ], new Response(null, [] === $errors ? 200 : 422));
     }
 

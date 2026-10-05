@@ -19,6 +19,7 @@
             <p class="pf-sub">{{ 'Proposez une sortie entre membres, gratuite : randonnée, jeux, visite, pique-nique…'|trans }}</p>
         </div>
         <div class="aw-head__actions">
+            <button type="submit" name="action" value="draft" class="pf-btn" formnovalidate>{{ 'Enregistrer en brouillon'|trans }}</button>
             {% if step > 1 %}<button type="submit" name="action" value="prev" class="pf-btn" formnovalidate>{{ 'Précédent'|trans }}</button>{% endif %}
             <button type="submit" name="action" value="next" class="pf-btn pf-btn--primary">{{ step == 5 ? 'Publier l’activité'|trans : 'Suivant'|trans }}{% if step < 5 %} {{ icon.arrow_right(14) }}{% endif %}</button>
         </div>

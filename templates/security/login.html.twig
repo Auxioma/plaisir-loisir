@@ -23,7 +23,14 @@
             <form class="tm-login__form" method="post" action="{{ path('app_login') }}">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-                {% if error %}
+                {% if login_error and login_error.kind != 'other' %}
+                    {# Messages distincts (05/10) : adresse inconnue / mot de passe / trop d'essais. #}
+                    <div class="tm-login__alert" role="alert">
+                        {{ login_error.message|trans }}
+                        {% if login_error.kind == 'unknown' %}<a href="{{ path('app_register') }}">{{ 'Créer un compte'|trans }}</a>
+                        {% else %}<a href="{{ path('app_forgot_password_request') }}">{{ 'Mot de passe oublié ?'|trans }}</a>{% endif %}
+                    </div>
+                {% elseif error %}
                     <div class="tm-login__alert" role="alert">
                         {{ error.messageKey|trans(error.messageData, 'security') }}
                         {# Compte « en attente » (AccountChecker::checkPreAuth) : il doit

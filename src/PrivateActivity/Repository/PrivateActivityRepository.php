@@ -42,9 +42,9 @@ class PrivateActivityRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('a')
             ->andWhere('a.visibility = :visibility')
-            ->andWhere('a.status != :cancelled')
+            ->andWhere('a.status NOT IN (:hidden)')
             ->setParameter('visibility', PrivateActivityVisibility::Public)
-            ->setParameter('cancelled', PrivateActivityStatus::Cancelled)
+            ->setParameter('hidden', [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft])
             ->orderBy('a.scheduledAt', 'ASC');
 
         if (null !== $category) {
@@ -68,9 +68,9 @@ class PrivateActivityRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('a')
             ->andWhere('a.visibility IN (:visibilities)')
-            ->andWhere('a.status != :cancelled')
+            ->andWhere('a.status NOT IN (:hidden)')
             ->setParameter('visibilities', [PrivateActivityVisibility::Public, PrivateActivityVisibility::MembersOnly])
-            ->setParameter('cancelled', PrivateActivityStatus::Cancelled)
+            ->setParameter('hidden', [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft])
             ->orderBy('a.scheduledAt', 'ASC');
 
         if (null !== $category) {
@@ -102,10 +102,10 @@ class PrivateActivityRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('a')
             ->leftJoin('a.category', 'c')->addSelect('c')
             ->andWhere('a.visibility IN (:visibilities)')
-            ->andWhere('a.status != :cancelled')
+            ->andWhere('a.status NOT IN (:hidden)')
             ->andWhere('a.scheduledAt IS NULL OR a.scheduledAt >= :now')
             ->setParameter('visibilities', $members ? [PrivateActivityVisibility::Public, PrivateActivityVisibility::MembersOnly] : [PrivateActivityVisibility::Public])
-            ->setParameter('cancelled', PrivateActivityStatus::Cancelled)
+            ->setParameter('hidden', [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft])
             ->setParameter('now', new \DateTimeImmutable())
             ->orderBy('a.scheduledAt', 'ASC');
 

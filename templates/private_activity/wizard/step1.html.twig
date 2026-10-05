@@ -8,14 +8,7 @@
     <span class="ew-textarea"><input id="pa-title" name="title" value="{{ draft.title ?? '' }}" required minlength="5" maxlength="150" placeholder="{{ 'Ex : Randonnée au lac Blanc et pique-nique'|trans }}" data-ew-bind="title" data-ew-count><small class="ew-count"><b>{{ (draft.title ?? '')|length }}</b>/150</small></span>
     {{ ui.err(errors, 'title') }}
 </div>
-<div class="ew-field{{ errors.category is defined ? ' has-error' }}">
-    <label for="pa-category">{{ 'Catégorie'|trans }} <em>*</em></label>
-    <span class="ew-select"><select id="pa-category" name="category" required>
-        <option value="">{{ 'Choisir une catégorie'|trans }}</option>
-        {% for c in categories %}<option value="{{ c.slug }}"{{ (draft.category ?? '') == c.slug ? ' selected' }}>{{ c.name|trans }}</option>{% endfor %}
-    </select></span>
-    {{ ui.err(errors, 'category') }}
-</div>
+{% include '_partials/_category_picker.html.twig' with { categories: all_categories, selected: draft.category ?? '', suggestion: draft.category_suggestion ?? null, context: 'private' } %}
 <div class="ew-field{{ errors.description is defined ? ' has-error' }}">
     <label for="pa-description">{{ 'Description'|trans }} <em>*</em></label>
     <p class="ew-hint">{{ 'Le programme, le niveau attendu, l’ambiance…'|trans }}</p>

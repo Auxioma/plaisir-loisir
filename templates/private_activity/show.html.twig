@@ -32,7 +32,7 @@
                 <p class="evn-organizer">
                     <img src="{{ asset(activity.organizer and activity.organizer.avatarPath ? activity.organizer.avatarPath : 'images/account/avatar-default.svg') }}" alt="">
                     {{ 'Organisé par'|trans }} <strong>{{ activity.organizer.firstName }} {{ activity.organizer.lastName|first }}.</strong>
-                    <span class="pa-pill">{{ activity.category.name|trans }}</span>
+                    {% if activity.category %}<span class="pa-pill">{{ activity.category.name|trans }}</span>{% endif %}{% if activity.status.value == 'draft' %}<span class="pa-pill pa-pill--red">{{ 'Brouillon'|trans }}</span>{% endif %}
                     {% if activity.visibility.value == 'members_only' %}<span class="pa-pill">{{ 'Réservée aux membres'|trans }}</span>{% elseif activity.visibility.value == 'private' %}<span class="pa-pill">{{ 'Privée'|trans }}</span>{% endif %}
                 </p>
 

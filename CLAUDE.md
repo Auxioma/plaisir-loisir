@@ -168,6 +168,20 @@ volontairement PAS repris, décision du 05/10). Recherche à 3 modes : `type=gra
 `type=toutes` affiche sur `/activites` le nombre d'activités gratuites correspondantes. L'ancien
 accueil « connecté » (`home/connected.html.twig`) n'existe plus.
 
+**Connexion et comptes inconnus** (05/10, demande du client) : la connexion distingue « aucun
+compte avec cette adresse » de « mot de passe incorrect » (`expose_security_errors: all`,
+`LoginErrorPresenter`) ; « mot de passe oublié » et le renvoi du code de vérification refusent une
+adresse sans compte au lieu d'avancer. En contrepartie : `login_throttling` (5 essais / 15 min) et
+limiteur `password_reset_request` (`PASSWORD_RESET_REQUEST_LIMIT`) ; neutralisés en test (cache
+`array`, `config/packages/rate_limiter.yaml`).
+
+**Catégories proposées** (05/10) : dans les assistants, la catégorie se choisit dans une liste
+filtrable (`_partials/_category_picker.html.twig`) ; si elle manque, elle est proposée
+(`CategorySuggestion`, validée ou refusée dans EasyAdmin « Catégories proposées », auteur
+notifié). Une activité privée peut être enregistrée en **brouillon** (`PrivateActivityStatus::Draft`,
+catégorie facultative) et reprise depuis « Mes activités créées ». Adresses : Base Adresse
+Nationale puis Photon (OSM, monde entier) ; une adresse tapée à la main est acceptée.
+
 **Un professionnel reste dans son espace** : `ProviderAccountRedirectSubscriber` renvoie toute
 page `/compte/*` vers son équivalent `/pro/*` (notifications `/pro/notifications`, événements
 `/pro/evenements`…). Après connexion, un pro arrive sur `/pro/tableau-de-bord`.

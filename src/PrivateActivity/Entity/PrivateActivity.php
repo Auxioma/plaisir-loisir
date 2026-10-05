@@ -44,8 +44,13 @@ class PrivateActivity
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
+    /**
+     * Nullable depuis le 05/10 : un brouillon peut attendre la validation
+     * d'une catégorie proposée (CategorySuggestion). Une activité publiée en
+     * a toujours une (PrivateActivityDraftService::validateStep).
+     */
     #[ORM\ManyToOne(targetEntity: Category::class)]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?Category $category = null;
 
     #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]

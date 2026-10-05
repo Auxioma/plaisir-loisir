@@ -56,15 +56,16 @@ final class PasswordResetService
     /**
      * Étape 1 — génère un code, l'envoie par e-mail et enregistre son empreinte.
      *
-     * Ne renvoie rien et ne lève rien : que l'adresse existe ou non, l'appelant
-     * affiche le même écran suivant.
+     * Renvoie false si aucun compte ne porte cette adresse (05/10) : l'appelant
+     * le dit à l'utilisateur au lieu de l'envoyer attendre un code qui ne
+     * partira jamais.
      */
-    public function requestCode(string $email): void
+    public function requestCode(string $email): bool
     {
         $user = $this->findUser($email);
 
         if (null === $user) {
-            return;
+            return false;
         }
 
         $code = $this->generateCode();
@@ -79,6 +80,8 @@ final class PasswordResetService
         $this->entityManager->flush();
 
         $this->sendCode($user, $code);
+
+        return true;
     }
 
     /**

@@ -7,12 +7,16 @@ namespace App\PrivateActivity\Service;
 use App\Catalog\Repository\CategoryRepository;
 use App\PrivateActivity\Entity\PrivateActivity;
 use App\PrivateActivity\Enum\ParticipationMode;
+use App\PrivateActivity\Enum\PrivateActivityStatus;
 use App\PrivateActivity\Enum\PrivateActivityVisibility;
+use App\PrivateActivity\Repository\PrivateActivityRepository;
 use App\Shared\Service\PublicImageStorage;
 use App\User\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * Brouillon de l'assistant « Organiser une activité privée » (05/10).
@@ -41,7 +45,8 @@ final class PrivateActivityDraftService
     public function __construct(
         private readonly CategoryRepository $categories,
         private readonly PublicImageStorage $images,
-        private readonly PrivateActivityService $activities,
+        private readonly PrivateActivityRepository $repository,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -82,6 +87,9 @@ final class PrivateActivityDraftService
             }
         }
         if (2 === $step) {
+            self::cityFromAddress($draft);
+        }
+        if (2 === $step) {
             $draft['show_exact'] = $request->request->getBoolean('show_exact') ? '1' : '';
         }
         if (3 === $step) {
@@ -101,6 +109,10 @@ final class PrivateActivityDraftService
         }
 
         $errors += $this->validateStep($step, $draft);
+        // Une catégorie existante est choisie : la proposition en attente n'a plus à s'afficher.
+        if (1 === $step && !isset($errors['category'])) {
+            $draft['category_suggestion'] = null;
+        }
         $done = array_values(array_diff((array) $draft['done'], [$step]));
         if ([] === $errors) {
             $done[] = $step;
@@ -155,8 +167,6 @@ final class PrivateActivityDraftService
                 }
                 if ($len('address') < 5) {
                     $e['address'] = 'Indiquez le lieu de l’activité.';
-                } elseif ($len('city') < 2) {
-                    $e['address'] = 'Choisissez l’adresse dans la liste proposée.';
                 }
                 if ($len('meeting_point') > 500) {
                     $e['meeting_point'] = '500 caractères maximum.';
@@ -215,7 +225,12 @@ final class PrivateActivityDraftService
         return [null, []];
     }
 
-    /** @param array<string, mixed> $d */
+    /**
+     * Publie l'activité : met à jour le brouillon enregistré s'il existe
+     * (sinon la crée), au statut « ouverte ».
+     *
+     * @param array<string, mixed> $d
+     */
     public function publish(array $d, User $organizer): PrivateActivity
     {
         $category = $this->categories->findOneBy(['slug' => (string) $d['category']]);
@@ -223,32 +238,112 @@ final class PrivateActivityDraftService
             throw new \InvalidArgumentException('Choisissez une catégorie.');
         }
 
-        $activity = $this->activities->create(
-            organizer: $organizer,
-            title: mb_substr((string) $d['title'], 0, 150),
-            category: $category,
-            description: (string) $d['description'],
-            scheduledAt: $this->start($d),
-            city: '' !== (string) ($d['city'] ?? '') ? mb_substr((string) $d['city'], 0, 120) : null,
-            location: mb_substr((string) $d['address'], 0, 255),
-            showExactAddress: '1' === ($d['show_exact'] ?? ''),
-            visibility: PrivateActivityVisibility::from((string) $d['visibility']),
-            participationMode: ParticipationMode::from((string) $d['mode']),
-            minParticipants: ctype_digit((string) ($d['min'] ?? '')) ? (int) $d['min'] : null,
-            maxParticipants: ctype_digit((string) ($d['max'] ?? '')) ? (int) $d['max'] : null,
-        );
-
-        $activity
-            ->setEndsAt('' !== (string) ($d['end_time'] ?? '') ? $this->end($d) : null)
-            ->setPostalCode('' !== (string) ($d['postal_code'] ?? '') ? mb_substr((string) $d['postal_code'], 0, 10) : null)
-            ->setLatitude(is_numeric($d['lat'] ?? null) ? number_format((float) $d['lat'], 7, '.', '') : null)
-            ->setLongitude(is_numeric($d['lng'] ?? null) ? number_format((float) $d['lng'], 7, '.', '') : null)
-            ->setMeetingPoint('' !== (string) ($d['meeting_point'] ?? '') ? mb_substr((string) $d['meeting_point'], 0, 500) : null)
-            ->setToBring('' !== (string) ($d['to_bring'] ?? '') ? (string) $d['to_bring'] : null)
-            ->setCoverImage('' !== (string) ($d['cover'] ?? '') ? (string) $d['cover'] : null);
-        $this->activities->save();
+        $activity = $this->existing($d, $organizer) ?? (new PrivateActivity())->setOrganizer($organizer);
+        $this->fill($activity, $d);
+        $activity->setStatus(PrivateActivityStatus::Open);
+        $this->entityManager->persist($activity);
+        $this->entityManager->flush();
 
         return $activity;
+    }
+
+    /**
+     * Enregistre la saisie en brouillon (05/10), même incomplète : un titre
+     * suffit. La catégorie peut manquer (proposition en attente de validation).
+     *
+     * @param array<string, mixed> $d
+     */
+    public function saveDraft(SessionInterface $session, array $d, User $organizer): PrivateActivity
+    {
+        if (mb_strlen(trim((string) ($d['title'] ?? ''))) < 3) {
+            throw new \InvalidArgumentException('Donnez au moins un titre (étape 1) pour enregistrer un brouillon.');
+        }
+
+        $activity = $this->existing($d, $organizer) ?? (new PrivateActivity())->setOrganizer($organizer)->setStatus(PrivateActivityStatus::Draft);
+        $this->fill($activity, $d);
+        $this->entityManager->persist($activity);
+        $this->entityManager->flush();
+
+        $session->set(self::SESSION_KEY, ['id' => (string) $activity->getId()] + $this->current($session));
+
+        return $activity;
+    }
+
+    /** Reprend un brouillon (ou une activité à modifier) dans l'assistant. */
+    public function load(SessionInterface $session, PrivateActivity $activity): void
+    {
+        $start = $activity->getScheduledAt();
+        $session->set(self::SESSION_KEY, [
+            'id' => (string) $activity->getId(),
+            'title' => $activity->getTitle(),
+            'category' => $activity->getCategory()?->getSlug() ?? '',
+            'description' => (string) $activity->getDescription(),
+            'date' => $start?->format('Y-m-d') ?? '',
+            'start_time' => $start?->format('H:i') ?? '',
+            'end_time' => $activity->getEndsAt()?->format('H:i') ?? '',
+            'address' => (string) $activity->getLocation(),
+            'city' => (string) $activity->getCity(),
+            'postal_code' => (string) $activity->getPostalCode(),
+            'lat' => (string) $activity->getLatitude(),
+            'lng' => (string) $activity->getLongitude(),
+            'show_exact' => $activity->showsExactAddress() ? '1' : '',
+            'meeting_point' => (string) $activity->getMeetingPoint(),
+            'to_bring' => (string) $activity->getToBring(),
+            'cover' => (string) $activity->getCoverImage(),
+            'min' => null !== $activity->getMinParticipants() ? (string) $activity->getMinParticipants() : '',
+            'max' => null !== $activity->getMaxParticipants() ? (string) $activity->getMaxParticipants() : '',
+            'mode' => $activity->getParticipationMode()->value,
+            'visibility' => $activity->getVisibility()->value,
+            // Étapes déjà valides : navigation libre jusqu'à la première incomplète.
+            'done' => array_values(array_filter([1, 2, 3, 4], fn (int $n): bool => [] === $this->validateStep($n, ['title' => $activity->getTitle(), 'category' => $activity->getCategory()?->getSlug() ?? '', 'description' => (string) $activity->getDescription(), 'date' => $start?->format('Y-m-d') ?? '', 'start_time' => $start?->format('H:i') ?? '', 'address' => (string) $activity->getLocation(), 'city' => (string) $activity->getCity(), 'mode' => $activity->getParticipationMode()->value, 'visibility' => $activity->getVisibility()->value]))),
+        ]);
+    }
+
+    /**
+     * Enregistre des valeurs dans le brouillon en session (catégorie proposée…).
+     *
+     * @param array<string, mixed> $values
+     */
+    public function patch(SessionInterface $session, array $values): void
+    {
+        $session->set(self::SESSION_KEY, $values + $this->current($session));
+    }
+
+    /** @param array<string, mixed> $d */
+    private function existing(array $d, User $organizer): ?PrivateActivity
+    {
+        $id = (string) ($d['id'] ?? '');
+        if ('' === $id || !Ulid::isValid($id)) {
+            return null;
+        }
+        $activity = $this->repository->find(Ulid::fromString($id));
+
+        return null !== $activity && $activity->getOrganizer() === $organizer ? $activity : null;
+    }
+
+    /** @param array<string, mixed> $d */
+    private function fill(PrivateActivity $activity, array $d): void
+    {
+        $str = static fn (string $key, int $max): ?string => '' !== trim((string) ($d[$key] ?? '')) ? mb_substr(trim((string) $d[$key]), 0, $max) : null;
+        $activity
+            ->setTitle(mb_substr(trim((string) ($d['title'] ?? '')), 0, 150))
+            ->setCategory($this->categories->findOneBy(['slug' => (string) ($d['category'] ?? '')]) ?? $activity->getCategory())
+            ->setDescription($str('description', 3000))
+            ->setScheduledAt($this->start($d))
+            ->setEndsAt('' !== (string) ($d['end_time'] ?? '') ? $this->end($d) : null)
+            ->setCity($str('city', 120))
+            ->setLocation($str('address', 255))
+            ->setPostalCode($str('postal_code', 10))
+            ->setLatitude(is_numeric($d['lat'] ?? null) ? number_format((float) $d['lat'], 7, '.', '') : null)
+            ->setLongitude(is_numeric($d['lng'] ?? null) ? number_format((float) $d['lng'], 7, '.', '') : null)
+            ->setShowExactAddress('1' === ($d['show_exact'] ?? ''))
+            ->setMeetingPoint($str('meeting_point', 500))
+            ->setToBring($str('to_bring', 1000))
+            ->setCoverImage($str('cover', 255))
+            ->setVisibility(PrivateActivityVisibility::tryFrom((string) ($d['visibility'] ?? '')) ?? PrivateActivityVisibility::Public)
+            ->setParticipationMode(ParticipationMode::tryFrom((string) ($d['mode'] ?? '')) ?? ParticipationMode::Validation)
+            ->setMinParticipants(ctype_digit((string) ($d['min'] ?? '')) ? (int) $d['min'] : null)
+            ->setMaxParticipants(ctype_digit((string) ($d['max'] ?? '')) ? (int) $d['max'] : null);
     }
 
     /** @param array<string, mixed> $d */
@@ -270,5 +365,18 @@ final class PrivateActivityDraftService
         }
 
         return \DateTimeImmutable::createFromFormat('Y-m-d H:i', $date.' '.$time) ?: null;
+    }
+
+    /**
+     * Adresse tapée sans choisir de suggestion : la ville est le début du
+     * texte (« Dassa-Zoumè, Bénin »).
+     *
+     * @param array<string, mixed> $draft
+     */
+    private static function cityFromAddress(array &$draft): void
+    {
+        if ('' === trim((string) ($draft['city'] ?? '')) && '' !== trim((string) ($draft['address'] ?? ''))) {
+            $draft['city'] = mb_substr(trim(explode(',', (string) $draft['address'])[0]), 0, 120);
+        }
     }
 }

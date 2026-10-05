@@ -150,7 +150,7 @@ final class ProviderSpaceFlowTest extends WebTestCase
         $client = $this->loggedProvider();
         // Réservation créée pour le test : les données de démo évoluent
         // d'une exécution à l'autre (la base de test n'est pas remise à zéro).
-        $service = $this->em()->getRepository(Service::class)->findOneBy(['status' => ServiceStatus::Published]);
+        $service = $this->em()->getRepository(Service::class)->findOneBy(['status' => ServiceStatus::Published, 'provider' => $this->demoProvider()]);
         $buyer = $this->em()->getRepository(User::class)->findOneBy(['email' => 'julie.martin@client.trouvemoi.test']);
         self::assertNotNull($service);
         self::assertNotNull($buyer);
@@ -171,7 +171,7 @@ final class ProviderSpaceFlowTest extends WebTestCase
     public function testReplyingToAClientAddsTheMessageToTheThread(): void
     {
         $client = $this->loggedProvider();
-        $conversation = $this->em()->getRepository(Conversation::class)->findOneBy([]);
+        $conversation = $this->em()->getRepository(Conversation::class)->findOneBy(['provider' => $this->demoProvider()]);
         self::assertNotNull($conversation);
         $count = $conversation->getMessages()->count();
 
@@ -185,7 +185,7 @@ final class ProviderSpaceFlowTest extends WebTestCase
     public function testCreatingAnOfferAndOpeningASlot(): void
     {
         $client = $this->loggedProvider();
-        $service = $this->em()->getRepository(Service::class)->findOneBy(['status' => ServiceStatus::Published]);
+        $service = $this->em()->getRepository(Service::class)->findOneBy(['status' => ServiceStatus::Published, 'provider' => $this->demoProvider()]);
         self::assertNotNull($service);
 
         $client->request('POST', '/pro/offres/nouvelle', $this->token($client, '/pro/offres/nouvelle') + [
@@ -247,6 +247,16 @@ final class ProviderSpaceFlowTest extends WebTestCase
         $crawler = $client->request('GET', $page);
 
         return ['_token' => (string) $crawler->filter('input[name="_token"]')->first()->attr('value')];
+    }
+
+    /** Le dossier du compte de démonstration : d'autres prestataires existent en base (05/10). */
+    private function demoProvider(): \App\Provider\Entity\ProviderProfile
+    {
+        $user = $this->em()->getRepository(User::class)->findOneBy(['email' => 'annonceur@trouvemoi.test']);
+        $provider = static::getContainer()->get(ProviderProfileRepository::class)->findOneByUser($user);
+        self::assertNotNull($provider);
+
+        return $provider;
     }
 
     private function em(): EntityManagerInterface

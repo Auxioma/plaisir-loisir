@@ -233,8 +233,13 @@ final class ProviderAuthFlowTest extends WebTestCase
             '_token' => 'csrf-token',
             'email' => 'inconnu@example.com',
         ], server: ['HTTP_ORIGIN' => 'http://localhost']);
+        // Adresse sans compte (05/10) : on le dit, on reste au premier écran.
+        self::assertResponseRedirects('/pro/mot-de-passe-oublie');
 
-        // Muet sur l'existence du compte : on avance quand même.
+        $client->request('POST', '/pro/mot-de-passe-oublie', [
+            '_token' => 'csrf-token',
+            'email' => 'annonceur@trouvemoi.test',
+        ], server: ['HTTP_ORIGIN' => 'http://localhost']);
         self::assertResponseRedirects('/pro/mot-de-passe-oublie/verification');
 
         $crawler = $client->request('GET', '/pro/mot-de-passe-oublie/verification');

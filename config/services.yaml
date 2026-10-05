@@ -10,6 +10,10 @@ parameters:
     # Valeurs par défaut des variables ajoutées après coup : un serveur dont
     # le .env.local.php (composer dump-env) est antérieur ne doit pas tomber
     # sur « Environment variable not found » (CD #16, 04/10).
+    # Limites anti-abus et verrous (05/10) : valeurs par défaut si le serveur
+    # ne les définit pas (le CD a déjà échoué sur une variable manquante).
+    env(PASSWORD_RESET_REQUEST_LIMIT): '5'
+    env(LOCK_DSN): 'flock'
     env(SOCIAL_FACEBOOK_URL): 'https://www.facebook.com/trouvemoi.eu'
     env(SOCIAL_INSTAGRAM_URL): 'https://www.instagram.com/trouvemoi.eu'
     env(SOCIAL_TIKTOK_URL): 'https://www.tiktok.com/@trouvemoi.eu'

@@ -165,13 +165,32 @@ async function initLocation(form) {
     address?.addEventListener('input', (ev) => {
         if (!ev.isTrusted) return;
         fields.lat.value = ''; fields.lng.value = '';
+        // Adresse retapée : la ville et le code postal de l'ancienne suggestion ne valent plus.
+        fields.city.value = ''; fields.postcode.value = '';
         clearTimeout(timer);
         const q = address.value.trim();
         if (q.length < 3) { list.hidden = true; return; }
         timer = setTimeout(async () => {
             try {
-                const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=6`);
-                const data = await res.json();
+                // Base Adresse Nationale (France) d'abord ; à défaut, Photon
+                // (OpenStreetMap, monde entier) : une adresse hors de France
+                // (ex. Bénin) n'avait aucune suggestion et l'étape bloquait.
+                let features = [];
+                try {
+                    const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=6`);
+                    features = (await res.json()).features || [];
+                } catch (e) { features = []; }
+                if (!features.length) {
+                    const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=fr`);
+                    features = ((await res.json()).features || []).map((f) => {
+                        const p = f.properties || {};
+                        const city = p.city || p.town || p.village || p.county || p.state || p.name || '';
+                        const name = [p.name, p.street && p.housenumber ? `${p.housenumber} ${p.street}` : p.street].filter(Boolean)[0] || city;
+                        const label = [name, city !== name ? city : null, p.country].filter(Boolean).join(', ');
+                        return { geometry: f.geometry, properties: { name, city, postcode: p.postcode || '', label } };
+                    });
+                }
+                const data = { features };
                 list.innerHTML = '';
                 data.features.forEach((f) => {
                     const li = document.createElement('li');
@@ -330,6 +349,36 @@ function initPackages(form) {
     sync();
 }
 
+/* Choix de catégorie (05/10) : recherche sans accents ; rien ne correspond →
+   la proposition s'ouvre, pré-remplie avec le texte cherché. */
+function initCategoryPicker(form) {
+    const root = qs(form, '[data-cp]');
+    if (!root) return;
+    const norm = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const search = qs(root, '[data-cp-search]');
+    const options = qsa(root, '[data-cp-opt]');
+    const empty = qs(root, '[data-cp-empty]');
+    const suggest = qs(root, '[data-cp-suggest]');
+    const suggestName = qs(root, '[data-cp-suggest-name]');
+    search?.addEventListener('input', () => {
+        const q = norm(search.value.trim());
+        let shown = 0;
+        options.forEach((o) => {
+            const ok = !q || norm(o.dataset.cpText || '').includes(q);
+            o.hidden = !ok;
+            if (ok) shown += 1;
+        });
+        if (empty) empty.hidden = shown > 0;
+        if (!shown && suggest && suggestName) {
+            suggest.open = true;
+            suggestName.value = search.value.trim();
+        }
+    });
+    // Entrée dans la recherche : ne pas envoyer le formulaire de l'étape.
+    search?.addEventListener('keydown', (e) => { if (e.key === 'Enter') e.preventDefault(); });
+    qs(root, '[data-cp-list] input:checked')?.closest('[data-cp-opt]')?.scrollIntoView({ block: 'nearest' });
+}
+
 const start = () => {
     const form = document.querySelector('[data-ew-form]');
     if (!form || form.dataset.ewReady) return;
@@ -344,6 +393,7 @@ const start = () => {
     initInvites(form);
     initPublish(form);
     initPackages(form);
+    initCategoryPicker(form);
     initSubmit(form);
 };
 

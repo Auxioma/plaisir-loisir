@@ -16,6 +16,12 @@ namespace App\PrivateActivity\Enum;
  */
 enum PrivateActivityStatus: string
 {
+    /**
+     * Brouillon de l'assistant (05/10) : visible du seul organisateur, absent
+     * de toutes les listes, à reprendre depuis « Mes activités créées ».
+     */
+    case Draft = 'draft';
+
     /** Ouverte : accepte des demandes de participation. */
     case Open = 'open';
 

@@ -7,6 +7,7 @@ namespace App\User\Controller;
 use App\Shared\Controller\FlashesFormErrorsTrait;
 use App\User\Enum\AccountType;
 use App\User\Form\RegistrationFormType;
+use App\User\Security\LoginErrorPresenter;
 use App\User\Service\EmailVerificationService;
 use App\User\Service\PasswordResetService;
 use App\User\Service\RegistrationService;
@@ -40,7 +41,8 @@ final class SecurityController extends AbstractController
 
         return $this->render('security/login.html.twig', [
             'last_username' => $authenticationUtils->getLastUsername(),
-            'error' => $authenticationUtils->getLastAuthenticationError(),
+            'error' => $error = $authenticationUtils->getLastAuthenticationError(),
+            'login_error' => LoginErrorPresenter::describe($error),
         ]);
     }
 
@@ -90,7 +92,7 @@ final class SecurityController extends AbstractController
      * Étape 1/3 — saisie de l'adresse e-mail.
      */
     #[Route(path: ['fr' => '/mot-de-passe-oublie', 'en' => '/en/forgot-password'], name: 'app_forgot_password_request', methods: ['GET', 'POST'])]
-    public function forgotPasswordRequest(Request $request, PasswordResetService $passwordReset): Response
+    public function forgotPasswordRequest(Request $request, PasswordResetService $passwordReset, #[\Symfony\Component\DependencyInjection\Attribute\Autowire(service: 'limiter.password_reset_request')] \Symfony\Component\RateLimiter\RateLimiterFactory $passwordResetRequestLimiter): Response
     {
         $session = $request->getSession();
 
@@ -109,9 +111,23 @@ final class SecurityController extends AbstractController
                 return $this->redirectToRoute('app_forgot_password_request');
             }
 
-            // Volontairement muet sur l'existence du compte : le même message
-            // et le même écran suivant, que l'adresse soit connue ou non.
-            $passwordReset->requestCode($email);
+            // Demandes limitées par IP : la réponse dit si l'adresse a un compte.
+            if (!$passwordResetRequestLimiter->create((string) $request->getClientIp())->consume()->isAccepted()) {
+                $this->addFlash('error', 'Trop de demandes. Réessayez dans quelques minutes.');
+
+                return $this->redirectToRoute('app_forgot_password_request');
+            }
+
+            // Adresse inconnue (05/10) : on le dit et on propose l'inscription,
+            // au lieu d'envoyer vers la saisie d'un code qui ne partira jamais.
+            if (!$passwordReset->requestCode($email)) {
+                // Saisie gardée pour pré-remplir le champ, sans ouvrir l'écran du code.
+                $session->remove(self::SESSION_RESET_EMAIL);
+                $session->set('password_reset_typed', $email);
+                $this->addFlash('error', 'Aucun compte n’est associé à cette adresse e-mail. Vérifiez l’adresse ou créez un compte.');
+
+                return $this->redirectToRoute('app_forgot_password_request');
+            }
 
             $session->set(self::SESSION_RESET_EMAIL, $email);
             $session->remove(self::SESSION_RESET_CODE);
@@ -121,7 +137,7 @@ final class SecurityController extends AbstractController
 
         return $this->render('security/password_forgot.html.twig', [
             // Pré-remplie quand on revient de l'étape 2 par « Renvoyer ».
-            'email' => (string) $session->get(self::SESSION_RESET_EMAIL, ''),
+            'email' => (string) $session->get(self::SESSION_RESET_EMAIL, $session->get('password_reset_typed', '')),
         ]);
     }
 
@@ -319,7 +335,17 @@ final class SecurityController extends AbstractController
                 return $this->redirectToRoute('app_email_verification_request');
             }
 
-            $emailVerification->resend($email);
+            $outcome = $emailVerification->resend($email);
+            if ('unknown' === $outcome) {
+                $this->addFlash('error', 'Aucun compte n’est associé à cette adresse e-mail. Vérifiez l’adresse ou créez un compte.');
+
+                return $this->redirectToRoute('app_email_verification_request');
+            }
+            if ('verified' === $outcome) {
+                $this->addFlash('success', 'Cette adresse est déjà vérifiée : vous pouvez vous connecter.');
+
+                return $this->redirectToRoute('app_login');
+            }
 
             $session->set(self::SESSION_VERIFY_EMAIL, $email);
 

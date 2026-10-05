@@ -28,7 +28,13 @@
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
         <input type="hidden" name="_failure_path" value="{{ path('app_pro_login') }}">
 
-        {% if error %}
+        {% if login_error and login_error.kind != 'other' %}
+            <div class="tm-login__alert" role="alert">
+                {{ login_error.message|trans }}
+                {% if login_error.kind == 'unknown' %}<a href="{{ path('app_pro_register') }}">{{ 'Créer un compte professionnel'|trans }}</a>
+                {% else %}<a href="{{ path('app_pro_forgot_password') }}">{{ 'Mot de passe oublié ?'|trans }}</a>{% endif %}
+            </div>
+        {% elseif error %}
             <div class="tm-login__alert" role="alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
         {% endif %}
 

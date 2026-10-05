@@ -44,6 +44,33 @@ final class ProviderSearchControllerTest extends WebTestCase
     }
 
     /**
+     * Annuaire refait le 05/10 : chaque carte porte les vraies données du
+     * prestataire, et la catégorie ressort aussi par ses activités.
+     */
+    public function testTheDirectoryShowsRealFiguresAndFiltersByActivities(): void
+    {
+        $client = static::createClient();
+        $crawler = $client->request('GET', '/professionnels', ['q' => 'Normandie Kayak']);
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('.pd-card'));
+        self::assertSelectorTextContains('.pd-card', 'Canoë sur la Seine');
+        self::assertSelectorTextContains('.pd-card__stats', '2 activités');
+
+        // « Sports & Aventures » n'est pas sa catégorie principale, mais il y propose une activité.
+        $crawler = $client->request('GET', '/professionnels', ['metier' => 'sports-aventures']);
+        self::assertStringContainsString('Normandie Kayak', $crawler->filter('.pd-grid')->text());
+
+        $crawler = $client->request('GET', '/professionnels', ['ville' => 'Rouen', 'rayon' => '50']);
+        self::assertStringNotContainsString('Escape Le Havre', $crawler->filter('body')->text());
+        self::assertStringContainsString('Zoo de Clères', $crawler->filter('.pd-grid')->text());
+
+        $link = $crawler->filter('a.pd-card__name')->first()->attr('href');
+        $client->request('GET', (string) $link);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#activites .gc-card');
+    }
+
+    /**
      * §5, §9 du CDC : recherche par rayon (Lot K, 16/09), sur la table
      * statique FrenchCityCoordinates — Lyon est à environ 392 km de Paris,
      * donc hors d'un rayon de 100 km mais dans un rayon de 500 km.
@@ -52,20 +79,22 @@ final class ProviderSearchControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $category = $this->findOrMakeCategory();
-        $this->makeProvider($category, 'Pro Parisien', ProviderStatus::Verified)->setCity('Paris');
-        $lyonnais = $this->makeProvider($category, 'Pro Lyonnais', ProviderStatus::Verified);
+        // Noms uniques : la base de test garde les prestataires des exécutions précédentes.
+        $tag = substr(uniqid(), -6);
+        $this->makeProvider($category, 'Pro Parisien '.$tag, ProviderStatus::Verified)->setCity('Paris');
+        $lyonnais = $this->makeProvider($category, 'Pro Lyonnais '.$tag, ProviderStatus::Verified);
         $lyonnais->setCity('Lyon');
         static::getContainer()->get(EntityManagerInterface::class)->flush();
 
-        $client->request('GET', '/professionnels', ['ville' => 'Paris', 'rayon' => '100']);
+        $client->request('GET', '/professionnels', ['ville' => 'Paris', 'rayon' => '100', 'q' => $tag]);
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('body', 'Pro Parisien');
-        self::assertSelectorTextNotContains('body', 'Pro Lyonnais');
+        self::assertSelectorTextContains('body', 'Pro Parisien '.$tag);
+        self::assertSelectorTextNotContains('body', 'Pro Lyonnais '.$tag);
 
-        $client->request('GET', '/professionnels', ['ville' => 'Paris', 'rayon' => '500']);
+        $client->request('GET', '/professionnels', ['ville' => 'Paris', 'rayon' => '500', 'q' => $tag]);
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('body', 'Pro Parisien');
-        self::assertSelectorTextContains('body', 'Pro Lyonnais');
+        self::assertSelectorTextContains('body', 'Pro Parisien '.$tag);
+        self::assertSelectorTextContains('body', 'Pro Lyonnais '.$tag);
     }
 
     /**

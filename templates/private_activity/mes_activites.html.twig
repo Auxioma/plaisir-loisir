@@ -22,11 +22,11 @@
 
     <div class="pf-tabs-row">
         <nav class="pf-tabs">
-            {% for key, label in {'toutes': 'Toutes mes activités', 'en-ligne': 'En ligne', 'completes': 'Complètes', 'passees': 'Passées', 'annulees': 'Annulées'} %}
+            {% for key, label in {'toutes': 'Toutes mes activités', 'en-ligne': 'En ligne', 'brouillons': 'Brouillons', 'completes': 'Complètes', 'passees': 'Passées', 'annulees': 'Annulées'} %}
                 <a class="pf-tab{{ tab == key ? ' is-active' }}" href="{{ path('app_account_private_activities', {onglet: key}) }}">{{ label|trans }}</a>
             {% endfor %}
         </nav>
-        <a class="pf-btn pf-btn--primary pf-btn--lg" href="{{ path('app_account_private_activities_new') }}">{{ icon.plus(18) }} {{ 'Créer une activité'|trans }}</a>
+        <a class="pf-btn pf-btn--primary pf-btn--lg" href="{{ path('app_account_private_activities_new', {vierge: 1}) }}">{{ icon.plus(18) }} {{ 'Créer une activité'|trans }}</a>
     </div>
 
     <div class="pf-row pf-row--5">
@@ -80,12 +80,15 @@
                                     <div><strong>{{ row.title }}</strong><small>{{ row.place ?: '—' }}</small></div>
                                 </div>
                             </td>
-                            <td>{{ row.date|pf_date('d MMMM y') }}<small>{{ row.date ? row.date|date('H') ~ 'h' ~ row.date|date('i') : '' }}</small></td>
-                            <td>{{ ui.pill(row.statusLabel|trans, {online: 'green', full: 'orange', past: 'red', cancelled: 'grey'}[row.status]) }}</td>
+                            <td>{{ row.date ? row.date|pf_date('d MMMM y') : '—' }}<small>{{ row.date ? row.date|date('H') ~ 'h' ~ row.date|date('i') : '' }}</small></td>
+                            <td>{{ ui.pill(row.statusLabel|trans, {online: 'green', full: 'orange', past: 'red', cancelled: 'grey', draft: 'grey'}[row.status]) }}</td>
                             <td>{{ row.participants }}{{ row.capacity ? ' / ' ~ row.capacity : '' }}</td>
                             <td>{{ row.pending }}</td>
                             <td>
                                 <div class="pf-table__actions">
+                                    {% if row.status == 'draft' %}
+                                        <a class="pf-btn pf-btn--primary" href="{{ path('app_account_private_activity_resume', {id: row.id}) }}">{{ 'Reprendre'|trans }}</a>
+                                    {% endif %}
                                     <a class="pf-iconbtn" href="{{ path('app_private_activity_show', {id: row.id}) }}" aria-label="{{ 'Voir'|trans }}" title="{{ 'Voir'|trans }}">{{ icon.eye(18) }}</a>
                                     <a class="pf-iconbtn" href="{{ path('app_private_activity_show', {id: row.id}) }}#participants" aria-label="{{ 'Gérer les participants'|trans }}" title="{{ 'Gérer les participants'|trans }}">{{ icon.edit_square(17) }}</a>
                                     <details class="pl-dropdown pf-kebab pf-kebab--btn">
