@@ -28,6 +28,10 @@ on:
     workflows: [CI]
     types: [completed]
     branches: [master]
+  # Déploiement manuel de master (onglet Actions > CD > Run workflow), par
+  # exemple quand la CI a été vérifiée mais que le déclenchement automatique
+  # n'a pas eu lieu (panne des runners GitHub du 05/10).
+  workflow_dispatch:
 
 # Un seul déploiement à la fois ; un nouveau push annule celui en attente.
 concurrency:
@@ -39,8 +43,12 @@ permissions:
 
 jobs:
   deploy:
-    if: github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
+    # Automatique : seulement après une CI verte. Manuel : seulement master.
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+      || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
 
     env:
       SSHPASS: ${{ secrets.APP_PASS }}
@@ -72,7 +80,7 @@ jobs:
             cd /var/www/vhosts/trouvemoi.eu/httpdocs
 
             [ -d .git ] || git init -q
-            git fetch -q --depth=1 "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ${{ github.event.workflow_run.head_sha }}
+            git fetch -q --depth=1 "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ${{ github.event.workflow_run.head_sha || github.sha }}
             git reset -q --hard FETCH_HEAD
             git log -1 --oneline
 
