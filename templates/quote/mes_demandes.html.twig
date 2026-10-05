@@ -1,46 +1,82 @@
 {#
-    Liste des demandes de devis postées par le client (§10, §11 du CDC).
-    Aucune maquette : réutilise le gabarit de l'espace compte (en-tête,
-    sidebar) et une liste Bootstrap plutôt qu'une reconstitution au pixel.
+    « Mes demandes » — demandes de devis du particulier (§10, §11 du CDC),
+    refaites le 05/10 dans le style de l'espace compte (.pf-*) : chiffres,
+    onglets, cartes avec devis reçus et meilleur prix.
+    Données : ServiceRequestController::index().
 #}
 {% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ 'Mes demandes'|trans }}{% endblock %}
 
 {% block account %}
-    {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Mes demandes'|trans }],
-        title: 'Mes demandes'|trans,
-        subtitle: 'Suivez les devis reçus des professionnels.'|trans,
-    } %}
+    <header class="pf-head">
+        <div>
+            <h1 class="pf-title">{{ 'Mes demandes'|trans }}</h1>
+            <p class="pf-sub">{{ 'Décrivez un besoin (séminaire, anniversaire, sortie de groupe…) : les professionnels concernés vous envoient leur devis.'|trans }}</p>
+        </div>
+        <a class="pf-btn pf-btn--primary" href="{{ path('app_account_requests_new') }}">{{ icon.plus(16) }} {{ 'Nouvelle demande'|trans }}</a>
+    </header>
 
-    <div class="mb-4">
-        <a href="{{ path('app_account_requests_new') }}" class="btn pl-btn pl-btn--cta">
-            {{ 'Poser une nouvelle demande'|trans }}
-        </a>
+    <div class="rq-stats">
+        <div class="pf-card rq-stat"><span class="rq-stat__ico">{{ icon.receipt(20) }}</span><span><b>{{ counts.open }}</b><small>{{ counts.open > 1 ? 'demandes ouvertes'|trans : 'demande ouverte'|trans }}</small></span></div>
+        <div class="pf-card rq-stat"><span class="rq-stat__ico is-green">{{ icon.chat_bubble(20) }}</span><span><b>{{ counts.quotes }}</b><small>{{ counts.quotes > 1 ? 'devis reçus'|trans : 'devis reçu'|trans }}</small></span></div>
+        <div class="pf-card rq-stat"><span class="rq-stat__ico is-orange">{{ icon.hourglass(20) }}</span><span><b>{{ counts.to_decide }}</b><small>{{ 'devis à étudier'|trans }}</small></span></div>
     </div>
 
+    <nav class="pf-tabs pf-tabs--line">
+        {% for key, label in {toutes: 'Toutes', ouvertes: 'Ouvertes', cloturees: 'Clôturées'} %}
+            <a class="pf-tab{{ tab == key ? ' is-active' }}" href="{{ path('app_account_requests', key == 'toutes' ? {} : {onglet: key}) }}">{{ label|trans }} <span class="pf-tab__count">{{ key == 'toutes' ? counts.all : (key == 'ouvertes' ? counts.open : counts.closed) }}</span></a>
+        {% endfor %}
+    </nav>
+
     {% if requests is empty %}
-        {% include 'account/_empty.html.twig' with { message: "Vous n'avez posté aucune demande pour le moment."|trans } %}
+        <div class="pf-card pf-empty rq-empty">
+            {{ icon.receipt(36) }}
+            <strong>{{ counts.all == 0 ? 'Vous n’avez encore posté aucune demande.'|trans : 'Aucune demande dans cet onglet.'|trans }}</strong>
+            <span>{{ 'Un projet en tête ? Décrivez-le, recevez plusieurs devis et choisissez le meilleur.'|trans }}</span>
+            <a class="pf-btn pf-btn--primary" href="{{ path('app_account_requests_new') }}">{{ 'Poser une demande'|trans }}</a>
+        </div>
     {% else %}
-        <div class="list-group">
+        <div class="rq-list">
             {% for demande in requests %}
-                <a href="{{ path('app_account_requests_show', {id: demande.id}) }}"
-                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    <div>
+                {% set amounts = demande.quotes|map(q => q.amount + 0) %}
+                {% set pending = demande.quotes|filter(q => q.status.value == 'pending')|length %}
+                <a class="pf-card rq-item" href="{{ path('app_account_requests_show', {id: demande.id}) }}">
+                    <span class="rq-item__main">
                         <strong>{{ demande.title }}</strong>
-                        <div class="text-muted small">{{ demande.category.name }} — {{ demande.createdAt|date('d/m/Y') }}</div>
-                    </div>
-                    <div class="text-end">
-                        <span class="badge rounded-pill {{ demande.open ? 'text-bg-success' : 'text-bg-secondary' }}">
-                            {{ demande.open ? 'Ouverte'|trans : 'Clôturée'|trans }}
-                        </span>
-                        <div class="text-muted small mt-1">
-                            {{ demande.quotes|length }} {{ demande.quotes|length > 1 ? 'devis reçus'|trans : 'devis reçu'|trans }}
-                        </div>
-                    </div>
+                        <small>
+                            {% if demande.category %}{{ demande.category.name|trans }}{% endif %}
+                            {% if demande.city %} · {{ icon.map_pin(12) }} {{ demande.city }}{% endif %}
+                            {% if demande.desiredDate %} · {{ icon.calendar(12) }} {{ demande.desiredDate|pf_date('d MMM y') }}{% endif %}
+                            · {{ 'publiée le'|trans }} {{ demande.createdAt|date('d/m/Y') }}
+                        </small>
+                    </span>
+                    <span class="rq-item__quotes">
+                        <b>{{ demande.quotes|length }}</b> {{ demande.quotes|length > 1 ? 'devis'|trans : 'devis'|trans }}
+                        {% if amounts is not empty %}<small>{{ 'dès'|trans }} {{ min(amounts)|number_format(2, ',', ' ') }} €</small>{% endif %}
+                    </span>
+                    <span class="rq-item__status">
+                        {% if not demande.open %}<span class="pf-pill pf-pill--grey">{{ 'Clôturée'|trans }}</span>
+                        {% elseif pending > 0 %}<span class="pf-pill pf-pill--orange">{{ pending }} {{ 'à étudier'|trans }}</span>
+                        {% else %}<span class="pf-pill pf-pill--green">{{ 'Ouverte'|trans }}</span>{% endif %}
+                        {{ icon.chevron_right(16) }}
+                    </span>
                 </a>
             {% endfor %}
         </div>
     {% endif %}
+{% endblock %}
+
+{% block account_aside %}
+    <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'Comment ça marche ?'|trans }}</h2>
+        <ol class="rq-steps">
+            <li><b>1</b><span>{{ 'Décrivez votre besoin : date, lieu, nombre de personnes, budget.'|trans }}</span></li>
+            <li><b>2</b><span>{{ 'Les professionnels concernés vous envoient leur devis.'|trans }}</span></li>
+            <li><b>3</b><span>{{ 'Comparez, échangez par message, acceptez le meilleur.'|trans }}</span></li>
+            <li><b>4</b><span>{{ 'Après la prestation, laissez un avis.'|trans }}</span></li>
+        </ol>
+        <a class="pf-link" href="{{ path('app_provider_search') }}">{{ 'Parcourir les professionnels'|trans }} {{ icon.arrow_right(14) }}</a>
+    </section>
 {% endblock %}

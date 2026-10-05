@@ -59,9 +59,10 @@ final class ServiceRequestFlowTest extends WebTestCase
         $token = (string) $crawler->filter('input[name="_token"]')->attr('value');
 
         $client->request('POST', '/compte/demandes/nouvelle', [
-            'metier' => $categorySlug,
-            'titre' => 'Anniversaire enfant à domicile',
+            'category' => $categorySlug,
+            'title' => 'Anniversaire enfant à domicile',
             'description' => 'Recherche animateur pour 15 enfants, dimanche prochain.',
+            'participants' => '15',
             '_token' => $token,
         ]);
 
@@ -87,16 +88,43 @@ final class ServiceRequestFlowTest extends WebTestCase
         $providerUser = $this->makeProviderUser($category, ProviderStatus::PendingVerification);
         $client->loginUser($providerUser);
 
-        $crawler = $client->request('GET', '/pro/demandes/'.$requestId);
+        $client->request('GET', '/pro/demandes/'.$requestId);
         self::assertResponseIsSuccessful('Un professionnel non vérifié doit pouvoir CONSULTER la demande…');
+        // Le formulaire de devis ne lui est pas proposé (05/10)…
+        self::assertSelectorNotExists('input[name="montant"]');
 
-        $token = (string) $crawler->filter('input[name="_token"]')->attr('value');
         $client->request('POST', '/pro/demandes/'.$requestId, [
             'montant' => '120.00',
-            '_token' => $token,
+            '_token' => 'csrf-token',
         ]);
 
         self::assertResponseStatusCodeSame(403, '…mais pas y déposer de devis avant vérification de son dossier (double verrou, voir CLAUDE.md).');
+    }
+
+    public function testAClientCanCloseARequestAndPendingQuotesAreDeclined(): void
+    {
+        $client = static::createClient();
+        $category = $this->findOrMakeCategory();
+        $clientUser = $this->makeClient();
+        $requestId = (string) $this->makeOpenRequest($clientUser, $category, 'Demande à clôturer')->getId();
+
+        $providerUser = $this->makeProviderUser($category, ProviderStatus::Verified);
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $profile = static::getContainer()->get(ProviderProfileRepository::class)->findOneByUser($providerUser);
+        $serviceRequest = static::getContainer()->get(ServiceRequestRepository::class)->find(Ulid::fromString($requestId));
+        static::getContainer()->get(QuoteService::class)->submitQuote($serviceRequest, $profile, '300.00', 'Proposition');
+
+        $client->loginUser($clientUser);
+        $crawler = $client->request('GET', '/compte/demandes/'.$requestId);
+        self::assertSelectorTextContains('.rq-quotes', '300,00');
+        $token = (string) $crawler->filter('form[action$="/cloturer"] input[name="_token"]')->attr('value');
+        $client->request('POST', '/compte/demandes/'.$requestId.'/cloturer', ['_token' => $token]);
+        self::assertResponseRedirects('/compte/demandes/'.$requestId);
+
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $closed = static::getContainer()->get(ServiceRequestRepository::class)->find(Ulid::fromString($requestId));
+        self::assertSame(ServiceRequestStatus::Closed, $closed->getStatus());
+        self::assertSame('declined', $closed->getQuotes()->first()->getStatus()->value);
     }
 
     public function testTheFullFlowFromRequestToAcceptedQuote(): void

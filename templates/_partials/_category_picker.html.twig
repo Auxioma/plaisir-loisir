@@ -4,7 +4,8 @@
     catégorie, et « Ma catégorie n'existe pas » pour la proposer à l'équipe
     (CategorySuggestionController) — plutôt qu'un « Autre » trop vague.
     Variables : categories (racines), selected (slug), suggestion (nom en
-    attente ou null), context ('private' | 'pro'), errors.
+    attente ou null), context ('private' | 'pro'), errors,
+    allow_suggest (vrai par défaut ; faux hors des assistants).
 #}
 {% import 'event/wizard/_ui.html.twig' as ui %}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -26,6 +27,7 @@
         <p class="cp-pending">{{ icon.hourglass(16) }} <span>{{ 'Catégorie proposée :'|trans }} <strong>{{ suggestion }}</strong> — {{ 'en attente de validation. Enregistrez votre activité en brouillon : vous serez prévenu dès qu’elle sera disponible.'|trans }}</span></p>
     {% endif %}
 
+    {% if allow_suggest|default(true) %}
     <details class="cp-suggest" data-cp-suggest>
         <summary>{{ icon.plus(14) }} {{ 'Ma catégorie n’existe pas : la proposer'|trans }}</summary>
         <div class="cp-suggest__body">
@@ -36,4 +38,5 @@
             <small class="pf-muted">{{ 'Notre équipe la valide sous 48 h. En attendant, enregistrez votre activité en brouillon pour la reprendre ensuite.'|trans }}</small>
         </div>
     </details>
+    {% endif %}
 </div>

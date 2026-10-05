@@ -32,6 +32,33 @@ class ServiceRequestRepository extends ServiceEntityRepository
     }
 
     /**
+     * Demandes ouvertes dans l'une de ces catégories (05/10) : celle du
+     * professionnel et celles de ses activités publiées.
+     *
+     * @param list<Category> $categories
+     *
+     * @return list<ServiceRequest>
+     */
+    public function findOpenForCategories(array $categories): array
+    {
+        if ([] === $categories) {
+            return [];
+        }
+
+        /** @var list<ServiceRequest> $results */
+        $results = $this->createQueryBuilder('r')
+            ->andWhere('r.category IN (:categories)')
+            ->andWhere('r.status = :status')
+            ->setParameter('categories', array_values(array_filter(array_map(static fn (Category $c): ?string => $c->getId()?->toRfc4122(), $categories))), \Doctrine\DBAL\ArrayParameterType::STRING)
+            ->setParameter('status', ServiceRequestStatus::Open)
+            ->orderBy('r.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        return $results;
+    }
+
+    /**
      * Demandes ouvertes dans le métier d'un prestataire — sa « boîte de
      * réception » (§10 du CDC). Ouvertes uniquement : une demande close a déjà
      * trouvé son prestataire, inutile de la lui montrer.

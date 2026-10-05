@@ -1,13 +1,13 @@
 {#
-    Détail d'une demande côté client : les devis reçus, avec accepter/refuser
-    (§10, §11 du CDC). QuoteService::accept() refuse déjà automatiquement les
-    autres devis et clôture la demande — l'écran ne fait qu'appeler le service.
+    Détail d'une demande côté client (§10, §11 du CDC), refait le 05/10 :
+    récapitulatif, devis comparés (du moins cher au plus cher, l'accepté en
+    tête) avec la note et les activités du professionnel, accepter /
+    refuser / contacter, clôture de la demande, avis après acceptation.
+    QuoteService::accept() refuse déjà automatiquement les autres devis et
+    clôture la demande — l'écran ne fait qu'appeler le service.
 
-    Note en étoiles, pas un <select> (signalé le 18/09) : un avis se DONNE en
-    étoiles partout ailleurs sur le site (review-card__stars) — le menu
-    déroulant "5/5, 4/5…" ne correspondait à rien de connu. Widget CSS pur
-    (radios inversés + sélecteurs `~`, voir account.css) : aucun JS requis,
-    le clavier/lecteur d'écran gèrent un groupe de radios nativement.
+    Note en étoiles (widget CSS pur, voir account.css) : un avis se donne en
+    étoiles partout ailleurs sur le site.
 #}
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -15,79 +15,101 @@
 {% block title %}{{ demande.title }}{% endblock %}
 
 {% block account %}
-    {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Mes demandes'|trans, href: path('app_account_requests') }, { label: demande.title }],
-        title: demande.title,
-        subtitle: demande.category.name ~ ' — ' ~ (demande.open ? 'Ouverte aux propositions'|trans : 'Clôturée'|trans),
-    } %}
-
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <p class="mb-0">{{ demande.description|nl2br }}</p>
+    <header class="pf-head">
+        <div>
+            <a class="pf-link" href="{{ path('app_account_requests') }}">{{ icon.arrow_left(14) }} {{ 'Mes demandes'|trans }}</a>
+            <h1 class="pf-title">{{ demande.title }}</h1>
+            <p class="pf-sub">
+                {% if demande.open %}<span class="pf-pill pf-pill--green">{{ 'Ouverte aux propositions'|trans }}</span>{% else %}<span class="pf-pill pf-pill--grey">{{ 'Clôturée'|trans }}</span>{% endif %}
+                · {{ 'publiée le'|trans }} {{ demande.createdAt|date('d/m/Y') }}
+            </p>
         </div>
-    </div>
+        {% if demande.open %}
+            <form method="post" action="{{ path('app_account_requests_close', {id: demande.id}) }}" onsubmit="return confirm('{{ 'Clôturer cette demande ? Les devis en attente seront refusés.'|trans|e('js') }}')">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                <button class="pf-btn">{{ icon.x(14) }} {{ 'Clôturer la demande'|trans }}</button>
+            </form>
+        {% endif %}
+    </header>
 
-    <h2 class="h5 mb-3">
-        {{ demande.quotes|length }} {{ demande.quotes|length > 1 ? 'devis reçus'|trans : 'devis reçu'|trans }}
-    </h2>
+    <section class="pf-card rq-summary">
+        <ul class="rq-facts">
+            {% if demande.category %}<li>{{ icon.grid(16) }} <span><small>{{ 'Catégorie'|trans }}</small>{{ demande.category.name|trans }}</span></li>{% endif %}
+            {% if demande.city %}<li>{{ icon.map_pin(16) }} <span><small>{{ 'Lieu'|trans }}</small>{{ demande.city }}</span></li>{% endif %}
+            {% if demande.desiredDate %}<li>{{ icon.calendar(16) }} <span><small>{{ 'Date souhaitée'|trans }}</small>{{ demande.desiredDate|pf_date('EEEE d MMMM y')|capitalize }}</span></li>{% endif %}
+            {% if demande.participants %}<li>{{ icon.users(16) }} <span><small>{{ 'Personnes'|trans }}</small>{{ demande.participants }}</span></li>{% endif %}
+            {% if demande.budget %}<li>{{ icon.euro(16) }} <span><small>{{ 'Budget indicatif'|trans }}</small>{{ (demande.budget + 0)|number_format(0, ',', ' ') }} €</span></li>{% endif %}
+        </ul>
+        <p class="rq-summary__text">{{ demande.description|nl2br }}</p>
+    </section>
 
-    {% if demande.quotes is empty %}
-        {% include 'account/_empty.html.twig' with { message: 'Aucun professionnel n\'a encore répondu à cette demande.'|trans } %}
+    <h2 class="rq-h2">{{ quotes|length }} {{ quotes|length > 1 ? 'devis reçus'|trans : 'devis reçu'|trans }}</h2>
+
+    {% if quotes is empty %}
+        <div class="pf-card pf-empty rq-empty">
+            {{ icon.hourglass(32) }}
+            <strong>{{ 'Aucun professionnel n’a encore répondu.'|trans }}</strong>
+            <span>{{ 'Les professionnels concernés ont été prévenus ; vous recevrez une notification à chaque devis.'|trans }}</span>
+            {% if demande.category %}<a class="pf-btn" href="{{ path('app_provider_search', {metier: demande.category.slug}) }}">{{ 'Voir les professionnels de cette catégorie'|trans }}</a>{% endif %}
+        </div>
     {% else %}
-        <div class="d-flex flex-column gap-3">
-            {% for devis in demande.quotes %}
-                <div class="card shadow-sm">
-                    <div class="card-body d-flex justify-content-between align-items-start flex-wrap gap-3">
-                        <div>
-                            <strong>{{ devis.provider.displayName }}</strong>
-                            <div class="fs-4 fw-bold" style="color: var(--pl-action);">{{ devis.amount|number_format(2, ',', ' ') }} {{ devis.currency }}</div>
-                            {% if devis.message %}
-                                <p class="text-muted mb-0 mt-2">{{ devis.message|nl2br }}</p>
-                            {% endif %}
-                            <form method="post" action="{{ path('app_account_messages_start', {slug: devis.provider.slug}) }}" class="mt-2">
+        <div class="rq-quotes">
+            {% for devis in quotes %}
+                {% set p = providers[devis.id ~ ''] ?? null %}
+                <article class="pf-card rq-quote{{ devis.status.value == 'accepted' ? ' is-accepted' : (devis.status.value == 'declined' ? ' is-declined') }}">
+                    <div class="rq-quote__head">
+                        <span class="pd-avatar">{% if p and p.avatar %}<img src="{{ asset(p.avatar) }}" alt="">{% else %}{{ devis.provider.displayName|first|upper }}{% endif %}</span>
+                        <span class="rq-quote__who">
+                            <a href="{{ path('app_provider_profile', {slug: devis.provider.slug}) }}"><strong>{{ devis.provider.displayName }}</strong></a>
+                            <small>
+                                {% if p and p.rating %}{{ icon.star_solid(12) }} {{ p.rating|number_format(1, ',') }} ({{ p.reviews }} {{ 'avis'|trans }}) · {% endif %}
+                                {% if p %}{{ p.activities|length }} {{ p.activities|length > 1 ? 'activités'|trans : 'activité'|trans }}{% endif %}
+                                {% if devis.provider.city %} · {{ devis.provider.city }}{% endif %}
+                            </small>
+                        </span>
+                        <span class="rq-quote__amount">{{ (devis.amount + 0)|number_format(2, ',', ' ') }} <small>{{ devis.currency }}</small></span>
+                    </div>
+                    {% if devis.message %}<p class="rq-quote__msg">{{ devis.message|nl2br }}</p>{% endif %}
+                    <div class="rq-quote__foot">
+                        <span class="pf-pill pf-pill--{{ devis.status.value == 'accepted' ? 'green' : (devis.status.value == 'declined' ? 'grey' : 'orange') }}">{{ devis.status.value == 'accepted' ? 'Accepté'|trans : (devis.status.value == 'declined' ? 'Refusé'|trans : 'En attente de votre réponse'|trans) }}</span>
+                        <span class="rq-quote__actions">
+                            <form method="post" action="{{ path('app_account_messages_start', {slug: devis.provider.slug}) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                                <button type="submit" class="btn btn-sm pl-btn pl-btn--outline-dark">{{ 'Contacter'|trans }}</button>
+                                <button type="submit" class="pf-btn">{{ icon.chat_bubble(14) }} {{ 'Contacter'|trans }}</button>
                             </form>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge rounded-pill {{ devis.status.value == 'accepted' ? 'text-bg-success' : (devis.status.value == 'declined' ? 'text-bg-secondary' : 'text-bg-warning') }}">
-                                {{ devis.status.value == 'accepted' ? 'Accepté'|trans : (devis.status.value == 'declined' ? 'Refusé'|trans : 'En attente'|trans) }}
-                            </span>
                             {% if demande.open and devis.status.value == 'pending' %}
-                                <div class="d-flex gap-2 mt-2">
-                                    <form method="post" action="{{ path('app_account_requests_quote_accept', {id: demande.id, quoteId: devis.id}) }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                                        <button type="submit" class="btn btn-sm pl-btn pl-btn--primary">{{ 'Accepter'|trans }}</button>
-                                    </form>
-                                    <form method="post" action="{{ path('app_account_requests_quote_decline', {id: demande.id, quoteId: devis.id}) }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                                        <button type="submit" class="btn btn-sm pl-btn pl-btn--outline-dark">{{ 'Refuser'|trans }}</button>
-                                    </form>
-                                </div>
+                                <form method="post" action="{{ path('app_account_requests_quote_decline', {id: demande.id, quoteId: devis.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                    <button type="submit" class="pf-btn">{{ 'Refuser'|trans }}</button>
+                                </form>
+                                <form method="post" action="{{ path('app_account_requests_quote_accept', {id: demande.id, quoteId: devis.id}) }}" onsubmit="return confirm('{{ 'Accepter ce devis ? Les autres seront automatiquement refusés.'|trans|e('js') }}')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                    <button type="submit" class="pf-btn pf-btn--primary">{{ icon.check(14) }} {{ 'Accepter'|trans }}</button>
+                                </form>
                             {% endif %}
-                        </div>
+                        </span>
                     </div>
                     {% if devis.status.value == 'accepted' %}
-                        <div class="card-footer bg-white">
+                        <div class="rq-quote__review">
                             {% if (devis.id ~ '') in reviewed_quote_ids %}
-                                <span class="text-muted small">{{ 'Vous avez déjà noté ce professionnel.'|trans }}</span>
+                                <span class="pf-muted">{{ icon.check_badge(14) }} {{ 'Vous avez déjà noté ce professionnel. Merci !'|trans }}</span>
                             {% else %}
-                                <form method="post" action="{{ path('app_account_quote_review', {id: devis.id}) }}" class="d-flex flex-wrap align-items-center gap-2">
+                                <form method="post" action="{{ path('app_account_quote_review', {id: devis.id}) }}" class="rq-review">
                                     <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                                    <span class="form-label mb-0">{{ 'Votre note'|trans }}</span>
+                                    <strong>{{ 'Votre avis sur la prestation'|trans }}</strong>
                                     <span class="review-stars-input" role="radiogroup" aria-label="{{ 'Votre note'|trans }}">
                                         {% for i in [5, 4, 3, 2, 1] %}
                                             <input type="radio" id="note-{{ devis.id }}-{{ i }}" name="note" value="{{ i }}" required>
                                             <label for="note-{{ devis.id }}-{{ i }}" aria-label="{{ i }} {{ i > 1 ? 'étoiles'|trans : 'étoile'|trans }}">{{ icon.star_solid(22) }}</label>
                                         {% endfor %}
                                     </span>
-                                    <input type="text" name="commentaire" class="form-control form-control-sm" maxlength="2000" placeholder="{{ 'Votre commentaire (facultatif)'|trans }}">
-                                    <button type="submit" class="btn btn-sm pl-btn pl-btn--cta">{{ 'Publier mon avis'|trans }}</button>
+                                    <input type="text" name="commentaire" maxlength="2000" placeholder="{{ 'Votre commentaire (facultatif)'|trans }}">
+                                    <button type="submit" class="pf-btn pf-btn--primary">{{ 'Publier mon avis'|trans }}</button>
                                 </form>
                             {% endif %}
                         </div>
                     {% endif %}
-                </div>
+                </article>
             {% endfor %}
         </div>
     {% endif %}

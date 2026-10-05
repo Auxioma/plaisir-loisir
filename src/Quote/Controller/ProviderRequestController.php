@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Quote\Controller;
 
+use App\Catalog\Entity\Category;
+use App\Catalog\Enum\ServiceStatus;
+use App\Catalog\Repository\ServiceRepository;
+use App\Provider\Controller\Space\AbstractProviderSpaceController;
 use App\Provider\Entity\ProviderProfile;
-use App\Provider\Repository\ProviderProfileRepository;
+use App\Quote\Entity\Quote;
 use App\Quote\Entity\ServiceRequest;
 use App\Quote\Repository\QuoteRepository;
 use App\Quote\Repository\ServiceRequestRepository;
 use App\Quote\Security\ServiceRequestVoter;
 use App\Quote\Service\QuoteService;
-use App\Shared\Service\AccountIdentityPresenter;
-use App\User\Entity\User;
-use App\User\StaticAccount;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -23,40 +23,60 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Ulid;
 
 /**
- * Espace professionnel — demandes reçues et dépôt de devis (§10, §11 du CDC).
+ * « Demandes reçues » du professionnel (§10, §11 du CDC), dans son espace
+ * pro depuis le 05/10 — elles s'affichaient dans la coquille de l'espace
+ * particulier, avec un menu pro recopié.
  *
- * Double verrou volontaire, comme partout ailleurs dans Provider (voir
- * CLAUDE.md) : ROLE_PROVIDER donne accès à l'écran, mais seul un dossier
- * VÉRIFIÉ peut réellement déposer un devis — ServiceRequestVoter::SUBMIT_QUOTE
- * fait respecter la seconde condition.
+ * Il voit les demandes ouvertes de SES catégories : sa catégorie principale
+ * et celles de ses activités publiées. Seul un professionnel VÉRIFIÉ peut
+ * déposer un devis (ServiceRequestVoter::SUBMIT_QUOTE).
  */
 #[IsGranted('ROLE_PROVIDER')]
-final class ProviderRequestController extends AbstractController
+final class ProviderRequestController extends AbstractProviderSpaceController
 {
     public function __construct(
         private readonly ServiceRequestRepository $requests,
         private readonly QuoteRepository $quotes,
-        private readonly ProviderProfileRepository $providerProfiles,
         private readonly QuoteService $quoteService,
-        private readonly AccountIdentityPresenter $identity,
+        private readonly ServiceRepository $services,
     ) {
     }
 
     #[Route(path: ['fr' => '/pro/demandes', 'en' => '/en/pro/requests'], name: 'app_pro_requests')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $profile = $this->currentProfile();
-        $category = $profile->getMainCategory();
+        $provider = $this->currentProvider();
+        $open = $this->requests->findOpenForCategories($this->categoriesOf($provider));
+        $myQuotes = [];
+        foreach ($open as $serviceRequest) {
+            if (null !== ($quote = $this->quotes->findOneByRequestAndProvider($serviceRequest, $provider))) {
+                $myQuotes[(string) $serviceRequest->getId()] = $quote;
+            }
+        }
+        $sent = $this->quotes->findBy(['provider' => $provider], ['createdAt' => 'DESC']);
 
-        $open = null !== $category ? $this->requests->findOpenForCategory($category) : [];
+        $tab = \in_array($request->query->get('onglet'), ['envoyes', 'toutes'], true) ? (string) $request->query->get('onglet') : 'a-traiter';
+        $rows = match ($tab) {
+            'toutes' => $open,
+            'envoyes' => array_values(array_filter(array_map(static fn (Quote $q): ?ServiceRequest => $q->getServiceRequest(), $sent))),
+            default => array_values(array_filter($open, static fn (ServiceRequest $r): bool => !isset($myQuotes[(string) $r->getId()]))),
+        };
+        $sentByRequest = [];
+        foreach ($sent as $quote) {
+            $sentByRequest[(string) $quote->getServiceRequest()?->getId()] = $quote;
+        }
 
-        return $this->render('quote/demandes_recues.html.twig', [
-            'user' => $this->identity->identityFor($this->currentUser()),
-            'menu' => StaticAccount::providerMenu(),
-            'active' => 'Demandes reçues',
-            'provider' => $profile,
-            'requests' => $open,
-            'quoted_ids' => $this->alreadyQuotedIds($profile, $open),
+        return $this->renderSpace('provider/space/requests.html.twig', '', [
+            'requests' => $rows,
+            'tab' => $tab,
+            'my_quotes' => $sentByRequest,
+            'counts' => [
+                'todo' => \count($open) - \count($myQuotes),
+                'sent' => \count($sent),
+                'open' => \count($open),
+                'accepted' => \count(array_filter($sent, static fn (Quote $q): bool => 'accepted' === $q->getStatus()->value)),
+            ],
+            'verified' => 'verified' === $provider->getStatus()->value,
         ]);
     }
 
@@ -66,78 +86,66 @@ final class ProviderRequestController extends AbstractController
         $serviceRequest = $this->findOrFail($id);
         $this->denyAccessUnlessGranted(ServiceRequestVoter::VIEW, $serviceRequest);
 
-        $profile = $this->currentProfile();
-        $existingQuote = $this->quotes->findOneByRequestAndProvider($serviceRequest, $profile);
+        $provider = $this->currentProvider();
+        $existingQuote = $this->quotes->findOneByRequestAndProvider($serviceRequest, $provider);
+        $errors = [];
+        $values = ['montant' => '', 'message' => ''];
 
         if ($request->isMethod('POST')) {
             $this->denyAccessUnlessGranted(ServiceRequestVoter::SUBMIT_QUOTE, $serviceRequest);
+            $values = ['montant' => trim((string) $request->request->get('montant', '')), 'message' => trim((string) $request->request->get('message', ''))];
 
             if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
-                $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
-
-                return $this->redirectToRoute('app_pro_requests_show', ['id' => $id]);
+                $errors['montant'] = 'Votre session a expiré, merci de réessayer.';
+            }
+            $amount = str_replace([',', ' ', '€'], ['.', '', ''], $values['montant']);
+            if (!is_numeric($amount) || (float) $amount <= 0 || (float) $amount > 1000000) {
+                $errors['montant'] = 'Indiquez un montant valide (en euros).';
+            }
+            if (mb_strlen($values['message']) > 3000) {
+                $errors['message'] = '3000 caractères maximum.';
             }
 
-            $amount = trim((string) $request->request->get('montant', ''));
-            $message = trim((string) $request->request->get('message', ''));
+            if ([] === $errors) {
+                try {
+                    $this->quoteService->submitQuote($serviceRequest, $provider, number_format((float) $amount, 2, '.', ''), '' !== $values['message'] ? $values['message'] : null);
+                    $this->addFlash('success', 'Votre devis a bien été envoyé au client.');
 
-            try {
-                $this->quoteService->submitQuote(
-                    $serviceRequest,
-                    $profile,
-                    $this->normalizeAmount($amount),
-                    '' !== $message ? $message : null,
-                );
-
-                $this->addFlash('success', 'Votre devis a bien été envoyé au client.');
-
-                return $this->redirectToRoute('app_pro_requests_show', ['id' => $id]);
-            } catch (\InvalidArgumentException $e) {
-                $this->addFlash('error', $e->getMessage());
+                    return $this->redirectToRoute('app_pro_requests_show', ['id' => $id]);
+                } catch (\InvalidArgumentException $e) {
+                    $errors['montant'] = $e->getMessage();
+                }
             }
         }
 
-        return $this->render('quote/demande_recue_detail.html.twig', [
-            'user' => $this->identity->identityFor($this->currentUser()),
-            'menu' => StaticAccount::providerMenu(),
-            'active' => 'Demandes reçues',
+        return $this->renderSpace('provider/space/request_show.html.twig', '', [
             'demande' => $serviceRequest,
             'devis_existant' => $existingQuote,
-            'peut_repondre' => null === $existingQuote && $serviceRequest->isOpen(),
-        ]);
+            'peut_repondre' => null === $existingQuote && $serviceRequest->isOpen() && $this->isGranted(ServiceRequestVoter::SUBMIT_QUOTE, $serviceRequest),
+            'errors' => $errors,
+            'values' => $values,
+            'competitors' => max(0, $serviceRequest->getQuotes()->count() - (null !== $existingQuote ? 1 : 0)),
+        ], new Response(null, [] === $errors ? 200 : 422));
     }
 
     /**
-     * Le montant saisi vient d'un champ texte de la maquette (virgule
-     * française possible) : NUMERIC(12,2) en base n'accepte qu'un point.
+     * Catégorie principale + catégories des activités publiées.
+     *
+     * @return list<Category>
      */
-    private function normalizeAmount(string $amount): string
+    private function categoriesOf(ProviderProfile $provider): array
     {
-        return str_replace(',', '.', $amount);
-    }
-
-    private function currentUser(): User
-    {
-        $user = $this->getUser();
-
-        if (!$user instanceof User) {
-            throw $this->createAccessDeniedException();
+        $categories = [];
+        if (null !== ($main = $provider->getMainCategory())) {
+            $categories[(string) $main->getId()] = $main;
+        }
+        foreach ($this->services->findForProvider($provider) as $service) {
+            if (ServiceStatus::Published === $service->getStatus() && null !== ($c = $service->getCategory())) {
+                $categories[(string) $c->getId()] = $c;
+            }
         }
 
-        return $user;
-    }
-
-    private function currentProfile(): ProviderProfile
-    {
-        $user = $this->currentUser();
-
-        $profile = $this->providerProfiles->findOneByUser($user);
-
-        if (null === $profile) {
-            throw $this->createAccessDeniedException('Aucun dossier prestataire rattaché à ce compte.');
-        }
-
-        return $profile;
+        return array_values($categories);
     }
 
     private function findOrFail(string $id): ServiceRequest
@@ -149,22 +157,5 @@ final class ProviderRequestController extends AbstractController
         }
 
         return $serviceRequest;
-    }
-
-    /**
-     * @param list<ServiceRequest> $open
-     *
-     * @return list<string>
-     */
-    private function alreadyQuotedIds(ProviderProfile $profile, array $open): array
-    {
-        $ids = [];
-        foreach ($open as $serviceRequest) {
-            if (null !== $this->quotes->findOneByRequestAndProvider($serviceRequest, $profile)) {
-                $ids[] = (string) $serviceRequest->getId();
-            }
-        }
-
-        return $ids;
     }
 }

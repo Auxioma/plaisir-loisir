@@ -692,3 +692,10 @@
     .pd-grid, .pdp-acts { grid-template-columns: 1fr; }
     .pdp-id { margin-top: -40px; }
 }
+
+/* Cartes de l'annuaire (05/10) : seul l'avatar chevauche la couverture ; le
+   nom reste sous l'image (il passait dessous, caché par la photo). */
+.pd-card__id { align-items: flex-start; margin-top: 0; padding-top: 10px; }
+.pd-card__id .pd-avatar { position: relative; z-index: 1; margin-top: -38px; }
+.pd-card__id > span:last-child { min-width: 0; padding-top: 2px; }
+.pd-card__name { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
