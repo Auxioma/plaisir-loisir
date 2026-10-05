@@ -5,10 +5,20 @@ on:
     branches: [master]
   pull_request:
 
+# Un nouveau push sur une PR annule la vérification devenue périmée ; sur
+# master, chaque commit va jusqu'au bout (le CD en dépend).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   quality:
     name: Qualité & tests
-    runs-on: ubuntu-latest
+    # Image figée : « ubuntu-latest » bascule sur Ubuntu 26 le 19/10/2026.
+    runs-on: ubuntu-24.04
+    # Sans délai, un job bloqué (panne des runners GitHub du 05/10) attend
+    # jusqu'à 6 h ; la suite complète prend une dizaine de minutes.
+    timeout-minutes: 30
 
     services:
       postgres:
