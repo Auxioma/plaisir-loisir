@@ -113,3 +113,10 @@
 .ex-free-banner { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 12px 16px; background: #f3fbf5; border: 1px solid #bfe6cb; border-radius: 8px; color: #15803d; font-size: 14px; text-decoration: none; }
 .ex-free-banner span { flex: 1; }
 .ex-free-banner:hover { background: #e7f7ec; color: #166534; }
+
+/* Cadre « Voir les photos » : les deux boutons restent dans la carte, même
+   étroite (le second débordait, 05/10). */
+.ld-entry { min-width: 0; }
+.ld-entry__pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ld-entry__pair .ld-btn { min-width: 0; height: auto; min-height: 32px; padding: 4px 6px; white-space: normal; line-height: 1.15; text-align: center; }
+.ld-entry__pair .ld-btn .pl-icon { flex: none; }
