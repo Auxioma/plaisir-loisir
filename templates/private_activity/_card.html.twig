@@ -1,0 +1,34 @@
+{#
+    Carte d'une activité gratuite entre particuliers (accueil, liste, favoris).
+    Retours client du 07/10 : « Gratuit », niveau, participants et compte à
+    rebours sur chaque annonce. Variables : activity, distance (km, facultatif).
+    Styles : free-activities.css (.fa-card).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+{% import 'private_activity/_ui.html.twig' as fa %}
+{% set going = private_activity_accepted(activity) %}
+{% set url = path('app_private_activity_show', {id: activity.id}) %}
+<article class="fa-card">
+    <a class="fa-card__media" href="{{ url }}">
+        <img src="{% include 'private_activity/_cover.html.twig' %}" alt="{{ activity.title }}" loading="lazy">
+        <span class="fa-card__badges">
+            <span class="fa-badge fa-badge--free">{{ 'Gratuit'|trans }}</span>
+            {{ fa.level(activity) }}
+        </span>
+        {% if activity.status.value == 'full' %}<span class="fa-card__full">{{ 'Complet'|trans }}</span>{% endif %}
+        {{ fa.countdown(activity, 'card') }}
+    </a>
+    {% if not app.user or activity.organizer != app.user %}
+        {% include '_partials/_event_fav.html.twig' with { type: 'activite-privee', key: activity.id ~ '', class: 'fa-card__fav' } %}
+    {% endif %}
+    <div class="fa-card__body">
+        {% if activity.category %}<span class="fa-card__cat">{{ activity.category.name|trans }}</span>{% endif %}
+        <a class="fa-card__title" href="{{ url }}">{{ activity.title }}</a>
+        <ul class="fa-card__meta">
+            {% if activity.city %}<li>{{ icon.map_pin(14) }} {{ activity.city }}{{ activity.postalCode ? ' (' ~ activity.postalCode|slice(0, 2) ~ ')' }}{% if distance is defined and distance is not null %} · <b>{{ distance < 1 ? '< 1' : distance|round }} km</b>{% endif %}</li>{% endif %}
+            {% if activity.scheduledAt %}<li>{{ icon.calendar(14) }} {{ activity.scheduledAt|pf_date('EEE d MMM')|capitalize }} · {{ activity.scheduledAt|date('H\\hi') }}</li>{% endif %}
+        </ul>
+        {{ fa.participants(going, activity.maxParticipants) }}
+        <a class="fa-card__cta" href="{{ url }}">{{ 'Voir l’activité'|trans }} {{ icon.arrow_right(14) }}</a>
+    </div>
+</article>

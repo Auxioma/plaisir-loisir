@@ -62,7 +62,7 @@
         <div class="pf-card pf-empty">
             <strong>{{ query or role or tab != 'tous' ? 'Aucun album ne correspond à votre recherche.'|trans : 'Vous n’avez pas encore d’album.'|trans }}</strong>
             {{ 'Chaque activité que vous organisez ou rejoignez dispose de son album photo partagé.'|trans }}
-            <br><a class="pf-btn" href="{{ path('app_private_activities') }}">{{ 'Découvrir les activités privées'|trans }}</a>
+            <br><a class="pf-btn" href="{{ path('app_private_activities') }}">{{ 'Découvrir les activités gratuites'|trans }}</a>
         </div>
     {% else %}
         <div class="pf-albums{{ view == 'liste' ? ' pf-albums--list' }}">

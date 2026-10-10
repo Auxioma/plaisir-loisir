@@ -1,0 +1,96 @@
+{#
+    « Participants & demandes » d'une activité gratuite — maquette « version
+    améliorée » transmise par le client le 07/10. Données :
+    PrivateActivityController::participants(). Styles : free-activities.css (.fa-manage).
+#}
+{% extends 'account/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+{% import 'private_activity/_ui.html.twig' as fa %}
+
+{% block title %}{{ 'Participants & demandes'|trans }} — {{ activity.title }}{% endblock %}
+
+{% block account %}
+{% set accepted = groups.confirmes|length %}
+{% set editable = activity.status.value not in ['cancelled'] and (activity.scheduledAt is null or activity.scheduledAt > date()) %}
+<div class="fa-manage">
+    <a class="fa-manage__back" href="{{ path('app_account_private_activities') }}">{{ icon.arrow_left(14) }} {{ 'Retour à mes activités'|trans }}</a>
+
+    <section class="fa-manage__hero">
+        <img src="{% include 'private_activity/_cover.html.twig' %}" alt="">
+        <div>
+            <h1>{{ activity.title }}</h1>
+            <ul>
+                {% if activity.city %}<li>{{ icon.map_pin(14) }} {{ activity.city }}</li>{% endif %}
+                {% if activity.scheduledAt %}<li>{{ icon.calendar(14) }} {{ activity.scheduledAt|pf_date('EEE d MMM y')|capitalize }} · {{ activity.scheduledAt|date('H\\hi') }}</li>{% endif %}
+                <li><span class="fa-badge fa-badge--free">{{ 'Gratuit'|trans }}</span></li>
+                {% if activity.level %}<li>{{ fa.level(activity) }}</li>{% endif %}
+            </ul>
+            <div class="fa-manage__places">{{ fa.participants(accepted, activity.maxParticipants) }}</div>
+        </div>
+        <div class="fa-manage__side">
+            {{ fa.countdown(activity, 'inline') }}
+            <a class="fa-btn fa-btn--ghost fa-btn--sm" href="{{ path('app_private_activity_show', {id: activity.id}) }}">{{ icon.eye(14) }} {{ 'Voir l’annonce publique'|trans }}</a>
+            {% if editable %}<a class="fa-btn fa-btn--sm" href="{{ path('app_account_private_activity_resume', {id: activity.id}) }}">{{ icon.edit_square(14) }} {{ 'Modifier l’annonce'|trans }}</a>{% endif %}
+        </div>
+    </section>
+
+    <div class="fa-kpis">
+        <div class="fa-kpi is-green"><span class="fa-kpi__ico">{{ icon.users(20) }}</span><span><strong>{{ accepted }}</strong><small>{{ 'Participants confirmés'|trans }}</small></span></div>
+        <div class="fa-kpi is-orange"><span class="fa-kpi__ico">{{ icon.clock(20) }}</span><span><strong>{{ groups.demandes|length }}</strong><small>{{ 'Demandes en attente'|trans }}</small></span></div>
+        <div class="fa-kpi is-violet"><span class="fa-kpi__ico">{{ icon.users(20) }}</span><span><strong>{{ groups.attente|length }}</strong><small>{{ 'Liste d’attente'|trans }}</small></span></div>
+        <div class="fa-kpi"><span class="fa-kpi__ico">{{ icon.check(20) }}</span><span><strong>{{ activity.maxParticipants ? activity.remainingPlaces : '∞' }}</strong><small>{{ 'Places restantes'|trans }}</small></span></div>
+    </div>
+
+    <div class="fa-manage__grid">
+        <section>
+            <nav class="fa-tabs">
+                {% for key, label in {confirmes: 'Participants confirmés', demandes: 'Demandes en attente', attente: 'Liste d’attente', annulations: 'Annulations'} %}
+                    <a class="{{ tab == key ? 'is-active' }}" href="{{ path('app_account_private_activity_participants', {id: activity.id, onglet: key}) }}">{{ label|trans }}<span>{{ groups[key]|length }}</span></a>
+                {% endfor %}
+            </nav>
+
+            {% if rows is empty %}
+                <div class="fa-people fa-empty">
+                    {{ {confirmes: 'Personne n’a encore confirmé sa participation.', demandes: 'Aucune demande en attente.', attente: 'Personne en liste d’attente.', annulations: 'Aucune annulation.'}[tab]|trans }}
+                    {% if tab == 'confirmes' %}<br>{{ 'Invitez vos proches avec le lien ou par e-mail.'|trans }}{% endif %}
+                </div>
+            {% else %}
+                <ul class="fa-people">
+                    {% for participation in rows %}
+                        {% set person = participation.participant %}
+                        <li>
+                            <img src="{{ asset(person and person.avatarPath ? person.avatarPath : 'images/account/avatar-default.svg') }}" alt="">
+                            <span class="fa-people__who">
+                                <strong>{{ person ? person.firstName ~ ' ' ~ person.lastName : 'Membre supprimé'|trans }}</strong>
+                                <small>{{ 'Demande du'|trans }} {{ participation.createdAt ? participation.createdAt|pf_date('d MMM y') : '—' }}</small>
+                            </span>
+                            <span class="fa-status is-{{ participation.status.value }}">{{ {accepted: 'Confirmé', pending: 'En attente', waiting_list: 'Liste d’attente', refused: 'Refusé', cancelled: 'Annulé'}[participation.status.value]|trans }}</span>
+                            <span class="fa-people__actions">
+                                {% if participation.status.value == 'pending' %}
+                                    <form method="post" action="{{ path('app_account_private_activity_decide', {id: activity.id, participationId: participation.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}"><input type="hidden" name="decision" value="accepter">
+                                        <button class="fa-btn fa-btn--sm fa-btn--green">{{ icon.check(14) }} {{ 'Accepter'|trans }}</button>
+                                    </form>
+                                    <form method="post" action="{{ path('app_account_private_activity_decide', {id: activity.id, participationId: participation.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}"><input type="hidden" name="decision" value="refuser">
+                                        <button class="fa-btn fa-btn--sm fa-btn--ghost">{{ 'Refuser'|trans }}</button>
+                                    </form>
+                                {% elseif participation.status.value in ['accepted', 'waiting_list'] %}
+                                    <form method="post" action="{{ path('app_account_private_activity_remove', {id: activity.id, participationId: participation.id}) }}" onsubmit="return confirm('{{ 'Retirer cette personne de l’activité ? Elle sera prévenue.'|trans|e('js') }}')">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                        <button class="fa-btn fa-btn--sm fa-btn--ghost">{{ icon.x(14) }} {{ 'Retirer'|trans }}</button>
+                                    </form>
+                                {% endif %}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+
+        <aside class="fa-panel">
+            {% include 'private_activity/_share.html.twig' with { back: 'participants' } %}
+        </aside>
+    </div>
+</div>
+{% endblock %}

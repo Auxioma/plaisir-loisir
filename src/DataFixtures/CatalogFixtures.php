@@ -393,7 +393,8 @@ class CatalogFixtures extends Fixture
             }
         }
 
-        $depart = new \DateTimeImmutable('2026-07-01 00:00:00');
+        // Créneaux à venir quel que soit le jour du chargement (07/10 : plus d'anciennes dates).
+        $depart = new \DateTimeImmutable('tomorrow');
 
         for ($semaine = 0; $semaine < 12; ++$semaine) {
             $jour = $depart->modify(sprintf('+%d days', $position + ($semaine * 2)));

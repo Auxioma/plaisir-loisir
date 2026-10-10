@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Provider\Controller\Space;
 
-use App\Legal\InitialLegalTexts;
+use App\Corporate\Service\CompanyContactProvider;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\Service\NotificationService;
 use App\Support\Entity\SupportTicket;
@@ -38,6 +38,7 @@ final class ProviderSupportController extends AbstractProviderSpaceController
         private readonly UserRepository $users,
         private readonly NotificationService $notifications,
         private readonly EntityManagerInterface $entityManager,
+        private readonly CompanyContactProvider $contact,
     ) {
     }
 
@@ -68,7 +69,7 @@ final class ProviderSupportController extends AbstractProviderSpaceController
             'categories' => array_filter(TicketCategory::cases(), static fn (TicketCategory $c): bool => !\in_array($c, [TicketCategory::Callback, TicketCategory::Chat], true)),
             'subject' => (string) $request->query->get('sujet', ''),
             'faq' => \array_slice($faq, 0, 5),
-            'contact' => ['email' => InitialLegalTexts::CONTACT, 'phone' => InitialLegalTexts::TELEPHONE],
+            'contact' => $this->contact->get(),
             'promo' => ['title' => 'Besoin d’aide ?', 'text' => 'Notre équipe est là pour vous accompagner à chaque étape.', 'cta' => 'Nous contacter', 'href' => $this->generateUrl('app_pro_support').'#ticket'],
         ]);
     }

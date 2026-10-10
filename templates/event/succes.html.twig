@@ -25,7 +25,8 @@
             <a href="{{ path('app_event_resume', {slug: event.slug}) }}" class="pl-btn pl-btn--primary">{{ 'Reprendre le brouillon'|trans }}</a>
         {% else %}
             <a href="{{ path('app_events_detail', {slug: event.slug}) }}" class="pl-btn ev-btn-ghost">{{ 'Voir votre événement'|trans }}</a>
-            <button type="button" class="pl-btn pl-btn--primary" data-share-url="{{ url('app_events_detail', {slug: event.slug}) }}" data-share-title="{{ event.title }}" data-share-done="{{ 'Lien copié !'|trans }}">{{ 'Partager votre événement'|trans }} {{ icon.share(16) }}</button>
+            {# 07/10 : carton d'invitation avec QR code, lien privé et suivi des réponses. #}
+            <a href="{{ path('app_events_invitation', {slug: event.slug}) }}" class="pl-btn pl-btn--primary">{{ 'Créer le carton d’invitation'|trans }} {{ icon.share(16) }}</a>
         {% endif %}
         <a href="{{ is_granted('ROLE_PROVIDER') ? path('app_pro_events') : path('app_account_events') }}" class="pl-btn ev-btn-ghost">{{ 'Mes événements'|trans }}</a>
     </div>

@@ -23,7 +23,8 @@ use Doctrine\Persistence\ObjectManager;
 class GroupFixtures extends Fixture
 {
     /** Description de remplissage, répétée telle quelle par la maquette. */
-    private const LOREM = 'Description du groupe simply dummy text of the printing and typesetting industry. Lorem Ipsum';
+    // 07/10 : plus de Lorem ipsum dans les données de démonstration.
+    private const LOREM = 'Un groupe de passionnés qui se retrouvent régulièrement pour partager sorties, conseils et bons moments. Rejoignez-nous !';
 
     /**
      * @var list<array<string, mixed>>
@@ -91,7 +92,7 @@ class GroupFixtures extends Fixture
         //
         // « Mis à jour le 28 Juill. 2026 » : la maquette affiche la même date
         // sur les douze albums.
-        $miseAJour = new \DateTimeImmutable('2026-07-28 12:00');
+        $miseAJour = new \DateTimeImmutable('-10 days 12:00');
 
         foreach (self::ALBUMS as $rang => $data) {
             $album = new GroupAlbum();

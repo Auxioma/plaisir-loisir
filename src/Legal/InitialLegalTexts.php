@@ -50,7 +50,7 @@ final class InitialLegalTexts
 
     public const CONTACT = 'contact@trouvemoi.fr';
 
-    public const TELEPHONE = '01 84 80 37 37';
+    public const TELEPHONE = '07 45 15 54 51';
 
     public static function privacyPolicy(): string
     {

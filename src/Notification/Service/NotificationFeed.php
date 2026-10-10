@@ -15,6 +15,10 @@ use Symfony\Component\HttpFoundation\Request;
  * Liste des notifications d'un membre (onglets Toutes / Non lues / Archives,
  * recherche, type, 8 par page), partagée par l'espace particulier
  * (/compte/notifications) et l'espace professionnel (/pro/notifications).
+ *
+ * Les notifications de la page affichée passent « lues » une fois montrées
+ * (07/10) : elles restent en surbrillance cette fois-ci, puis le compteur de
+ * l'en-tête n'en tient plus compte.
  */
 final class NotificationFeed
 {
@@ -24,6 +28,7 @@ final class NotificationFeed
         private readonly NotificationRepository $notifications,
         private readonly NotificationPresenter $presenter,
         private readonly NotificationPreferenceRepository $preferences,
+        private readonly NotificationService $notificationService,
     ) {
     }
 
@@ -53,13 +58,17 @@ final class NotificationFeed
         $total = \count($filtered);
         $pages = max(1, (int) ceil($total / self::PER_PAGE));
         $page = min($pages, max(1, $request->query->getInt('page', 1)));
+        $shown = \array_slice($filtered, ($page - 1) * self::PER_PAGE, self::PER_PAGE);
+        // Présentées AVANT d'être marquées : elles s'affichent encore « nouvelles ».
+        $items = $this->presenter->items($shown);
+        $this->notificationService->markSeen($shown);
 
         return [
             'filter' => $filter,
             'query' => $query,
             'type' => $type,
             'unread' => $unread,
-            'items' => $this->presenter->items(\array_slice($filtered, ($page - 1) * self::PER_PAGE, self::PER_PAGE)),
+            'items' => $items,
             'page' => $page,
             'pages' => $pages,
             'total' => $total,

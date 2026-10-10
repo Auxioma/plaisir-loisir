@@ -1,0 +1,84 @@
+{#
+    Carton d'invitation d'un événement (organisateur) — exemple « Organisez
+    gratuitement vos événements privés » transmis par le client le 07/10 :
+    informations, aperçu du carton (ordinateur + téléphone) avec QR code,
+    gestion des invités, partage (impression / PDF, WhatsApp, lien, e-mail).
+    Données : EventsController::invitation(). Styles : free-activities.css (.fa-invite).
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Invitation'|trans }} — {{ entity.title }}{% endblock %}
+
+{% macro card(entity, qr) %}
+    <div class="fa-invite__card">
+        <p class="fa-invite__brand">TrouveMoi · {{ 'Plaisirs & Loisirs'|trans }}</p>
+        <h2 class="fa-invite__title">{{ 'Tu es invité(e) !'|trans }}</h2>
+        <p class="fa-invite__sub">{{ entity.title }}</p>
+        <p class="fa-invite__when">{{ entity.startsAt|pf_date('EEEE d MMMM y')|capitalize }}{% if not entity.allDay %} {{ 'à'|trans }} {{ entity.startsAt|date('H\\hi') }}{% endif %}</p>
+        {% set where = entity.address ?: (entity.location ?: entity.city) %}
+        {% if where %}<p class="fa-invite__where">{{ where }}</p>{% endif %}
+        {% if entity.shortDescription %}<p class="fa-invite__text">{{ entity.shortDescription }}</p>{% endif %}
+        <span class="fa-invite__qr"><img src="{{ qr }}" alt="{{ 'QR code de l’invitation'|trans }}">{{ 'Scanne pour confirmer ta présence'|trans }}</span>
+        <p class="fa-invite__foot">{{ 'Invitation créée gratuitement sur TrouveMoi'|trans }}</p>
+    </div>
+{% endmacro %}
+
+{% block body %}
+{% set message = 'Tu es invité(e) à « %title% » ! Toutes les infos et ta réponse ici :'|trans({'%title%': entity.title}) ~ ' ' ~ link %}
+<div class="fa-create fa-invite fa-create--wide">
+    <header class="fa-create__head fa-noprint">
+        <h1>{{ 'Organisez'|trans }} <span>{{ 'gratuitement'|trans }}</span> {{ 'vos événements privés'|trans }}</h1>
+        <p>{{ 'Anniversaires, mariages, baptêmes… Créez vos invitations, partagez-les facilement, avec QR code et suivi des réponses.'|trans }}</p>
+    </header>
+
+    <div class="fa-invite__grid">
+        <section class="fa-panel fa-noprint">
+            <h2>1. {{ 'Informations de l’événement'|trans }}</h2>
+            <ul class="fa-card__meta">
+                <li>{{ icon.calendar(14) }} {{ entity.startsAt|pf_date('EEEE d MMMM y')|capitalize }} · {{ entity.startsAt|date('H\\hi') }}</li>
+                {% if entity.address or entity.city %}<li>{{ icon.map_pin(14) }} {{ entity.address ?: entity.city }}</li>{% endif %}
+                <li>{{ icon.padlock(14) }} {{ {private: 'Privé — sur invitation', public: 'Public', members: 'Membres connectés', group: 'Groupe / Club'}[entity.visibility]|default('Public')|trans }}</li>
+            </ul>
+            {% if entity.description %}<p class="fa-invite__desc">{{ entity.description|length > 260 ? entity.description|slice(0, 258) ~ '…' : entity.description }}</p>{% endif %}
+            <a class="fa-btn fa-btn--ghost fa-btn--sm" href="{{ path('app_event_resume', {slug: entity.slug}) }}">{{ icon.edit_square(14) }} {{ 'Modifier l’événement'|trans }}</a>
+        </section>
+
+        <section>
+            <h2 class="fa-invite__h2 fa-noprint">2. {{ 'Aperçu de l’invitation'|trans }}</h2>
+            {{ _self.card(entity, qr) }}
+        </section>
+
+        <section class="fa-noprint">
+            <h2 class="fa-invite__h2">{{ 'Aperçu mobile'|trans }}</h2>
+            <div class="fa-phone"><div class="fa-phone__screen">{{ _self.card(entity, qr) }}</div></div>
+        </section>
+    </div>
+
+    <div class="fa-invite__tools fa-noprint">
+        <section class="fa-panel">
+            <h2>3. {{ 'Gestion des invités'|trans }}</h2>
+            <div class="fa-guests">
+                <div class="fa-kpi"><span class="fa-kpi__ico">{{ icon.users(18) }}</span><span><strong>{{ stats.invited }}</strong><small>{{ 'Invités'|trans }}</small></span></div>
+                <div class="fa-kpi is-green"><span class="fa-kpi__ico">{{ icon.check(18) }}</span><span><strong>{{ stats.going }}</strong><small>{{ 'Confirmés'|trans }}</small></span></div>
+                <div class="fa-kpi is-orange"><span class="fa-kpi__ico">{{ icon.clock(18) }}</span><span><strong>{{ stats.pending }}</strong><small>{{ 'Sans réponse'|trans }}</small></span></div>
+                <div class="fa-kpi is-violet"><span class="fa-kpi__ico">{{ icon.users(18) }}</span><span><strong>{{ stats.waiting }}</strong><small>{{ 'Liste d’attente'|trans }}</small></span></div>
+            </div>
+            <p class="fa-invite__more"><a class="pf-link" href="{{ path('app_events_participants', {slug: entity.slug}) }}">{{ 'Voir la liste des participants'|trans }} {{ icon.arrow_right(14) }}</a></p>
+        </section>
+
+        <section class="fa-panel fa-share">
+            <h2>4. {{ 'Partager l’invitation'|trans }}</h2>
+            <div class="fa-share__actions">
+                <button type="button" class="fa-share__btn" onclick="window.print()">{{ icon.download(16) }} {{ 'Imprimer / PDF'|trans }}</button>
+                <a class="fa-share__btn fa-share__btn--wa" href="https://wa.me/?text={{ message|url_encode }}" target="_blank" rel="noopener">{{ icon.chat_bubble(16) }} WhatsApp</a>
+                <button type="button" class="fa-share__btn" data-copy="{{ link }}" data-copy-done="{{ 'Lien copié !'|trans }}">{{ icon.link(16) }} <span data-copy-label>{{ 'Copier le lien'|trans }}</span></button>
+                <a class="fa-share__btn" href="mailto:?subject={{ entity.title|url_encode }}&amp;body={{ message|url_encode }}">{{ icon.mail(16) }} {{ 'Par e-mail'|trans }}</a>
+                <a class="fa-share__btn" href="{{ qr }}" download="invitation-{{ entity.slug }}.svg">{{ icon.download(16) }} {{ 'Télécharger le QR code'|trans }}</a>
+                <a class="fa-share__btn" href="{{ path('app_events_detail', {slug: entity.slug}) }}">{{ icon.eye(16) }} {{ 'Voir la page'|trans }}</a>
+            </div>
+            <small>{{ entity.private ? 'Événement privé : seules les personnes qui ont ce lien ou ce QR code peuvent le voir et répondre.'|trans : 'Le lien mène à la page publique de l’événement.'|trans }}</small>
+        </section>
+    </div>
+</div>
+{% endblock %}

@@ -41,6 +41,7 @@
 <div class="ew-visibility{{ errors.visibility is defined ? ' has-error' }}" role="radiogroup" aria-label="{{ 'Visibilité'|trans }}">
     {{ ui.choice('visibility', 'private', draft.visibility, 'Événement privé', 'Seulement sur invitation ou personnes invitées', 'lock') }}
     {{ ui.choice('visibility', 'public', draft.visibility, 'Événement public', 'Ouvert à tous les membres de la communauté', 'globe') }}
+    {{ ui.choice('visibility', 'members', draft.visibility, 'Membres', 'Réservé aux utilisateurs connectés à leur compte TrouveMoi', 'person') }}
     {{ ui.choice('visibility', 'group', draft.visibility, 'Groupe / Club', 'Réservé aux membres du groupe ou club', 'users') }}
 </div>
 {{ ui.err(errors, 'visibility') }}

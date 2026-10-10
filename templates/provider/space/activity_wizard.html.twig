@@ -12,6 +12,16 @@
 {% block title %}{{ (service ? 'Modifier une activité' : 'Créer une activité')|trans }} — {{ steps[step - 1].title|trans }}{% endblock %}
 
 {% block space %}
+{# Boutons en haut ET en bas (retours client du 07/10). #}
+{% set wizard_actions %}
+            <button type="submit" name="action" value="draft" class="pf-btn" formnovalidate>{{ 'Enregistrer en brouillon'|trans }}</button>
+            {% if step > 1 %}<button type="submit" name="action" value="prev" class="pf-btn" formnovalidate>{{ 'Précédent'|trans }}</button>{% endif %}
+            {% if step < 6 %}
+                <button type="submit" name="action" value="next" class="pf-btn pf-btn--primary">{{ 'Suivant'|trans }} {{ icon.arrow_right(14) }}</button>
+            {% else %}
+                <button type="submit" name="action" value="next" class="pf-btn pf-btn--primary">{{ (service and service.status.value not in ['draft', 'archived'] ? 'Enregistrer les modifications' : 'Envoyer en validation')|trans }}</button>
+            {% endif %}
+{% endset %}
 <form class="ew-form aw" method="post" action="{{ path('app_pro_activity_wizard', {etape: step}) }}" enctype="multipart/form-data" novalidate data-ew-form>
     <input type="hidden" name="_token" value="{{ csrf_token('activity_wizard') }}">
 
@@ -25,13 +35,7 @@
             </p>
         </div>
         <div class="aw-head__actions">
-            <button type="submit" name="action" value="draft" class="pf-btn" formnovalidate>{{ 'Enregistrer en brouillon'|trans }}</button>
-            {% if step > 1 %}<button type="submit" name="action" value="prev" class="pf-btn" formnovalidate>{{ 'Précédent'|trans }}</button>{% endif %}
-            {% if step < 6 %}
-                <button type="submit" name="action" value="next" class="pf-btn pf-btn--primary">{{ 'Suivant'|trans }} {{ icon.arrow_right(14) }}</button>
-            {% else %}
-                <button type="submit" name="action" value="next" class="pf-btn pf-btn--primary">{{ (service and service.status.value not in ['draft', 'archived'] ? 'Enregistrer les modifications' : 'Envoyer en validation')|trans }}</button>
-            {% endif %}
+            {{ wizard_actions }}
         </div>
     </header>
 
@@ -56,6 +60,7 @@
     <section class="pf-card ew-main aw-main">
         {% include 'provider/space/activity_wizard/step' ~ step ~ '.html.twig' %}
     </section>
+    <div class="aw-foot">{{ wizard_actions }}</div>
 </form>
 {% endblock %}
 

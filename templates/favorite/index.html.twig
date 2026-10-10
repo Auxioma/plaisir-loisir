@@ -27,13 +27,13 @@
             <div class="fv-hero__stats">
                 <a href="{{ path('app_favorites_page', {onglet: 'evenements'}) }}">{{ icon.calendar_grid(26) }}<span><strong>{{ events|length }}</strong>{{ 'Événements'|trans }}</span></a>
                 <a href="{{ path('app_favorites_page', {onglet: 'groupes'}) }}" class="is-orange">{{ icon.users(26) }}<span><strong>{{ groups|length }}</strong>{{ 'Groupes & Clubs'|trans }}</span></a>
-                <a href="{{ path('app_favorites_page', {onglet: 'activites'}) }}">{{ icon.user_pin(26) }}<span><strong>{{ activities|length }}</strong>{{ 'Activités privées'|trans }}</span></a>
+                <a href="{{ path('app_favorites_page', {onglet: 'activites'}) }}">{{ icon.user_pin(26) }}<span><strong>{{ activities|length }}</strong>{{ 'Activités gratuites'|trans }}</span></a>
                 <a href="{{ path('app_favorites_page', {onglet: 'organisateurs'}) }}" class="is-orange">{{ icon.star(26) }}<span><strong>{{ organizers|length }}</strong>{{ 'Organisateurs'|trans }}</span></a>
             </div>
         </header>
 
         <nav class="fv-tabs" aria-label="{{ 'Filtrer mes favoris'|trans }}">
-            {% for key, label in {tous: 'Tous mes favoris', evenements: 'Événements', groupes: 'Groupes & Clubs', activites: 'Activités privées', organisateurs: 'Organisateurs'} %}
+            {% for key, label in {tous: 'Tous mes favoris', evenements: 'Événements', groupes: 'Groupes & Clubs', activites: 'Activités gratuites', organisateurs: 'Organisateurs'} %}
                 <a class="{{ tab == key ? 'is-active' }}" href="{{ path('app_favorites_page', {onglet: key}) }}">
                     {%- if key == 'tous' %}{{ icon.heart(18) }}{% elseif key == 'evenements' %}{{ icon.calendar_grid(18) }}{% elseif key == 'groupes' %}{{ icon.users(18) }}{% elseif key == 'activites' %}{{ icon.star(18) }}{% else %}{{ icon.user_round(18) }}{% endif %} {{ label|trans }}</a>
             {% endfor %}
@@ -103,10 +103,10 @@
         {% if show.activites %}
             <section class="fv-section">
                 <div class="fv-section__head">
-                    <h2>{{ icon.star_solid(22) }} {{ 'Activités privées favorites'|trans }}</h2>
+                    <h2>{{ icon.star_solid(22) }} {{ 'Activités gratuites favorites'|trans }}</h2>
                 </div>
                 {% if activities is empty %}
-                    <p class="fv-empty">{{ 'Aucune activité privée en favori.'|trans }} <a href="{{ path('app_private_activities') }}">{{ 'Voir les activités privées'|trans }}</a></p>
+                    <p class="fv-empty">{{ 'Aucune activité gratuite en favori.'|trans }} <a href="{{ path('app_private_activities') }}">{{ 'Voir les activités gratuites'|trans }}</a></p>
                 {% else %}
                     <div class="fv-acts" data-favorite-list data-favorite-removed="{{ 'Retiré de vos favoris.'|trans }}" data-favorite-undo="{{ 'Annuler'|trans }}">
                         {% for a in activities %}

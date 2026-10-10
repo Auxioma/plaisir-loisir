@@ -60,20 +60,15 @@
                     <div class="tm-menu">
                         <a href="{{ path('app_activities') }}" class="tm-menu__item">{{ 'Toutes les activités'|trans }}</a>
                         <a href="{{ path('app_offers') }}" class="tm-menu__item">{{ 'Offres du moment'|trans }}</a>
-                        <a href="{{ path('app_gifts') }}" class="tm-menu__item">{{ 'Bons cadeaux'|trans }}</a>
-                        <a href="{{ path('app_events') }}" class="tm-menu__item">{{ 'Événements'|trans }}</a>
-                        <a href="{{ path('app_private_activities') }}" class="tm-menu__item">{{ 'Activités privées'|trans }}</a>
-                        {# Un professionnel crée ses activités depuis son espace pro ; il
-                           ne doit jamais être renvoyé dans l'espace particulier (05/10). #}
-                        <a href="{{ is_provider ? path('app_pro_activities_new') : path('app_account_private_activities_new') }}" class="tm-menu__item">{{ (is_provider ? 'Créer une activité' : 'Organiser une activité')|trans }}</a>
-                        <a href="{{ path('app_event_guide') }}" class="tm-menu__item">{{ 'Créer un événement'|trans }}</a>
-                        <a href="{{ path('app_provider_search') }}" class="tm-menu__item">{{ 'Trouver un professionnel'|trans }}</a>
-                        {% if not is_provider %}<a href="{{ path('app_account_requests_new') }}" class="tm-menu__item">{{ 'Déposer une demande'|trans }}</a>{% endif %}
+                        {# Menu simplifié (retours client du 07/10) : trois entrées seulement. #}
+                        <a href="{{ path('app_private_activities') }}" class="tm-menu__item">{{ 'Activités gratuites'|trans }}</a>
                     </div>
                 </details>
 
                 <a href="{{ path('app_destinations') }}" class="tm-nav__link{{ active == 'destinations' ? ' is-active' }}">{{ 'Destinations'|trans }}</a>
 
+                {# Favoris et notifications : membres connectés seulement (07/10). #}
+                {% if connected %}
                 <a href="{{ path('app_favorites_page') }}" class="tm-nav__link{{ active == 'favoris' ? ' is-active' }}">
                     <span class="tm-nav__icon">{{ icon.heart(20) }}</span> {{ 'Mes favoris'|trans }}
                 </a>
@@ -94,15 +89,23 @@
                         {% endif %}
                     {% endif %}
                 </a>
+                {% endif %}
             </nav>
         </div>
 
         <div class="tm-header__actions">
             {% include '_partials/_account_menu.html.twig' %}
 
-            {# Le professionnel ouvre l'assistant de création (05/10) ; le
-               visiteur, la présentation de l'offre professionnelle. #}
-            <a href="{{ is_provider ? path('app_pro_activities_new') : path('app_corporate_partner') }}" class="tm-btn tm-btn--cta">{{ 'Déposer une activité'|trans }}</a>
+            {# 07/10 : le professionnel dépose (payant) depuis son espace ; le
+               membre crée une activité GRATUITE ; le visiteur choisit
+               Particulier / Professionnel (plus la page partenaire). #}
+            {% if is_provider %}
+                <a href="{{ path('app_pro_activities_new') }}" class="tm-btn tm-btn--cta">{{ 'Déposer une activité'|trans }}</a>
+            {% elseif app.user %}
+                <a href="{{ path('app_create_free') }}" class="tm-btn tm-btn--cta">{{ 'Créer une activité gratuite'|trans }}</a>
+            {% else %}
+                <a href="{{ path('app_create_free') }}" class="tm-btn tm-btn--cta">{{ 'Déposer une activité'|trans }}</a>
+            {% endif %}
 
             <button class="tm-burger" type="button" data-bs-toggle="offcanvas" data-bs-target="#tmNav"
                     aria-controls="tmNav" aria-label="{{ 'Ouvrir le menu'|trans }}">

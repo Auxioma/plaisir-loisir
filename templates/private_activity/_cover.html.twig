@@ -1,8 +1,2 @@
-{# Image d'une activité privée : sa photo, à défaut une image de sa catégorie. Variable : activity. #}
-{%- set fallback = {
-    'sports-aventures': 'images/gifts/tile-sports.jpg', 'natures-plein-air': 'images/gifts/card-kayak.jpg',
-    'bien-etre': 'images/gifts/tile-bienetre.jpg', 'cultures-decouvertes': 'images/gifts/tile-cultures.jpg',
-    'en-famille': 'images/gifts/dest-enfants.jpg', 'gastronomies': 'images/gifts/tile-gastronomies.jpg',
-    'ateliers-creations': 'images/gifts/tile-ateliers.jpg', 'soirees-evenements': 'images/gifts/fg-diner.jpg',
-} -%}
-{{- asset(activity.coverImage ?? fallback[activity.category ? activity.category.slug : ''] ?? 'images/events/ev-rando-clean.jpg') -}}
+{# Image d'une activité gratuite : sa photo, à défaut une image de sa catégorie (PrivateActivityImage). Variable : activity. #}
+{{- asset(private_activity_cover(activity)) -}}

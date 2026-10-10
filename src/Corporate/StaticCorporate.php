@@ -14,22 +14,6 @@ namespace App\Corporate;
 final class StaticCorporate
 {
     /**
-     * Barre de statistiques de l'écran « À propos » (5 entrées).
-     *
-     * @return list<array{icon: string, tone: string, value: string, label: string}>
-     */
-    public static function stats(): array
-    {
-        return [
-            ['icon' => 'users', 'tone' => 'blue', 'value' => '+10 000', 'label' => 'Activités disponibles'],
-            ['icon' => 'users', 'tone' => 'violet', 'value' => '+2,5 millions', 'label' => 'Utilisateurs satisfaits'],
-            ['icon' => 'store', 'tone' => 'orange', 'value' => '+50 000', 'label' => 'Partenaires & prestataires'],
-            ['icon' => 'map_pin', 'tone' => 'green', 'value' => '+350', 'label' => 'Destinations partout en France'],
-            ['icon' => 'star', 'tone' => 'yellow', 'value' => '4,8/5', 'label' => 'Note moyenne des utilisateurs'],
-        ];
-    }
-
-    /**
      * « Pourquoi Nous Choisir ? » — 5 cartes numérotées, la 2e mise en avant.
      *
      * @return list<array{icon: string, tone: string, title: string, text: string}>
@@ -256,7 +240,7 @@ final class StaticCorporate
                     'RCS Paris 123 456 789',
                     'Numéro de TVA intracommunautaire : FR12 123 456 789',
                     'Email : contact@trouvemoi.fr',
-                    'Téléphone : 01 84 80 37 37',
+                    'Téléphone : 07 45 15 54 51',
                 ],
                 'paragraphs' => [],
             ],

@@ -12,6 +12,7 @@ use App\Catalog\Repository\ServiceRepository;
 use App\Catalog\StaticCatalog;
 use App\Catalog\StaticDestinations;
 use App\Favorite\Service\CurrentUserFavorites;
+use App\Review\Presenter\ReviewPresenter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,6 +43,7 @@ final class DestinationController extends AbstractController
         private readonly DestinationPresenter $destinationPresenter,
         private readonly ActivityPresenter $activityPresenter,
         private readonly CurrentUserFavorites $favorites,
+        private readonly ReviewPresenter $reviewPresenter,
     ) {
     }
 
@@ -126,7 +128,7 @@ final class DestinationController extends AbstractController
             'gastronomy' => StaticDestinations::gastronomy(),
             'selections' => StaticCatalog::selections(),
             'cities' => StaticCatalog::cities(),
-            'reviews' => StaticDestinations::travelerReviews(),
+            'reviews' => $this->reviewPresenter->band(),
         ]);
     }
 
@@ -143,7 +145,7 @@ final class DestinationController extends AbstractController
                 'activities' => $this->cityActivities(),
                 'selections' => StaticCatalog::selections(),
                 'cities' => StaticCatalog::cities(),
-                'reviews' => StaticDestinations::travelerReviews(),
+                'reviews' => $this->reviewPresenter->band(),
             ]);
         }
 
@@ -171,7 +173,7 @@ final class DestinationController extends AbstractController
             ),
             'selections' => StaticCatalog::selections(),
             'cities' => StaticCatalog::cities(),
-            'reviews' => StaticDestinations::travelerReviews(),
+            'reviews' => $this->reviewPresenter->band(),
         ]);
     }
 

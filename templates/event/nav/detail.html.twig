@@ -132,7 +132,8 @@
                     </p>
                     {% if is_organizer %}
                         <p class="evn-book__state">{{ icon.check_badge(16) }} {{ 'Vous organisez cet événement.'|trans }}</p>
-                        <a class="pl-btn pl-btn--primary pl-btn--block" href="{{ path('app_event_resume', {slug: event.slug}) }}">{{ 'Modifier l’événement'|trans }}</a>
+                        <a class="pl-btn pl-btn--primary pl-btn--block" href="{{ path('app_events_invitation', {slug: event.slug}) }}">{{ 'Carton d’invitation & partage'|trans }}</a>
+                        <a class="pl-btn pl-btn--outline-dark pl-btn--block" href="{{ path('app_event_resume', {slug: event.slug}) }}">{{ 'Modifier l’événement'|trans }}</a>
                     {% elseif entity.startsAt < date() %}
                         <p class="evn-book__state">{{ 'Cet événement a déjà eu lieu.'|trans }}</p>
                     {% else %}

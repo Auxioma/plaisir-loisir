@@ -5,9 +5,10 @@
 <p class="ew-main__lead">{{ 'Personnalisez les paramètres de votre événement selon vos besoins.'|trans }}</p>
 
 <h3 class="ew-main__label">{{ "Type d'événement"|trans }}</h3>
-<div class="ew-choices ew-choices--3" role="radiogroup">
+<div class="ew-choices ew-choices--4" role="radiogroup">
     {{ ui.choice('visibility', 'private', draft.visibility, 'Événement privé', 'Sur invitation uniquement', 'lock') }}
     {{ ui.choice('visibility', 'public', draft.visibility, 'Événement public', 'Ouvert à tous les membres', 'globe') }}
+    {{ ui.choice('visibility', 'members', draft.visibility, 'Membres', 'Réservé aux utilisateurs connectés à leur compte TrouveMoi', 'person') }}
     {{ ui.choice('visibility', 'group', draft.visibility, 'Groupe / Club', 'Réservé aux membres du groupe ou club', 'users') }}
 </div>
 {{ ui.err(errors, 'visibility') }}

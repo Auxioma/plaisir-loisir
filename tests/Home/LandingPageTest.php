@@ -22,7 +22,7 @@ final class LandingPageTest extends WebTestCase
         $guest = $client->request('GET', '/');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Explorez vos envies');
-        self::assertGreaterThan(0, $guest->filter('.ld-card__free')->count(), 'Les activités gratuites doivent être visibles sans connexion.');
+        self::assertGreaterThan(0, $guest->filter('.fa-card .fa-badge--free')->count(), 'Les activités gratuites doivent être visibles sans connexion.');
         self::assertGreaterThan(0, $guest->filter('a.ld-card__title[href^="/activites/"]')->count(), 'Les activités des prestataires doivent être visibles.');
         self::assertGreaterThan(0, $guest->filter('.ld-dest')->count());
         self::assertCount(0, $guest->filter('.tm-account__toggle'));
@@ -65,7 +65,7 @@ final class LandingPageTest extends WebTestCase
 
         $client->request('GET', '/activites-privees?lieu=Rouen');
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('.pa-grid', 'Sortie vélo');
+        self::assertSelectorTextContains('.fa-grid', 'Sortie vélo');
     }
 
     private function makeUser(): User

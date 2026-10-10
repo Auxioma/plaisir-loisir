@@ -1,5 +1,5 @@
 {#
-    Assistant « Organiser une activité » (activités privées entre membres,
+    Assistant « Créer une activité gratuite » (activités entre membres,
     05/10). Données : PrivateActivityController::wizard(). Validation serveur
     à chaque étape (PrivateActivityDraftService). Composants .ew-* et
     event-wizard.js partagés avec les assistants des événements et du pro.
@@ -7,7 +7,10 @@
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}{{ 'Organiser une activité'|trans }} — {{ steps[step - 1].title|trans }}{% endblock %}
+{# Activité déjà en ligne reprise dans l'assistant = modification (07/10). #}
+{% set editing = draft.editing ?? false %}
+{% set heading = editing ? 'Modifier l’activité gratuite' : 'Créer une activité gratuite' %}
+{% block title %}{{ heading|trans }} — {{ steps[step - 1].title|trans }}{% endblock %}
 
 {% block account %}
 <form class="ew-form aw" method="post" action="{{ path('app_account_private_activity_wizard', {etape: step}) }}" enctype="multipart/form-data" novalidate data-ew-form>
@@ -15,13 +18,11 @@
 
     <header class="pf-head aw-head">
         <div>
-            <h1 class="pf-title">{{ 'Organiser une activité'|trans }}</h1>
+            <h1 class="pf-title">{{ heading|trans }}</h1>
             <p class="pf-sub">{{ 'Proposez une sortie entre membres, gratuite : randonnée, jeux, visite, pique-nique…'|trans }}</p>
         </div>
         <div class="aw-head__actions">
-            <button type="submit" name="action" value="draft" class="pf-btn" formnovalidate>{{ 'Enregistrer en brouillon'|trans }}</button>
-            {% if step > 1 %}<button type="submit" name="action" value="prev" class="pf-btn" formnovalidate>{{ 'Précédent'|trans }}</button>{% endif %}
-            <button type="submit" name="action" value="next" class="pf-btn pf-btn--primary">{{ step == 5 ? 'Publier l’activité'|trans : 'Suivant'|trans }}{% if step < 5 %} {{ icon.arrow_right(14) }}{% endif %}</button>
+            {{ block('wizard_actions') }}
         </div>
     </header>
 
@@ -43,7 +44,17 @@
     <section class="pf-card ew-main aw-main">
         {% include 'private_activity/wizard/step' ~ step ~ '.html.twig' %}
     </section>
+
+    {# Les mêmes boutons en bas de page (07/10) : sur une longue étape, le
+       client cherchait « Suivant » en haut. #}
+    <div class="aw-foot">{{ block('wizard_actions') }}</div>
 </form>
+{% endblock %}
+
+{% block wizard_actions %}
+    {% if not editing %}<button type="submit" name="action" value="draft" class="pf-btn" formnovalidate>{{ 'Enregistrer en brouillon'|trans }}</button>{% endif %}
+    {% if step > 1 %}<button type="submit" name="action" value="prev" class="pf-btn" formnovalidate>{{ 'Précédent'|trans }}</button>{% endif %}
+    <button type="submit" name="action" value="next" class="pf-btn pf-btn--primary">{{ step == 5 ? (editing ? 'Enregistrer les modifications' : 'Publier l’activité')|trans : 'Suivant'|trans }}{% if step < 5 %} {{ icon.arrow_right(14) }}{% endif %}</button>
 {% endblock %}
 
 {% block account_aside %}

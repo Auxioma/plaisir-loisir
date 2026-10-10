@@ -1,5 +1,5 @@
 {#
-    Activités privées entre membres (§5, §12.3 du CDC ; refonte 05/10 sur
+    Activités gratuites entre membres (ex-« activités privées », renommées le 07/10) (§5, §12.3 du CDC ; refonte 05/10 sur
     le modèle de la page Événements). Un visiteur voit les activités
     PUBLIQUES ; un membre connecté aussi celles réservées aux membres.
     Données : PrivateActivityController::index(). Styles : event-list.css.
@@ -7,7 +7,7 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}{{ 'Activités privées'|trans }}{% endblock %}
+{% block title %}{{ 'Activités gratuites'|trans }}{% endblock %}
 {% block meta_description %}{{ 'Sorties gratuites organisées par les membres : randonnées, jeux, visites, pique-niques… Rejoignez-les ou proposez la vôtre.'|trans }}{% endblock %}
 
 {% block body %}
@@ -16,7 +16,7 @@
         <section class="evl-hero">
             <img class="evl-hero__bg" src="{{ asset('images/events/banner-explore.jpg') }}" alt="">
             <div class="evl-hero__text">
-                <h1>{{ 'Activités privées'|trans }}</h1>
+                <h1>{{ 'Activités gratuites'|trans }}</h1>
                 <p class="evl-hero__lead">{{ 'Des sorties entre membres, gratuites et conviviales'|trans }}</p>
                 <p>{{ 'Randonnées, jeux, visites, pique-niques… Rejoignez une activité proposée par un membre ou organisez la vôtre en quelques étapes.'|trans }}</p>
             </div>
@@ -41,9 +41,9 @@
             </form>
             <strong>{{ activities|length }} {{ activities|length > 1 ? 'activités'|trans : 'activité'|trans }}</strong>
             {% if is_granted('ROLE_USER') %}
-                <a class="evl-btn" href="{{ path('app_account_private_activities_new', {vierge: 1}) }}">{{ icon.plus(16) }} {{ 'Organiser une activité'|trans }}</a>
+                <a class="evl-btn" href="{{ path('app_create_free') }}">{{ icon.plus(16) }} {{ 'Créer une activité gratuite'|trans }}</a>
             {% else %}
-                <a class="evl-btn evl-btn--ghost" href="{{ path('app_login') }}">{{ 'Se connecter pour organiser'|trans }}</a>
+                <a class="evl-btn evl-btn--ghost" href="{{ path('app_create_free') }}">{{ 'Créer une activité gratuite'|trans }}</a>
             {% endif %}
         </div>
 
@@ -56,32 +56,13 @@
                 {{ icon.users(36) }}
                 <strong>{{ 'Aucune activité ne correspond à cette recherche pour le moment.'|trans }}</strong>
                 <span>{{ 'Soyez le premier à en proposer une !'|trans }}</span>
-                <a class="evl-btn" href="{{ path('app_account_private_activities_new', {vierge: 1}) }}">{{ 'Organiser une activité'|trans }}</a>
+                <a class="evl-btn" href="{{ path('app_create_free') }}">{{ 'Créer une activité gratuite'|trans }}</a>
             </div>
         {% else %}
-            <div class="evl-grid pa-grid">
+            {# Carte commune (07/10) : Gratuit, niveau, participants, compte à rebours. #}
+            <div class="fa-grid">
                 {% for activity in activities %}
-                    {% set going = activity.participations|filter(p => p.status.value == 'accepted')|length %}
-                    <article class="evl-card">
-                        <a class="evl-card__media" href="{{ path('app_private_activity_show', {id: activity.id}) }}">
-                            <img src="{% include 'private_activity/_cover.html.twig' %}" alt="{{ activity.title }}" loading="lazy">
-                            <span class="evl-badge evl-badge--green">{{ activity.category.name|trans }}</span>
-                            {% if activity.scheduledAt %}<span class="evl-card__date"><b>{{ activity.scheduledAt|date('d') }}</b>{{ activity.scheduledAt|pf_date('MMM')|trim('.') }}</span>{% endif %}
-                        </a>
-                        {% if app.user and activity.organizer != app.user %}
-                            {% include '_partials/_event_fav.html.twig' with { type: 'activite-privee', key: activity.id ~ '', class: 'evl-card__fav' } %}
-                        {% endif %}
-                        <div class="evl-card__body">
-                            <a class="evl-card__title" href="{{ path('app_private_activity_show', {id: activity.id}) }}">{{ activity.title }}</a>
-                            {% if activity.city %}<span class="evl-card__meta">{{ icon.map_pin(13) }} {{ activity.city }}</span>{% endif %}
-                            {% if activity.scheduledAt %}<span class="evl-card__meta">{{ icon.clock(13) }} {{ activity.scheduledAt|pf_date('EEE d MMM')|capitalize }} · {{ activity.scheduledAt|date('H\\hi') }}{% if activity.endsAt %} – {{ activity.endsAt|date('H\\hi') }}{% endif %}</span>{% endif %}
-                            <span class="evl-card__foot">
-                                <span>{{ going }} {{ going > 1 ? 'participants'|trans : 'participant'|trans }}{% if activity.maxParticipants %} / {{ activity.maxParticipants }}{% endif %}</span>
-                                {% if activity.status.value == 'full' %}<em class="pa-pill">{{ 'Complet'|trans }}</em>{% elseif activity.visibility.value == 'members_only' %}<em class="pa-pill">{{ 'Membres'|trans }}</em>{% endif %}
-                            </span>
-                            <a class="evl-btn evl-btn--ghost evl-btn--block" href="{{ path('app_private_activity_show', {id: activity.id}) }}">{{ 'Voir l’activité'|trans }}</a>
-                        </div>
-                    </article>
+                    {% include 'private_activity/_card.html.twig' %}
                 {% endfor %}
             </div>
         {% endif %}

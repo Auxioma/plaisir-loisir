@@ -42,6 +42,8 @@ import './styles/event-wizard.css';
 import './styles/event-list.css';
 // Pages institutionnelles (maquettes du 04/10).
 import './styles/pages.css';
+// Activités gratuites, choix de création, invitations (retours client du 07/10).
+import './styles/free-activities.css';
 
 // Adaptations telephone / tablette. Charge EN DERNIER : a specificite egale,
 // ses regles doivent l'emporter sur le CSS de bureau qu'elles degradent.
@@ -73,6 +75,8 @@ import './favorites.js';
 import './pro.js';
 import './event-wizard.js';
 import './pages.js';
+// Activités gratuites : compte à rebours, participants, liens d'invitation (07/10).
+import './free-activities.js';
 
 // Suggestions pendant la frappe dans les champs de recherche (26/08).
 import './autocomplete.js';

@@ -15,7 +15,15 @@
 
 {% block body %}
 <div class="ew">
-    <form class="ew-form" method="post" action="{{ path('app_event_create', {etape: step}) }}" enctype="multipart/form-data" novalidate data-ew-form>
+    {# Boutons en haut ET en bas (retours client du 07/10). #}
+{% set wizard_actions %}
+                <button type="submit" name="action" value="draft" class="ew-btn ew-btn--ghost" formnovalidate>{{ 'Enregistrer en brouillon'|trans }}</button>
+                {% if step > 1 %}
+                    <button type="submit" name="action" value="prev" class="ew-btn ew-btn--ghost" formnovalidate>{{ 'Précédent'|trans }}</button>
+                {% endif %}
+                <button type="submit" name="action" value="next" class="ew-btn ew-btn--primary">{{ step == 8 ? 'Publier'|trans : 'Suivant'|trans }}</button>
+{% endset %}
+<form class="ew-form" method="post" action="{{ path('app_event_create', {etape: step}) }}" enctype="multipart/form-data" novalidate data-ew-form>
         <input type="hidden" name="_token" value="{{ csrf_token('event_wizard') }}">
 
         <header class="ew-head">
@@ -24,11 +32,7 @@
                 <p class="ew-head__sub">{{ 'Organisez facilement vos activités, sorties ou rencontres et invitez vos proches à participer.'|trans }}</p>
             </div>
             <div class="ew-head__actions">
-                <button type="submit" name="action" value="draft" class="ew-btn ew-btn--ghost" formnovalidate>{{ 'Enregistrer en brouillon'|trans }}</button>
-                {% if step > 1 %}
-                    <button type="submit" name="action" value="prev" class="ew-btn ew-btn--ghost" formnovalidate>{{ 'Précédent'|trans }}</button>
-                {% endif %}
-                <button type="submit" name="action" value="next" class="ew-btn ew-btn--primary">{{ step == 8 ? 'Publier'|trans : 'Suivant'|trans }}</button>
+                {{ wizard_actions }}
             </div>
         </header>
 
@@ -63,6 +67,7 @@
 
             <section class="ew-card ew-main">
                 {% include 'event/wizard/step' ~ step ~ '.html.twig' %}
+                <div class="aw-foot">{{ wizard_actions }}</div>
             </section>
 
             <div class="ew-col">

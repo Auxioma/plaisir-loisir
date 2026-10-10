@@ -1,0 +1,32 @@
+{#
+    Inviter et partager (organisateur) — retours client du 07/10 : « pour
+    l'invitation privée il manque le choix d'inviter par mail et partage ».
+    Lien (signé pour une activité privée), WhatsApp, e-mail, invitations
+    par adresse. Variables : activity, share_url, back ('participants' ou rien).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+{% set message = 'Je t’invite à « %title% » sur TrouveMoi :'|trans({'%title%': activity.title}) ~ ' ' ~ share_url %}
+<div class="fa-share">
+    <h2>{{ 'Inviter des participants'|trans }}</h2>
+    {% if activity.visibility.value == 'private' %}
+        <small>{{ 'Activité privée : seules les personnes qui ont ce lien ou une invitation peuvent la voir.'|trans }}</small>
+    {% endif %}
+    <div class="fa-share__actions">
+        <button type="button" class="fa-share__btn" data-copy="{{ share_url }}" data-copy-done="{{ 'Lien copié !'|trans }}">{{ icon.link(16) }} <span data-copy-label>{{ 'Copier le lien'|trans }}</span></button>
+        <a class="fa-share__btn fa-share__btn--wa" href="https://wa.me/?text={{ message|url_encode }}" target="_blank" rel="noopener">{{ icon.chat_bubble(16) }} WhatsApp</a>
+        <a class="fa-share__btn" href="mailto:?subject={{ activity.title|url_encode }}&amp;body={{ message|url_encode }}">{{ icon.mail(16) }} {{ 'Mon e-mail'|trans }}</a>
+        <a class="fa-share__btn" href="https://www.facebook.com/sharer/sharer.php?u={{ share_url|url_encode }}" target="_blank" rel="noopener">{{ icon.facebook(14) }} Facebook</a>
+    </div>
+
+    {% if activity.status.value not in ['cancelled', 'draft'] %}
+        <form method="post" action="{{ path('app_account_private_activity_invite', {id: activity.id}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+            {% if back is defined and back %}<input type="hidden" name="retour" value="{{ back }}">{% endif %}
+            <label for="fa-invite-emails"><strong>{{ 'Inviter par e-mail'|trans }}</strong></label>
+            <textarea id="fa-invite-emails" name="emails" rows="3" required placeholder="{{ 'marie@exemple.fr, paul@exemple.fr'|trans }}"></textarea>
+            <textarea name="note" rows="2" maxlength="500" placeholder="{{ 'Un petit mot (facultatif)'|trans }}"></textarea>
+            <small>{{ 'Séparez les adresses par une virgule. Les membres TrouveMoi reçoivent aussi une notification.'|trans }}</small>
+            <button class="fa-btn fa-btn--sm">{{ icon.mail(14) }} {{ 'Envoyer les invitations'|trans }}</button>
+        </form>
+    {% endif %}
+</div>

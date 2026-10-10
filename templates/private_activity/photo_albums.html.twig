@@ -59,7 +59,7 @@
             <div class="pf-card pf-empty">
                 <strong>{{ 'Aucun album à afficher.'|trans }}</strong>
                 {% if tab == 'prives' and not app.user %}
-                    {{ 'Connectez-vous pour retrouver les albums de vos activités privées.'|trans }}
+                    {{ 'Connectez-vous pour retrouver les albums de vos activités gratuites.'|trans }}
                     <br><a class="pf-btn" href="{{ path('app_login') }}">{{ 'Se connecter'|trans }}</a>
                 {% else %}
                     {{ 'Chaque activité organisée ou rejointe dispose de son album photo partagé.'|trans }}

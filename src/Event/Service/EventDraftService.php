@@ -88,6 +88,17 @@ final class EventDraftService
         $session->remove(self::SESSION_KEY);
     }
 
+    /**
+     * Valeurs posées avant l'assistant (choix de visibilité de « Créer une
+     * activité gratuite », 07/10).
+     *
+     * @param array<string, mixed> $values
+     */
+    public function patch(SessionInterface $session, array $values): void
+    {
+        $session->set(self::SESSION_KEY, $values + $this->current($session));
+    }
+
     /** Étapes déjà validées (le stepper n'ouvre que celles-là). */
     public function maxReachable(SessionInterface $session): int
     {
@@ -168,7 +179,7 @@ final class EventDraftService
                 if ($len('description') > 3000) {
                     $e['description'] = 'La description ne doit pas dépasser 3000 caractères.';
                 }
-                if (!\in_array($d['visibility'] ?? '', ['private', 'public', 'group'], true)) {
+                if (!\in_array($d['visibility'] ?? '', ['private', 'public', 'members', 'group'], true)) {
                     $e['visibility'] = 'Choisissez la visibilité de votre événement.';
                 }
                 break;
@@ -248,7 +259,7 @@ final class EventDraftService
                 break;
 
             case 6:
-                if (!\in_array($d['visibility'] ?? '', ['private', 'public', 'group'], true)) {
+                if (!\in_array($d['visibility'] ?? '', ['private', 'public', 'members', 'group'], true)) {
                     $e['visibility'] = "Choisissez le type d'événement.";
                 }
                 if ('unlimited' !== ($d['capacity'] ?? '') && !\in_array((int) ($d['capacity'] ?? 0), StaticEventWizard::capacities(), true)) {
@@ -355,7 +366,8 @@ final class EventDraftService
             ->setShortDescription(($d['summary'] ?? '') ?: null)
             ->setDescription(($d['description'] ?? '') ?: null)
             ->setVisibility((string) $d['visibility'])
-            ->setPrivate('public' !== $d['visibility'])
+            // « members » (07/10) : listé, mais réservé aux membres connectés.
+            ->setPrivate(!\in_array($d['visibility'], ['public', 'members'], true))
             ->setDateMode((string) $d['date_mode'])
             ->setRecurrence('recurrent' === $d['date_mode'] ? (($d['recurrence'] ?? '') ?: null) : null)
             ->setAllDay($allDay)

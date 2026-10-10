@@ -134,6 +134,8 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Contenus éditoriaux');
         yield MenuItem::linkTo(LegalDocumentCrudController::class, 'Textes juridiques', 'fa fa-scale-balanced');
         yield MenuItem::linkTo(FaqEntryCrudController::class, 'FAQ', 'fa fa-circle-question');
+        // Retours client du 07/10 : e-mail, téléphone et adresse modifiables sans déploiement.
+        yield MenuItem::linkTo(CompanyContactCrudController::class, 'Coordonnées du site', 'fa fa-address-card');
 
         // Seul modèle de revenu autorisé par le CDC (§1.2, §3.2, §17).
         // Ajouté le 14/09 en même temps que l'écran, oublié du menu au premier

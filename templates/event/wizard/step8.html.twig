@@ -49,6 +49,7 @@
 
 <p class="ew-tip">{{ icon.padlock(16) }} <span>
     {% if draft.visibility == 'private' %}{{ 'Votre événement sera visible uniquement par les personnes que vous invitez.'|trans }}
+    {% elseif draft.visibility == 'members' %}{{ 'Votre événement sera visible par les membres connectés à TrouveMoi.'|trans }}
     {% elseif draft.visibility == 'group' %}{{ 'Votre événement sera visible par les membres de votre groupe et vos invités.'|trans }}
     {% else %}{{ 'Votre événement sera visible par tous les membres de la communauté.'|trans }}{% endif %}
 </span></p>

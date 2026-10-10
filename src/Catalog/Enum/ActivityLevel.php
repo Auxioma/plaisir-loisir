@@ -13,4 +13,14 @@ enum ActivityLevel: string
     case Intermediate = 'intermediate';
     case Advanced = 'advanced';
     case AllLevels = 'all_levels';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Beginner => 'Débutant',
+            self::Intermediate => 'Intermédiaire',
+            self::Advanced => 'Confirmé',
+            self::AllLevels => 'Tous niveaux',
+        };
+    }
 }

@@ -1,7 +1,10 @@
-{# Encart de chiffres clés posé sur la photo d'en-tête (Carrières, Devenir partenaire). items : [icône, ton, valeur, libellé]. #}
+{# Encart de chiffres clés posé sur la photo d'en-tête (Carrières, Devenir partenaire).
+   items : chiffres réels de PlatformFigures::band() ({icon, tone, value, label}) ; rien si vide. #}
 {% import 'provider/space/_ico.html.twig' as ico %}
+{% if items is not empty %}
 <ul class="pg-hero__stats">
     {% for it in items %}
-        <li><span class="pg-ico is-{{ it[1] }}">{{ ico.svg(it[0], 20) }}</span><span><strong>{{ it[2] }}</strong><small>{{ it[3]|trans }}</small></span></li>
+        <li><span class="pg-ico is-{{ it.tone }}">{{ ico.svg(it.icon, 20) }}</span><span><strong>{{ it.value }}</strong><small>{{ it.label|trans }}</small></span></li>
     {% endfor %}
 </ul>
+{% endif %}

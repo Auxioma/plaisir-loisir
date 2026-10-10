@@ -7,6 +7,7 @@
 {% set rows = [
     [1, 'Titre', draft.title ?? ''],
     [1, 'Catégorie', category ? category.name : ''],
+    [1, 'Niveau', {all_levels: 'Tous niveaux', beginner: 'Débutant', intermediate: 'Intermédiaire', advanced: 'Confirmé'}[draft.level ?? ''] ?? ''],
     [2, 'Date', ((draft.date ?? '') matches '/^\\d{4}-\\d{2}-\\d{2}$/' ? date(draft.date)|pf_date('EEEE d MMMM y') : '') ~ ((draft.start_time ?? '') ? ' · ' ~ draft.start_time ~ ((draft.end_time ?? '') ? ' – ' ~ draft.end_time : '') : '')],
     [2, 'Lieu', draft.address ?? ''],
     [2, 'Adresse communiquée', (draft.show_exact ?? '') == '1' ? 'Aux participants acceptés' : 'Non (vous la donnerez autrement)'],

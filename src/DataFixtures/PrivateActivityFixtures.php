@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DataFixtures;
 
 use App\Catalog\Entity\Category;
+use App\Catalog\Enum\ActivityLevel;
 use App\PrivateActivity\Entity\Participation;
 use App\PrivateActivity\Entity\PrivateActivity;
 use App\PrivateActivity\Enum\ParticipationMode;
@@ -16,8 +17,8 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
 /**
- * Activités gratuites entre membres (bloc « Activités gratuites populaires à
- * partager » de la page d'accueil, maquette landing_page du 05/10), avec
+ * Activités gratuites entre membres (bloc « Sorties gratuites près de chez
+ * vous » de la page d'accueil, maquette landing_page du 05/10), avec
  * quelques participants. Dates relatives : toujours à venir.
  */
 final class PrivateActivityFixtures extends Fixture implements DependentFixtureInterface
@@ -71,6 +72,8 @@ final class PrivateActivityFixtures extends Fixture implements DependentFixtureI
                 ->setVisibility(PrivateActivityVisibility::Public)
                 ->setParticipationMode(0 === $i % 2 ? ParticipationMode::Automatic : ParticipationMode::Validation)
                 ->setMaxParticipants($max)
+                // Niveau affiché sur les annonces (07/10).
+                ->setLevel([ActivityLevel::AllLevels, ActivityLevel::Intermediate, ActivityLevel::AllLevels, ActivityLevel::Beginner, ActivityLevel::AllLevels, ActivityLevel::Beginner][$i])
                 ->setCoverImage($cover);
             $manager->persist($activity);
 
