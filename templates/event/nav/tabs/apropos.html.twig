@@ -1,7 +1,7 @@
 {#
     Onglet « À propos » du détail groupe (captures 12-13, état rempli) :
     description + cards latérales Créateurs / Membres, événements à
-    venir / passés, photos, discussions (5) vide, derniers avis.
+    venir / passés, photos, discussions.
 
     17/09 : la description et la carte « Créateurs » viennent du groupe
     réellement consulté (Group::description, Group::owner), plutôt que du
@@ -107,7 +107,7 @@
 
 <section class="evn-gsection">
     <div class="evn-section__head">
-        <h2 class="evn-gh2">{{ 'Discussions'|trans }} <span class="evn-gh2__count">(5)</span></h2>
+        <h2 class="evn-gh2">{{ 'Discussions'|trans }}</h2>
         <a href="{{ path('app_group_detail', { slug: group.slug, onglet: group_tab('discussions') }) }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
     </div>
     {% include 'event/nav/_empty.html.twig' with {
@@ -115,34 +115,6 @@
         title: (("On dirait que c'est calme pour l'instant. Pourquoi ne pas"|trans) ~ '<br>' ~ ('commencer la conversation ?'|trans))|raw,
     } %}
 </section>
+{# 07/10 : le bloc « Les derniers avis » (note 4.5, « 999.589 avis », texte lorem)
+   est retiré : aucun avis n'existe pour un groupe. #}
 
-<section class="evn-gsection">
-    <div class="evn-section__head">
-        <h2 class="evn-gh2">{{ 'Les derniers avis'|trans }}</h2>
-        <a href="#" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
-    </div>
-    <div class="evn-reviews">
-        <div class="dest-reviews__score evn-reviews__score">
-            <span class="dest-reviews__score-label">{{ 'Note globale'|trans }}</span>
-            <span class="home-reviews__score-value">4.5 <span>/5</span></span>
-            <span class="home-reviews__stars" aria-label="{{ '4,5 étoiles sur 5'|trans }}">
-                {% for i in 1..5 %}
-                    <span class="{{ i <= 4 ? 'is-on' : 'is-off' }}">{{ icon.star(18) }}</span>
-                {% endfor %}
-            </span>
-            <span class="home-reviews__score-count">{{ 'Basé sur 999.589 avis'|trans }}</span>
-        </div>
-        {% for r in [1, 2] %}
-            {% include 'activity/_review_card.html.twig' with { r: {
-                stars: 4,
-                title: 'Efficient and Reliable',
-                text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tincidunt sem eget magna gravida consequat. Nunc dictum facilisis dolor ac luctus.',
-                author: 'John Mans',
-                meta: 'France, Nantes',
-                date: '10 Juillet 2026',
-                avatar: 'images/events/avatar-marie.jpg',
-                reportable: true,
-            } } %}
-        {% endfor %}
-    </div>
-</section>

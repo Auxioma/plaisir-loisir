@@ -8,11 +8,15 @@ use App\Catalog\Repository\CategoryRepository;
 use App\PrivateActivity\Entity\Participation;
 use App\PrivateActivity\Entity\PrivateActivity;
 use App\PrivateActivity\Enum\ParticipationStatus;
+use App\PrivateActivity\Enum\PrivateActivityStatus;
+use App\PrivateActivity\Enum\PrivateActivityVisibility;
 use App\PrivateActivity\Repository\ParticipationRepository;
 use App\PrivateActivity\Repository\PrivateActivityRepository;
 use App\PrivateActivity\Security\ParticipationVoter;
 use App\PrivateActivity\Security\PrivateActivityVoter;
 use App\PrivateActivity\Service\PrivateActivityDraftService;
+use App\PrivateActivity\Service\PrivateActivityInvitations;
+use App\PrivateActivity\Service\PrivateActivityInviteLink;
 use App\PrivateActivity\Service\PrivateActivityService;
 use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
@@ -23,6 +27,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Uid\Ulid;
 
 /**
@@ -46,6 +51,7 @@ final class PrivateActivityController extends AbstractController
         private readonly PrivateActivityService $service,
         private readonly AccountIdentityPresenter $identity,
         private readonly AccountActivityPresenter $accountActivity,
+        private readonly PrivateActivityInviteLink $inviteLink,
     ) {
     }
 
@@ -71,9 +77,11 @@ final class PrivateActivityController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/activites-privees/{id}', 'en' => '/en/private-activities/{id}'], name: 'app_private_activity_show')]
-    public function show(string $id): Response
+    public function show(string $id, Request $request): Response
     {
         $activity = $this->findOrFail($id);
+        // Lien d'invitation d'une activité privée (07/10) : la clé ouvre l'accès pour la session.
+        $this->inviteLink->redeem($activity, (string) $request->query->get('cle', ''));
         $this->denyAccessUnlessGranted(PrivateActivityVoter::VIEW, $activity);
 
         $user = $this->getUser();
@@ -90,7 +98,104 @@ final class PrivateActivityController extends AbstractController
             'pending' => array_filter($activity->getParticipations()->toArray(), static fn (Participation $p): bool => ParticipationStatus::Pending === $p->getStatus()),
             'accepted' => array_filter($activity->getParticipations()->toArray(), static fn (Participation $p): bool => ParticipationStatus::Accepted === $p->getStatus()),
             'waiting' => array_filter($activity->getParticipations()->toArray(), static fn (Participation $p): bool => ParticipationStatus::WaitingList === $p->getStatus()),
+            'share_url' => $this->shareUrl($activity),
         ]);
+    }
+
+    /**
+     * « Participants & demandes » (maquette « version améliorée », 07/10) :
+     * l'organisateur voit et gère tous les participants d'une activité. Le
+     * client ne les retrouvait pas depuis « Mes activités créées ».
+     */
+    #[Route(path: ['fr' => '/compte/activites-privees/{id}/participants', 'en' => '/en/account/private-activities/{id}/participants'], name: 'app_account_private_activity_participants', methods: ['GET'])]
+    public function participants(string $id, Request $request): Response
+    {
+        $activity = $this->findOrFail($id);
+        $this->denyAccessUnlessGranted(PrivateActivityVoter::MANAGE, $activity);
+
+        $groups = ['confirmes' => [ParticipationStatus::Accepted], 'demandes' => [ParticipationStatus::Pending], 'attente' => [ParticipationStatus::WaitingList], 'annulations' => [ParticipationStatus::Cancelled, ParticipationStatus::Refused]];
+        $all = $activity->getParticipations()->toArray();
+        $byGroup = array_map(static fn (array $statuses): array => array_values(array_filter($all, static fn (Participation $p): bool => \in_array($p->getStatus(), $statuses, true))), $groups);
+
+        $tab = (string) $request->query->get('onglet', '');
+        if (!\array_key_exists($tab, $groups)) {
+            $tab = [] !== $byGroup['demandes'] ? 'demandes' : 'confirmes';
+        }
+
+        return $this->render('private_activity/participants.html.twig', [
+            'user' => $this->identity->identityFor($this->currentUser()),
+            'menu' => StaticAccount::menu(),
+            'active' => 'Mes activités créées',
+            'activity' => $activity,
+            'tab' => $tab,
+            'groups' => $byGroup,
+            'rows' => $byGroup[$tab],
+            'share_url' => $this->shareUrl($activity),
+        ]);
+    }
+
+    #[Route(path: ['fr' => '/compte/activites-privees/{id}/participations/{participationId}/retirer', 'en' => '/en/account/private-activities/{id}/participations/{participationId}/remove'], name: 'app_account_private_activity_remove', methods: ['POST'])]
+    public function removeParticipant(string $id, string $participationId, Request $request): Response
+    {
+        $activity = $this->findOrFail($id);
+        $this->denyAccessUnlessGranted(PrivateActivityVoter::MANAGE, $activity);
+        $participation = $this->findParticipationOrFail($activity, $participationId);
+
+        if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+        } else {
+            try {
+                $this->service->removeParticipant($participation, $this->currentUser());
+                $this->addFlash('success', 'Participant retiré.');
+            } catch (\InvalidArgumentException $e) {
+                $this->addFlash('error', $e->getMessage());
+            }
+        }
+
+        return $this->redirectToRoute('app_account_private_activity_participants', ['id' => $id, 'onglet' => 'confirmes']);
+    }
+
+    /** Invitations par e-mail (07/10), depuis la fiche ou la page des participants. */
+    #[Route(path: ['fr' => '/compte/activites-privees/{id}/inviter', 'en' => '/en/account/private-activities/{id}/invite'], name: 'app_account_private_activity_invite', methods: ['POST'])]
+    public function invite(string $id, Request $request, PrivateActivityInvitations $invitations): Response
+    {
+        $activity = $this->findOrFail($id);
+        $this->denyAccessUnlessGranted(PrivateActivityVoter::MANAGE, $activity);
+        $back = 'participants' === (string) $request->request->get('retour')
+            ? $this->generateUrl('app_account_private_activity_participants', ['id' => $id])
+            : $this->generateUrl('app_private_activity_show', ['id' => $id]);
+
+        if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+            return $this->redirect($back);
+        }
+        if (\in_array($activity->getStatus(), [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft], true)) {
+            $this->addFlash('error', 'Publiez l’activité avant d’inviter des participants.');
+
+            return $this->redirect($back);
+        }
+
+        [$emails, $invalid] = PrivateActivityInvitations::parse((string) $request->request->get('emails', ''));
+        if ([] !== $invalid) {
+            $this->addFlash('error', sprintf('Adresse e-mail invalide : %s', implode(', ', \array_slice($invalid, 0, 3))));
+
+            return $this->redirect($back);
+        }
+        if ([] === $emails) {
+            $this->addFlash('error', 'Indiquez au moins une adresse e-mail.');
+
+            return $this->redirect($back);
+        }
+
+        try {
+            $sent = $invitations->invite($activity, $this->currentUser(), $emails, $this->shareUrl($activity), mb_substr((string) $request->request->get('note', ''), 0, 500));
+            $this->addFlash('success', 1 === $sent ? 'Invitation envoyée.' : sprintf('%d invitations envoyées.', $sent));
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
+        return $this->redirect($back);
     }
 
     #[Route(path: ['fr' => '/activites-privees/{id}/participer', 'en' => '/en/private-activities/{id}/participate'], name: 'app_private_activity_participate', methods: ['POST'])]
@@ -205,12 +310,19 @@ final class PrivateActivityController extends AbstractController
         return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => 1]);
     }
 
-    /** Reprendre un brouillon dans l'assistant (05/10). */
+    /** Reprendre un brouillon, ou modifier une activité publiée (07/10), dans l'assistant. */
     #[Route(path: ['fr' => '/compte/activites-privees/{id}/reprendre', 'en' => '/en/account/private-activities/{id}/resume'], name: 'app_account_private_activity_resume', methods: ['GET'])]
     public function resume(string $id, Request $request, PrivateActivityDraftService $drafts): Response
     {
         $activity = $this->findOrFail($id);
         $this->denyAccessUnlessGranted(PrivateActivityVoter::MANAGE, $activity);
+        // Modifier une annonce publiée (07/10) passe par la même reprise ;
+        // une activité annulée ou passée ne se modifie plus.
+        if (PrivateActivityStatus::Cancelled === $activity->getStatus() || ($activity->getScheduledAt() && $activity->getScheduledAt() < new \DateTimeImmutable() && PrivateActivityStatus::Draft !== $activity->getStatus())) {
+            $this->addFlash('error', 'Cette activité est annulée ou passée : elle ne peut plus être modifiée.');
+
+            return $this->redirectToRoute('app_private_activity_show', ['id' => $id]);
+        }
         $drafts->load($request->getSession(), $activity);
 
         return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => 1]);
@@ -254,9 +366,10 @@ final class PrivateActivityController extends AbstractController
 
                     return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => $invalid]);
                 }
+                $editing = (bool) ($drafts->current($session)['editing'] ?? false);
                 $activity = $drafts->publish($drafts->current($session), $this->currentUser());
                 $drafts->clear($session);
-                $this->addFlash('success', 'Votre activité est publiée ! Partagez-la pour réunir vos participants.');
+                $this->addFlash('success', $editing ? 'Vos modifications sont enregistrées.' : 'Votre activité est publiée ! Partagez-la pour réunir vos participants.');
 
                 return $this->redirectToRoute('app_private_activity_show', ['id' => (string) $activity->getId()]);
             }
@@ -347,6 +460,17 @@ final class PrivateActivityController extends AbstractController
         $this->addFlash('success', 'Votre participation a été annulée.');
 
         return $this->redirectToRoute('app_private_activity_show', ['id' => $id]);
+    }
+
+    /** Lien à partager : clé d'invitation incluse pour une activité privée. */
+    private function shareUrl(PrivateActivity $activity): string
+    {
+        $parameters = ['id' => (string) $activity->getId()];
+        if (PrivateActivityVisibility::Private === $activity->getVisibility()) {
+            $parameters['cle'] = $this->inviteLink->key($activity);
+        }
+
+        return $this->generateUrl('app_private_activity_show', $parameters, UrlGeneratorInterface::ABSOLUTE_URL);
     }
 
     private function currentUser(): User

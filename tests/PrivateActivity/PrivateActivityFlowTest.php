@@ -168,9 +168,10 @@ final class PrivateActivityFlowTest extends WebTestCase
         );
         self::assertResponseStatusCodeSame(403, 'Seul l\'organisateur doit pouvoir décider d\'une demande.');
 
-        // L'organisateur, lui, peut.
+        // L'organisateur, lui, peut — depuis « Participants & demandes » (07/10).
         $client->loginUser($organizer);
-        $crawler = $client->request('GET', '/activites-privees/'.$activityId);
+        $crawler = $client->request('GET', '/compte/activites-privees/'.$activityId.'/participants?onglet=demandes');
+        self::assertResponseIsSuccessful();
         $decideToken = (string) $crawler->filter('form[action*="decider"] input[name="_token"]')->attr('value');
         $client->request(
             'POST',
@@ -267,7 +268,7 @@ final class PrivateActivityFlowTest extends WebTestCase
 
         // Visible dans la liste publique.
         $client->request('GET', '/activites-privees');
-        self::assertSelectorTextContains('.pa-grid', $title);
+        self::assertSelectorTextContains('.fa-grid', $title);
     }
 
     private function reloadParticipations(string $activityId, User ...$users): array

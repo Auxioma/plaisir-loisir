@@ -307,6 +307,42 @@ final class PrivateActivityService
     }
 
     /**
+     * L'organisateur retire un participant confirmé (page « Participants &
+     * demandes », 07/10). La place libérée profite au premier de la liste
+     * d'attente, comme pour un désistement.
+     *
+     * @throws \InvalidArgumentException si l'auteur n'est pas l'organisateur
+     */
+    public function removeParticipant(Participation $participation, User $organizer): void
+    {
+        $activity = $participation->getPrivateActivity();
+        if (null === $activity || $activity->getOrganizer() !== $organizer) {
+            throw new \InvalidArgumentException("Seul l'organisateur peut retirer un participant.");
+        }
+        if (!\in_array($participation->getStatus(), [ParticipationStatus::Accepted, ParticipationStatus::WaitingList], true)) {
+            throw new \InvalidArgumentException("Cette personne ne participe pas à l'activité.");
+        }
+
+        $wasAccepted = ParticipationStatus::Accepted === $participation->getStatus();
+        $participation->setStatus(ParticipationStatus::Cancelled);
+        $promoted = null;
+        if ($wasAccepted) {
+            $this->refreshFullStatus($activity);
+            $promoted = $this->promoteFromWaitingList($activity);
+        }
+        $this->entityManager->flush();
+
+        $participant = $participation->getParticipant();
+        if (null !== $participant) {
+            $this->notifications->notify($participant, NotificationCategory::Activity, 'Participation retirée', \sprintf("L'organisateur de « %s » a retiré votre participation.", $activity->getTitle()));
+        }
+        $promotedParticipant = $promoted?->getParticipant();
+        if (null !== $promotedParticipant) {
+            $this->notifications->notify($promotedParticipant, NotificationCategory::Activity, 'Participation confirmée', \sprintf("Une place s'est libérée : votre participation à « %s » est confirmée.", $activity->getTitle()));
+        }
+    }
+
+    /**
      * Compte les places prises à partir de la COLLECTION en mémoire, pas
      * d'une requête `COUNT` (ParticipationRepository::countAccepted(), gardée
      * pour l'affichage). Une requête interrogerait la base telle qu'elle

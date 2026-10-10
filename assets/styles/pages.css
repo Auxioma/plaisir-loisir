@@ -699,3 +699,47 @@
 .pd-card__id .pd-avatar { position: relative; z-index: 1; margin-top: -38px; }
 .pd-card__id > span:last-child { min-width: 0; padding-top: 2px; }
 .pd-card__name { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* ===== Retours client du 07/10 ===== */
+
+/* Qui sommes-nous : plus d'air, valeurs refaites. */
+.pg-stats--auto { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin-bottom: 64px; }
+.pg-mission2 { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 32px 64px; align-items: center; margin-bottom: 80px; }
+.pg-mission2 p { margin: 0; font-size: 15.5px; line-height: 27px; }
+.pg-mission2__pillars { display: flex; flex-direction: column; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.pg-mission2__pillars li { display: flex; align-items: center; gap: 18px; padding: 20px 24px; background: var(--pg-soft); border-radius: 14px; }
+.pg-mission2__pillars strong { display: block; margin-bottom: 4px; font-size: 15px; }
+.pg-mission2__pillars small { font-size: 13px; line-height: 20px; color: #4b4f66; }
+.pg-mission2__motto { grid-column: 1 / -1; padding: 22px; background: linear-gradient(90deg, #eef0fc, #e9f8ee); border-radius: 14px; font-size: 18px !important; font-weight: 800; text-align: center; }
+.pg-values2 { margin-bottom: 88px; }
+.pg-values2__head { max-width: 620px; margin: 0 auto 36px; text-align: center; }
+.pg-values2__head .pg-h2 { margin-bottom: 10px; font-size: 26px; }
+.pg-values2__head p { margin: 0; color: #4b4f66; font-size: 15px; line-height: 24px; }
+.pg-values2__grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 24px; }
+.pg-value2 { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 32px 22px 30px; background: #fff; border: 1px solid var(--pg-line); border-top: 4px solid var(--pg-violet); border-radius: 14px; box-shadow: 0 6px 24px rgba(11, 20, 55, .06); text-align: center; transition: transform .2s, box-shadow .2s; }
+.pg-value2:hover { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(11, 20, 55, .1); }
+.pg-value2.is-green { border-top-color: #16a34a; } .pg-value2.is-orange { border-top-color: #f08a00; }
+.pg-value2.is-yellow { border-top-color: #e0a200; } .pg-value2.is-red { border-top-color: #e5326b; }
+.pg-value2 .pg-ico { width: 64px; height: 64px; }
+.pg-value2 h3 { margin: 4px 0 0; font-size: 17px; font-weight: 800; }
+.pg-value2 p { margin: 0; color: #4b4f66; font-size: 13.5px; line-height: 22px; }
+.pg-about2 .pg-team { gap: 40px; padding-bottom: 72px; }
+.pg-about2 .pg-team__list { gap: 24px; }
+@media (max-width: 1199.98px) {
+    .pg-mission2 { grid-template-columns: 1fr; margin-bottom: 56px; }
+    .pg-values2__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 767.98px) {
+    .pg-values2__grid { grid-template-columns: 1fr; }
+    .pg-values2 { margin-bottom: 56px; }
+}
+
+/* Carrières : les offres prennent toute la largeur, cartes alignées
+   (titres sur 1 à 3 lignes : tags et lien restent sur la même ligne). */
+.pg-careers { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px; }
+.pg-careers > div:first-child { grid-column: 1 / -1; }
+.pg-jobs { align-items: stretch; gap: 16px; }
+.pg-job { padding: 20px; }
+.pg-job__head { flex: 1; align-items: flex-start; }
+.pg-job h3 { min-height: 54px; }
+@media (max-width: 1199.98px) { .pg-careers > div:first-child { grid-column: auto; } }

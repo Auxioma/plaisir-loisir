@@ -23,31 +23,45 @@
         <img class="pg-hero__img" src="{{ asset('images/corporate/hero-equipe.jpg') }}" alt="">
     </header>
 
-    <div class="pg-wrap">
-        <ul class="pg-stats">
-            {% for s in stats %}
-                <li><span class="pg-ico is-{{ s.tone }}">{{ ico.svg(s.icon, 24) }}</span><span><strong>{{ s.value }}</strong><small>{{ s.label|trans }}</small></span></li>
-            {% endfor %}
-        </ul>
+    <div class="pg-wrap pg-about2">
+        {# Chiffres RÉELS (PlatformFigures) — retours client du 07/10. #}
+        {% if stats is not empty %}
+            <ul class="pg-stats pg-stats--auto">
+                {% for s in stats %}
+                    <li><span class="pg-ico is-{{ s.tone }}">{{ ico.svg(s.icon, 24) }}</span><span><strong>{{ s.value }}</strong><small>{{ s.label|trans }}</small></span></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
-        <div class="pg-about">
-            <section class="pg-mission">
+        {# Refonte 07/10 (« manque d'aération ») : mission en pleine largeur,
+           valeurs en cartes aérées, sections espacées. #}
+        <section class="pg-mission2">
+            <div>
                 <h2 class="pg-h2 pg-h2--green">{{ 'Notre mission'|trans }}</h2>
                 <p>{{ 'Nous avons créé TrouveMoi Plaisirs & Loisirs avec une idée simple : rendre les loisirs et les expériences inoubliables accessibles à tous. Que vous soyez en quête d’aventure, de détente, de découvertes culturelles ou d’activités en famille, notre plateforme rassemble les meilleures offres près de chez vous.'|trans }}</p>
-                <p><strong>{{ 'Vivez plus. Explorez plus. Partagez plus.'|trans }}</strong> 🔥</p>
-            </section>
-            <section>
-                <h2 class="pg-h2">{{ 'Nos valeurs'|trans }}</h2>
-                <div class="pg-values">
-                    {% for v in values %}
-                        <article class="pg-card pg-value">
-                            <h3><span class="pg-ico is-{{ v.tone }}">{{ ico.svg(v.icon, 22) }}</span>{{ v.title|trans }}</h3>
-                            <p>{{ v.text|trans }}</p>
-                        </article>
-                    {% endfor %}
-                </div>
-            </section>
-        </div>
+            </div>
+            <ul class="pg-mission2__pillars">
+                <li><span class="pg-ico">{{ ico.svg('store', 22) }}</span><span><strong>{{ 'Des professionnels vérifiés'|trans }}</strong><small>{{ 'Des activités payantes, encadrées et réservables en ligne.'|trans }}</small></span></li>
+                <li><span class="pg-ico is-green">{{ ico.svg('users', 22) }}</span><span><strong>{{ 'Des activités gratuites entre particuliers'|trans }}</strong><small>{{ 'Des sorties proposées par les membres, ouvertes à tous.'|trans }}</small></span></li>
+            </ul>
+            <p class="pg-mission2__motto">{{ 'Vivez plus. Explorez plus. Partagez plus.'|trans }}</p>
+        </section>
+
+        <section class="pg-values2">
+            <header class="pg-values2__head">
+                <h2 class="pg-h2 pg-h2--center">{{ 'Nos valeurs'|trans }}</h2>
+                <p>{{ 'Ce qui guide chacune de nos décisions, au service des membres et des professionnels.'|trans }}</p>
+            </header>
+            <div class="pg-values2__grid">
+                {% for v in values %}
+                    <article class="pg-value2 is-{{ v.tone }}">
+                        <span class="pg-ico is-{{ v.tone }}">{{ ico.svg(v.icon, 26) }}</span>
+                        <h3>{{ v.title|trans }}</h3>
+                        <p>{{ v.text|trans }}</p>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
 
         <div class="pg-team">
             <section class="pg-team__intro">

@@ -9,6 +9,15 @@
     {{ ui.err(errors, 'title') }}
 </div>
 {% include '_partials/_category_picker.html.twig' with { categories: all_categories, selected: draft.category ?? '', suggestion: draft.category_suggestion ?? null, context: 'private' } %}
+{# Niveau attendu (07/10) : affiché sur l'annonce et les cartes. #}
+<h3 class="ew-main__label">{{ 'Niveau'|trans }} <em>*</em></h3>
+<div class="ew-choices ew-choices--4" role="radiogroup">
+    {{ ui.choice('level', 'all_levels', draft.level ?? 'all_levels', 'Tous niveaux', 'Ouvert à tous', 'users') }}
+    {{ ui.choice('level', 'beginner', draft.level ?? '', 'Débutant', 'Aucune expérience requise', 'leaf') }}
+    {{ ui.choice('level', 'intermediate', draft.level ?? '', 'Intermédiaire', 'Une première pratique', 'trend') }}
+    {{ ui.choice('level', 'advanced', draft.level ?? '', 'Confirmé', 'Bonne pratique conseillée', 'trophy') }}
+</div>
+{{ ui.err(errors, 'level') }}
 <div class="ew-field{{ errors.description is defined ? ' has-error' }}">
     <label for="pa-description">{{ 'Description'|trans }} <em>*</em></label>
     <p class="ew-hint">{{ 'Le programme, le niveau attendu, l’ambiance…'|trans }}</p>

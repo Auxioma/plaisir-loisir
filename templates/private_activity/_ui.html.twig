@@ -1,0 +1,54 @@
+{#
+    Briques des activités gratuites entre particuliers (retours client du 07/10) :
+    compte à rebours en direct, badge de niveau, jauge de participants.
+    Comportement : assets/free-activities.js. Styles : free-activities.css (.fa-*).
+#}
+
+{#
+    Compte à rebours jusqu'au début de l'activité.
+    variant : 'full' (fiche : « L'activité commence dans : 2 jours • 14 h • 32 min • 05 s »)
+              'card' (vignette : « Dans 2 j • 14 h • 32 min »)
+#}
+{% macro countdown(activity, variant = 'full') %}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    {%- if activity.scheduledAt and activity.status.value not in ['cancelled', 'draft'] -%}
+        {%- set p = countdown_parts(activity.scheduledAt) -%}
+        {%- set full = variant == 'full' -%}
+        {%- set units = full
+            ? {d: 'jours'|trans, d1: 'jour'|trans, h: 'h', m: 'min', s: 's'}
+            : {d: 'j'|trans, h: 'h', m: 'min', s: 's'} -%}
+        {%- if p.started -%}
+            {%- set text = activity.endsAt and activity.endsAt > date() ? 'En cours'|trans : 'Terminée'|trans -%}
+        {%- else -%}
+            {%- set bits = [] -%}
+            {%- if p.d > 0 %}{% set bits = bits|merge([p.d ~ ' ' ~ (p.d == 1 and units.d1 is defined ? units.d1 : units.d)]) %}{% endif -%}
+            {%- if p.d > 0 or p.h > 0 %}{% set bits = bits|merge([p.h ~ ' ' ~ units.h]) %}{% endif -%}
+            {%- set bits = bits|merge(['%02d'|format(p.m) ~ ' ' ~ units.m]) -%}
+            {%- if full %}{% set bits = bits|merge(['%02d'|format(p.s) ~ ' ' ~ units.s]) %}{% endif -%}
+            {%- set text = bits|join(' • ') -%}
+        {%- endif -%}
+        <span class="fa-countdown fa-countdown--{{ variant }}{{ p.started ? ' is-started' : (p.d == 0 ? ' is-soon') }}"
+              data-starts-at="{{ activity.scheduledAt|date('c') }}" data-units="{{ units|json_encode }}"
+              data-started="{{ activity.endsAt and activity.endsAt > date() ? 'En cours'|trans : 'Commencée'|trans }}"{{ full ? '' : ' data-precision="min"' }}
+              role="timer" aria-live="off">
+            {{ icon.clock(full ? 18 : 13) }}
+            {% if full %}<span class="fa-countdown__label">{{ 'L’activité commence dans :'|trans }}</span>{% elseif not p.started %}<span class="fa-countdown__label">{{ 'Dans'|trans }}</span>{% endif %}
+            <strong data-countdown-value>{{ text }}</strong>
+        </span>
+    {%- endif -%}
+{% endmacro %}
+
+{% macro level(activity) %}
+    {%- if activity.level -%}
+        <span class="fa-level fa-level--{{ activity.level.value }}">{{ activity.level.label|trans }}</span>
+    {%- endif -%}
+{% endmacro %}
+
+{# Jauge « 3 / 10 participants » (sans maximum : simple compteur). #}
+{% macro participants(going, max) %}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    <span class="fa-places">
+        <span class="fa-places__text">{{ icon.users(14) }} <b>{{ going }}{% if max %} / {{ max }}{% endif %}</b> {{ (max ? 'places prises' : (going > 1 ? 'participants' : 'participant'))|trans }}</span>
+        {% if max %}<span class="fa-places__bar" aria-hidden="true"><i style="width: {{ min(100, (going * 100 / max)|round) }}%"></i></span>{% endif %}
+    </span>
+{% endmacro %}

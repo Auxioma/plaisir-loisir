@@ -7,6 +7,7 @@ namespace App\Corporate\Controller;
 use App\Corporate\Entity\ContactMessage;
 use App\Corporate\Entity\PartnerApplication;
 use App\Corporate\Form\PartnerApplicationFormType;
+use App\Corporate\Service\CompanyContactProvider;
 use App\Corporate\Service\CorporateInboxService;
 use App\Corporate\StaticCorporate;
 use App\Legal\Enum\LegalDocumentType;
@@ -14,6 +15,7 @@ use App\Legal\LegalDefaults;
 use App\Legal\Service\LegalContentRenderer;
 use App\Legal\Service\LegalDocumentService;
 use App\Shared\Controller\FlashesFormErrorsTrait;
+use App\Stats\Service\PlatformFigures;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,19 +34,32 @@ final class CorporateController extends AbstractController
     public const CONTACT_SUBJECTS = ['Question générale', 'Réservation', 'Paiement', 'Bon cadeau', 'Devenir partenaire', 'Presse', 'Signaler un problème', 'Autre'];
 
     #[Route(path: ['fr' => '/a-propos', 'en' => '/en/about-us'], name: 'app_corporate_about')]
-    public function about(): Response
+    public function about(PlatformFigures $figures): Response
     {
+        // Chiffres réels (07/10 : plus aucun faux chiffre).
         return $this->render('corporate/apropos.html.twig', [
-            'stats' => StaticCorporate::stats(),
+            'stats' => $figures->band([
+                ['activities', 'store', 'blue', 'Activités proposées par des professionnels'],
+                ['free_activities', 'users', 'green', 'Activités gratuites à venir'],
+                ['providers', 'shield_check', 'orange', 'Professionnels vérifiés'],
+                ['destinations', 'map_pin', 'violet', 'Destinations'],
+                ['rating', 'star', 'yellow', 'Note moyenne des avis'],
+            ]),
             'values' => StaticCorporate::values(),
             'team' => StaticCorporate::team(),
         ]);
     }
 
     #[Route(path: ['fr' => '/devenir-partenaire', 'en' => '/en/become-a-partner'], name: 'app_corporate_partner')]
-    public function partner(): Response
+    public function partner(PlatformFigures $figures): Response
     {
         return $this->render('corporate/partenaire.html.twig', [
+            'stats' => $figures->band([
+                ['members', 'users', 'blue', 'Membres inscrits'],
+                ['activities', 'store', 'blue', 'Activités en ligne'],
+                ['providers', 'shield_check', 'green', 'Professionnels vérifiés'],
+                ['rating', 'star', 'yellow', 'Note moyenne des avis'],
+            ]),
             'benefits' => StaticCorporate::partnerBenefits(),
             'steps' => StaticCorporate::partnerSteps(),
             'testimonials' => StaticCorporate::testimonials(),
@@ -108,9 +123,15 @@ final class CorporateController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/carrieres', 'en' => '/en/careers'], name: 'app_corporate_careers')]
-    public function careers(): Response
+    public function careers(PlatformFigures $figures): Response
     {
         return $this->render('corporate/carrieres.html.twig', [
+            'stats' => $figures->band([
+                ['members', 'users', 'blue', 'Membres inscrits'],
+                ['activities', 'trend', 'green', 'Activités en ligne'],
+                ['destinations', 'pin', 'orange', 'Destinations'],
+                ['rating', 'star', 'yellow', 'Note moyenne des avis'],
+            ]),
             'jobs' => StaticCorporate::jobs(),
             'values' => StaticCorporate::careerValues(),
             'reasons' => StaticCorporate::careerReasons(),
@@ -149,7 +170,7 @@ final class CorporateController extends AbstractController
      * était perdu et l'expéditeur n'en savait rien.
      */
     #[Route(path: ['fr' => '/contactez-nous', 'en' => '/en/contact-us'], name: 'app_corporate_contact', methods: ['GET', 'POST'])]
-    public function contact(Request $request, CorporateInboxService $inbox): Response
+    public function contact(Request $request, CorporateInboxService $inbox, CompanyContactProvider $contact): Response
     {
         $values = ['nom' => '', 'email' => '', 'sujet' => (string) $request->query->get('sujet', ''), 'message' => ''];
         if ($this->getUser() instanceof \App\User\Entity\User) {
@@ -206,7 +227,7 @@ final class CorporateController extends AbstractController
         return $this->render('corporate/contact.html.twig', [
             'values' => $values,
             'subjects' => self::CONTACT_SUBJECTS,
-            'contact' => ['email' => \App\Legal\InitialLegalTexts::CONTACT, 'phone' => \App\Legal\InitialLegalTexts::TELEPHONE],
+            'contact' => $contact->get(),
         ], new Response(null, $request->isMethod('POST') ? 422 : 200));
     }
 

@@ -1,0 +1,99 @@
+{#
+    « Créer une activité gratuite » — retours client du 07/10.
+    step : 'who' (visiteur : particulier ou professionnel), 'type' (activité
+    ou événement gratuit), 'visibility' (public, privé, membres — maquette
+    « Aperçu du choix de visibilité »). Données : CreateFreeController.
+    Styles : free-activities.css (.fa-create, .fa-types, .fa-vis, .fa-who).
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Créer une activité gratuite'|trans }}{% endblock %}
+{% block meta_description %}{{ 'Créez gratuitement une activité ou un événement entre particuliers : randonnée, pique-nique, anniversaire, soirée…'|trans }}{% endblock %}
+
+{% block body %}
+<div class="fa-create">
+    {% if step == 'who' %}
+        <header class="fa-create__head">
+            <h1>{{ 'Déposer une activité'|trans }}</h1>
+            <p>{{ 'Vous êtes un particulier ou un professionnel ? Choisissez votre espace pour continuer.'|trans }}</p>
+        </header>
+        <div class="fa-who">
+            <section class="fa-who__card">
+                <h2><span class="fa-type__ico">{{ icon.users(28) }}</span> {{ 'Particulier'|trans }}</h2>
+                <p>{{ 'Créez gratuitement une activité ou un événement entre membres : randonnée, pique-nique, anniversaire, soirée…'|trans }}</p>
+                <p><span class="fa-badge fa-badge--free">{{ 'Toujours gratuit'|trans }}</span></p>
+                <a class="fa-btn fa-btn--green" href="{{ path('app_create_free', {particulier: 1}) }}">{{ 'Se connecter comme particulier'|trans }} {{ icon.arrow_right(16) }}</a>
+                <small class="pf-muted">{{ 'Pas encore de compte ?'|trans }} <a href="{{ path('app_register') }}">{{ 'Créer un compte'|trans }}</a></small>
+            </section>
+            <section class="fa-who__card">
+                <h2><span class="fa-type__ico fa-type__ico--pro">{{ icon.briefcase(28) }}</span> {{ 'Professionnel'|trans }}</h2>
+                <p>{{ 'Proposez des activités payantes et encadrées, recevez des réservations et des paiements en ligne.'|trans }}</p>
+                <p><span class="fa-level">{{ 'Prestataire vérifié'|trans }}</span></p>
+                <a class="fa-btn" href="{{ path('app_pro_login') }}">{{ 'Se connecter comme professionnel'|trans }} {{ icon.arrow_right(16) }}</a>
+                <small class="pf-muted">{{ 'Pas encore de compte ?'|trans }} <a href="{{ path('app_pro_register') }}">{{ 'Créer un compte professionnel'|trans }}</a></small>
+            </section>
+        </div>
+    {% else %}
+        <header class="fa-create__head">
+            <h1>{{ 'Créer une activité'|trans }} <span>{{ 'gratuite'|trans }}</span></h1>
+            <p>{{ 'Entre particuliers, c’est toujours gratuit. Seuls les professionnels proposent des activités payantes.'|trans }}</p>
+        </header>
+
+        <ol class="fa-steps" aria-label="{{ 'Étapes'|trans }}">
+            <li class="{{ step == 'type' ? 'is-active' : 'is-done' }}"><b>{{ step == 'type' ? '1' : icon.check(12) }}</b> {{ 'Type de création'|trans }}</li>
+            <li class="{{ step == 'visibility' ? 'is-active' }}"><b>2</b> {{ 'Visibilité'|trans }}</li>
+            <li><b>3</b> {{ 'Détails'|trans }}</li>
+        </ol>
+
+        <form method="get" action="{{ path('app_create_free') }}">
+            {% if step == 'type' %}
+                <div class="fa-types" role="radiogroup" aria-label="{{ 'Que souhaitez-vous créer ?'|trans }}">
+                    <label class="fa-type">
+                        <input type="radio" name="type" value="activite" required checked>
+                        <span class="fa-type__ico">{{ icon.cat_hiking(30) }}</span>
+                        <strong>{{ 'Créer une activité gratuite'|trans }}</strong>
+                        <p>{{ 'Une sortie à partager avec d’autres membres.'|trans }}</p>
+                        <ul><li>{{ 'Randonnée'|trans }}</li><li>{{ 'Pêche'|trans }}</li><li>{{ 'Course à pied'|trans }}</li><li>{{ 'Pique-nique'|trans }}</li><li>{{ 'Sortie entre amis'|trans }}</li></ul>
+                    </label>
+                    <label class="fa-type is-event">
+                        <input type="radio" name="type" value="evenement" required>
+                        <span class="fa-type__ico">{{ icon.party(30) }}</span>
+                        <strong>{{ 'Créer un événement gratuit'|trans }}</strong>
+                        <p>{{ 'Un moment à fêter, avec invitations et réponses des invités.'|trans }}</p>
+                        <ul><li>{{ 'Anniversaire'|trans }}</li><li>{{ 'Mariage'|trans }}</li><li>{{ 'Baptême'|trans }}</li><li>{{ 'Communion'|trans }}</li><li>{{ 'Fête de famille'|trans }}</li><li>{{ 'Soirée'|trans }}</li></ul>
+                    </label>
+                </div>
+                <div class="fa-create__actions">
+                    <button class="fa-btn">{{ 'Continuer'|trans }} {{ icon.arrow_right(16) }}</button>
+                </div>
+            {% else %}
+                <input type="hidden" name="type" value="{{ type }}">
+                <section class="fa-vis">
+                    <h2>{{ (type == 'evenement' ? 'Qui peut voir votre événement ?' : 'Qui peut voir votre activité ?')|trans }}</h2>
+                    <p>{{ 'Choisissez le niveau de visibilité qui vous convient. Vous pourrez le modifier plus tard.'|trans }}</p>
+                    <label class="fa-vis__opt">
+                        <input type="radio" name="visibilite" value="public" required checked>
+                        <span class="fa-vis__ico">{{ icon.globe(20) }}</span>
+                        <span><strong>{{ 'Public'|trans }}</strong><small>{{ 'Visible par tous. Chacun peut consulter et demander à participer.'|trans }}</small></span>
+                    </label>
+                    <label class="fa-vis__opt">
+                        <input type="radio" name="visibilite" value="prive" required>
+                        <span class="fa-vis__ico">{{ icon.padlock(20) }}</span>
+                        <span><strong>{{ 'Privé'|trans }}</strong><small>{{ 'Uniquement les invités disposant du lien (ou du QR code pour un événement).'|trans }}</small></span>
+                    </label>
+                    <label class="fa-vis__opt">
+                        <input type="radio" name="visibilite" value="membres" required>
+                        <span class="fa-vis__ico">{{ icon.users(20) }}</span>
+                        <span><strong>{{ 'Membres'|trans }}</strong><small>{{ 'Réservé aux utilisateurs connectés à leur compte TrouveMoi.'|trans }}</small></span>
+                    </label>
+                </section>
+                <div class="fa-create__actions">
+                    <a class="fa-btn fa-btn--ghost" href="{{ path('app_create_free') }}">{{ icon.arrow_left(16) }} {{ 'Retour'|trans }}</a>
+                    <button class="fa-btn">{{ 'Continuer'|trans }} {{ icon.arrow_right(16) }}</button>
+                </div>
+            {% endif %}
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

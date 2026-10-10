@@ -24,12 +24,7 @@
             <ul class="pg-hero__checks pg-mt"><li>{{ icon.users(20) }} {{ 'Rejoignez une équipe passionnée et bienveillante'|trans }}</li></ul>
         </div>
         <img class="pg-hero__img" src="{{ asset('images/corporate/careers-hero.jpg') }}" alt="">
-        {% include 'corporate/_partials/_hero_stats.html.twig' with { items: [
-            ['users', 'blue', '+2,5 millions', 'd’utilisateurs conquis'],
-            ['trend', 'green', '+10 000', 'activités disponibles'],
-            ['pin', 'orange', '+350', 'destinations en France'],
-            ['star', 'yellow', '4,8/5', 'note moyenne des utilisateurs'],
-        ] } %}
+        {% include 'corporate/_partials/_hero_stats.html.twig' with { items: stats } %}
     </header>
 
     <section class="pg-wrap pg-section" id="culture">

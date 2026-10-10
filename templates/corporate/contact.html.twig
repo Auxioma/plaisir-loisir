@@ -1,7 +1,10 @@
 {#
     « Contactez-nous » — maquette docs/maquettes/contactez_nous.jpeg (04/10).
     Formulaire réel (ContactMessage, back-office « Messages de contact »),
-    pièce jointe facultative, chat (ticket support), FAQ, adresse + carte.
+    pièce jointe facultative, chat (ticket support), FAQ.
+    Coordonnées : back-office « Coordonnées du site » (CompanyContactProvider).
+    L'adresse postale n'est affichée que si elle est renseignée (07/10 : le
+    siège social n'est pas encore connu).
     Données : CorporateController::contact(). Styles : assets/styles/pages.css (.pg-*).
 #}
 {% extends 'base.html.twig' %}
@@ -60,12 +63,15 @@
             <h2 class="pg-h2">{{ 'Autres moyens de nous contacter'|trans }}</h2>
             <div class="pg-ways">
                 <div class="pg-way"><span class="pg-ico">{{ icon.mail(22) }}</span><div><strong>{{ 'Par email'|trans }}</strong><a href="mailto:{{ contact.email }}">{{ contact.email }}</a><small>{{ 'Réponse sous 24h'|trans }}</small></div></div>
-                <div class="pg-way"><span class="pg-ico is-green">{{ icon.phone(22) }}</span><div><strong>{{ 'Par téléphone'|trans }}</strong><a href="tel:{{ contact.phone|replace({' ': ''}) }}">{{ contact.phone }}</a><small>{{ 'Lun. – Ven. 9h – 18h'|trans }}</small></div></div>
+                {% if contact.phone %}<div class="pg-way"><span class="pg-ico is-green">{{ icon.phone(22) }}</span><div><strong>{{ 'Par téléphone'|trans }}</strong><a href="tel:{{ contact.phone|replace({' ': '', '.': ''}) }}">{{ contact.phone }}</a>{% if contact.hours %}<small>{{ contact.hours|trans }}</small>{% endif %}</div></div>{% endif %}
                 <div class="pg-way"><span class="pg-ico is-orange">{{ icon.chat_bubble(22) }}</span><div><strong>{{ 'Chat en ligne'|trans }}</strong><small>{{ 'Discutez avec notre équipe en direct'|trans }}</small>
                     <form method="post" action="{{ path('app_support_chat') }}"><input type="hidden" name="_token" value="{{ csrf_token('submit') }}"><button class="pg-link">{{ 'Démarrer le chat'|trans }} {{ icon.arrow_right(14) }}</button></form></div></div>
                 <div class="pg-way"><span class="pg-ico">{{ icon.help_circle(22) }}</span><div><strong>{{ 'FAQ'|trans }}</strong><small>{{ 'Trouvez des réponses à vos questions courantes'|trans }}</small><a class="pg-link" href="{{ path('app_faq') }}">{{ 'Voir la FAQ'|trans }} {{ icon.arrow_right(14) }}</a></div></div>
-                <div class="pg-way pg-way--wide"><span class="pg-ico">{{ icon.map_pin(22) }}</span><div><strong>{{ 'Notre adresse'|trans }}</strong><small>TrouveMoi Plaisirs &amp; Loisirs<br>28 rue de la Paix<br>75002 Paris, France</small></div>
-                    <a class="pg-way__map" href="https://www.openstreetmap.org/?mlat=48.8693&amp;mlon=2.3315#map=17/48.8693/2.3315" target="_blank" rel="noopener" aria-label="{{ 'Voir sur la carte'|trans }}"><img src="{{ asset('images/corporate/contact-map.jpg') }}" alt=""></a></div>
+                {% if contact.address %}
+                    <div class="pg-way pg-way--wide"><span class="pg-ico">{{ icon.map_pin(22) }}</span><div><strong>{{ 'Notre adresse'|trans }}</strong><small>TrouveMoi Plaisirs &amp; Loisirs<br>{{ contact.address|nl2br }}</small></div>
+                        <a class="pg-link" href="https://www.openstreetmap.org/search?query={{ contact.address|replace({"
+": ' '})|url_encode }}" target="_blank" rel="noopener">{{ 'Voir sur la carte'|trans }} {{ icon.arrow_up_right(14) }}</a></div>
+                {% endif %}
             </div>
         </section>
     </div>

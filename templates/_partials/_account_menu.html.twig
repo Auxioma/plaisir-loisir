@@ -20,7 +20,11 @@
             {{ icon.chevron_down(14) }}
         </summary>
         <div class="tm-menu tm-menu--right">
-            <a href="{{ is_provider ? path('app_pro_dashboard') : path('app_account_dashboard') }}" class="tm-menu__item">{{ icon.person(16) }} {{ 'Profil'|trans }}</a>
+            {# Accès rapide (07/10) : tableau de bord de l'espace, et back-office pour l'équipe. #}
+            <a href="{{ is_provider ? path('app_pro_dashboard') : path('app_account_dashboard') }}" class="tm-menu__item">{{ icon.person(16) }} {{ 'Mon espace'|trans }}</a>
+            {% if app.user and is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('admin') }}" class="tm-menu__item">{{ icon.lock(16) }} {{ 'Administration'|trans }}</a>
+            {% endif %}
             <a href="{{ is_provider ? path('app_pro_messages') : path('app_account_messages') }}" class="tm-menu__item">
                 {{ icon.mail(16) }} {{ 'Messagerie'|trans }}
                 {% if unreadMessages > 0 %}<span class="tm-menu__count">{{ unreadMessages > 99 ? '99+' : unreadMessages }}</span>{% endif %}

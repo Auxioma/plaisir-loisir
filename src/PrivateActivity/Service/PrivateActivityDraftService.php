@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\PrivateActivity\Service;
 
+use App\Catalog\Enum\ActivityLevel;
 use App\Catalog\Repository\CategoryRepository;
 use App\PrivateActivity\Entity\PrivateActivity;
 use App\PrivateActivity\Enum\ParticipationMode;
@@ -31,7 +32,7 @@ final class PrivateActivityDraftService
     private const SESSION_KEY = 'private_activity_draft';
 
     private const STEP_FIELDS = [
-        1 => ['title', 'category', 'description'],
+        1 => ['title', 'category', 'level', 'description'],
         2 => ['date', 'start_time', 'end_time', 'address', 'city', 'postal_code', 'lat', 'lng', 'meeting_point'],
         3 => ['to_bring'],
         4 => ['min', 'max', 'mode', 'visibility'],
@@ -39,7 +40,7 @@ final class PrivateActivityDraftService
     ];
 
     private const DEFAULTS = [
-        'show_exact' => '1', 'mode' => 'validation', 'visibility' => 'public', 'cover' => '', 'done' => [],
+        'show_exact' => '1', 'mode' => 'validation', 'visibility' => 'public', 'level' => 'all_levels', 'cover' => '', 'done' => [],
     ];
 
     public function __construct(
@@ -143,6 +144,9 @@ final class PrivateActivityDraftService
                 if (null === $this->categories->findOneBy(['slug' => (string) ($d['category'] ?? '')])) {
                     $e['category'] = 'Choisissez une catégorie.';
                 }
+                if (null === ActivityLevel::tryFrom((string) ($d['level'] ?? ''))) {
+                    $e['level'] = 'Choisissez le niveau attendu.';
+                }
                 if ($len('description') < 30) {
                     $e['description'] = 'Décrivez votre activité (30 caractères minimum).';
                 } elseif ($len('description') > 3000) {
@@ -240,7 +244,12 @@ final class PrivateActivityDraftService
 
         $activity = $this->existing($d, $organizer) ?? (new PrivateActivity())->setOrganizer($organizer);
         $this->fill($activity, $d);
-        $activity->setStatus(PrivateActivityStatus::Open);
+        // Modification d'une activité déjà en ligne (07/10) : son statut suit
+        // la capacité (une place libérée par un maximum relevé la rouvre).
+        $remaining = $activity->remainingPlaces();
+        if (PrivateActivityStatus::Cancelled !== $activity->getStatus()) {
+            $activity->setStatus(0 === $remaining ? PrivateActivityStatus::Full : PrivateActivityStatus::Open);
+        }
         $this->entityManager->persist($activity);
         $this->entityManager->flush();
 
@@ -275,8 +284,11 @@ final class PrivateActivityDraftService
         $start = $activity->getScheduledAt();
         $session->set(self::SESSION_KEY, [
             'id' => (string) $activity->getId(),
+            // Activité déjà publiée : l'assistant devient « Modifier » (07/10).
+            'editing' => PrivateActivityStatus::Draft !== $activity->getStatus(),
             'title' => $activity->getTitle(),
             'category' => $activity->getCategory()?->getSlug() ?? '',
+            'level' => ($activity->getLevel() ?? ActivityLevel::AllLevels)->value,
             'description' => (string) $activity->getDescription(),
             'date' => $start?->format('Y-m-d') ?? '',
             'start_time' => $start?->format('H:i') ?? '',
@@ -295,7 +307,7 @@ final class PrivateActivityDraftService
             'mode' => $activity->getParticipationMode()->value,
             'visibility' => $activity->getVisibility()->value,
             // Étapes déjà valides : navigation libre jusqu'à la première incomplète.
-            'done' => array_values(array_filter([1, 2, 3, 4], fn (int $n): bool => [] === $this->validateStep($n, ['title' => $activity->getTitle(), 'category' => $activity->getCategory()?->getSlug() ?? '', 'description' => (string) $activity->getDescription(), 'date' => $start?->format('Y-m-d') ?? '', 'start_time' => $start?->format('H:i') ?? '', 'address' => (string) $activity->getLocation(), 'city' => (string) $activity->getCity(), 'mode' => $activity->getParticipationMode()->value, 'visibility' => $activity->getVisibility()->value]))),
+            'done' => array_values(array_filter([1, 2, 3, 4], fn (int $n): bool => [] === $this->validateStep($n, ['title' => $activity->getTitle(), 'category' => $activity->getCategory()?->getSlug() ?? '', 'level' => ($activity->getLevel() ?? ActivityLevel::AllLevels)->value, 'description' => (string) $activity->getDescription(), 'date' => $start?->format('Y-m-d') ?? '', 'start_time' => $start?->format('H:i') ?? '', 'address' => (string) $activity->getLocation(), 'city' => (string) $activity->getCity(), 'mode' => $activity->getParticipationMode()->value, 'visibility' => $activity->getVisibility()->value]))),
         ]);
     }
 
@@ -328,6 +340,7 @@ final class PrivateActivityDraftService
         $activity
             ->setTitle(mb_substr(trim((string) ($d['title'] ?? '')), 0, 150))
             ->setCategory($this->categories->findOneBy(['slug' => (string) ($d['category'] ?? '')]) ?? $activity->getCategory())
+            ->setLevel(ActivityLevel::tryFrom((string) ($d['level'] ?? '')))
             ->setDescription($str('description', 3000))
             ->setScheduledAt($this->start($d))
             ->setEndsAt('' !== (string) ($d['end_time'] ?? '') ? $this->end($d) : null)

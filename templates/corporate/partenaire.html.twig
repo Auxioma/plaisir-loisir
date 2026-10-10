@@ -24,12 +24,7 @@
             <ul class="pg-hero__checks pg-mt"><li>{{ icon.shield_check(18) }} {{ 'Partenariat 100% gratuit à la création • Sans engagement'|trans }}</li></ul>
         </div>
         <img class="pg-hero__img" src="{{ asset('images/corporate/partner-hero.jpg') }}" alt="">
-        {% include 'corporate/_partials/_hero_stats.html.twig' with { items: [
-            ['users', 'blue', '+10 000', 'Utilisateurs chaque jour'],
-            ['trend', 'blue', '+2,5 millions', 'Visites mensuelles'],
-            ['calendar_check', 'green', '+50 000', 'Réservations réalisées'],
-            ['star', 'yellow', '4,8/5', 'Note moyenne des utilisateurs'],
-        ] } %}
+        {% include 'corporate/_partials/_hero_stats.html.twig' with { items: stats } %}
     </header>
 
     <section class="pg-wrap pg-section">
@@ -66,7 +61,7 @@
 
     <section class="pg-wrap">
         <div class="pg-ready">
-            <div><h2>{{ 'Prêt à rejoindre l’aventure ?'|trans }}</h2><p>{{ 'Des milliers de professionnels nous font déjà confiance. Rejoignez-les dès aujourd’hui !'|trans }}</p></div>
+            <div><h2>{{ 'Prêt à rejoindre l’aventure ?'|trans }}</h2><p>{{ 'Inscrivez-vous gratuitement et proposez vos activités dès aujourd’hui !'|trans }}</p></div>
             <ul>
                 {% for a in arguments %}<li><span class="pg-ico">{{ ico.svg(a.icon, 20) }}</span><span><strong>{{ a.title|trans }}</strong><small>{{ a.text|trans }}</small></span></li>{% endfor %}
             </ul>

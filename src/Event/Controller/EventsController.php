@@ -21,13 +21,17 @@ use App\Event\StaticEvents;
 use App\I18n\Routing\LocaleUrlGenerator;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\Service\NotificationService;
+use App\Shared\Service\InviteLink;
 use App\User\Entity\User;
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Uid\Ulid;
 
 /**
@@ -47,6 +51,7 @@ final class EventsController extends AbstractController
         private readonly GroupPresenter $groupPresenter,
         private readonly CalendarPresenter $calendarPresenter,
         private readonly EventInvitationRepository $invitations,
+        private readonly InviteLink $inviteLink,
     ) {
     }
 
@@ -346,7 +351,7 @@ final class EventsController extends AbstractController
             'SUMMARY:'.$esc($event->getTitle()),
             'LOCATION:'.$esc($event->getAddress() ?? $event->getLocation()),
             'DESCRIPTION:'.$esc($event->getShortDescription()),
-            'URL:'.$this->generateUrl('app_events_detail', ['slug' => $event->getSlug()], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL),
+            'URL:'.$this->generateUrl('app_events_detail', ['slug' => $event->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL),
             'END:VEVENT', 'END:VCALENDAR',
         ];
 
@@ -372,6 +377,47 @@ final class EventsController extends AbstractController
     }
 
     /**
+     * Carton d'invitation de l'organisateur (exemple « Organisez gratuitement
+     * vos événements privés » transmis par le client le 07/10) : aperçu du
+     * carton (ordinateur et téléphone) avec QR code, suivi des invités et
+     * partage (impression / PDF, WhatsApp, lien, e-mail).
+     */
+    #[Route(path: ['fr' => '/evenements/detail/{slug}/invitation', 'en' => '/en/events/detail/{slug}/invitation'], name: 'app_events_invitation')]
+    public function invitation(string $slug, EventRegistrationRepository $registrations): Response
+    {
+        $event = $this->findEventOrFail($slug);
+        $user = $this->getUser();
+        if (!$user instanceof User || $event->getOrganizer() !== $user) {
+            throw $this->createAccessDeniedException('Seul l’organisateur prépare le carton d’invitation.');
+        }
+
+        $parameters = ['slug' => $event->getSlug()];
+        if ($event->isPrivate()) {
+            $parameters['cle'] = $this->inviteLink->key('event', (string) $event->getId());
+        }
+        $link = $this->generateUrl('app_events_detail', $parameters, UrlGeneratorInterface::ABSOLUTE_URL);
+
+        $invited = $this->invitations->findBy(['event' => $event]);
+        $going = $registrations->findBy(['event' => $event, 'status' => EventRegistration::GOING]);
+        $waiting = $registrations->count(['event' => $event, 'status' => EventRegistration::WAITLIST]);
+        $goingUsers = array_map(static fn (EventRegistration $r): User => $r->getUser(), $going);
+        $answered = array_filter($invited, static fn ($i): bool => null !== $i->getUser() && \in_array($i->getUser(), $goingUsers, true));
+
+        return $this->render('event/invitation.html.twig', [
+            'entity' => $event,
+            'link' => $link,
+            'qr' => (new QRCode(new QROptions(['outputBase64' => true, 'eccLevel' => QRCode::ECC_M, 'addQuietzone' => true])))->render($link),
+            'stats' => [
+                'invited' => \count($invited),
+                // L'organisateur est inscrit d'office : il n'est pas compté.
+                'going' => max(0, \count($going) - (\in_array($user, $goingUsers, true) ? 1 : 0)),
+                'pending' => max(0, \count($invited) - \count($answered)),
+                'waiting' => $waiting,
+            ],
+        ]);
+    }
+
+    /**
      * Fiche consultable : publiée (ou programmée et arrivée à échéance) ;
      * un brouillon ou un événement privé ne l'est que par son organisateur
      * et ses invités.
@@ -384,8 +430,17 @@ final class EventsController extends AbstractController
         if (!$isOrganizer && !$event->isPublished()) {
             throw new NotFoundHttpException('Cet événement est introuvable.');
         }
+        // Réservé aux membres (07/10) : un visiteur est envoyé vers la connexion.
+        if ('members' === $event->getVisibility() && !$user instanceof User) {
+            throw $this->createAccessDeniedException('Cet événement est réservé aux membres connectés.');
+        }
+        // Lien d'invitation / QR code (07/10) : la clé signée ouvre l'événement pour la session.
+        $key = (string) $this->container->get('request_stack')->getCurrentRequest()?->query->get('cle', '');
+        if ('' !== $key) {
+            $this->inviteLink->redeem('event', (string) $event->getId(), $key);
+        }
         if (!$isOrganizer && $event->isPrivate()) {
-            $invited = $user instanceof User && $this->invitations->isInvited($event, $user);
+            $invited = ($user instanceof User && $this->invitations->isInvited($event, $user)) || $this->inviteLink->hasAccess('event', (string) $event->getId());
             if (!$invited) {
                 throw $user instanceof User ? $this->createAccessDeniedException('Cet événement est réservé aux personnes invitées.') : new NotFoundHttpException('Cet événement est introuvable.');
             }

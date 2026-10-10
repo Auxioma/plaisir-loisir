@@ -11,8 +11,11 @@ use App\PrivateActivity\Enum\ParticipationStatus;
 use App\PrivateActivity\Enum\PrivateActivityVisibility;
 use App\PrivateActivity\Repository\ParticipationRepository;
 use App\PrivateActivity\Security\PrivateActivityVoter;
+use App\PrivateActivity\Service\PrivateActivityInviteLink;
+use App\Shared\Service\InviteLink;
 use App\User\Entity\User;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
@@ -26,7 +29,7 @@ final class PrivateActivityVoterTest extends TestCase
     public function testAPublicActivityIsVisibleToAnonymousVisitors(): void
     {
         $activity = (new PrivateActivity())->setOrganizer(new User())->setVisibility(PrivateActivityVisibility::Public);
-        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class));
+        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink());
 
         self::assertSame(
             VoterInterface::ACCESS_GRANTED,
@@ -37,7 +40,7 @@ final class PrivateActivityVoterTest extends TestCase
     public function testAMembersOnlyActivityIsHiddenFromAnonymousVisitors(): void
     {
         $activity = (new PrivateActivity())->setOrganizer(new User())->setVisibility(PrivateActivityVisibility::MembersOnly);
-        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class));
+        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink());
 
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
@@ -48,7 +51,7 @@ final class PrivateActivityVoterTest extends TestCase
     public function testAMembersOnlyActivityIsVisibleToAnyConnectedUser(): void
     {
         $activity = (new PrivateActivity())->setOrganizer(new User())->setVisibility(PrivateActivityVisibility::MembersOnly);
-        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class));
+        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink());
 
         self::assertSame(
             VoterInterface::ACCESS_GRANTED,
@@ -63,7 +66,7 @@ final class PrivateActivityVoterTest extends TestCase
         $participations = $this->createStub(ParticipationRepository::class);
         $participations->method('findOneByActivityAndParticipant')->willReturn(null);
 
-        $voter = new PrivateActivityVoter($participations);
+        $voter = new PrivateActivityVoter($participations, self::noInviteLink());
 
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
@@ -80,7 +83,7 @@ final class PrivateActivityVoterTest extends TestCase
         $participations = $this->createStub(ParticipationRepository::class);
         $participations->method('findOneByActivityAndParticipant')->willReturn(null);
 
-        $voter = new PrivateActivityVoter($participations);
+        $voter = new PrivateActivityVoter($participations, self::noInviteLink());
 
         self::assertSame(
             VoterInterface::ACCESS_GRANTED,
@@ -92,7 +95,7 @@ final class PrivateActivityVoterTest extends TestCase
     {
         $organizer = new User();
         $activity = (new PrivateActivity())->setOrganizer($organizer);
-        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class));
+        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink());
 
         self::assertSame(VoterInterface::ACCESS_GRANTED, $voter->vote($this->tokenFor($organizer), $activity, [PrivateActivityVoter::MANAGE]));
         self::assertSame(VoterInterface::ACCESS_DENIED, $voter->vote($this->tokenFor(new User()), $activity, [PrivateActivityVoter::MANAGE]));
@@ -102,7 +105,7 @@ final class PrivateActivityVoterTest extends TestCase
     {
         $organizer = new User();
         $activity = (new PrivateActivity())->setOrganizer($organizer);
-        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class));
+        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink());
 
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
@@ -123,7 +126,7 @@ final class PrivateActivityVoterTest extends TestCase
         $participations->method('findOneByActivityAndParticipant')
             ->willReturn((new Participation())->setStatus(ParticipationStatus::Pending));
 
-        $voter = new PrivateActivityVoter($participations);
+        $voter = new PrivateActivityVoter($participations, self::noInviteLink());
 
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
@@ -140,7 +143,7 @@ final class PrivateActivityVoterTest extends TestCase
         $participations->method('findOneByActivityAndParticipant')
             ->willReturn((new Participation())->setStatus(ParticipationStatus::Accepted));
 
-        $voter = new PrivateActivityVoter($participations);
+        $voter = new PrivateActivityVoter($participations, self::noInviteLink());
 
         self::assertSame(
             VoterInterface::ACCESS_GRANTED,
@@ -157,7 +160,7 @@ final class PrivateActivityVoterTest extends TestCase
         $participations->method('findOneByActivityAndParticipant')
             ->willReturn((new Participation())->setStatus(ParticipationStatus::Accepted));
 
-        $voter = new PrivateActivityVoter($participations);
+        $voter = new PrivateActivityVoter($participations, self::noInviteLink());
 
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
@@ -171,5 +174,11 @@ final class PrivateActivityVoterTest extends TestCase
         $token->method('getUser')->willReturn($user);
 
         return $token;
+    }
+
+    /** Aucun lien d'invitation ouvert (pas de requête courante). */
+    private static function noInviteLink(): PrivateActivityInviteLink
+    {
+        return new PrivateActivityInviteLink(new InviteLink('test-secret', new RequestStack()));
     }
 }

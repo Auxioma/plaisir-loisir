@@ -9,6 +9,7 @@ use App\PrivateActivity\Enum\ParticipationStatus;
 use App\PrivateActivity\Enum\PrivateActivityStatus;
 use App\PrivateActivity\Enum\PrivateActivityVisibility;
 use App\PrivateActivity\Repository\ParticipationRepository;
+use App\PrivateActivity\Service\PrivateActivityInviteLink;
 use App\User\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
@@ -56,6 +57,7 @@ final class PrivateActivityVoter extends Voter
 
     public function __construct(
         private readonly ParticipationRepository $participations,
+        private readonly PrivateActivityInviteLink $inviteLink,
     ) {
     }
 
@@ -92,9 +94,10 @@ final class PrivateActivityVoter extends Voter
         return match ($activity->getVisibility()) {
             PrivateActivityVisibility::Public => true,
             PrivateActivityVisibility::MembersOnly => $user instanceof User,
-            PrivateActivityVisibility::Private => $user instanceof User && (
+            // Lien d'invitation ouvert dans cette session (07/10), même sans compte.
+            PrivateActivityVisibility::Private => $this->inviteLink->hasAccess($activity) || ($user instanceof User && (
                 $this->hasAnyParticipation($activity, $user) || $this->hasAnyInvitation($activity, $user)
-            ),
+            )),
         };
     }
 

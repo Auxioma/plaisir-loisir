@@ -3,12 +3,14 @@
     profil_activites_particulier.jpeg (30/09).
     Données : PrivateActivityController::myActivities().
 
-    Écarts assumés : pas de « Vues » (aucun compteur) ni de brouillons ; les
-    colonnes montrent les participants confirmés et les demandes en attente.
+    07/10 : colonnes de la maquette « version améliorée » (lieu, jauge,
+    compte à rebours, Voir / Modifier / Participants). Pas de « Vues » :
+    aucun compteur n'existe pour les activités gratuites.
 #}
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 {% import 'account/_ui.html.twig' as ui %}
+{% import 'private_activity/_ui.html.twig' as fa %}
 
 {% block title %}{{ 'Mes activités créées'|trans }}{% endblock %}
 
@@ -16,7 +18,7 @@
     <header class="pf-head">
         <div>
             <h1 class="pf-title">{{ 'Mes activités créées'|trans }}</h1>
-            <p class="pf-sub">{{ 'Gérez toutes les activités que vous avez créées sur TrouveMoi Event.'|trans }}</p>
+            <p class="pf-sub">{{ 'Gérez vos activités gratuites : participants, demandes, modifications et partage.'|trans }}</p>
         </div>
     </header>
 
@@ -26,7 +28,7 @@
                 <a class="pf-tab{{ tab == key ? ' is-active' }}" href="{{ path('app_account_private_activities', {onglet: key}) }}">{{ label|trans }}</a>
             {% endfor %}
         </nav>
-        <a class="pf-btn pf-btn--primary pf-btn--lg" href="{{ path('app_account_private_activities_new', {vierge: 1}) }}">{{ icon.plus(18) }} {{ 'Créer une activité'|trans }}</a>
+        <a class="pf-btn pf-btn--primary pf-btn--lg" href="{{ path('app_create_free') }}">{{ icon.plus(18) }} {{ 'Créer une activité gratuite'|trans }}</a>
     </div>
 
     <div class="pf-row pf-row--5">
@@ -57,40 +59,49 @@
             <div class="pf-empty">
                 <strong>{{ query or tab != 'toutes' ? 'Aucune activité ne correspond.'|trans : 'Vous n’avez pas encore créé d’activité.'|trans }}</strong>
                 {{ 'Organisez une sortie entre particuliers et invitez vos proches.'|trans }}
-                <br><a class="pf-btn" href="{{ path('app_account_private_activities_new') }}">{{ 'Créer une activité'|trans }}</a>
+                <br><a class="pf-btn" href="{{ path('app_create_free') }}">{{ 'Créer une activité gratuite'|trans }}</a>
             </div>
         {% else %}
             <table class="pf-table">
+                {# Maquette « Mes activités – version améliorée » (07/10) : lieu, jauge
+                   de participants, compte à rebours et actions explicites. #}
                 <thead>
                     <tr>
                         <th>{{ 'Activité'|trans }}</th>
-                        <th>{{ 'Date'|trans }}</th>
+                        <th>{{ 'Lieu'|trans }}</th>
+                        <th>{{ 'Date & heure'|trans }}</th>
                         <th>{{ 'Statut'|trans }}</th>
                         <th>{{ 'Participants'|trans }}</th>
                         <th>{{ 'Demandes'|trans }}</th>
+                        <th>{{ 'Commence dans'|trans }}</th>
                         <th class="pf-table__th-actions">{{ 'Actions'|trans }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in rows %}
+                        {% set editable = row.status in ['online', 'full', 'draft'] %}
                         <tr>
                             <td>
                                 <div class="pf-table__item">
                                     <img src="{{ asset(row.image) }}" alt="" loading="lazy">
-                                    <div><strong>{{ row.title }}</strong><small>{{ row.place ?: '—' }}</small></div>
+                                    <div><strong>{{ row.title }}</strong>{% if row.activity.level %}<small>{{ row.activity.level.label|trans }}</small>{% endif %}</div>
                                 </div>
                             </td>
-                            <td>{{ row.date ? row.date|pf_date('d MMMM y') : '—' }}<small>{{ row.date ? row.date|date('H') ~ 'h' ~ row.date|date('i') : '' }}</small></td>
+                            <td>{{ row.place ?: '—' }}</td>
+                            <td>{{ row.date ? row.date|pf_date('d MMM y') : '—' }}<small>{{ row.date ? row.date|date('H') ~ 'h' ~ row.date|date('i') : '' }}</small></td>
                             <td>{{ ui.pill(row.statusLabel|trans, {online: 'green', full: 'orange', past: 'red', cancelled: 'grey', draft: 'grey'}[row.status]) }}</td>
-                            <td>{{ row.participants }}{{ row.capacity ? ' / ' ~ row.capacity : '' }}</td>
-                            <td>{{ row.pending }}</td>
+                            <td><div class="fa-table-places">{{ fa.participants(row.participants, row.capacity) }}</div></td>
+                            <td>{% if row.pending > 0 %}<a class="pf-link" href="{{ path('app_account_private_activity_participants', {id: row.id, onglet: 'demandes'}) }}">{{ row.pending }} {{ 'en attente'|trans }}</a>{% else %}0{% endif %}</td>
+                            <td>{% if row.status in ['online', 'full'] %}{{ fa.countdown(row.activity, 'inline') }}{% else %}—{% endif %}</td>
                             <td>
-                                <div class="pf-table__actions">
+                                <div class="fa-table-actions">
                                     {% if row.status == 'draft' %}
-                                        <a class="pf-btn pf-btn--primary" href="{{ path('app_account_private_activity_resume', {id: row.id}) }}">{{ 'Reprendre'|trans }}</a>
+                                        <a class="fa-act" href="{{ path('app_account_private_activity_resume', {id: row.id}) }}">{{ icon.edit_square(16) }} {{ 'Reprendre'|trans }}</a>
+                                    {% else %}
+                                        <a class="fa-act" href="{{ path('app_private_activity_show', {id: row.id}) }}">{{ icon.eye(16) }} {{ 'Voir l’annonce'|trans }}</a>
+                                        {% if editable %}<a class="fa-act" href="{{ path('app_account_private_activity_resume', {id: row.id}) }}">{{ icon.edit_square(16) }} {{ 'Modifier'|trans }}</a>{% endif %}
+                                        <a class="fa-act" href="{{ path('app_account_private_activity_participants', {id: row.id}) }}">{{ icon.users(16) }} {{ 'Participants'|trans }}</a>
                                     {% endif %}
-                                    <a class="pf-iconbtn" href="{{ path('app_private_activity_show', {id: row.id}) }}" aria-label="{{ 'Voir'|trans }}" title="{{ 'Voir'|trans }}">{{ icon.eye(18) }}</a>
-                                    <a class="pf-iconbtn" href="{{ path('app_private_activity_show', {id: row.id}) }}#participants" aria-label="{{ 'Gérer les participants'|trans }}" title="{{ 'Gérer les participants'|trans }}">{{ icon.edit_square(17) }}</a>
                                     <details class="pl-dropdown pf-kebab pf-kebab--btn">
                                         <summary class="pf-iconbtn" aria-label="{{ 'Plus d’actions'|trans }}">{{ icon.dots(18) }}</summary>
                                         <div class="tm-menu tm-menu--right">
@@ -126,7 +137,7 @@
     <section class="pf-card pf-boost">
         <h2 class="pf-card__title"><span class="pf-boost__ico">{{ icon.rocket(22) }}</span>{{ 'Boostez vos activités'|trans }}</h2>
         <p class="pf-card__sub">{{ 'Augmentez la visibilité de vos activités et attirez plus de participants.'|trans }}</p>
-        <a class="pf-btn pf-btn--block" href="{{ path('app_account_private_activities_new') }}">{{ 'Créer une nouvelle activité'|trans }}</a>
+        <a class="pf-btn pf-btn--block" href="{{ path('app_create_free') }}">{{ 'Créer une activité gratuite'|trans }}</a>
     </section>
 
     <section class="pf-card">

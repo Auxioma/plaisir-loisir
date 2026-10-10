@@ -42,6 +42,28 @@ final class NotificationService
     }
 
     /**
+     * Notifications affichées à l'écran : elles sont désormais « vues »
+     * (retour client du 07/10 — le compteur de l'en-tête ne baissait jamais
+     * tant qu'on ne cliquait pas sur « Tout marquer comme lu »).
+     *
+     * @param iterable<Notification> $notifications
+     */
+    public function markSeen(iterable $notifications): void
+    {
+        $changed = false;
+        foreach ($notifications as $notification) {
+            if (!$notification->isRead()) {
+                $notification->markAsRead();
+                $changed = true;
+            }
+        }
+
+        if ($changed) {
+            $this->entityManager->flush();
+        }
+    }
+
+    /**
      * Écran « Notifications » de l'espace compte, bouton « Tout marquer
      * comme lu ».
      *

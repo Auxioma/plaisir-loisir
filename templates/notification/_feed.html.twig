@@ -30,7 +30,7 @@
             <div class="pf-select">
                 <select name="type" onchange="this.form.submit()" aria-label="{{ 'Type'|trans }}">
                     <option value="">{{ 'Tous les types'|trans }}</option>
-                    {% for key, label in {booking: 'Réservations', payment: 'Paiements', review: 'Avis', messaging: 'Messages', quote: 'Demandes et devis', activity: 'Activités privées', system: 'Compte'} %}
+                    {% for key, label in {booking: 'Réservations', payment: 'Paiements', review: 'Avis', messaging: 'Messages', quote: 'Demandes et devis', activity: 'Activités gratuites', system: 'Compte'} %}
                         <option value="{{ key }}"{{ type == key ? ' selected' }}>{{ label|trans }}</option>
                     {% endfor %}
                 </select>

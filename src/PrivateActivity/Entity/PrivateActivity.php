@@ -6,6 +6,7 @@ namespace App\PrivateActivity\Entity;
 
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\Service;
+use App\Catalog\Enum\ActivityLevel;
 use App\PrivateActivity\Enum\ParticipationMode;
 use App\PrivateActivity\Enum\PrivateActivityStatus;
 use App\PrivateActivity\Enum\PrivateActivityVisibility;
@@ -116,6 +117,10 @@ class PrivateActivity
 
     #[ORM\Column(enumType: PrivateActivityStatus::class)]
     private PrivateActivityStatus $status = PrivateActivityStatus::Open;
+
+    /** Niveau attendu (retours client du 07/10), affiché sur les annonces. Nullable : anciennes activités. */
+    #[ORM\Column(enumType: ActivityLevel::class, nullable: true)]
+    private ?ActivityLevel $level = null;
 
     /** Nullable : le CDC ne rend pas le minimum obligatoire (§12.2). */
     #[ORM\Column(nullable: true)]
@@ -450,5 +455,29 @@ class PrivateActivity
         $this->coverImage = $coverImage;
 
         return $this;
+    }
+
+    public function getLevel(): ?ActivityLevel
+    {
+        return $this->level;
+    }
+
+    public function setLevel(?ActivityLevel $level): static
+    {
+        $this->level = $level;
+
+        return $this;
+    }
+
+    /** Places confirmées (participations acceptées). */
+    public function countAccepted(): int
+    {
+        return $this->participations->filter(static fn (Participation $p): bool => $p->isAccepted())->count();
+    }
+
+    /** Places restantes, null si la capacité n'est pas limitée. */
+    public function remainingPlaces(): ?int
+    {
+        return null === $this->maxParticipants ? null : max(0, $this->maxParticipants - $this->countAccepted());
     }
 }

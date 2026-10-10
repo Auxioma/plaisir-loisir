@@ -35,8 +35,31 @@ final class AccountNotificationsFlowTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', 'Réservation confirmée');
         self::assertSelectorTextContains('body', 'Nouvel avis');
-        // Badge sidebar : une seule non lue.
-        self::assertSelectorTextContains('.pf-menu__count', '1');
+        // La non-lue est encore en surbrillance à l'affichage…
+        self::assertSelectorTextContains('.pf-notif.is-unread', 'Réservation confirmée');
+        self::assertSelectorCount(1, '.pf-notif.is-unread');
+    }
+
+    /**
+     * Retour client du 07/10 : une notification vue ne doit plus compter
+     * comme non lue (le compteur de l'en-tête ne baissait jamais).
+     */
+    public function testDisplayedNotificationsBecomeRead(): void
+    {
+        $client = static::createClient();
+        $user = $this->makeClient();
+        $notifications = static::getContainer()->get(NotificationService::class);
+        $notifications->notify($user, NotificationCategory::Booking, 'Réservation confirmée', 'Détail.');
+
+        $client->loginUser($user);
+        $client->request('GET', '/compte/notifications');
+        self::assertResponseIsSuccessful();
+
+        $repository = static::getContainer()->get(NotificationRepository::class);
+        self::assertSame(0, $repository->countUnread($user));
+
+        $client->request('GET', '/compte/notifications');
+        self::assertSelectorNotExists('.pf-notif.is-unread');
     }
 
     public function testUnreadFilterShowsOnlyUnreadNotifications(): void

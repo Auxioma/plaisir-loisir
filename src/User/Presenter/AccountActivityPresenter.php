@@ -17,6 +17,7 @@ use App\PrivateActivity\Repository\AlbumRepository;
 use App\PrivateActivity\Repository\ParticipationRepository;
 use App\PrivateActivity\Repository\PhotoRepository;
 use App\PrivateActivity\Repository\PrivateActivityRepository;
+use App\PrivateActivity\Service\PrivateActivityImage;
 use App\Quote\Entity\ServiceRequest;
 use App\Quote\Enum\QuoteStatus;
 use App\Quote\Repository\ServiceRequestRepository;
@@ -81,7 +82,8 @@ final class AccountActivityPresenter
                 'activity' => $activity,
                 'title' => $activity->getTitle(),
                 'photoCount' => null !== $album ? $this->photos->countForAlbum($album) : 0,
-                'cover' => $latest?->getPath(),
+                // Sans photo dans l'album, l'image de l'activité (07/10 : vignettes vides).
+                'cover' => $latest?->getPath() ?? PrivateActivityImage::pathFor($activity),
                 'date' => $latest?->getCreatedAt() ?? $activity->getScheduledAt() ?? $activity->getCreatedAt(),
                 'public' => PrivateActivityVisibility::Public === $activity->getVisibility(),
                 'organizer' => $organizer,
@@ -401,10 +403,10 @@ final class AccountActivityPresenter
     private function imageFor(PrivateActivity $activity): string
     {
         $service = $activity->getService();
-        if (null !== $service) {
+        if (null === $activity->getCoverImage() && null !== $service) {
             return $this->activityPresenter->card($service)['image'];
         }
 
-        return self::FALLBACK_IMAGE;
+        return PrivateActivityImage::pathFor($activity);
     }
 }

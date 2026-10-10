@@ -202,35 +202,4 @@ final class StaticDestinations
             ['title' => 'Bali, Indonésie', 'subtitle' => 'Bien-être & Détente', 'image' => 'images/destinations/dest-thailande.jpg'],
         ];
     }
-
-    /**
-     * Écrans 2 à 7 : les avis « Ce que disent les voyageurs » (2 cartes).
-     *
-     * @return list<array<string, mixed>>
-     */
-    public static function travelerReviews(): array
-    {
-        return [
-            [
-                'stars' => 5,
-                'title' => 'Efficient and Reliable',
-                'text' => 'Réservation simple et rapide, prestataire au top et activité conforme à la description. On sent que la plateforme sélectionne bien ses partenaires — je recommande les yeux fermés.',
-                'author' => 'John Mans',
-                'meta' => 'France, Nantes',
-                'date' => '10 Juillet 2026',
-                'avatar' => 'images/home/avatar-2.png',
-                'reportable' => true,
-            ],
-            [
-                'stars' => 5,
-                'title' => 'Des souvenirs pour toute la famille',
-                'text' => "Nous avons réservé trois activités pour notre séjour à Annecy : tout était impeccable, des rappels par mail jusqu'à l'accueil sur place. Les enfants en parlent encore !",
-                'author' => 'Amélie Robert',
-                'meta' => 'France, Annecy',
-                'date' => '2 Juillet 2026',
-                'avatar' => 'images/home/avatar-3.png',
-                'reportable' => true,
-            ],
-        ];
-    }
 }

@@ -8,6 +8,7 @@
 #}
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
+{% import 'private_activity/_ui.html.twig' as fa %}
 
 {% block title %}{{ activity.title }}{% endblock %}
 {% block meta_description %}{{ activity.title }}{{ activity.city ? ' — ' ~ activity.city }} : {{ 'activité gratuite entre membres.'|trans }}{% endblock %}
@@ -18,7 +19,7 @@
         <nav class="act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
             <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a>
             <span aria-hidden="true">|</span>
-            <a href="{{ path('app_private_activities') }}">{{ 'Activités privées'|trans }}</a>
+            <a href="{{ path('app_private_activities') }}">{{ 'Activités gratuites'|trans }}</a>
             <span aria-hidden="true">|</span>
             <span aria-current="page" class="evn-crumb-current">{{ activity.title }}</span>
         </nav>
@@ -36,6 +37,15 @@
                     {% if activity.visibility.value == 'members_only' %}<span class="pa-pill">{{ 'Réservée aux membres'|trans }}</span>{% elseif activity.visibility.value == 'private' %}<span class="pa-pill">{{ 'Privée'|trans }}</span>{% endif %}
                 </p>
 
+                {# Retours client du 07/10 : gratuit, niveau, participants et compte à rebours sous la date. #}
+                <div class="fa-facts">
+                    <span class="fa-chip fa-chip--green">{{ 'Gratuit'|trans }}</span>
+                    {% if activity.level %}<span class="fa-chip">{{ icon.trend_up(14) }} {{ 'Niveau :'|trans }} {{ activity.level.label|trans }}</span>{% endif %}
+                    <span class="fa-chip">{{ icon.users(14) }} {{ accepted|length }}{% if activity.maxParticipants %} / {{ activity.maxParticipants }}{% endif %} {{ 'participants'|trans }}</span>
+                    {% if activity.scheduledAt %}<span class="fa-chip">{{ icon.calendar(14) }} {{ activity.scheduledAt|pf_date('EEEE d MMMM')|capitalize }} · {{ activity.scheduledAt|date('H\\hi') }}</span>{% endif %}
+                </div>
+                {{ fa.countdown(activity, 'full') }}
+
                 {% if activity.description %}
                     <h2 class="evn-h2">{{ 'Détails'|trans }}</h2>
                     <div class="evn-detail__text">{{ activity.description|nl2br }}</div>
@@ -52,6 +62,7 @@
                     {% if activity.minParticipants or activity.maxParticipants %}
                         <li>{{ icon.users(16) }} <span>{{ accepted|length }} {{ 'confirmé(s)'|trans }}{% if activity.minParticipants %} · {{ 'min.'|trans }} {{ activity.minParticipants }}{% endif %}{% if activity.maxParticipants %} · {{ 'max.'|trans }} {{ activity.maxParticipants }}{% endif %}</span></li>
                     {% endif %}
+                    {% if activity.level %}<li>{{ icon.trend_up(16) }} <span>{{ 'Niveau :'|trans }} {{ activity.level.label|trans }}</span></li>{% endif %}
                     <li>{{ icon.check_badge(16) }} <span>{{ activity.participationMode.value == 'automatic' ? 'Inscription directe'|trans : 'Inscription sur validation de l’organisateur'|trans }}</span></li>
                     {% if activity.toBring %}<li>{{ icon.info(16) }} <span>{{ 'À apporter :'|trans }} {{ activity.toBring }}</span></li>{% endif %}
                 </ul>
@@ -61,50 +72,25 @@
                 {% endif %}
 
                 {% if can_manage %}
-                    <section class="pf-card pa-manage">
+                    {% set editable = activity.status.value != 'cancelled' and (activity.scheduledAt is null or activity.scheduledAt > date()) %}
+                    <section class="pf-card pa-manage" id="participants">
                         <h2 class="evn-h2">{{ 'Gestion de l\'activité'|trans }}</h2>
-
-                        {% if pending is not empty %}
-                            <h3 class="pa-h3">{{ 'Demandes en attente'|trans }} ({{ pending|length }})</h3>
-                            <ul class="pa-people">
-                                {% for participation in pending %}
-                                    <li>
-                                        <span>{{ participation.participant.firstName }} {{ participation.participant.lastName }}</span>
-                                        <span class="pa-people__actions">
-                                            <form method="post" action="{{ path('app_account_private_activity_decide', {id: activity.id, participationId: participation.id}) }}">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                                                <input type="hidden" name="decision" value="accepter">
-                                                <button type="submit" class="pl-btn pl-btn--primary pa-sm">{{ 'Accepter'|trans }}</button>
-                                            </form>
-                                            <form method="post" action="{{ path('app_account_private_activity_decide', {id: activity.id, participationId: participation.id}) }}">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                                                <input type="hidden" name="decision" value="refuser">
-                                                <button type="submit" class="pl-btn pl-btn--outline-dark pa-sm">{{ 'Refuser'|trans }}</button>
-                                            </form>
-                                        </span>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% endif %}
-
-                        <h3 class="pa-h3">{{ 'Participants confirmés'|trans }} ({{ accepted|length }})</h3>
-                        {% if accepted is empty %}
-                            <p class="evn-muted">{{ 'Personne pour le moment.'|trans }}</p>
-                        {% else %}
-                            <ul class="pa-people">{% for participation in accepted %}<li>{{ participation.participant.firstName }} {{ participation.participant.lastName }}</li>{% endfor %}</ul>
-                        {% endif %}
-
-                        {% if waiting is not empty %}
-                            <h3 class="pa-h3">{{ 'Liste d\'attente'|trans }} ({{ waiting|length }})</h3>
-                            <ul class="pa-people">{% for participation in waiting %}<li>{{ participation.participant.firstName }} {{ participation.participant.lastName }}</li>{% endfor %}</ul>
-                        {% endif %}
-
-                        {% if activity.status.value != 'cancelled' %}
-                            <form method="post" action="{{ path('app_account_private_activity_cancel', {id: activity.id}) }}" onsubmit="return confirm('{{ 'Annuler cette activité ? Les participants seront prévenus.'|trans|e('js') }}')">
-                                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                                <button type="submit" class="pl-btn pl-btn--outline-dark pa-sm">{{ 'Annuler l\'activité'|trans }}</button>
-                            </form>
-                        {% endif %}
+                        <div class="fa-kpis">
+                            <div class="fa-kpi is-green"><span class="fa-kpi__ico">{{ icon.users(20) }}</span><span><strong>{{ accepted|length }}</strong><small>{{ 'Confirmés'|trans }}</small></span></div>
+                            <div class="fa-kpi is-orange"><span class="fa-kpi__ico">{{ icon.clock(20) }}</span><span><strong>{{ pending|length }}</strong><small>{{ 'Demandes'|trans }}</small></span></div>
+                            <div class="fa-kpi is-violet"><span class="fa-kpi__ico">{{ icon.users(20) }}</span><span><strong>{{ waiting|length }}</strong><small>{{ 'Liste d\'attente'|trans }}</small></span></div>
+                            <div class="fa-kpi"><span class="fa-kpi__ico">{{ icon.check(20) }}</span><span><strong>{{ activity.maxParticipants ? activity.remainingPlaces : '∞' }}</strong><small>{{ 'Places restantes'|trans }}</small></span></div>
+                        </div>
+                        <div class="fa-table-actions">
+                            <a class="fa-btn fa-btn--sm" href="{{ path('app_account_private_activity_participants', {id: activity.id}) }}">{{ icon.users(14) }} {{ 'Gérer les participants'|trans }}{% if pending is not empty %} ({{ pending|length }}){% endif %}</a>
+                            {% if editable %}<a class="fa-btn fa-btn--sm fa-btn--ghost" href="{{ path('app_account_private_activity_resume', {id: activity.id}) }}">{{ icon.edit_square(14) }} {{ 'Modifier l\'annonce'|trans }}</a>{% endif %}
+                            {% if activity.status.value != 'cancelled' %}
+                                <form method="post" action="{{ path('app_account_private_activity_cancel', {id: activity.id}) }}" onsubmit="return confirm('{{ 'Annuler cette activité ? Les participants seront prévenus.'|trans|e('js') }}')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                    <button type="submit" class="fa-btn fa-btn--sm fa-btn--ghost">{{ 'Annuler l\'activité'|trans }}</button>
+                                </form>
+                            {% endif %}
+                        </div>
                     </section>
                 {% endif %}
 
@@ -146,6 +132,7 @@
                         </form>
                     {% elseif can_manage %}
                         <p class="pa-join__state">{{ 'Vous organisez cette activité.'|trans }}</p>
+                        {% include 'private_activity/_share.html.twig' %}
                     {% elseif not is_granted('ROLE_USER') %}
                         <a href="{{ path('app_login') }}" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Se connecter pour participer'|trans }}</a>
                     {% elseif activity.status.value != 'open' %}
