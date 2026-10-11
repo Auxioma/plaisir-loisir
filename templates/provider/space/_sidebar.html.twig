@@ -7,6 +7,14 @@
 {% import 'provider/space/_ico.html.twig' as ico %}
 {% import '_partials/_icons.html.twig' as icon %}
 
+{# Repère « Espace professionnel » (11/10) : nom de l'entreprise et état du dossier. #}
+<div class="pp-brand">
+    <span class="pp-brand__label">{{ icon.briefcase(14) }} {{ 'Espace professionnel'|trans }}</span>
+    <strong class="pp-brand__name">{{ provider.displayName }}</strong>
+    {% set state = {draft: ['Dossier à envoyer', 'is-draft'], pending_verification: ['En vérification', 'is-pending'], verified: ['Vérifié', 'is-verified'], suspended: ['Suspendu', 'is-suspended']}[provider.status.value] %}
+    <span class="pp-brand__state {{ state[1] }}">{{ state[0]|trans }}</span>
+</div>
+
 <nav class="pp-menu" aria-label="{{ 'Menu professionnel'|trans }}">
     {% for item in menu %}
         {% set is_active = item.title == active %}

@@ -96,7 +96,7 @@
                 {{ icon.calendar_grid(36) }}
                 <strong>{{ 'Aucun événement ne correspond à votre recherche.'|trans }}</strong>
                 <span>{{ 'Élargissez vos critères ou créez le vôtre !'|trans }}</span>
-                <div><a class="evl-btn evl-btn--ghost" href="{{ path('app_events') }}">{{ 'Réinitialiser'|trans }}</a> <a class="evl-btn" href="{{ path('app_event_guide') }}">{{ 'Créer un événement'|trans }}</a></div>
+                <div><a class="evl-btn evl-btn--ghost" href="{{ path('app_events') }}">{{ 'Réinitialiser'|trans }}</a>{% if not is_granted('ROLE_PROVIDER') %} <a class="evl-btn" href="{{ path('app_event_guide') }}">{{ 'Créer un événement'|trans }}</a>{% endif %}</div>
             </div>
         {% else %}
             <div class="evl-grid">
@@ -149,12 +149,14 @@
             </ul>
         </section>
 
+        {% if not is_granted('ROLE_PROVIDER') %}
         <section class="evl-panel evl-create">
             <h2>{{ 'Créez votre événement'|trans }}</h2>
             <p>{{ 'Organisez facilement vos activités et invitez vos proches.'|trans }}</p>
             <a class="evl-btn" href="{{ path('app_event_guide') }}">{{ 'Créer un événement'|trans }} {{ icon.calendar_grid(16) }}</a>
             <span class="evl-create__art" aria-hidden="true">🎉</span>
         </section>
+        {% endif %}
     </aside>
 </div>
 

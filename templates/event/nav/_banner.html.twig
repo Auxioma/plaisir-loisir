@@ -4,6 +4,8 @@
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
+{# Pas d'appel à créer pour un professionnel (11/10). #}
+{% if not is_granted('ROLE_PROVIDER') %}
 <div class="evn-banner" data-evn-banner>
     <p class="evn-banner__text">{{ text }}</p>
     <div class="evn-banner__actions">
@@ -11,3 +13,4 @@
         <button type="button" class="evn-banner__close" data-evn-banner-close aria-label="{{ 'Fermer la bannière'|trans }}">{{ icon.x(18) }}</button>
     </div>
 </div>
+{% endif %}

@@ -68,7 +68,7 @@
                 </span>
                 <p class="evn-empty__title">{{ 'Devenez un organisateur'|trans }}</p>
                 <p class="evn-empty__text">{{ 'Créer un groupe vous connecte avec des personnes'|trans }}<br>{{ 'passionnées qui cherchent à partager des expériences'|trans }}<br>{{ 'dans la vie réelle.'|trans }}</p>
-                <a href="{{ path('app_group_create') }}" class="evn-btn-dark">{{ 'Lancer votre premier groupe'|trans }} {{ icon.arrow_up_right(15) }}</a>
+                {% if not is_granted('ROLE_PROVIDER') %}<a href="{{ path('app_group_create') }}" class="evn-btn-dark">{{ 'Lancer votre premier groupe'|trans }} {{ icon.arrow_up_right(15) }}</a>{% endif %}
                 <button type="button" class="evn-empty__link" id="evn-reset-mygroups">{{ 'Ou réinitialisez les filtres'|trans }}</button>
             </div>
         </div>

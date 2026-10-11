@@ -221,6 +221,18 @@ final class PrivateActivityServiceTest extends TestCase
         $this->service($em)->requestParticipation($activity, new User());
     }
 
+    public function testRequestParticipationRejectsAProvider(): void
+    {
+        $activity = (new PrivateActivity())->setOrganizer(new User());
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::never())->method('persist');
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->service($em)->requestParticipation($activity, (new User())->setRoles(['ROLE_PROVIDER']));
+    }
+
     public function testDecideRejectsAcceptanceWhenCapacityIsAlreadyFull(): void
     {
         $organizer = new User();

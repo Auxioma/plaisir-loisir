@@ -17,6 +17,11 @@
     Connecté : « Se connecter » laisse la place à l'avatar (menu Profil,
     Messagerie, raccourcis pro, Déconnexion). Favoris et Notifications
     portent leur compteur de non-lus.
+
+    Professionnel (retours client du 11/10) : un en-tête à lui. Badge
+    « Espace professionnel » à la place de la recherche, navigation métier
+    (activités, réservations, calendrier, revenus, notifications), bouton
+    « Créer une activité payante » ; ni favoris, ni album, ni gratuit.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 {# En dev seulement, « ?connecte=1 » prévisualise l'état connecté sans compte. #}
@@ -25,6 +30,11 @@
 {% set is_provider = app.user is not null and is_granted('ROLE_PROVIDER') %}
 
 {% set active =
+    route starts with 'app_pro_activit' ? 'pro_activites' :
+    route starts with 'app_pro_booking' ? 'pro_reservations' :
+    route starts with 'app_pro_calendar' ? 'pro_calendrier' :
+    route starts with 'app_pro_revenue' ? 'pro_revenus' :
+    route starts with 'app_pro_notification' ? 'notifications' :
     route == 'app_favorites_page' ? 'favoris' :
     route == 'app_photo_albums' ? 'album' :
     route starts with 'app_account_notification' ? 'notifications' :
@@ -32,18 +42,22 @@
     (route starts with 'app_activit' or route starts with 'app_offer' or route starts with 'app_gift' or route starts with 'app_event' or route starts with 'app_private_activit') ? 'activites' : ''
 %}
 
-<header class="tm-header">
+<header class="tm-header{{ is_provider ? ' tm-header--pro' }}">
     <div class="tm-header__inner">
         <a href="{{ path('app_home') }}" class="tm-header__logo" aria-label="{{ 'Accueil TrouveMoi'|trans }}">
             <img src="{{ asset('images/logo-trouvemoi-horizontal.png') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="239" height="48">
         </a>
 
+        {% if is_provider %}
+        <a class="tm-header__space" href="{{ path('app_pro_dashboard') }}">{{ icon.briefcase(16) }} {{ 'Espace professionnel'|trans }}</a>
+        {% else %}
         <form class="tm-search pl-suggest-anchor" action="{{ path('app_activities') }}" method="get" role="search">
             <input class="tm-search__input" type="search" name="q" data-suggest="activite"
                    placeholder="{{ 'Rechercher une activité, un loisir, une destination...'|trans }}"
                    aria-label="{{ 'Rechercher'|trans }}" value="{{ route == 'app_activities' ? app.request.query.get('q') : '' }}">
             <button class="tm-search__btn" type="submit" aria-label="{{ 'Lancer la recherche'|trans }}">{{ icon.search(20) }}</button>
         </form>
+        {% endif %}
 
         {# Sous 1200px la navigation glisse dans un panneau offcanvas de
            Bootstrap ; au-dessus, le CSS le neutralise et elle reprend sa place
@@ -55,6 +69,12 @@
             </div>
 
             <nav class="tm-nav" aria-label="{{ 'Navigation principale'|trans }}">
+                {% if is_provider %}
+                <a href="{{ path('app_pro_activities') }}" class="tm-nav__link{{ active == 'pro_activites' ? ' is-active' }}">{{ 'Mes activités'|trans }}</a>
+                <a href="{{ path('app_pro_bookings') }}" class="tm-nav__link{{ active == 'pro_reservations' ? ' is-active' }}">{{ 'Réservations'|trans }}</a>
+                <a href="{{ path('app_pro_calendar') }}" class="tm-nav__link{{ active == 'pro_calendrier' ? ' is-active' }}">{{ 'Calendrier'|trans }}</a>
+                <a href="{{ path('app_pro_revenue') }}" class="tm-nav__link{{ active == 'pro_revenus' ? ' is-active' }}">{{ 'Revenus'|trans }}</a>
+                {% else %}
                 <details class="pl-dropdown tm-nav__dropdown">
                     <summary class="tm-nav__link{{ active == 'activites' ? ' is-active' }}">{{ 'Activités'|trans }} {{ icon.chevron_down(14) }}</summary>
                     <div class="tm-menu">
@@ -66,9 +86,10 @@
                 </details>
 
                 <a href="{{ path('app_destinations') }}" class="tm-nav__link{{ active == 'destinations' ? ' is-active' }}">{{ 'Destinations'|trans }}</a>
+                {% endif %}
 
-                {# Favoris et notifications : membres connectés seulement (07/10). #}
-                {% if connected %}
+                {# Favoris et album : membres particuliers connectés (07/10, 11/10). #}
+                {% if connected and not is_provider %}
                 <a href="{{ path('app_favorites_page') }}" class="tm-nav__link{{ active == 'favoris' ? ' is-active' }}">
                     <span class="tm-nav__icon">{{ icon.heart(20) }}</span> {{ 'Mes favoris'|trans }}
                 </a>
@@ -77,7 +98,9 @@
                     {{ 'Album photo'|trans }}
                     <span class="tm-nav__badge">{{ 'Nouveau'|trans }}</span>
                 </a>
+                {% endif %}
 
+                {% if connected %}
                 <a href="{{ is_provider ? path('app_pro_notifications') : path('app_account_notifications') }}" class="tm-nav__link{{ active == 'notifications' ? ' is-active' }}">
                     <span class="tm-nav__icon">{{ icon.bell(20) }}</span>
                     {{ 'Notifications'|trans }}
@@ -108,7 +131,7 @@
                membre crée une activité GRATUITE ; le visiteur choisit
                Particulier / Professionnel (plus la page partenaire). #}
             {% if is_provider %}
-                <a href="{{ path('app_pro_activities_new') }}" class="tm-btn tm-btn--cta">{{ 'Déposer une activité'|trans }}</a>
+                <a href="{{ path('app_pro_activities_new') }}" class="tm-btn tm-btn--cta">{{ 'Créer une activité payante'|trans }}</a>
             {% elseif app.user %}
                 <a href="{{ path('app_create_free') }}" class="tm-btn tm-btn--cta">{{ 'Créer une activité gratuite'|trans }}</a>
             {% else %}

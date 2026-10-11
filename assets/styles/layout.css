@@ -95,6 +95,37 @@
 .tm-header__logo { flex: 0 0 calc(233 * var(--tm-u)); display: block; line-height: 0; }
 .tm-header__logo img { height: calc(48 * var(--tm-u)); width: auto; max-width: 100%; object-fit: contain; object-position: left center; }
 
+/* ---- En-tête professionnel (11/10) -------------------------------------- */
+/* Liseré bleu pro et badge « Espace professionnel » à la place de la
+   recherche : un professionnel voit tout de suite qu'il n'est pas dans
+   l'espace d'un particulier. */
+.tm-header--pro { box-shadow: inset 0 -3px 0 #2f5be7; }
+.tm-header__space {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    height: calc(36 * var(--tm-u));
+    margin-left: calc(40 * var(--tm-u));
+    padding: 0 14px;
+    background: #2f5be7;
+    border-radius: 999px;
+    color: var(--pl-white);
+    font-size: calc(13 * var(--tm-u));
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: none;
+}
+.tm-header__space:hover { color: var(--pl-white); filter: brightness(1.1); }
+
+/* Encart « Réservé aux particuliers » vu par un professionnel sur une
+   activité gratuite ou un événement (11/10). */
+.tm-pro-notice { display: flex; flex-direction: column; gap: 12px; padding: 16px; background: #eef3fe; border: 1px solid #c7d5fb; border-radius: 12px; }
+.tm-pro-notice p { margin: 0; color: #4a4f6a; font-size: 13px; line-height: 19px; }
+.tm-pro-notice strong { display: block; margin-bottom: 4px; color: #0b1437; font-size: 14px; }
+.tm-pro-notice__cta { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 14px; background: #2f5be7; border-radius: 8px; color: #fff; font-size: 13.5px; font-weight: 700; text-decoration: none; }
+.tm-pro-notice__cta:hover { color: #fff; filter: brightness(1.1); }
+
 /* ---- Recherche ---------------------------------------------------------- */
 .tm-search {
     position: relative;
@@ -371,6 +402,7 @@
     .tm-header__logo { flex-basis: auto; }
     .tm-header__logo img { height: 44px; }
     .tm-search { margin-left: 32px; flex-basis: 420px; height: 44px; }
+    .tm-header__space { margin-left: 20px; height: 34px; font-size: 13px; }
     .tm-burger { display: inline-flex; }
     .tm-header__actions { gap: 12px; }
 
@@ -394,6 +426,9 @@
 
 @media (max-width: 991.98px) {
     .tm-search { display: none; }
+}
+@media (max-width: 767.98px) {
+    .tm-header__space { display: none; }
 }
 
 @media (max-width: 575.98px) {

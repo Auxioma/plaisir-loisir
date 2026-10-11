@@ -6,6 +6,10 @@
     à répondre en trois minutes, et afficher un délai que personne ne tient
     fait plus de tort qu'une phrase sans chiffre. Le reste du texte est celui
     de la maquette, à la faute près (« à bien été » -> « a bien été »).
+
+    11/10 : le texte dit ce qui se passe vraiment — le professionnel peut se
+    connecter tout de suite à son espace et y préparer ses activités payantes,
+    publiées une fois le dossier vérifié.
 #}
 {% extends 'provider/auth/_split.html.twig' %}
 
@@ -23,9 +27,9 @@
 
         <h2 class="pa-done__title">{{ 'Félicitations'|trans }}</h2>
         <p class="pa-done__text">
-            {{ 'Votre demande a bien été enregistrée, notre service client vous contactera après vérification afin de vous donner accès à la plateforme.'|trans }}
+            {{ 'Votre dossier a bien été envoyé : notre équipe le vérifie sous 48 h. Connectez-vous dès maintenant à votre espace professionnel pour préparer vos activités payantes, vos tarifs et vos disponibilités ; elles seront publiées après validation.'|trans }}
         </p>
 
-        <a class="pa-btn pa-btn--wide" href="{{ path('app_home') }}">{{ 'Revenir sur le site'|trans }}</a>
+        <a class="pa-btn pa-btn--wide" href="{{ path('app_pro_login') }}">{{ 'Accéder à mon espace pro'|trans }}</a>
     </div>
 {% endblock %}

@@ -75,7 +75,7 @@ final class PrivateActivityVoter extends Voter
         return match ($attribute) {
             self::VIEW => $this->canView($subject, $user, $isOrganizer),
             self::MANAGE => $isOrganizer,
-            self::PARTICIPATE => $user instanceof User && !$isOrganizer && !\in_array($subject->getStatus(), [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft], true),
+            self::PARTICIPATE => $user instanceof User && !$isOrganizer && !$user->isProvider() && !\in_array($subject->getStatus(), [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft], true),
             self::VIEW_EXACT_LOCATION => $isOrganizer || ($subject->showsExactAddress() && $user instanceof User && $this->isAcceptedParticipant($subject, $user)),
             self::VIEW_ALBUM => $isOrganizer || ($user instanceof User && $this->isAcceptedParticipant($subject, $user)),
             default => false,

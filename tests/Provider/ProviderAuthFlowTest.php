@@ -100,7 +100,7 @@ final class ProviderAuthFlowTest extends WebTestCase
         self::assertSame('licence.pdf', $documents[0]->getOriginalName());
 
         // Le dossier complet part en vérification : c'est ce que promet
-        // l'écran de fin (« notre service client vous contactera »).
+        // l'écran de fin (« notre équipe le vérifie sous 48 h »).
         static::getContainer()->get(EntityManagerInterface::class)->refresh($profile);
         self::assertSame(ProviderStatus::PendingVerification, $profile->getStatus());
 

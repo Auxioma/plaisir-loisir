@@ -47,7 +47,6 @@ final class PublicPagesTest extends WebTestCase
             // Authentification
             '/login',
             '/inscription',
-            '/inscription?type=pro',
             '/authentification',
             '/mot-de-passe-oublie',
             // Événements

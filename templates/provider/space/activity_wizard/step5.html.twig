@@ -25,7 +25,7 @@
         {% endfor %}
     </div>
     <button type="button" class="pf-btn aw-add" data-aw-package-add>{{ icon.plus(14) }} {{ 'Ajouter une formule'|trans }}</button>
-    <p class="ew-hint">{{ 'Prix TTC. Indiquez 0 pour une activité gratuite. Une offre promotionnelle se crée ensuite depuis « Offres & Promotions ».'|trans }}</p>
+    <p class="ew-hint">{{ 'Prix TTC, supérieur à 0 €. Une offre promotionnelle se crée ensuite depuis « Offres & Promotions ».'|trans }}</p>
     {{ ui.err(errors, 'packages') }}
 </div>
 

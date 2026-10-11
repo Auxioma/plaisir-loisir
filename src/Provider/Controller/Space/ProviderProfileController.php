@@ -14,6 +14,7 @@ use App\Provider\Enum\ProviderDocumentKind;
 use App\Provider\Enum\ProviderStatus;
 use App\Provider\Repository\ProviderDocumentRepository;
 use App\Provider\Service\ProviderDocumentStorage;
+use App\Provider\Service\ProviderRegistrationService;
 use App\Provider\Service\ProviderSpace;
 use App\Review\Entity\Review;
 use App\Review\Enum\ReviewStatus;
@@ -136,6 +137,27 @@ final class ProviderProfileController extends AbstractProviderSpaceController
                 } catch (\InvalidArgumentException $e) {
                     $this->addFlash('error', $e->getMessage());
                 }
+            }
+        }
+
+        return $this->redirectToRoute('app_pro_my_profile', ['_fragment' => 'documents']);
+    }
+
+    /**
+     * Envoi du dossier en vérification depuis l'espace pro (11/10) : un
+     * professionnel inscrit sans pièce justificative restait en brouillon,
+     * sans moyen de le soumettre une fois ses documents déposés.
+     */
+    #[Route(path: ['fr' => '/pro/dossier/envoyer', 'en' => '/en/pro/application/submit'], name: 'app_pro_verification_submit', methods: ['POST'])]
+    public function submitForVerification(Request $request, ProviderRegistrationService $registration): Response
+    {
+        if ($this->csrfOk($request)) {
+            $provider = $this->currentProvider();
+            if ([] === $this->documents->findForProfile($provider)) {
+                $this->addFlash('error', 'Déposez au moins un justificatif avant d’envoyer votre dossier.');
+            } elseif (ProviderStatus::Draft === $provider->getStatus()) {
+                $registration->submitForVerification($provider);
+                $this->addFlash('success', 'Dossier envoyé : notre équipe le vérifie sous 48 h.');
             }
         }
 

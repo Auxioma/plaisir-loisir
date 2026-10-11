@@ -161,6 +161,8 @@
                     {% elseif can_manage %}
                         <p class="pa-join__state">{{ 'Vous organisez cette activité.'|trans }}</p>
                         {% include 'private_activity/_share.html.twig' %}
+                    {% elseif is_granted('ROLE_PROVIDER') %}
+                        {% include '_partials/_provider_free_notice.html.twig' %}
                     {% elseif not is_granted('ROLE_USER') %}
                         <a href="{{ path('app_login') }}" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Se connecter pour participer'|trans }}</a>
                     {% elseif activity.status.value != 'open' %}

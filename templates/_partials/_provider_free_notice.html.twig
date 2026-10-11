@@ -1,0 +1,10 @@
+{#
+    Encart affiché à un professionnel sur une activité gratuite ou un
+    événement entre membres (retours client du 11/10) : il n'y participe pas,
+    il propose ses propres activités payantes. Styles : layout.css (.tm-pro-notice).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+<div class="tm-pro-notice">
+    <p><strong>{{ 'Réservé aux particuliers'|trans }}</strong>{{ 'Les activités gratuites et les événements entre membres sont réservés aux comptes particuliers. Votre compte professionnel vous permet de proposer vos propres activités payantes.'|trans }}</p>
+    <a class="tm-pro-notice__cta" href="{{ path('app_pro_activities_new') }}">{{ icon.plus(14) }} {{ 'Créer une activité payante'|trans }}</a>
+</div>

@@ -136,6 +136,8 @@
                         <a class="pl-btn pl-btn--outline-dark pl-btn--block" href="{{ path('app_event_resume', {slug: event.slug}) }}">{{ 'Modifier l’événement'|trans }}</a>
                     {% elseif entity.startsAt < date() %}
                         <p class="evn-book__state">{{ 'Cet événement a déjà eu lieu.'|trans }}</p>
+                    {% elseif is_granted('ROLE_PROVIDER') and not registration %}
+                        {% include '_partials/_provider_free_notice.html.twig' %}
                     {% else %}
                         <form method="post" action="{{ path('app_events_join', {slug: event.slug}) }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('event_join') }}">

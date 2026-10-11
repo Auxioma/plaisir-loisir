@@ -267,8 +267,10 @@ final class ActivityDraftService
                 foreach ($packages as $i => $p) {
                     if (mb_strlen((string) $p['name']) < 2 || mb_strlen((string) $p['name']) > 80) {
                         $e['packages'] = sprintf('Formule %d : donnez-lui un nom (2 à 80 caractères).', $i + 1);
-                    } elseif (!is_numeric($p['price']) || (float) $p['price'] < 0 || (float) $p['price'] > 100000) {
-                        $e['packages'] = sprintf('Formule %d : indiquez un prix valide (0 pour gratuit).', $i + 1);
+                    } elseif (!is_numeric($p['price']) || (float) $p['price'] <= 0 || (float) $p['price'] > 100000) {
+                        // Un professionnel commercialise ses prestations (11/10) :
+                        // le gratuit est réservé aux activités entre particuliers.
+                        $e['packages'] = sprintf('Formule %d : indiquez un prix supérieur à 0 €.', $i + 1);
                     } elseif (!\array_key_exists((string) $p['unit'], StaticActivityWizard::pricingUnits())) {
                         $e['packages'] = sprintf('Formule %d : choisissez l’unité du prix.', $i + 1);
                     }

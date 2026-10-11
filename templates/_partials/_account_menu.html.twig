@@ -15,13 +15,13 @@
             </span>
             <span class="tm-account__id">
                 <strong>{{ app.user ? (app.user.firstName ~ ' ' ~ app.user.lastName) : 'Thomas Martin' }}</strong>
-                <small>{{ 'Mon compte'|trans }}</small>
+                <small>{{ (is_provider ? 'Compte professionnel' : 'Mon compte')|trans }}</small>
             </span>
             {{ icon.chevron_down(14) }}
         </summary>
         <div class="tm-menu tm-menu--right">
             {# Accès rapide (07/10) : tableau de bord de l'espace, et back-office pour l'équipe. #}
-            <a href="{{ is_provider ? path('app_pro_dashboard') : path('app_account_dashboard') }}" class="tm-menu__item">{{ icon.person(16) }} {{ 'Mon espace'|trans }}</a>
+            <a href="{{ is_provider ? path('app_pro_dashboard') : path('app_account_dashboard') }}" class="tm-menu__item">{{ icon.person(16) }} {{ (is_provider ? 'Mon espace pro' : 'Mon espace')|trans }}</a>
             {% if app.user and is_granted('ROLE_ADMIN') %}
                 <a href="{{ path('admin') }}" class="tm-menu__item">{{ icon.lock(16) }} {{ 'Administration'|trans }}</a>
             {% endif %}

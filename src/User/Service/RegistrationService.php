@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\User\Service;
 
 use App\Legal\Service\ConsentService;
-use App\Provider\Service\ProviderOnboardingService;
 use App\User\Entity\User;
-use App\User\Enum\AccountType;
 use App\User\Enum\UserStatus;
 use App\User\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,13 +23,8 @@ final class RegistrationService
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly UserRepository $userRepository,
-        // Dépendance assumée du domaine User vers le domaine Provider :
-        // « s'inscrire comme professionnel ouvre un dossier prestataire » est
-        // une règle métier, pas une affaire de contrôleur. La flèche va dans
-        // ce sens et jamais dans l'autre.
-        private readonly ProviderOnboardingService $providerOnboarding,
-        // Même raisonnement pour le domaine Legal : « accepter les conditions
-        // générales fait naître une preuve » est une règle métier.
+        // Dépendance assumée du domaine User vers le domaine Legal : « accepter
+        // les conditions générales fait naître une preuve » est une règle métier.
         private readonly ConsentService $consentService,
         private readonly RequestStack $requestStack,
         private readonly EmailVerificationService $emailVerification,
@@ -39,12 +32,10 @@ final class RegistrationService
     }
 
     /**
-     * Inscrit un nouvel utilisateur à partir des champs de la maquette.
+     * Inscrit un nouveau membre PARTICULIER à partir des champs de la maquette.
      *
-     * Un compte « Pro Prestataire » se distingue d'un compte client sur deux
-     * points, et deux seulement : il porte ROLE_PROVIDER, et un dossier
-     * prestataire vide lui est ouvert en brouillon. Tout le reste est
-     * identique — la maquette d'inscription est la même pour les deux.
+     * Un professionnel ne passe jamais par ici (11/10) : son compte naît de
+     * ProviderRegistrationService, avec son dossier et ses justificatifs.
      *
      * @throws ConflictHttpException si un compte existe déjà avec cet e-mail
      */
@@ -53,7 +44,6 @@ final class RegistrationService
         string $email,
         string $plainPassword,
         ?string $phone = null,
-        AccountType $accountType = AccountType::Client,
     ): User {
         // Les e-mails sont comparés en minuscules : sans cela « Jean@x.fr » et
         // « jean@x.fr » créeraient deux comptes, et la connexion échouerait
@@ -79,28 +69,8 @@ final class RegistrationService
         // code envoyé ci-dessous n'a pas été validé.
         $user->setStatus(UserStatus::Pending);
 
-        if ($accountType->isProvider()) {
-            // getRoles() ajoute toujours ROLE_USER : un prestataire reste un
-            // utilisateur de la plateforme, il gagne seulement un rôle en plus.
-            $user->setRoles(['ROLE_PROVIDER']);
-        }
-
         $this->entityManager->persist($user);
         $this->entityManager->flush();
-
-        if ($accountType->isProvider()) {
-            // Après le flush : le dossier référence l'utilisateur, qui doit
-            // donc déjà exister en base.
-            //
-            // Le rôle seul n'engage rien : la publication d'une activité est
-            // refusée tant que le dossier n'est pas « Verified »
-            // (ActivityPublishingService). Se déclarer professionnel à
-            // l'inscription ouvre donc l'espace pro, pas la mise en ligne.
-            $this->providerOnboarding->startDraftProfile(
-                $user,
-                trim($firstName.' '.$lastName) ?: $user->getEmail(),
-            );
-        }
 
         // La case « J'accepte les conditions générales » était validée puis
         // oubliée : rien en base ne prouvait que qui que ce soit avait accepté
@@ -115,7 +85,7 @@ final class RegistrationService
         );
 
         // Dernière étape : le code de vérification part une fois le compte
-        // entièrement constitué (dossier prestataire compris).
+        // entièrement constitué.
         $this->emailVerification->sendCode($user);
 
         return $user;

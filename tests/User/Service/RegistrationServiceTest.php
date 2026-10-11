@@ -7,9 +7,7 @@ namespace App\Tests\User\Service;
 use App\Legal\Service\ConsentService;
 use App\Notification\Repository\NotificationRepository;
 use App\Notification\Service\NotificationService;
-use App\Provider\Service\ProviderOnboardingService;
 use App\User\Entity\User;
-use App\User\Enum\AccountType;
 use App\User\Enum\UserStatus;
 use App\User\Repository\UserRepository;
 use App\User\Service\EmailVerificationService;
@@ -55,52 +53,18 @@ final class RegistrationServiceTest extends TestCase
     }
 
     /**
-     * Un compte créé par la tuile « Pro Prestataire » doit se distinguer d'un
-     * compte client : c'était le défaut silencieux corrigé le 18/08.
-     */
-    public function testRegisterAsProviderGrantsTheRoleAndOpensADraftProfile(): void
-    {
-        $userRepository = $this->createStub(UserRepository::class);
-        $userRepository->method('findOneBy')->willReturn(null);
-
-        $hasher = $this->createStub(UserPasswordHasherInterface::class);
-        $hasher->method('hashPassword')->willReturn('hashed-password');
-
-        $onboarding = $this->createMock(ProviderOnboardingService::class);
-        $onboarding->expects(self::once())
-            ->method('startDraftProfile')
-            ->with(self::isInstanceOf(User::class), 'Bob Martin');
-
-        // Une doublure simple suffit : ce test ne verifie pas les ecritures,
-        // seulement le role et l'ouverture du dossier prestataire.
-        $service = $this->service(
-            $this->createStub(EntityManagerInterface::class),
-            $hasher,
-            $userRepository,
-            $onboarding,
-        );
-
-        $user = $service->register('Martin Bob', 'pro@example.com', 'plain-secret', null, AccountType::Provider);
-
-        self::assertContains('ROLE_PROVIDER', $user->getRoles());
-    }
-
-    /**
      * Assemble le service, ses dépendances hors sujet remplacées par des
-     * doublures : ouvrir un dossier prestataire et tracer le consentement sont
-     * testés ailleurs.
+     * doublures : tracer le consentement est testé ailleurs.
      */
     private function service(
         EntityManagerInterface $em,
         UserPasswordHasherInterface $hasher,
         UserRepository $userRepository,
-        ?ProviderOnboardingService $onboarding = null,
     ): RegistrationService {
         return new RegistrationService(
             $em,
             $hasher,
             $userRepository,
-            $onboarding ?? $this->createStub(ProviderOnboardingService::class),
             $this->createStub(ConsentService::class),
             new RequestStack(),
             new EmailVerificationService($em, $userRepository, $this->createStub(MailerInterface::class), new NotificationService($em, $this->createStub(NotificationRepository::class))),

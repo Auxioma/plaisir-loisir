@@ -173,6 +173,12 @@ final class PrivateActivityService
             throw new \InvalidArgumentException('L\'organisateur participe déjà à sa propre activité.');
         }
 
+        // Retours client du 11/10 : le gratuit entre membres est réservé aux
+        // particuliers, un professionnel y vend ses prestations ailleurs.
+        if ($participant->isProvider()) {
+            throw new \InvalidArgumentException('Les comptes professionnels ne participent pas aux activités gratuites entre membres.');
+        }
+
         if (null !== $this->participations->findOneByActivityAndParticipant($activity, $participant)) {
             throw new \InvalidArgumentException('Vous avez déjà demandé à participer à cette activité.');
         }
