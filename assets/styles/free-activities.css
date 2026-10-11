@@ -6,7 +6,10 @@
  *  gratuite », gestion des participants, carton d'invitation.
  * ============================================================================
  */
-.fa-scope, .fa-card, .fa-countdown, .fa-create, .fa-manage, .fa-invite {
+/* Couleurs posées sur :root (11/10) : limitées à quelques conteneurs, elles
+   manquaient sur la fiche publique, où « Envoyer les invitations » et
+   « Gérer les participants » sortaient blancs sur fond blanc. */
+:root {
     --fa-ink: #0b1437; --fa-muted: #5b6078; --fa-line: #e6e8ef; --fa-green: #16a34a; --fa-green-soft: #e9f8ee;
     --fa-blue: #1f4fe0; --fa-blue-soft: #eef2fd; --fa-orange: #f97316; --fa-red: #e5324b; --fa-violet: #4f17e8;
 }
@@ -62,6 +65,18 @@
 .fa-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; }
 
 /* ---- Fiche : en-tête de l'annonce ---- */
+/* ---- Visages des participants (fiche, 11/10) ---- */
+.fa-faces { margin-top: 8px; }
+.fa-faces .evn-h2 small { margin-left: 6px; color: var(--fa-muted); font-size: 14px; font-weight: 600; }
+.fa-faces__list { display: flex; flex-wrap: wrap; gap: 14px 10px; margin: 0; padding: 0; list-style: none; }
+.fa-faces__list li { display: flex; flex-direction: column; align-items: center; width: 68px; text-align: center; }
+.fa-faces__list img, .fa-faces__more { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--fa-line); background: #f5f6fa; }
+.fa-faces__list li.is-organizer img { box-shadow: 0 0 0 2px var(--fa-blue); }
+.fa-faces__list span { max-width: 100%; margin-top: 6px; overflow: hidden; color: var(--fa-ink); font-size: 12px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.fa-faces__list small { color: var(--fa-blue); font-size: 11px; font-weight: 600; }
+.fa-faces__more { display: inline-flex; align-items: center; justify-content: center; margin: 0 !important; color: var(--fa-ink) !important; font-size: 14px !important; font-weight: 700; }
+.fa-faces__empty { margin: 8px 0 0; color: var(--fa-muted); font-size: 13px; }
+
 .fa-facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
 .fa-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #f5f6fa; border-radius: 999px; color: var(--fa-ink, #0b1437); font-size: 13px; font-weight: 600; }
 .fa-chip--green { background: #e9f8ee; color: #15803d; }
