@@ -6,6 +6,8 @@
     (account/_layout, classes .pf-*), teinte bleue propre au pro (.pp).
     Styles : assets/styles/pro.css.
 
+    Bandeau d'état du dossier en tête de colonne (_status, 11/10).
+
     Variables : user, menu, active, provider.
 #}
 {% extends 'base.html.twig' %}
@@ -20,6 +22,7 @@
     </aside>
     <div class="pf-main{{ aside ? ' pf-main--aside' }}">
         <div class="pf-content">
+            {% include 'provider/space/_status.html.twig' %}
             {% block space %}{% endblock %}
         </div>
         {% if aside %}

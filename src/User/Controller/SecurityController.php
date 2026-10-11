@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\User\Controller;
 
 use App\Shared\Controller\FlashesFormErrorsTrait;
-use App\User\Enum\AccountType;
 use App\User\Form\RegistrationFormType;
 use App\User\Security\LoginErrorPresenter;
 use App\User\Service\EmailVerificationService;
@@ -251,12 +250,15 @@ final class SecurityController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
-        // Le type vient de l'écran de choix (« /register?type=pro ») et n'existe
-        // que dans l'URL du GET : il est recopié dans un champ caché pour
-        // survivre à l'envoi du formulaire.
-        $form = $this->createForm(RegistrationFormType::class, [
-            'accountType' => AccountType::fromInput($request->query->get('type'))->value,
-        ]);
+        // Ce formulaire n'ouvre QUE des comptes particuliers (11/10). Un
+        // professionnel a son propre parcours (activité, siège, justificatifs) :
+        // l'ancien « ?type=pro » y mène, au lieu de créer un compte pro sans
+        // dossier qui ressemblait en tout point à un compte client.
+        if ('pro' === $request->query->get('type')) {
+            return $this->redirectToRoute('app_pro_register');
+        }
+
+        $form = $this->createForm(RegistrationFormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -266,7 +268,6 @@ final class SecurityController extends AbstractController
                     (string) $form->get('email')->getData(),
                     (string) $form->get('password')->getData(),
                     $form->get('phone')->getData(),
-                    AccountType::fromInput($form->get('accountType')->getData()),
                 );
 
                 // Le compte reste en attente jusqu'à la vérification de

@@ -44,10 +44,9 @@
                 {% if filters.lieu or filters.q or filters.date or selected_category %}<a class="evl-btn evl-btn--ghost" href="{{ path('app_private_activities') }}">{{ 'Réinitialiser'|trans }}</a>{% endif %}
             </form>
             <strong>{{ activities|length }} {{ activities|length > 1 ? 'activités'|trans : 'activité'|trans }}</strong>
-            {% if is_granted('ROLE_USER') %}
-                <a class="evl-btn" href="{{ path('app_create_free') }}">{{ icon.plus(16) }} {{ 'Créer une activité gratuite'|trans }}</a>
-            {% else %}
-                <a class="evl-btn evl-btn--ghost" href="{{ path('app_create_free') }}">{{ 'Créer une activité gratuite'|trans }}</a>
+            {# Un professionnel ne crée rien de gratuit (11/10). #}
+            {% if not is_granted('ROLE_PROVIDER') %}
+                <a class="evl-btn{{ is_granted('ROLE_USER') ? '' : ' evl-btn--ghost' }}" href="{{ path('app_create_free') }}">{% if is_granted('ROLE_USER') %}{{ icon.plus(16) }} {% endif %}{{ 'Créer une activité gratuite'|trans }}</a>
             {% endif %}
         </div>
 
@@ -59,8 +58,10 @@
             <div class="evl-empty">
                 {{ icon.users(36) }}
                 <strong>{{ 'Aucune activité ne correspond à cette recherche pour le moment.'|trans }}</strong>
-                <span>{{ 'Soyez le premier à en proposer une !'|trans }}</span>
-                <a class="evl-btn" href="{{ path('app_create_free') }}">{{ 'Créer une activité gratuite'|trans }}</a>
+                {% if not is_granted('ROLE_PROVIDER') %}
+                    <span>{{ 'Soyez le premier à en proposer une !'|trans }}</span>
+                    <a class="evl-btn" href="{{ path('app_create_free') }}">{{ 'Créer une activité gratuite'|trans }}</a>
+                {% endif %}
             </div>
         {% else %}
             {# Carte commune (07/10) : Gratuit, niveau, participants, compte à rebours. #}

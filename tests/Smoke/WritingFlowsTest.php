@@ -39,19 +39,23 @@ final class WritingFlowsTest extends WebTestCase
         self::assertNotContains('ROLE_PROVIDER', $user->getRoles());
     }
 
-    public function testRegistrationAsProviderGrantsTheRole(): void
+    /**
+     * Le formulaire particulier n'ouvre jamais de compte professionnel
+     * (11/10) : le professionnel a son propre parcours, avec justificatifs.
+     */
+    public function testTheMemberFormNeverCreatesAProvider(): void
     {
         $client = static::createClient();
-        $email = sprintf('pro-%s@example.com', uniqid());
+        $client->request('GET', '/inscription?type=pro');
+        self::assertResponseRedirects('/pro/inscription');
 
+        $email = sprintf('pro-%s@example.com', uniqid());
         $this->submit($client, '/inscription', [
             'registration_form' => ['accountType' => 'pro'] + $this->registrationFields($email, 'Riviere Paul'),
         ]);
 
         $user = static::getContainer()->get(UserRepository::class)->findOneBy(['email' => $email]);
-
-        self::assertNotNull($user);
-        self::assertContains('ROLE_PROVIDER', $user->getRoles());
+        self::assertTrue(null === $user || !$user->isProvider(), 'Un compte professionnel a été créé par le formulaire particulier.');
     }
 
     /**
@@ -123,7 +127,6 @@ final class WritingFlowsTest extends WebTestCase
             'email' => $email,
             'password' => 'MotDePasseSolide2026',
             'agreeTerms' => '1',
-            'accountType' => 'client',
             '_token' => 'csrf-token',
         ];
     }

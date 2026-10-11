@@ -18,7 +18,8 @@ use Symfony\Component\Routing\Attribute\Route;
  * déposent des activités payantes. Le bouton mène ici :
  *  - visiteur : choix Particulier (connexion client) / Professionnel
  *    (connexion prestataire) — et non plus la page « Devenir partenaire » ;
- *  - professionnel : son assistant de dépôt (espace pro) ;
+ *  - professionnel : son assistant de dépôt (espace pro), voir
+ *    ProviderFreeContentGuardSubscriber ;
  *  - membre : 1. activité gratuite ou événement gratuit, 2. visibilité
  *    (public, privé, membres), puis l'assistant correspondant, la
  *    visibilité déjà choisie.
@@ -36,10 +37,6 @@ final class CreateFreeController extends AbstractController
     #[Route(path: ['fr' => '/creer-une-activite-gratuite', 'en' => '/en/create-a-free-activity'], name: 'app_create_free', methods: ['GET'])]
     public function __invoke(Request $request, PrivateActivityDraftService $activityDrafts, EventDraftService $eventDrafts): Response
     {
-        if ($this->isGranted('ROLE_PROVIDER')) {
-            return $this->redirectToRoute('app_pro_activities_new');
-        }
-
         // « Particulier » : la connexion, puis retour ici (cible mémorisée par le pare-feu).
         if ($request->query->getBoolean('particulier')) {
             $this->denyAccessUnlessGranted('ROLE_USER');

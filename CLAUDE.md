@@ -183,8 +183,20 @@ catégorie facultative) et reprise depuis « Mes activités créées ». Adresse
 Nationale puis Photon (OSM, monde entier) ; une adresse tapée à la main est acceptée.
 
 **Un professionnel reste dans son espace** : `ProviderAccountRedirectSubscriber` renvoie toute
-page `/compte/*` vers son équivalent `/pro/*` (notifications `/pro/notifications`, événements
-`/pro/evenements`…). Après connexion, un pro arrive sur `/pro/tableau-de-bord`.
+page `/compte/*` vers son équivalent `/pro/*` (notifications `/pro/notifications`…). Après connexion, un pro arrive
+toujours sur `/pro/tableau-de-bord` (sauf retour vers une page `/pro`, `LoginSuccessHandler`).
+
+**Client ≠ prestataire** (retours client du 11/10, branche `gafour-v3`) : le client découvre, réserve,
+participe et organise du **gratuit** ; le pro **commercialise** des prestations payantes, rien d'autre.
+- Inscription : `/inscription` n'ouvre que des comptes particuliers (`?type=pro` → `/pro/inscription`,
+  seul parcours pro, avec justificatifs).
+- Verrous : prix > 0 dans l'assistant pro ; `ProviderFreeContentGuardSubscriber` renvoie un pro de toute
+  page de création gratuite (activité privée, événement, groupe) vers `/pro/activites/nouvelle` ;
+  participation refusée (`PrivateActivityService::requestParticipation`, voter `PARTICIPATE`,
+  `EventsController::join`) ; plus de page `/pro/evenements`. `User::isProvider()`.
+- Interface : en-tête pro (`.tm-header--pro`, badge « Espace professionnel », nav métier, « Créer une
+  activité payante »), repère + état du dossier en tête de sidebar pro, bandeau `provider/space/_status`
+  (brouillon → « Envoyer mon dossier » `app_pro_verification_submit`, en vérification, suspendu).
 
 **Retours client du 11/10** : logo horizontal dans l'en-tête et le pied de page
 (`images/logo-trouvemoi-horizontal.png`, tiré de `docs/maquettes/logo.jpeg`) ; bouton « Tableau de

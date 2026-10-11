@@ -39,10 +39,10 @@ final class ProviderAccountRedirectSubscriber implements EventSubscriberInterfac
         'app_account_requests' => ['app_pro_requests', []],
         'app_account_requests_new' => ['app_pro_requests', []],
         'app_account_history' => ['app_pro_bookings', []],
-        'app_account_events' => ['app_pro_events', []],
+        // Pas d'événements ni d'activités gratuites côté pro (11/10) ; leur
+        // création est bloquée par ProviderFreeContentGuardSubscriber.
+        'app_account_events' => ['app_pro_dashboard', []],
         'app_account_private_activities' => ['app_pro_activities', []],
-        'app_account_private_activities_new' => ['app_pro_activities_new', []],
-        'app_account_private_activity_wizard' => ['app_pro_activities_new', []],
         'app_account_favorites' => ['app_favorites_page', []],
         'app_account_favorites_list' => ['app_favorites_page', []],
         'app_account_referral' => ['app_pro_dashboard', []],

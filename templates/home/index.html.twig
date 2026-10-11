@@ -166,7 +166,7 @@
             {% if free is empty %}
                 <div class="ld-empty">
                     <p>{{ 'Aucune activité gratuite à venir pour le moment.'|trans }}</p>
-                    <a class="ld-btn ld-btn--green-outline" href="{{ path('app_create_free') }}">{{ 'Créer une activité gratuite'|trans }}</a>
+                    {% if not is_granted('ROLE_PROVIDER') %}<a class="ld-btn ld-btn--green-outline" href="{{ path('app_create_free') }}">{{ 'Créer une activité gratuite'|trans }}</a>{% endif %}
                 </div>
             {% else %}
                 <div class="ld-carousel">

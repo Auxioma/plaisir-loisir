@@ -178,6 +178,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * Compte professionnel (prestataire) : il commercialise des prestations
+     * payantes et ne prend pas part aux activités gratuites entre membres.
+     */
+    public function isProvider(): bool
+    {
+        return \in_array('ROLE_PROVIDER', $this->roles, true);
+    }
+
     public function getPassword(): ?string
     {
         return $this->password;

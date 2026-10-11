@@ -1,0 +1,46 @@
+{#
+    Bandeau d'état du dossier professionnel (retours client du 11/10), en
+    tête de chaque écran de l'espace pro tant que le dossier n'est pas
+    vérifié : ce que le professionnel peut faire, et ce qu'il attend.
+    Variable : provider (ProviderProfile). Styles : pro.css (.pp-status).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+{% set status = provider.status.value %}
+{% if status == 'draft' %}
+    <section class="pp-status is-draft" role="status">
+        <span class="pp-status__ico">{{ icon.info(20) }}</span>
+        <div class="pp-status__body">
+            <strong>{{ 'Votre dossier professionnel n’est pas encore envoyé'|trans }}</strong>
+            <p>{{ 'Déposez vos justificatifs puis envoyez votre dossier : notre équipe le vérifie sous 48 h. Vous pouvez déjà préparer vos activités payantes, elles seront publiées après validation.'|trans }}</p>
+        </div>
+        <div class="pp-status__actions">
+            <a class="pf-btn pp-btn-ghost" href="{{ path('app_pro_my_profile') }}#documents">{{ 'Mes documents'|trans }}</a>
+            <form method="post" action="{{ path('app_pro_verification_submit') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                <button class="pf-btn pf-btn--primary">{{ 'Envoyer mon dossier'|trans }}</button>
+            </form>
+        </div>
+    </section>
+{% elseif status == 'pending_verification' %}
+    <section class="pp-status is-pending" role="status">
+        <span class="pp-status__ico">{{ icon.clock(20) }}</span>
+        <div class="pp-status__body">
+            <strong>{{ 'Dossier en cours de vérification'|trans }}</strong>
+            <p>{{ 'Notre équipe valide votre dossier sous 48 h. En attendant, préparez vos activités payantes, vos tarifs et vos disponibilités : ils seront publiés dès la validation.'|trans }}</p>
+        </div>
+        <div class="pp-status__actions">
+            <a class="pf-btn pf-btn--primary" href="{{ path('app_pro_activities_new') }}">{{ 'Préparer une activité'|trans }}</a>
+        </div>
+    </section>
+{% elseif status == 'suspended' %}
+    <section class="pp-status is-suspended" role="alert">
+        <span class="pp-status__ico">{{ icon.info(20) }}</span>
+        <div class="pp-status__body">
+            <strong>{{ 'Compte professionnel suspendu'|trans }}</strong>
+            <p>{{ 'Vos activités ne sont plus visibles ni réservables. Contactez notre équipe pour en connaître la raison et réactiver votre compte.'|trans }}</p>
+        </div>
+        <div class="pp-status__actions">
+            <a class="pf-btn pf-btn--primary" href="{{ path('app_pro_support') }}">{{ 'Contacter le support'|trans }}</a>
+        </div>
+    </section>
+{% endif %}

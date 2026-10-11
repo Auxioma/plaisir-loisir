@@ -13,7 +13,13 @@ use App\Catalog\Entity\Service;
 use App\Catalog\Enum\ServiceStatus;
 use App\Messaging\Entity\Conversation;
 use App\Notification\Repository\NotificationRepository;
+use App\PrivateActivity\Entity\PrivateActivity;
+use App\PrivateActivity\Enum\PrivateActivityStatus;
+use App\PrivateActivity\Enum\PrivateActivityVisibility;
+use App\Provider\Entity\ProviderProfile;
+use App\Provider\Enum\ProviderStatus;
 use App\Provider\Repository\ProviderProfileRepository;
+use App\Provider\Service\ProviderSlugService;
 use App\Support\Entity\SupportTicket;
 use App\User\Entity\User;
 use App\User\Enum\UserStatus;
@@ -29,7 +35,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 final class ProviderSpaceFlowTest extends WebTestCase
 {
     private const PAGES = [
-        '/pro/tableau-de-bord', '/pro/tableau-de-bord?periode=30', '/pro/activites', '/pro/activites/assistant/1', '/pro/notifications', '/pro/evenements',
+        '/pro/tableau-de-bord', '/pro/tableau-de-bord?periode=30', '/pro/activites', '/pro/activites/assistant/1', '/pro/notifications',
         '/pro/reservations', '/pro/reservations?onglet=en-attente', '/pro/reservations/rapport',
         '/pro/calendrier', '/pro/calendrier?vue=semaine', '/pro/calendrier?vue=jour',
         '/pro/messages', '/pro/avis', '/pro/revenus', '/pro/revenus?toutes=1&par=semaine',
@@ -103,6 +109,12 @@ final class ProviderSpaceFlowTest extends WebTestCase
         self::assertResponseRedirects('/pro/activites/assistant/4');
 
         $this->step($client, 4, ['duration' => '90', 'capacity' => '8', 'highlights' => "Point fort un\nPoint fort deux", 'included' => 'Matériel', 'to_bring' => 'Bonne humeur']);
+        // Étape 5 : une prestation pro est payante, un prix à 0 est refusé (11/10).
+        $client->request('POST', '/pro/activites/assistant/5', $this->token($client, '/pro/activites/assistant/5') + ['action' => 'next', 'cancellation' => 'moderate', 'booking_type' => 'calendar', 'packages' => [
+            ['name' => 'Gratuit', 'price' => '0', 'unit' => 'per_person', 'description' => ''],
+        ]]);
+        self::assertResponseStatusCodeSame(422);
+
         $this->step($client, 5, ['cancellation' => 'moderate', 'booking_type' => 'calendar', 'packages' => [
             ['name' => 'Solo', 'price' => '42,50', 'unit' => 'per_person', 'description' => ''],
             ['name' => 'Groupe', 'price' => '150', 'unit' => 'per_group', 'description' => 'Jusqu’à 6 personnes'],
@@ -129,12 +141,69 @@ final class ProviderSpaceFlowTest extends WebTestCase
     public function testAProviderNeverLandsInTheMemberAccount(): void
     {
         $client = $this->loggedProvider();
-        foreach (['/compte/notifications' => '/pro/notifications', '/compte/tableau-de-bord' => '/pro/tableau-de-bord', '/compte/mes-evenements' => '/pro/evenements', '/compte/activites-privees/nouvelle' => '/pro/activites/nouvelle', '/en/account/notifications' => '/en/pro/notifications'] as $url => $target) {
+        foreach (['/compte/notifications' => '/pro/notifications', '/compte/tableau-de-bord' => '/pro/tableau-de-bord', '/compte/mes-evenements' => '/pro/tableau-de-bord', '/compte/activites-privees/nouvelle' => '/pro/activites/nouvelle', '/en/account/notifications' => '/en/pro/notifications'] as $url => $target) {
             $client->request('GET', $url);
             self::assertResponseRedirects($target, null, $url);
         }
         $crawler = $client->request('GET', '/pro/tableau-de-bord');
         self::assertGreaterThan(0, $crawler->filter('header a[href="/pro/notifications"]')->count(), 'La cloche de l’en-tête doit mener aux notifications pro.');
+    }
+
+    /**
+     * Retours client du 11/10 : un professionnel ne crée rien de gratuit
+     * (activité entre membres, événement, groupe) et n'y participe pas.
+     */
+    public function testAProviderNeitherCreatesNorJoinsFreeContent(): void
+    {
+        $client = $this->loggedProvider();
+        foreach (['/creer-une-activite-gratuite', '/compte/activites-privees/creer/1', '/evenements/creer', '/evenements/creer/1', '/evenements/groupes/creer/1', '/en/events/create'] as $url) {
+            $client->request('GET', $url);
+            self::assertResponseRedirects(str_starts_with($url, '/en/') ? '/en/pro/activities/new' : '/pro/activites/nouvelle', null, $url);
+        }
+        $client->request('POST', '/evenements/creer/1', ['action' => 'next']);
+        self::assertResponseRedirects('/pro/activites/nouvelle', null, 'POST de l’assistant événement');
+
+        $activity = $this->em()->getRepository(PrivateActivity::class)->findOneBy(['status' => PrivateActivityStatus::Open, 'visibility' => PrivateActivityVisibility::Public]);
+        self::assertNotNull($activity, 'Fixtures requises : une activité gratuite publique ouverte.');
+        $crawler = $client->request('GET', '/activites-privees/'.$activity->getId());
+        self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('form[action$="/participer"]'), 'Aucun bouton « Participer » pour un professionnel.');
+        $client->request('POST', '/activites-privees/'.$activity->getId().'/participer', ['_token' => 'x']);
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    /**
+     * Bandeau d'état du dossier (11/10) : un professionnel non vérifié sait
+     * où il en est, et ne peut pas envoyer un dossier sans justificatif.
+     */
+    public function testTheProSpaceShowsTheApplicationStatus(): void
+    {
+        $client = static::createClient();
+        $user = (new User())->setEmail(sprintf('pro-dossier-%s@example.com', uniqid()))->setFirstName('Dora')->setLastName('Pro')->setStatus(UserStatus::Active);
+        $user->setPassword('x');
+        $user->setRoles(['ROLE_PROVIDER']);
+        $profile = (new ProviderProfile())->setUser($user)->setDisplayName('Dossier '.uniqid())->setStatus(ProviderStatus::Draft);
+        static::getContainer()->get(ProviderSlugService::class)->assign($profile);
+        $this->em()->persist($user);
+        $this->em()->persist($profile);
+        $this->em()->flush();
+        $client->loginUser($user);
+
+        $crawler = $client->request('GET', '/pro/tableau-de-bord');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('.pp-status.is-draft');
+        self::assertSelectorExists('.pp-brand__state.is-draft');
+
+        $client->request('POST', '/pro/dossier/envoyer', ['_token' => (string) $crawler->filter('.pp-status input[name="_token"]')->attr('value')]);
+        self::assertResponseRedirects();
+        $profile = $this->em()->getRepository(ProviderProfile::class)->find($profile->getId());
+        self::assertNotNull($profile);
+        self::assertSame(ProviderStatus::Draft, $profile->getStatus(), 'Un dossier sans justificatif ne part pas en vérification.');
+
+        $profile->setStatus(ProviderStatus::PendingVerification);
+        $this->em()->flush();
+        $client->request('GET', '/pro/tableau-de-bord');
+        self::assertSelectorExists('.pp-status.is-pending');
     }
 
     /** @param array<string, mixed> $data */
@@ -250,7 +319,7 @@ final class ProviderSpaceFlowTest extends WebTestCase
     }
 
     /** Le dossier du compte de démonstration : d'autres prestataires existent en base (05/10). */
-    private function demoProvider(): \App\Provider\Entity\ProviderProfile
+    private function demoProvider(): ProviderProfile
     {
         $user = $this->em()->getRepository(User::class)->findOneBy(['email' => 'annonceur@trouvemoi.test']);
         $provider = static::getContainer()->get(ProviderProfileRepository::class)->findOneByUser($user);

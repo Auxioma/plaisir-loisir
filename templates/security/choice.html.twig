@@ -4,6 +4,10 @@
     Plaisirs & Loisirs », Pro Prestataire à gauche (violet), Client à droite
     (vert), séparés par « ou », puis la bande « expérience sécurisée ».
     Styles : assets/styles/layout.css (.tm-choice).
+
+    11/10 (retours client) : les deux comptes sont distincts et le texte le
+    dit — le professionnel commercialise des prestations payantes, le client
+    découvre, réserve et organise des sorties gratuites entre membres.
 #}
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -29,17 +33,17 @@
             <h2 class="tm-choice-panel__name">{{ 'Pro Prestataire'|trans }}</h2>
             <p class="tm-choice-panel__desc">
                 {{ 'Vous proposez des activités, des services ou des loisirs.'|trans }}<br>
-                {{ 'Créez votre compte professionnel pour développer'|trans }}<br>
-                {{ 'votre visibilité et gérer vos prestations.'|trans }}
+                {{ 'Créez votre compte professionnel pour commercialiser'|trans }}<br>
+                {{ 'vos prestations payantes depuis votre espace pro.'|trans }}
             </p>
             <ul class="tm-choice-feats">
                 <li>
                     <span class="tm-choice-feats__icon">{{ icon.target_frame(17) }}</span>
-                    <span><strong>{{ 'Déposez et gérez vos activités'|trans }}</strong>{{ 'Publiez vos offres et gérez vos disponibilités.'|trans }}</span>
+                    <span><strong>{{ 'Vendez vos activités payantes'|trans }}</strong>{{ 'Publiez vos prestations, vos tarifs et vos disponibilités.'|trans }}</span>
                 </li>
                 <li>
                     <span class="tm-choice-feats__icon">{{ icon.calendar_grid(17) }}</span>
-                    <span><strong>{{ 'Gérez vos réservations'|trans }}</strong>{{ 'Suivez vos réservations, vos clients et vos paiements.'|trans }}</span>
+                    <span><strong>{{ 'Gérez réservations et paiements'|trans }}</strong>{{ 'Suivez vos réservations, vos clients et vos revenus.'|trans }}</span>
                 </li>
                 <li>
                     <span class="tm-choice-feats__icon">{{ icon.chart_frame(17) }}</span>
@@ -63,8 +67,8 @@
             <p class="tm-choice-panel__desc">
                 {{ 'Vous recherchez des activités, des loisirs'|trans }}<br>
                 {{ 'ou des expériences à vivre.'|trans }}<br>
-                {{ 'Créez votre compte pour réserver et profiter'|trans }}<br>
-                {{ 'de nos meilleures offres.'|trans }}
+                {{ 'Créez votre compte pour réserver, participer'|trans }}<br>
+                {{ 'et organiser des sorties gratuites.'|trans }}
             </p>
             <ul class="tm-choice-feats">
                 <li>
@@ -77,7 +81,7 @@
                 </li>
                 <li>
                     <span class="tm-choice-feats__icon">{{ icon.chat_smile(17) }}</span>
-                    <span><strong>{{ 'Profitez en toute sérénité'|trans }}</strong>{{ 'Vivez vos expériences et partagez vos avis.'|trans }}</span>
+                    <span><strong>{{ 'Organisez des sorties gratuites'|trans }}</strong>{{ 'Créez des activités et des événements entre membres.'|trans }}</span>
                 </li>
             </ul>
             <a class="tm-choice-panel__btn" href="{{ path('app_register', { type: 'client' }) }}">

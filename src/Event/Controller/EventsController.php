@@ -309,6 +309,12 @@ final class EventsController extends AbstractController
                 $notifications->notify($next->getUser(), NotificationCategory::Activity, 'Une place s’est libérée', sprintf('Vous participez désormais à « %s ».', $event->getTitle()));
             }
             $this->addFlash('success', 'Votre participation a été annulée.');
+        } elseif ($user->isProvider()) {
+            // Retours client du 11/10 : les événements entre membres sont
+            // réservés aux particuliers.
+            $this->addFlash('error', 'Les comptes professionnels ne participent pas aux événements entre membres.');
+
+            return $this->redirectToRoute('app_events_detail', ['slug' => $slug]);
         } elseif ($event->getStartsAt() < new \DateTimeImmutable()) {
             $this->addFlash('error', 'Cet événement a déjà commencé.');
 

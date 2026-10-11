@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\User\Form;
 
 use App\Shared\Form\PhoneNumberType;
-use App\User\Enum\AccountType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -80,31 +78,6 @@ final class RegistrationFormType extends AbstractType
                 'label' => "J'accepte les conditions générales",
                 'constraints' => [
                     new Assert\IsTrue(message: 'Vous devez accepter les conditions générales et la politique de confidentialité.'),
-                ],
-            ])
-            /*
-             * Nature du compte, choisie sur l'écran d'entrée « Pro Prestataire /
-             * Client » et transmise par « /register?type=pro ».
-             *
-             * Champ CACHÉ, et c'est délibéré : la maquette de l'inscription ne
-             * comporte ni bascule Client/Professionnel ni statut juridique
-             * (retirés le 10/08 sur la consigne « fais la maquette exactement »).
-             * Sans ce champ, le choix était perdu à l'envoi du formulaire — le
-             * `?type=pro` de l'URL disparaît au POST — et un visiteur venu par
-             * la tuile professionnelle obtenait un compte client ordinaire,
-             * sans le moindre message.
-             *
-             * Il n'ajoute rien de visible : `form_end()` le rend avec le jeton
-             * CSRF, le balisage de la carte n'est pas touché.
-             */
-            ->add('accountType', HiddenType::class, [
-                'required' => false,
-                'empty_data' => AccountType::Client->value,
-                'constraints' => [
-                    new Assert\Choice(
-                        choices: [AccountType::Client->value, AccountType::Provider->value],
-                        message: 'Type de compte inconnu.',
-                    ),
                 ],
             ])
         ;

@@ -28,7 +28,7 @@
             {# 07/10 : carton d'invitation avec QR code, lien privé et suivi des réponses. #}
             <a href="{{ path('app_events_invitation', {slug: event.slug}) }}" class="pl-btn pl-btn--primary">{{ 'Créer le carton d’invitation'|trans }} {{ icon.share(16) }}</a>
         {% endif %}
-        <a href="{{ is_granted('ROLE_PROVIDER') ? path('app_pro_events') : path('app_account_events') }}" class="pl-btn ev-btn-ghost">{{ 'Mes événements'|trans }}</a>
+        <a href="{{ path('app_account_events') }}" class="pl-btn ev-btn-ghost">{{ 'Mes événements'|trans }}</a>
     </div>
 </div>
 {% endblock %}
