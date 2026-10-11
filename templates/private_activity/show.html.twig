@@ -47,6 +47,33 @@
                 </div>
                 {{ fa.countdown(activity, 'full') }}
 
+                {# Visages des participants (retours client du 11/10) : l'organisateur
+                   puis les participants confirmés, photo ronde et prénom. #}
+                {% set organizer_id = activity.organizer ? activity.organizer.id ~ '' : '' %}
+                {% set faces = accepted|filter(p => p.participant)|map(p => p.participant)|filter(u => u.id ~ '' != organizer_id) %}
+                <section class="fa-faces" aria-label="{{ 'Participants'|trans }}">
+                    <h2 class="evn-h2">{{ 'Qui participe ?'|trans }} <small>{{ faces|length + (activity.organizer ? 1 : 0) }}{% if activity.maxParticipants %} / {{ activity.maxParticipants }}{% endif %}</small></h2>
+                    <ul class="fa-faces__list">
+                        {% if activity.organizer %}
+                            <li class="is-organizer">
+                                <img src="{{ asset(activity.organizer.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="">
+                                <span>{{ activity.organizer.firstName }}</span>
+                                <small>{{ 'Organisateur'|trans }}</small>
+                            </li>
+                        {% endif %}
+                        {% for person in faces|slice(0, 15) %}
+                            <li>
+                                <img src="{{ asset(person.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="">
+                                <span>{{ person.firstName }} {{ person.lastName|first }}.</span>
+                            </li>
+                        {% endfor %}
+                        {% if faces|length > 15 %}
+                            <li class="is-more"><span class="fa-faces__more">+{{ faces|length - 15 }}</span></li>
+                        {% endif %}
+                    </ul>
+                    {% if faces is empty %}<p class="fa-faces__empty">{{ 'Aucun participant pour le moment : soyez le premier !'|trans }}</p>{% endif %}
+                </section>
+
                 {% if activity.description %}
                     <h2 class="evn-h2">{{ 'Détails'|trans }}</h2>
                     <div class="evn-detail__text">{{ activity.description|nl2br }}</div>
