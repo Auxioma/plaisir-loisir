@@ -251,6 +251,7 @@
     font-weight: var(--pl-fw-bold);
 }
 .act-card__reviews { font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); }
+.act-card__views { display: inline-flex; align-items: center; gap: 3px; font-size: var(--pl-fs-caption); color: var(--pl-text-secondary); white-space: nowrap; }
 .act-card__duration {
     display: inline-flex; align-items: center; gap: 4px;
     margin-left: auto;
@@ -631,6 +632,7 @@ a.act-popup__title:hover { color: var(--pl-action); }
 .act-detail__subline { display: flex; align-items: center; gap: var(--pl-sp-12); flex-wrap: wrap; }
 .act-detail__reviews-link { font-size: var(--pl-fs-body-sm); color: var(--pl-action); font-weight: var(--pl-fw-semibold); }
 .act-detail__organizer { font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
+.act-detail__views { display: inline-flex; align-items: center; gap: 4px; font-size: var(--pl-fs-body-sm); color: var(--pl-text-secondary); }
 .act-detail__organizer strong { color: var(--pl-text); }
 
 /* Deux colonnes : contenu principal + panneau de réservation.

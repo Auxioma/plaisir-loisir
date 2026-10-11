@@ -1,6 +1,8 @@
 {#
     « Mes événements » de l'espace particulier. Données :
-    AccountController::events(). Liste : event/_organizer_list.html.twig.
+    AccountController::events(). Liste des événements organisés :
+    event/_organizer_list.html.twig ; puis les inscriptions du membre
+    (participant ou liste d'attente) aux événements des autres (11/10).
 #}
 {% extends 'account/_layout.html.twig' %}
 
@@ -8,4 +10,36 @@
 
 {% block account %}
     {% include 'event/_organizer_list.html.twig' %}
+
+    <div class="pf-head mt-4">
+        <div>
+            <h2 class="pf-title">{{ 'Mes inscriptions'|trans }}</h2>
+            <p class="pf-sub">{{ 'Les événements auxquels vous participez ou êtes en liste d’attente.'|trans }}</p>
+        </div>
+        <a class="pf-btn" href="{{ path('app_events') }}">{{ 'Découvrir les événements'|trans }}</a>
+    </div>
+    {% if registrations is empty %}
+        <div class="pf-card pf-empty"><strong>{{ "Vous n'êtes inscrit à aucun événement."|trans }}</strong><a class="pf-link" href="{{ path('app_events') }}">{{ 'Voir les événements'|trans }}</a></div>
+    {% else %}
+        <section class="pf-card pf-table-wrap">
+            <table class="pf-table">
+                <thead><tr><th>{{ 'Événement'|trans }}</th><th>{{ 'Date'|trans }}</th><th>{{ 'Statut'|trans }}</th><th></th></tr></thead>
+                <tbody>
+                    {% for r in registrations %}
+                        {% set e = r.event %}
+                        {% set status = e.startsAt < date() ? ['Terminé', 'grey'] : (r.status == 'waitlist' ? ["Liste d'attente", 'orange'] : ['Inscrit', 'green']) %}
+                        <tr>
+                            <td><strong>{{ e.title }}</strong>{% if e.location %}<br><small class="pf-muted">{{ e.location }}</small>{% endif %}</td>
+                            <td>{{ e.startsAt|date('d/m/Y H:i') }}</td>
+                            <td><span class="pf-pill pf-pill--{{ status[1] }}">{{ status[0]|trans }}</span></td>
+                            <td class="pf-table__actions">
+                                <a class="pf-btn" href="{{ path('app_events_detail', {slug: e.slug}) }}">{{ 'Voir'|trans }}</a>
+                                <a class="pf-link" href="{{ path('app_events_ics', {slug: e.slug}) }}">{{ 'Agenda'|trans }}</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    {% endif %}
 {% endblock %}

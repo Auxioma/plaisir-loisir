@@ -11,6 +11,7 @@ use App\Catalog\Presenter\DestinationPresenter;
 use App\Catalog\Repository\ServiceRepository;
 use App\Corporate\Entity\ContactMessage;
 use App\Corporate\Service\CorporateInboxService;
+use App\Event\Repository\EventRegistrationRepository;
 use App\Event\Repository\EventRepository;
 use App\Favorite\Entity\Favorite;
 use App\Favorite\Repository\FavoriteRepository;
@@ -68,6 +69,7 @@ final class AccountController extends AbstractController
         private readonly AccountDataExporter $dataExporter,
         private readonly EntityManagerInterface $entityManager,
         private readonly EventRepository $events,
+        private readonly EventRegistrationRepository $eventRegistrations,
         private readonly NotificationRepository $notificationRepository,
         private readonly NotificationService $notificationService,
         private readonly NotificationPresenter $notificationPresenter,
@@ -475,8 +477,8 @@ final class AccountController extends AbstractController
     }
 
     /**
-     * « Mes activités créées » de la sidebar (Lot J, 15/09) : les événements
-     * (domaine Event) que l'utilisateur a lui-même organisés.
+     * « Mes événements » de la sidebar (11/10) : les événements que le membre
+     * organise, puis ceux auxquels il est inscrit.
      */
     #[Route(path: ['fr' => '/compte/mes-evenements', 'en' => '/en/account/my-events'], name: 'app_account_events')]
     public function events(): Response
@@ -484,8 +486,9 @@ final class AccountController extends AbstractController
         return $this->render('account/mes_evenements.html.twig', [
             'user' => $this->accountUser(),
             'menu' => StaticAccount::menu(),
-            'active' => 'Mes activités créées',
+            'active' => 'Mes événements',
             'events' => $this->events->findByOrganizer($this->currentUser()),
+            'registrations' => $this->eventRegistrations->findForUser($this->currentUser()),
         ]);
     }
 

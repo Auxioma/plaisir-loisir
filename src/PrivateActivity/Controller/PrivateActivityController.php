@@ -19,6 +19,7 @@ use App\PrivateActivity\Service\PrivateActivityInvitations;
 use App\PrivateActivity\Service\PrivateActivityInviteLink;
 use App\PrivateActivity\Service\PrivateActivityService;
 use App\Shared\Service\AccountIdentityPresenter;
+use App\Stats\Service\PageViewRecorder;
 use App\User\Entity\User;
 use App\User\Presenter\AccountActivityPresenter;
 use App\User\StaticAccount;
@@ -65,24 +66,28 @@ final class PrivateActivityController extends AbstractController
         $date = (string) $request->query->get('date', '');
         $day = preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $date) ? (\DateTimeImmutable::createFromFormat('!Y-m-d', $date) ?: null) : null;
 
+        // Tri (11/10) : les plus vues d'abord par défaut, ou les plus proches dans le temps.
+        $sort = 'date' === $request->query->get('tri') ? 'date' : 'plus-vues';
+
         // Activités à venir seulement (05/10) : une sortie passée ne se rejoint plus.
-        $results = $this->activities->findUpcomingDiscoverable($this->isGranted('ROLE_USER'), $category, $place, $keywords, $day);
+        $results = $this->activities->findUpcomingDiscoverable($this->isGranted('ROLE_USER'), $category, $place, $keywords, $day, mostViewed: 'plus-vues' === $sort);
 
         return $this->render('private_activity/index.html.twig', [
             'activities' => $results,
             'categories' => $this->categories->findRoots(),
             'selected_category' => $category,
-            'filters' => ['lieu' => $place, 'q' => $keywords, 'date' => null !== $day ? $date : ''],
+            'filters' => ['lieu' => $place, 'q' => $keywords, 'date' => null !== $day ? $date : '', 'tri' => $sort],
         ]);
     }
 
     #[Route(path: ['fr' => '/activites-privees/{id}', 'en' => '/en/private-activities/{id}'], name: 'app_private_activity_show')]
-    public function show(string $id, Request $request): Response
+    public function show(string $id, Request $request, PageViewRecorder $pageViews): Response
     {
         $activity = $this->findOrFail($id);
         // Lien d'invitation d'une activité privée (07/10) : la clé ouvre l'accès pour la session.
         $this->inviteLink->redeem($activity, (string) $request->query->get('cle', ''));
         $this->denyAccessUnlessGranted(PrivateActivityVoter::VIEW, $activity);
+        $pageViews->recordPrivateActivity($request, $activity, $this->getUser());
 
         $user = $this->getUser();
         $myParticipation = $user instanceof User

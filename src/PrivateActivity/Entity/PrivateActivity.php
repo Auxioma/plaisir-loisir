@@ -131,6 +131,13 @@ class PrivateActivity
     private ?int $maxParticipants = null;
 
     /**
+     * Nombre de consultations de la fiche (11/10), compté par
+     * PageViewRecorder : affiché sur les cartes, sert au tri « Les plus vues ».
+     */
+    #[ORM\Column(options: ['default' => 0])]
+    private int $viewsCount = 0;
+
+    /**
      * Lien optionnel vers une activité du catalogue dont s'inspire la sortie.
      */
     #[ORM\ManyToOne(targetEntity: Service::class)]
@@ -312,6 +319,18 @@ class PrivateActivity
     public function setMaxParticipants(?int $maxParticipants): static
     {
         $this->maxParticipants = $maxParticipants;
+
+        return $this;
+    }
+
+    public function getViewsCount(): int
+    {
+        return $this->viewsCount;
+    }
+
+    public function setViewsCount(int $viewsCount): static
+    {
+        $this->viewsCount = max(0, $viewsCount);
 
         return $this;
     }

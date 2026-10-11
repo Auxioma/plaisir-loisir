@@ -192,7 +192,9 @@ final class ProviderSpaceFixtures extends Fixture implements DependentFixtureInt
             for ($v = 0, $max = mt_rand(6, 16); $v < $max; ++$v) {
                 $at = $day->setTime(mt_rand(7, 22), mt_rand(0, 59));
                 $manager->persist(new PageView($provider, null, PageView::KIND_PROFILE, $sources[mt_rand(0, 8)], $at));
-                $manager->persist(new PageView($provider, $services[mt_rand(0, min(5, \count($services) - 1))], PageView::KIND_ACTIVITY, $sources[mt_rand(0, 8)], $at->modify('+2 minutes')));
+                $viewed = $services[mt_rand(0, min(5, \count($services) - 1))];
+                $manager->persist(new PageView($provider, $viewed, PageView::KIND_ACTIVITY, $sources[mt_rand(0, 8)], $at->modify('+2 minutes')));
+                $viewed->setViewsCount($viewed->getViewsCount() + 1);
             }
         }
 

@@ -219,7 +219,7 @@ final class ActivityPaginationTest extends WebTestCase
         $crawler = $client->request('GET', '/activites?tri=nimporte-quoi');
 
         self::assertSame(200, $client->getResponse()->getStatusCode());
-        self::assertStringContainsString('Les plus populaires', $crawler->filter('.act-sort summary')->text(''));
+        self::assertStringContainsString('Les plus vues', $crawler->filter('.act-sort summary')->text(''));
     }
 
     /**

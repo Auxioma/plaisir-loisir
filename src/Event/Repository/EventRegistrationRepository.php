@@ -31,6 +31,28 @@ class EventRegistrationRepository extends ServiceEntityRepository
         return $this->findBy(['event' => $event, 'status' => EventRegistration::GOING], ['createdAt' => 'ASC'], $limit);
     }
 
+    /**
+     * Inscriptions d'un membre (participant ou liste d'attente) aux événements
+     * des autres, prochains d'abord — « Mes événements » de l'espace compte.
+     *
+     * @return list<EventRegistration>
+     */
+    public function findForUser(User $user): array
+    {
+        /** @var list<EventRegistration> $results */
+        $results = $this->createQueryBuilder('r')
+            ->innerJoin('r.event', 'e')->addSelect('e')
+            ->andWhere('r.user = :user')
+            ->andWhere('e.deletedAt IS NULL')
+            ->andWhere('e.organizer != :user')
+            ->orderBy('e.startsAt', 'DESC')
+            ->setParameter('user', $user->getId(), 'ulid')
+            ->getQuery()
+            ->getResult();
+
+        return $results;
+    }
+
     public function countGoing(Event $event): int
     {
         return $this->count(['event' => $event, 'status' => EventRegistration::GOING]);

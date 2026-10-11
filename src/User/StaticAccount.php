@@ -63,6 +63,8 @@ final class StaticAccount
             ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité', 'route' => 'app_account_dashboard', 'badge' => false],
             ['icon' => 'camera', 'title' => 'Mes albums photos', 'subtitle' => 'Gérez vos albums et photos', 'route' => 'app_account_albums', 'badge' => false],
             ['icon' => 'edit', 'title' => 'Mes activités créées', 'subtitle' => 'Gérez vos activités sur Event', 'route' => 'app_account_private_activities', 'badge' => false],
+            // Retours client du 11/10 : la page n'était joignable qu'après la création d'un événement.
+            ['icon' => 'calendar_check', 'title' => 'Mes événements', 'subtitle' => 'Organisés et inscriptions', 'route' => 'app_account_events', 'badge' => false],
             ['icon' => 'calendar', 'title' => 'Mes réservations', 'subtitle' => 'Suivi de vos réservations', 'route' => 'app_account_history', 'badge' => false],
             ['icon' => 'person', 'title' => 'Informations personnelles', 'subtitle' => 'Gérez vos informations', 'route' => 'app_account_profile', 'badge' => false, 'section' => 'Compte'],
             ['icon' => 'wallet', 'title' => 'Paiements et abonnements', 'subtitle' => 'Gérez vos paiements', 'route' => 'app_account_payments', 'badge' => false],

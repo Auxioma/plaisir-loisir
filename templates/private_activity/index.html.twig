@@ -36,6 +36,10 @@
                     <option value="">{{ 'Toutes les catégories'|trans }}</option>
                     {% for c in categories %}<option value="{{ c.slug }}"{{ selected_category and selected_category.slug == c.slug ? ' selected' }}>{{ c.name|trans }}</option>{% endfor %}
                 </select>
+                <select name="tri" aria-label="{{ 'Trier'|trans }}">
+                    <option value="plus-vues"{{ filters.tri == 'plus-vues' ? ' selected' }}>{{ 'Les plus vues'|trans }}</option>
+                    <option value="date"{{ filters.tri == 'date' ? ' selected' }}>{{ 'Les plus proches (date)'|trans }}</option>
+                </select>
                 <button class="evl-btn">{{ 'Filtrer'|trans }}</button>
                 {% if filters.lieu or filters.q or filters.date or selected_category %}<a class="evl-btn evl-btn--ghost" href="{{ path('app_private_activities') }}">{{ 'Réinitialiser'|trans }}</a>{% endif %}
             </form>

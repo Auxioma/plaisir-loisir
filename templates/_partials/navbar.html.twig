@@ -35,7 +35,7 @@
 <header class="tm-header">
     <div class="tm-header__inner">
         <a href="{{ path('app_home') }}" class="tm-header__logo" aria-label="{{ 'Accueil TrouveMoi'|trans }}">
-            <img src="{{ asset('images/logo-trouvemoi.png') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="186" height="52">
+            <img src="{{ asset('images/logo-trouvemoi-horizontal.png') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="239" height="48">
         </a>
 
         <form class="tm-search pl-suggest-anchor" action="{{ path('app_activities') }}" method="get" role="search">
@@ -50,7 +50,7 @@
            en ligne (mécanique de `navbar-expand-xl`). #}
         <div class="tm-header__panel offcanvas offcanvas-end" id="tmNav" tabindex="-1" aria-label="{{ 'Menu'|trans }}">
             <div class="tm-header__panel-head">
-                <img src="{{ asset('images/logo-trouvemoi.png') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="150" height="42">
+                <img src="{{ asset('images/logo-trouvemoi-horizontal.png') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="179" height="36">
                 <button type="button" class="tm-header__panel-close" data-bs-dismiss="offcanvas" aria-label="{{ 'Fermer'|trans }}">{{ icon.x(18) }}</button>
             </div>
 
@@ -94,6 +94,14 @@
         </div>
 
         <div class="tm-header__actions">
+            {# Retours client du 11/10 : accès direct au tableau de bord, sans
+               passer par le menu de l'avatar (pro et particulier). #}
+            {% if connected %}
+                <a href="{{ is_provider ? path('app_pro_dashboard') : path('app_account_dashboard') }}"
+                   class="tm-btn tm-btn--dark tm-btn--dashboard" title="{{ 'Tableau de bord'|trans }}">
+                    {{ icon.grid(18) }}<span class="tm-btn__label">{{ 'Tableau de bord'|trans }}</span>
+                </a>
+            {% endif %}
             {% include '_partials/_account_menu.html.twig' %}
 
             {# 07/10 : le professionnel dépose (payant) depuis son espace ; le

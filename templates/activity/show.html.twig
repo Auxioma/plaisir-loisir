@@ -36,6 +36,7 @@
             <div class="act-detail__subline">
                 {% if review_score is not null %}<span class="act-rating">{{ icon.star(12) }} {{ review_score|number_format(1, ',') }}</span>{% endif %}
                 <a class="act-detail__reviews-link" href="#avis">{{ review_total }} {{ 'avis'|trans }}</a>
+                <span class="act-detail__views">{{ icon.eye(14) }} {{ detail.views|number_format(0, ',', ' ') }} {{ (detail.views > 1 ? 'vues' : 'vue')|trans }}</span>
                 <span class="act-detail__organizer">{{ "Organisateur de l'activité :"|trans }} <strong>{{ detail.organizer }}</strong></span>
             </div>
         </div>

@@ -186,6 +186,15 @@ Nationale puis Photon (OSM, monde entier) ; une adresse tapée à la main est ac
 page `/compte/*` vers son équivalent `/pro/*` (notifications `/pro/notifications`, événements
 `/pro/evenements`…). Après connexion, un pro arrive sur `/pro/tableau-de-bord`.
 
+**Retours client du 11/10** : logo horizontal dans l'en-tête et le pied de page
+(`images/logo-trouvemoi-horizontal.png`, tiré de `docs/maquettes/logo.jpeg`) ; bouton « Tableau de
+bord » dans l'en-tête (pro et particulier) ; « Mes événements » dans la barre latérale du compte
+(organisés + inscriptions) ; lien « Partenaire » dans le pied de page ; nombre de vues sur les
+activités pro (`Service::viewsCount`) et gratuites (`PrivateActivity::viewsCount`), incrémentés par
+`PageViewRecorder` ; tri par défaut « Les plus vues » sur `/activites` et `/activites-privees`.
+**Une personne = une vue** : `Stats\UniqueView` (empreinte HMAC du compte, ou IP + navigateur pour un
+anonyme) ; les statistiques pro (`PageView`) comptent donc aussi des visiteurs uniques.
+
 **Reste** : Stripe réel (clés), sous-pages Destinations ; liens réseaux sociaux officiels à
 confirmer (variables `SOCIAL_*_URL` du `.env`, global Twig `social_links`), vérif d'email,
 utilisation d'un bon cadeau au paiement (aujourd'hui : statut « utilisé » posé dans le
