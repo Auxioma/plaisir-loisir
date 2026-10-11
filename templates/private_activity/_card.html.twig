@@ -1,7 +1,7 @@
 {#
     Carte d'une activité gratuite entre particuliers (accueil, liste, favoris).
     Retours client du 07/10 : « Gratuit », niveau, participants et compte à
-    rebours sur chaque annonce. Variables : activity, distance (km, facultatif).
+    rebours sur chaque annonce ; nombre de vues (11/10). Variables : activity, distance (km, facultatif).
     Styles : free-activities.css (.fa-card).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -27,6 +27,7 @@
         <ul class="fa-card__meta">
             {% if activity.city %}<li>{{ icon.map_pin(14) }} {{ activity.city }}{{ activity.postalCode ? ' (' ~ activity.postalCode|slice(0, 2) ~ ')' }}{% if distance is defined and distance is not null %} · <b>{{ distance < 1 ? '< 1' : distance|round }} km</b>{% endif %}</li>{% endif %}
             {% if activity.scheduledAt %}<li>{{ icon.calendar(14) }} {{ activity.scheduledAt|pf_date('EEE d MMM')|capitalize }} · {{ activity.scheduledAt|date('H\\hi') }}</li>{% endif %}
+            <li title="{{ 'Nombre de vues'|trans }}">{{ icon.eye(14) }} {{ activity.viewsCount|number_format(0, ',', ' ') }} {{ (activity.viewsCount > 1 ? 'vues' : 'vue')|trans }}</li>
         </ul>
         {{ fa.participants(going, activity.maxParticipants) }}
         <a class="fa-card__cta" href="{{ url }}">{{ 'Voir l’activité'|trans }} {{ icon.arrow_right(14) }}</a>

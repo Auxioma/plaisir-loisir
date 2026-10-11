@@ -584,6 +584,22 @@
  * ======================================================================== */
 .pf-stat .pf-stat__value { margin-top: 6px; font-size: 22px; line-height: 28px; }
 .pf .pf-row--5 .pf-stat { padding: 18px 16px; gap: 14px; }
+
+/* Rangée de tuiles compactes (Mes activités créées, 11/10) : autant de
+   colonnes de 170px minimum que la largeur permet, et dans chaque tuile
+   l'icône et le libellé en tête, le chiffre dessous — rien ne déborde. */
+.pf .pf-row--stats { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; }
+.pf-row--stats .pf-stat { display: grid; grid-template-columns: 36px minmax(0, 1fr); align-items: center; column-gap: 12px; row-gap: 0; padding: 18px; }
+.pf-row--stats .pf-ico--sm { width: 36px; height: 36px; border-radius: 9px; }
+.pf-row--stats .pf-ico--sm svg { width: 18px; height: 18px; }
+.pf-row--stats .pf-stat__body { display: contents; }
+.pf-row--stats .pf-stat__label { grid-column: 2; grid-row: 1; }
+.pf-row--stats .pf-stat__value,
+.pf-row--stats .pf-stat__unit,
+.pf-row--stats .pf-stat__note { grid-column: 1 / -1; }
+.pf-row--stats .pf-stat__value { margin-top: 14px; font-size: 26px; line-height: 30px; }
+.pf-row--stats .pf-stat__unit { font-weight: 600; }
+.pf-row--stats .pf-stat__note { margin-top: 4px; }
 .pf-table td > small { display: block; margin-top: 2px; }
 .pf-table__th-actions { text-align: right !important; padding-right: 20px !important; }
 .pf-kebab--btn > summary { padding: 0; }

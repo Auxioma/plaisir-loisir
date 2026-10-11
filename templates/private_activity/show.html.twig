@@ -42,6 +42,7 @@
                     <span class="fa-chip fa-chip--green">{{ 'Gratuit'|trans }}</span>
                     {% if activity.level %}<span class="fa-chip">{{ icon.trend_up(14) }} {{ 'Niveau :'|trans }} {{ activity.level.label|trans }}</span>{% endif %}
                     <span class="fa-chip">{{ icon.users(14) }} {{ accepted|length }}{% if activity.maxParticipants %} / {{ activity.maxParticipants }}{% endif %} {{ 'participants'|trans }}</span>
+                    <span class="fa-chip">{{ icon.eye(14) }} {{ activity.viewsCount|number_format(0, ',', ' ') }} {{ (activity.viewsCount > 1 ? 'vues' : 'vue')|trans }}</span>
                     {% if activity.scheduledAt %}<span class="fa-chip">{{ icon.calendar(14) }} {{ activity.scheduledAt|pf_date('EEEE d MMMM')|capitalize }} · {{ activity.scheduledAt|date('H\\hi') }}</span>{% endif %}
                 </div>
                 {{ fa.countdown(activity, 'full') }}

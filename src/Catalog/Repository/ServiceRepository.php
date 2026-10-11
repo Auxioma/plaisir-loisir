@@ -198,6 +198,12 @@ class ServiceRepository extends ServiceEntityRepository
                 ->addOrderBy('prixMini', ActivitySort::PriceAsc === $sort ? 'ASC' : 'DESC');
         } elseif (ActivitySort::Rating === $sort) {
             $qb->orderBy('s.ratingAverage', 'DESC');
+        } elseif (ActivitySort::MostViewed === $sort) {
+            // « Les plus vues » : compteur de consultations, puis l'ordre de
+            // l'équipe pour départager les activités jamais consultées.
+            $qb->orderBy('s.viewsCount', 'DESC')
+                ->addOrderBy('s.position', 'ASC')
+                ->addOrderBy('s.reviewsCount', 'DESC');
         } else {
             // « Les plus populaires » : l'ordre voulu par l'equipe d'abord —
             // c'est ce que porte la colonne `position` —, puis la note et le

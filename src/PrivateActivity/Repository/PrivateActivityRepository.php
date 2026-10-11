@@ -98,6 +98,7 @@ class PrivateActivityRepository extends ServiceEntityRepository
         ?string $keywords = null,
         ?\DateTimeImmutable $day = null,
         ?int $limit = null,
+        bool $mostViewed = false,
     ): array {
         $qb = $this->createQueryBuilder('a')
             ->leftJoin('a.category', 'c')->addSelect('c')
@@ -106,8 +107,14 @@ class PrivateActivityRepository extends ServiceEntityRepository
             ->andWhere('a.scheduledAt IS NULL OR a.scheduledAt >= :now')
             ->setParameter('visibilities', $members ? [PrivateActivityVisibility::Public, PrivateActivityVisibility::MembersOnly] : [PrivateActivityVisibility::Public])
             ->setParameter('hidden', [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft])
-            ->setParameter('now', new \DateTimeImmutable())
-            ->orderBy('a.scheduledAt', 'ASC');
+            ->setParameter('now', new \DateTimeImmutable());
+
+        // « Les plus vues » (11/10) : compteur de consultations, puis la date.
+        if ($mostViewed) {
+            $qb->orderBy('a.viewsCount', 'DESC')->addOrderBy('a.scheduledAt', 'ASC');
+        } else {
+            $qb->orderBy('a.scheduledAt', 'ASC');
+        }
 
         if (null !== $category) {
             $qb->andWhere('a.category = :category')->setParameter('category', $category->getId(), 'ulid');

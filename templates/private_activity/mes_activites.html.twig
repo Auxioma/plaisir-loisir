@@ -4,8 +4,7 @@
     Données : PrivateActivityController::myActivities().
 
     07/10 : colonnes de la maquette « version améliorée » (lieu, jauge,
-    compte à rebours, Voir / Modifier / Participants). Pas de « Vues » :
-    aucun compteur n'existe pour les activités gratuites.
+    compte à rebours, Voir / Modifier / Participants).
 #}
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -31,7 +30,8 @@
         <a class="pf-btn pf-btn--primary pf-btn--lg" href="{{ path('app_create_free') }}">{{ icon.plus(18) }} {{ 'Créer une activité gratuite'|trans }}</a>
     </div>
 
-    <div class="pf-row pf-row--5">
+    {# 11/10 : tuiles empilées et grille qui passe à la ligne (la colonne est étroite à côté des encarts). #}
+    <div class="pf-row pf-row--stats">
         {{ ui.stat('Total des activités'|trans, counts.all, 'activités créées'|trans, '+%n% ce mois-ci'|trans({'%n%': counts.month}), 'violet', 'calendar') }}
         {{ ui.stat('En ligne'|trans, counts.online, 'activités visibles'|trans, counts.all ? (counts.online * 100 / counts.all)|round ~ '% ' ~ 'de vos activités'|trans : '', 'green', 'check') }}
         {{ ui.stat('Complètes'|trans, counts.full, 'plus de place'|trans, counts.all ? (counts.full * 100 / counts.all)|round ~ '% ' ~ 'de vos activités'|trans : '', 'orange', 'clock') }}

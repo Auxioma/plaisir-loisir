@@ -4,8 +4,8 @@
     les suggestions du détail.
 
     Variables :
-      - a         : l'activité (place, title, rating, reviews, duration,
-                    price, badge, image, slug)
+      - a         : l'activité (place, title, rating, reviews, views,
+                    duration, price, badge, image, slug)
       - href      : lien de la carte (par défaut « # », branché sur le
                     détail quand la page existe)
       - horizontal : true = image à gauche (panneau liste de la vue carte)
@@ -70,6 +70,9 @@
         <div class="act-card__meta">
             <span class="act-rating">{{ icon.star(12) }} {{ a.rating }}</span>
             <span class="act-card__reviews">{{ a.reviews }} {{ 'reviews'|trans }}</span>
+            {% if a.views is defined %}
+                <span class="act-card__views" title="{{ 'Nombre de vues'|trans }}">{{ icon.eye(14) }} {{ a.views|number_format(0, ',', ' ') }}</span>
+            {% endif %}
             <span class="act-card__duration">{{ icon.clock(14) }} {{ a.duration }}</span>
         </div>
         <div class="pl-card__foot">

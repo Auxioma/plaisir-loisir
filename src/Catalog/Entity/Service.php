@@ -148,6 +148,14 @@ class Service
     #[ORM\Column(options: ['default' => 0])]
     private int $reviewsCount = 0;
 
+    /**
+     * Nombre de consultations de la fiche (11/10), recopié de `page_view` à
+     * chaque vue comptée par PageViewRecorder : sert au tri « Les plus vues »
+     * et s'affiche sur les cartes, sans agrégation à chaque affichage.
+     */
+    #[ORM\Column(options: ['default' => 0])]
+    private int $viewsCount = 0;
+
     #[ORM\Column(nullable: true)]
     private ?int $capacity = null;
 
@@ -497,6 +505,18 @@ class Service
     {
         $this->ratingAverage = $average;
         $this->reviewsCount = $count;
+
+        return $this;
+    }
+
+    public function getViewsCount(): int
+    {
+        return $this->viewsCount;
+    }
+
+    public function setViewsCount(int $viewsCount): static
+    {
+        $this->viewsCount = max(0, $viewsCount);
 
         return $this;
     }

@@ -18,7 +18,7 @@ use App\Catalog\Entity\Service;
  * `Static*` derrière eux.
  *
  * La forme produite est exactement celle de StaticCatalog::activities() :
- * slug, place, title, rating, reviews, duration, price, badge, image, lat, lng.
+ * slug, place, title, rating, reviews, views, duration, price, badge, image, lat, lng.
  */
 final class ActivityPresenter
 {
@@ -63,6 +63,7 @@ final class ActivityPresenter
             'title' => $service->getTitle(),
             'rating' => $this->rating($service),
             'reviews' => $service->getReviewsCount(),
+            'views' => $service->getViewsCount(),
             'duration' => $service->getDurationLabel(),
             'price' => $this->price($service),
             'badge' => $service->getBadge(),
@@ -147,6 +148,7 @@ final class ActivityPresenter
             'title' => $service->getTitle(),
             'rating' => $this->rating($service),
             'reviewsCount' => $service->getReviewsCount(),
+            'views' => $service->getViewsCount(),
             // À défaut de texte saisi, le nom du prestataire : c'est bien lui
             // qui organise.
             'organizer' => $detail?->getOrganizer() ?? $service->getProvider()?->getDisplayName(),

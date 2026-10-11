@@ -15,11 +15,15 @@ namespace App\Catalog\Enum;
  * proches » ou « les mieux notées cette semaine » demanderait des données que
  * personne ne saisit.
  *
+ * « Les plus vues » (11/10, demande du client) est devenu le tri par défaut :
+ * il s'appuie sur le nombre de consultations des fiches (Service::viewsCount).
+ *
  * LA VALEUR EST CE QUI PASSE DANS L'URL : elle est donc lisible et stable, pour
  * qu'un tri se partage et survive au bouton Précédent.
  */
 enum ActivitySort: string
 {
+    case MostViewed = 'plus-vues';
     case Popular = 'populaires';
     case PriceAsc = 'prix-asc';
     case PriceDesc = 'prix-desc';
@@ -28,6 +32,7 @@ enum ActivitySort: string
     public function label(): string
     {
         return match ($this) {
+            self::MostViewed => 'Les plus vues',
             self::Popular => 'Les plus populaires',
             self::PriceAsc => 'Prix croissant',
             self::PriceDesc => 'Prix décroissant',
@@ -48,11 +53,11 @@ enum ActivitySort: string
     }
 
     /**
-     * Le tri par défaut, celui que la maquette affiche.
+     * Le tri par défaut : les activités les plus consultées d'abord (11/10).
      */
     public static function default(): self
     {
-        return self::Popular;
+        return self::MostViewed;
     }
 
     /**
@@ -72,6 +77,6 @@ enum ActivitySort: string
      */
     public static function ordered(): array
     {
-        return [self::Popular, self::PriceAsc, self::PriceDesc, self::Rating];
+        return [self::MostViewed, self::Popular, self::PriceAsc, self::PriceDesc, self::Rating];
     }
 }
