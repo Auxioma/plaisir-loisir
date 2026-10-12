@@ -21,7 +21,7 @@
 <div class="fv">
     <div class="fv-main">
         <header class="fv-hero">
-            <img class="fv-hero__bg" src="{{ asset('images/events/favorites-hero.jpg') }}" alt="">
+            <img class="fv-hero__bg" src="{{ asset('images/events/favorites-hero.jpg') }}" alt="" fetchpriority="high">
             <h1>{{ 'Mes favoris'|trans }} <span>{{ icon.heart_solid(34) }}</span></h1>
             <p>{{ 'Retrouvez facilement tous vos événements, groupes et activités préférés.'|trans }}</p>
             <div class="fv-hero__stats">
@@ -61,7 +61,7 @@
                                     <strong>{{ e.title }}</strong>
                                     {% if e.location %}<span>{{ icon.map_pin(14) }} {{ e.location }}</span>{% endif %}
                                     <span>{{ icon.clock(14) }} {{ e.hours }}</span>
-                                    <span class="fv-avatars">{% for a in avatars|slice(0, 4) %}<img src="{{ asset(a) }}" alt="">{% endfor %}<em>+{{ e.participants }}</em></span>
+                                    <span class="fv-avatars">{% for a in avatars|slice(0, 4) %}<img src="{{ asset(a) }}" alt="" loading="lazy" decoding="async">{% endfor %}<em>+{{ e.participants }}</em></span>
                                 </span>
                             </a>
                         {% endfor %}
@@ -91,7 +91,7 @@
                                     <strong>{{ g.name }}</strong>
                                     <span class="fv-group__members">{{ g.members }} {{ 'membres'|trans }}</span>
                                     {% if g.description %}<span class="fv-group__desc">{{ g.description|striptags|length > 90 ? g.description|striptags|slice(0, 88) ~ '…' : g.description|striptags }}</span>{% endif %}
-                                    <span class="fv-avatars">{% for a in avatars|slice(0, 4) %}<img src="{{ asset(a) }}" alt="">{% endfor %}</span>
+                                    <span class="fv-avatars">{% for a in avatars|slice(0, 4) %}<img src="{{ asset(a) }}" alt="" loading="lazy" decoding="async">{% endfor %}</span>
                                 </span>
                             </a>
                         {% endfor %}

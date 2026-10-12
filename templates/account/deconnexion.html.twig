@@ -27,7 +27,7 @@
 
     <div class="pf-logout-wrap">
         <section class="pf-card pf-logout">
-            <img class="pf-logout__img" src="{{ asset('images/account/logout-door.jpg') }}" alt="">
+            <img class="pf-logout__img" src="{{ asset('images/account/logout-door.jpg') }}" alt="" loading="lazy" decoding="async">
             <div class="pf-logout__side">
                 <h2>{{ 'À bientôt, %prenom% ! 👋'|trans({'%prenom%': user.firstName}) }}</h2>
                 <p class="pf-logout__text">{{ 'Vous êtes sur le point de vous déconnecter de votre compte TrouveMoi Plaisirs & Loisirs.'|trans }}</p>

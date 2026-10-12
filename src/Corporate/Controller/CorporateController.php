@@ -14,6 +14,7 @@ use App\Legal\Enum\LegalDocumentType;
 use App\Legal\LegalDefaults;
 use App\Legal\Service\LegalContentRenderer;
 use App\Legal\Service\LegalDocumentService;
+use App\Shared\Analytics\AnalyticsEventQueue;
 use App\Shared\Controller\FlashesFormErrorsTrait;
 use App\Stats\Service\PlatformFigures;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -81,7 +82,7 @@ final class CorporateController extends AbstractController
      * confirmation. Le prospect croyait avoir postulé.
      */
     #[Route(path: ['fr' => '/devenir-partenaire/formulaire', 'en' => '/en/become-a-partner/form'], name: 'app_corporate_partner_form', methods: ['GET', 'POST'])]
-    public function partnerForm(Request $request, CorporateInboxService $inbox): Response
+    public function partnerForm(Request $request, CorporateInboxService $inbox, AnalyticsEventQueue $analytics): Response
     {
         $application = new PartnerApplication();
         $form = $this->createForm(PartnerApplicationFormType::class, $application);
@@ -106,6 +107,7 @@ final class CorporateController extends AbstractController
 
             if ([] === $errors) {
                 $this->addFlash('success', 'Votre candidature a bien été enregistrée. Notre équipe vous répondra rapidement.');
+                $analytics->push('generate_lead', ['lead_source' => 'partenaire']);
 
                 return $this->redirectToRoute('app_corporate_partner_form');
             }
@@ -170,7 +172,7 @@ final class CorporateController extends AbstractController
      * était perdu et l'expéditeur n'en savait rien.
      */
     #[Route(path: ['fr' => '/contactez-nous', 'en' => '/en/contact-us'], name: 'app_corporate_contact', methods: ['GET', 'POST'])]
-    public function contact(Request $request, CorporateInboxService $inbox, CompanyContactProvider $contact): Response
+    public function contact(Request $request, CorporateInboxService $inbox, CompanyContactProvider $contact, AnalyticsEventQueue $analytics): Response
     {
         $values = ['nom' => '', 'email' => '', 'sujet' => (string) $request->query->get('sujet', ''), 'message' => ''];
         if ($this->getUser() instanceof \App\User\Entity\User) {
@@ -215,6 +217,7 @@ final class CorporateController extends AbstractController
 
             if ([] === $errors) {
                 $this->addFlash('success', 'Votre message a bien été envoyé. Nous vous répondrons sous 24 h.');
+                $analytics->push('generate_lead', ['lead_source' => 'contact']);
 
                 return $this->redirectToRoute('app_corporate_contact');
             }
@@ -337,9 +340,10 @@ final class CorporateController extends AbstractController
         $locale = $request->getLocale();
         $document = $documents->current($type, $locale);
 
-        // Repli sur le français : mieux vaut un texte juridique lisible dans la
-        // mauvaise langue qu'une page vide dans la bonne.
-        if (null === $document && 'fr' !== $locale) {
+        // Pas de version publiée dans cette langue : texte initial de la
+        // langue (traduction anglaise depuis le 12/10), et seulement à défaut
+        // la version française publiée.
+        if (null === $document && 'fr' !== $locale && '' === LegalDefaults::content($type, $locale)) {
             $document = $documents->current($type, 'fr');
         }
 
@@ -347,7 +351,7 @@ final class CorporateController extends AbstractController
             'page_title' => $type->label(),
             'intro' => $introDefaut,
             // Repli sur le texte initial tant qu'aucune version n'est publiée.
-            'sections' => $renderer->sections(null !== $document ? $document->getContent() : LegalDefaults::content($type)),
+            'sections' => $renderer->sections(null !== $document ? $document->getContent() : LegalDefaults::content($type, $locale)),
             'document' => $document,
             'type' => $type->value,
         ]);

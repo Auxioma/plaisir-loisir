@@ -10,6 +10,7 @@ use App\Notification\Repository\NotificationPreferenceRepository;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\ORM\Events;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * À chaque notification enregistrée, demande l'envoi de l'e-mail correspondant
@@ -21,6 +22,7 @@ final class NotificationEmailListener
     public function __construct(
         private readonly MessageBusInterface $bus,
         private readonly NotificationPreferenceRepository $preferences,
+        private readonly UrlGeneratorInterface $urls,
     ) {
     }
 
@@ -36,10 +38,13 @@ final class NotificationEmailListener
             return;
         }
 
+        // Lien vers l'espace du destinataire (12/10) : rendu en bouton dans
+        // l'e-mail HTML (HtmlEmailSubscriber).
+        $link = $this->urls->generate($recipient->isProvider() ? 'app_pro_notifications' : 'app_account_notifications', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $this->bus->dispatch(new SendNotificationEmail(
             $recipient->getEmail(),
             $notification->getTitle(),
-            $notification->getMessage(),
+            sprintf("Bonjour %s,\n\n%s\n\nVoir sur TrouveMoi : %s\n\nL'équipe TrouveMoi Plaisirs & Loisirs", $recipient->getFirstName(), $notification->getMessage(), $link),
         ));
     }
 }

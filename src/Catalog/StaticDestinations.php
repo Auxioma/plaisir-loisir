@@ -37,7 +37,7 @@ final class StaticDestinations
         ];
 
         return [
-            ['name' => 'Paris, France', 'tagline' => 'Ville lumière et capitale de la culture', 'rating' => '4.8', 'reviews' => 256, 'count' => 32, 'price' => 25, 'badge' => 'Populaire', 'favorite' => false, 'image' => 'images/home/dest-paris.png'],
+            ['name' => 'Paris, France', 'tagline' => 'Ville lumière et capitale de la culture', 'rating' => '4.8', 'reviews' => 256, 'count' => 32, 'price' => 25, 'badge' => 'Populaire', 'favorite' => false, 'image' => 'images/home/dest-paris.webp'],
             ['name' => 'Annecy, France', 'tagline' => 'Entre lac et Montagnes', 'rating' => '4.3', 'reviews' => 178, 'count' => 24, 'price' => 20, 'badge' => 'Bestseller', 'favorite' => false, 'image' => 'images/home/dest-annecy.png'],
             ['name' => 'Cinque, Italie', 'tagline' => 'Vue à couper le souffle', 'rating' => '4.7', 'reviews' => 134, 'count' => 18, 'price' => 30, 'badge' => 'Tendance', 'favorite' => false, 'image' => 'images/home/dest-cinqueterre.jpg'],
             ['name' => 'Bali, Indonésie', 'tagline' => 'Détente, nature et spiritualité', 'rating' => '4.9', 'reviews' => 312, 'count' => 27, 'price' => 35, 'badge' => null, 'favorite' => false, 'image' => 'images/home/dest-bali.png'],

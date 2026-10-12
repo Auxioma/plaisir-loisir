@@ -232,7 +232,7 @@
     <section class="pf-card">
         <h2 class="pf-card__title">{{ 'Couverture'|trans }}</h2>
         <p class="pf-card__sub">{{ 'Image de couverture de votre profil professionnel.'|trans }}</p>
-        <img class="pp-cover" src="{{ asset(provider.coverPath ?? 'images/activities/visite-guidee.jpg') }}" alt="">
+        <img class="pp-cover" src="{{ asset(provider.coverPath ?? 'images/activities/visite-guidee.jpg') }}" alt="" loading="lazy" decoding="async">
         <form method="post" action="{{ path('app_pro_settings_save') }}" enctype="multipart/form-data" class="pp-photo__actions pp-center">
             {{ _self.hidden('couverture', section) }}
             <label class="pf-btn pp-btn-ghost pp-btn-sm">{{ icon.download(14) }} {{ 'Changer la couverture'|trans }}<input type="file" name="cover" accept="image/jpeg,image/png,image/webp" hidden onchange="this.form.submit()"></label>

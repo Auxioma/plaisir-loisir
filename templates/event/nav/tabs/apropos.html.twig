@@ -34,7 +34,7 @@
             <div class="evn-side-card">
                 <p class="evn-side-card__title">{{ 'Créateurs'|trans }}</p>
                 <div class="evn-creator">
-                    <img src="{{ asset(group.owner.avatar) }}" alt="">
+                    <img src="{{ asset(group.owner.avatar) }}" alt="" loading="lazy" decoding="async">
                     <span>
                         <strong>{{ group.owner.name }}</strong>
                         <a href="{{ path('app_account_messages') }}">{{ 'Message'|trans }}</a>
@@ -46,7 +46,7 @@
             <p class="evn-side-card__title">{{ 'Membres'|trans }} <span>({{ group.members }})</span> <a href="{{ path('app_group_detail', { slug: group.slug, onglet: group_tab('membres') }) }}" class="evn-side-card__more">{{ 'Voir plus'|trans }}</a></p>
             <div class="evn-side-card__avatars">
                 {% for i in 0..14 %}
-                    <img src="{{ asset(avatars[i % 5]) }}" alt="">
+                    <img src="{{ asset(avatars[i % 5]) }}" alt="" loading="lazy" decoding="async">
                 {% endfor %}
             </div>
         </div>
@@ -97,7 +97,7 @@
         <button type="button" class="evn-gphotos__nav" aria-label="{{ 'Photos précédentes'|trans }}">{{ icon.chevron_left(16) }}</button>
         {% for album in albums[:3] %}
             <a href="{{ path('app_group_album', { groupSlug: group.slug, albumId: album.id }) }}" class="{{ loop.last and albums|length > 3 ? 'evn-gphotos__more' }}">
-                <img src="{{ asset(album.image) }}" alt="{{ 'Photo du groupe'|trans }}">
+                <img src="{{ asset(album.image) }}" alt="{{ 'Photo du groupe'|trans }}" loading="lazy" decoding="async">
             </a>
         {% else %}
             <p class="text-muted">{{ "Aucune photo n'a encore été déposée."|trans }}</p>

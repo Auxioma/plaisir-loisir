@@ -19,7 +19,7 @@
 {% block body %}
 {% set variant = block('tm_variant') is defined ? block('tm_variant')|trim : '' %}
 <div class="tm-login{{ variant ? ' tm-login--' ~ variant }}">
-    <img class="tm-login__art" src="{{ asset('images/login-illustration.png') }}" alt="" width="1530" height="913">
+    <img class="tm-login__art" src="{{ asset('images/login-illustration.webp') }}" alt="" width="1530" height="913" loading="lazy" decoding="async">
 
     <div class="tm-login__row">
         <section class="tm-login__welcome">

@@ -2,15 +2,33 @@
 User-agent: *
 
 # Adresses techniques ou privees : rien a indexer, et surtout rien qui doive
-# apparaitre dans les resultats de recherche.
+# apparaitre dans les resultats de recherche. Les pages elles-memes portent
+# aussi un en-tete « X-Robots-Tag: noindex » (NoIndexPrivatePagesSubscriber).
 Disallow: /login
 Disallow: /logout
+Disallow: /admin
 Disallow: /connexion/
 Disallow: /compte/
 Disallow: /en/account/
+Disallow: /pro/
+Disallow: /en/pro/
+Allow: /pro/inscription$
+Allow: /en/pro/signup$
+Disallow: /mot-de-passe-oublie
+Disallow: /en/forgot-password
+Disallow: /verification-email
+Disallow: /en/verify-email
+Disallow: /reservations/
+Disallow: /en/bookings/
 Disallow: /paiement/
 Disallow: /en/payment/
+Disallow: /evenements/creer
+Disallow: /en/events/create
+Disallow: /mes-favoris
+Disallow: /en/my-favourites
 Disallow: /webhook/
 Disallow: /favoris/basculer
+Disallow: /suggestions
+Disallow: /en/suggestions
 
 Sitemap: https://trouvemoi.eu/sitemap.xml

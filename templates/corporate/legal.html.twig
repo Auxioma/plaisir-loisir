@@ -22,7 +22,7 @@
     {%- import 'provider/space/_ico.html.twig' as ico -%}
     {%- set t = title|lower -%}
     {%- set name = 'doc' -%}
-    {%- for key, value in {'objet': 'doc', 'éditeur': 'briefcase', 'heberg': 'monitor', 'accès': 'lock', 'utilisation de la': 'monitor', 'compte': 'person', 'contenu': 'star', 'propriété': 'doc', 'réservation': 'calendar', 'paiement': 'card', 'responsab': 'shield', 'données': 'person', 'sécurité': 'lock', 'droit': 'shield', 'cookie': 'globe', 'contact': 'mail', 'lien': 'link', 'modification': 'edit', 'partage': 'share', 'utilisation des': 'chart'} -%}
+    {%- for key, value in {'purpose': 'doc', 'publisher': 'briefcase', 'hosting': 'monitor', 'access to': 'lock', 'use of the': 'monitor', 'account': 'person', 'content': 'star', 'intellectual': 'doc', 'booking': 'calendar', 'order': 'calendar', 'payment': 'card', 'liabil': 'shield', 'data': 'person', 'security': 'lock', 'law': 'shield', 'link': 'link', 'change': 'edit', 'who has access': 'share', 'objet': 'doc', 'éditeur': 'briefcase', 'heberg': 'monitor', 'accès': 'lock', 'utilisation de la': 'monitor', 'compte': 'person', 'contenu': 'star', 'propriété': 'doc', 'réservation': 'calendar', 'paiement': 'card', 'responsab': 'shield', 'données': 'person', 'sécurité': 'lock', 'droit': 'shield', 'cookie': 'globe', 'contact': 'mail', 'lien': 'link', 'modification': 'edit', 'partage': 'share', 'utilisation des': 'chart'} -%}
         {%- if key in t and name == 'doc' -%}{%- set name = value -%}{%- endif -%}
     {%- endfor -%}
     {{ ico.svg(name, 24) }}
@@ -42,7 +42,7 @@
             </p>
             <p class="lg2-hero__intro">{{ intro|trans }}</p>
         </div>
-        <img class="lg2-hero__img" src="{{ asset('images/legal/legal-hero.jpg') }}" alt="" width="1690" height="476">
+        <img class="lg2-hero__img" src="{{ asset('images/legal/legal-hero.jpg') }}" alt="" width="1690" height="476" fetchpriority="high">
     </header>
 
     <div class="lg2-body">

@@ -16,13 +16,13 @@
 {% block body %}
 <div class="pg pdp">
     <header class="pdp-cover">
-        {% if card.cover %}<img src="{{ asset(card.cover) }}" alt="">{% endif %}
+        {% if card.cover %}<img src="{{ asset(card.cover) }}" alt="" loading="lazy" decoding="async">{% endif %}
     </header>
     <div class="pg-wrap pdp-wrap">
         <nav class="lg2-crumb act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}"><a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a> <span>/</span> <a href="{{ path('app_provider_search') }}">{{ 'Professionnels'|trans }}</a> <span>/</span> <span aria-current="page">{{ provider.displayName }}</span></nav>
 
         <section class="pg-card pdp-id">
-            <span class="pd-avatar pd-avatar--lg">{% if card.avatar %}<img src="{{ asset(card.avatar) }}" alt="">{% else %}{{ provider.displayName|first|upper }}{% endif %}</span>
+            <span class="pd-avatar pd-avatar--lg">{% if card.avatar %}<img src="{{ asset(card.avatar) }}" alt="" loading="lazy" decoding="async">{% else %}{{ provider.displayName|first|upper }}{% endif %}</span>
             <div class="pdp-id__main">
                 <h1>{{ provider.displayName }} <span class="pd-card__verified pd-inline">{{ icon.check_badge(14) }} {{ 'Professionnel vérifié'|trans }}</span></h1>
                 <p class="pdp-id__meta">

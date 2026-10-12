@@ -75,7 +75,7 @@
                         <tr>
                             <td>
                                 <div class="pp-ref">
-                                    <img src="{{ asset(b.service|pp_cover) }}" alt="">
+                                    <img src="{{ asset(b.service|pp_cover) }}" alt="" loading="lazy" decoding="async">
                                     <div><strong>#{{ b.reference }}</strong><small>{{ 'Réservé le'|trans }} {{ b.createdAt|pf_date('d MMM y')|trim('.') }}<br>{{ 'à'|trans }} {{ b.createdAt|date('H:i') }}</small></div>
                                 </div>
                             </td>
@@ -155,7 +155,7 @@
         {% else %}
             <ol class="pp-top pp-top--compact">
                 {% for t in top %}
-                    <li><span class="pp-top__rank">{{ loop.index }}</span><img src="{{ asset(t.image) }}" alt=""><div><strong class="pp-ellipsis">{{ t.service.title }}</strong><small>{{ t.count }} {{ t.count > 1 ? 'réservations'|trans : 'réservation'|trans }}</small></div></li>
+                    <li><span class="pp-top__rank">{{ loop.index }}</span><img src="{{ asset(t.image) }}" alt="" loading="lazy" decoding="async"><div><strong class="pp-ellipsis">{{ t.service.title }}</strong><small>{{ t.count }} {{ t.count > 1 ? 'réservations'|trans : 'réservation'|trans }}</small></div></li>
                 {% endfor %}
             </ol>
         {% endif %}

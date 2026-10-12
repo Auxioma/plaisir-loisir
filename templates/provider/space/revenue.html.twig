@@ -73,7 +73,7 @@
                         <tr>
                             <td>{{ p.createdAt|pf_date('d MMM y')|trim('.') }}<small>{{ p.createdAt|date('H:i') }}</small></td>
                             <td><strong class="pp-strong">#{{ b.reference }}</strong></td>
-                            <td><div class="pf-table__item pp-mini-item"><img src="{{ asset(b.service|pp_cover) }}" alt=""><span>{{ b.service.title }}</span></div></td>
+                            <td><div class="pf-table__item pp-mini-item"><img src="{{ asset(b.service|pp_cover) }}" alt="" loading="lazy" decoding="async"><span>{{ b.service.title }}</span></div></td>
                             <td><div class="pp-client">{{ ui.avatar(b.client, 28) }}<span>{{ b.client.firstName }} {{ b.client.lastName }}</span></div></td>
                             <td><strong class="pp-strong">{{ ui.money(p.amount) }}</strong></td>
                             <td>{% set st = {pending: ['En attente', 'orange'], paid: ['Payé', 'green'], failed: ['Échoué', 'red'], refunded: ['Remboursé', 'grey']}[p.status.value] %}<span class="pf-pill pf-pill--{{ st[1] }} pp-pill">{{ st[0]|trans }}</span></td>

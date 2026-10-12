@@ -47,7 +47,7 @@
             </div>
 
             <div class="card-grid evn-grid evn-album-photos">
-                <img src="{{ asset(album.image) }}" alt="{{ 'Photo de l\'album %title%'|trans({'%title%': album.title}) }}">
+                <img src="{{ asset(album.image) }}" alt="{{ 'Photo de l\'album %title%'|trans({'%title%': album.title}) }}" loading="lazy" decoding="async">
             </div>
         </section>
 

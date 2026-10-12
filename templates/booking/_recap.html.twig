@@ -1,7 +1,7 @@
 {# Carte récapitulative d'une réservation (récapitulatif et confirmation). #}
 {% import '_partials/_icons.html.twig' as icon %}
 <div class="bk-recap">
-    <img src="{{ asset(service|pp_cover) }}" alt="">
+    <img src="{{ asset(service|pp_cover) }}" alt="" loading="lazy" decoding="async">
     <div class="bk-recap__body">
         <h2>{{ service.title }}</h2>
         <ul>

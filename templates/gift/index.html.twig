@@ -14,7 +14,7 @@
 <div class="pg gc">
     <aside class="gc-filters">
         <form method="get" action="{{ path('app_gifts') }}">
-            <div class="ofm-filters__head"><h2>{{ 'Filtres'|trans }}</h2><a href="{{ path('app_gifts') }}">{{ 'Réinitialiser'|trans }}</a></div>
+            <div class="ofm-filters__head"><p class="ex-filters__title">{{ 'Filtres'|trans }}</p><a href="{{ path('app_gifts') }}">{{ 'Réinitialiser'|trans }}</a></div>
             <fieldset>
                 <legend>{{ 'Montant'|trans }}</legend>
                 {% for k, label in amount_labels %}<label class="ofm-check"><input type="checkbox" name="montant[]" value="{{ k }}"{{ k in filters.montant ? ' checked' }}> {{ label|trans }}</label>{% endfor %}
@@ -52,7 +52,7 @@
                     <li>{{ icon.mail(22) }}<span><strong>{{ 'Envoi instantané'|trans }}</strong><small>{{ 'Par email ou à imprimer'|trans }}</small></span></li>
                 </ul>
             </div>
-            <img src="{{ asset('images/gifts/hero-coffret.jpg') }}" alt="">
+            <img src="{{ asset('images/gifts/hero-coffret.jpg') }}" alt="" loading="lazy" decoding="async">
         </header>
 
         <div class="gc-cols">

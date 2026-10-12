@@ -147,7 +147,7 @@
             {% if details.last %}
                 <h3 class="pp-subtitle">{{ 'Dernière réservation'|trans }}</h3>
                 <div class="pp-lastbooking">
-                    <img src="{{ asset(details.last.service|pp_cover) }}" alt="">
+                    <img src="{{ asset(details.last.service|pp_cover) }}" alt="" loading="lazy" decoding="async">
                     <div><strong>{{ details.last.service.title }}</strong><small>{{ (details.last.startsAt ?? details.last.createdAt)|pf_date('d MMM y')|trim('.') }} {{ 'à'|trans }} {{ (details.last.startsAt ?? details.last.createdAt)|date('H:i') }}</small></div>
                     <span class="pf-pill pf-pill--{{ details.last.status.tone }}">{{ details.last.status.label|trans }}</span>
                 </div>

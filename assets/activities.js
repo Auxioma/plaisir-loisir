@@ -92,7 +92,9 @@ function initBookingPanel(root = document) {
         });
         if (seatsEl) {
             seatsEl.hidden = !(hasSlots && timeEl?.value);
-            seatsEl.textContent = `${max} place${max > 1 ? 's' : ''} restante${max > 1 ? 's' : ''} sur ce créneau`;
+            seatsEl.textContent = document.documentElement.lang?.startsWith('en')
+                ? `${max} place${max > 1 ? 's' : ''} left for this time slot`
+                : `${max} place${max > 1 ? 's' : ''} restante${max > 1 ? 's' : ''} sur ce créneau`;
         }
     };
 
@@ -515,7 +517,7 @@ function initExplore(root = document) {
             const lo = Math.min(+min.value, +max.value);
             const hi = Math.max(+min.value, +max.value);
             minLabel.textContent = `${lo} €`;
-            maxLabel.textContent = hi >= top ? `${top} € et +` : `${hi} €`;
+            maxLabel.textContent = hi >= top ? `${top} € ${document.documentElement.lang?.startsWith('en') ? 'and up' : 'et +'}` : `${hi} €`;
             bar.style.left = `${(lo / top) * 100}%`;
             bar.style.width = `${((hi - lo) / top) * 100}%`;
         };
@@ -543,7 +545,81 @@ function initExplore(root = document) {
     }));
 }
 
+/* Slider photo de la fiche sur mobile (12/10) : le défilement est natif
+   (scroll-snap) ; ici seulement le compteur « 2 / 5 » et les points. */
+function initActivitySlider(root = document) {
+    root.querySelectorAll('[data-act-slider]').forEach((wrap) => {
+        const track = wrap.querySelector('[data-act-slider-track]');
+        const index = wrap.querySelector('[data-act-slider-index]');
+        const dots = [...wrap.querySelectorAll('.act-slider__dots span')];
+        if (!track || !index || wrap.dataset.sliderReady) return;
+        wrap.dataset.sliderReady = '1';
+        let frame = 0;
+        track.addEventListener('scroll', () => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => {
+                const i = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+                index.textContent = String(i + 1);
+                dots.forEach((d, n) => d.classList.toggle('is-active', n === i));
+            });
+        }, { passive: true });
+    });
+}
+
+/*
+ * Filtres repliables sur mobile (12/10, retour client : il fallait descendre
+ * très bas pour voir les annonces). Sous 992 px, la colonne de filtres
+ * devient un panneau plein écran ouvert par un bouton « Filtres (n) ». Ajouté
+ * en JS : sans script, les filtres restent affichés comme avant.
+ */
+function initCollapsibleFilters(root = document) {
+    root.querySelectorAll('.ex').forEach((layout) => {
+        const aside = layout.querySelector('.ex-filters');
+        const main = layout.querySelector('.ex-main');
+        const form = aside?.querySelector('form');
+        if (!aside || !main || !form || layout.dataset.filtersReady) return;
+        layout.dataset.filtersReady = '1';
+        layout.classList.add('ex--collapsible');
+        const en = document.documentElement.lang?.startsWith('en');
+
+        const active = [...form.elements].filter((el) => {
+            if (!el.name || el.type === 'hidden' || el.type === 'submit') return false;
+            if (el.type === 'checkbox' || el.type === 'radio') return el.checked;
+            if (el.type === 'range') return el.value !== el.defaultValue && !(el.name === 'prix_min' && el.value === '0') && !(el.name === 'prix_max' && el.value === el.max);
+            return el.value.trim() !== '';
+        }).length;
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'ex-filter-toggle';
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg> ${en ? 'Filters' : 'Filtres'}${active ? ` <span class="ex-filter-toggle__count">${active}</span>` : ''}`;
+        const head = main.querySelector('.ex-head');
+        if (head) head.after(toggle); else main.prepend(toggle);
+
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'ex-filters__close';
+        close.setAttribute('aria-label', en ? 'Close filters' : 'Fermer les filtres');
+        close.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+        aside.querySelector('.ex-filters__head')?.append(close);
+
+        const set = (open) => {
+            aside.classList.toggle('is-open', open);
+            document.documentElement.classList.toggle('ex-lock', open);
+            toggle.setAttribute('aria-expanded', String(open));
+            if (open) aside.querySelector('input, select, button')?.focus({ preventScroll: true });
+        };
+        toggle.addEventListener('click', () => set(true));
+        close.addEventListener('click', () => set(false));
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && aside.classList.contains('is-open')) set(false); });
+        document.addEventListener('turbo:before-visit', () => set(false), { once: true });
+    });
+}
+
 const start = () => {
+    initCollapsibleFilters();
+    initActivitySlider();
     initOfferCountdowns();
     initBookingPanel();
     initReviewFormStars();

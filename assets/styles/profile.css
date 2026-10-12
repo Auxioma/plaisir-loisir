@@ -359,7 +359,7 @@
 .pf-views a.is-active { background: var(--tm-pro-panel); border-color: #d8d0fb; color: var(--tm-pro); }
 
 /* ---- Tableaux ---------------------------------------------------------------- */
-.pf-table-wrap { overflow-x: auto; padding: 0; }
+.pf-table-wrap { position: relative; min-width: 0; max-width: 100%; overflow-x: auto; padding: 0; } /* relative : contient les .visually-hidden (absolus) qui élargissaient la page */
 .pf-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .pf-table th {
     padding: 14px 10px;
@@ -630,7 +630,10 @@
     .pf-aside { flex-basis: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
 }
 @media (max-width: 1199.98px) {
-    .pf { grid-template-columns: 1fr; }
+    /* minmax(0, …) : sans lui, le menu passé en ligne (défilement horizontal)
+       imposait sa largeur à toute la page (2 000 px à 1024, 12/10). */
+    .pf { grid-template-columns: minmax(0, 1fr); }
+    .pf-side { min-width: 0; }
     .pf-side__scroll { position: static; max-height: none; overflow: visible; padding: 20px 16px; }
     .pf-menu { flex-direction: row; overflow-x: auto; gap: 6px; margin-top: 18px; padding-bottom: 6px; }
     .pf-menu__section, .pf-menu__gap, .pf-menu__text small { display: none; }

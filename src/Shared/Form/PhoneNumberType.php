@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Intl\Countries;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -38,12 +39,17 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 final class PhoneNumberType extends AbstractType
 {
+    public function __construct(
+        private readonly ?RequestStack $requestStack = null,
+    ) {
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('country', ChoiceType::class, [
                 'label' => false,
-                'choices' => self::countryChoices($options['default_region']),
+                'choices' => self::countryChoices($options['default_region'], 'en' === $this->requestStack?->getCurrentRequest()?->getLocale() ? 'en' : 'fr'),
                 'required' => true,
                 'placeholder' => false,
             ])
@@ -93,10 +99,12 @@ final class PhoneNumberType extends AbstractType
     /**
      * @return array<string, string>
      */
-    private static function countryChoices(string $defaultRegion): array
+    private static function countryChoices(string $defaultRegion, string $locale = 'fr'): array
     {
         $util = PhoneNumberUtil::getInstance();
-        $names = Countries::getNames('fr');
+        // Noms des pays dans la langue de la page (12/10 : le site anglais
+        // les affichait en français).
+        $names = Countries::getNames($locale);
 
         $choices = [];
 

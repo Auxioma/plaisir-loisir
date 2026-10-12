@@ -24,11 +24,11 @@
     {% for button in social_buttons %}
         {% if social_login_enabled(button.service) %}
             <a class="auth-social" href="{{ path('app_social_start', { service: button.service }) }}">
-                <img src="{{ asset('images/social-' ~ button.service ~ '.svg') }}" alt="{{ button.alt|trans }}">
+                <img src="{{ asset('images/social-' ~ button.service ~ '.svg') }}" alt="{{ button.alt|trans }}" loading="lazy" decoding="async">
             </a>
         {% else %}
             <button type="button" class="auth-social is-disabled" disabled title="{{ 'Bientôt disponible'|trans }}">
-                <img src="{{ asset('images/social-' ~ button.service ~ '.svg') }}" alt="{{ button.alt|trans }}">
+                <img src="{{ asset('images/social-' ~ button.service ~ '.svg') }}" alt="{{ button.alt|trans }}" loading="lazy" decoding="async">
             </button>
         {% endif %}
     {% endfor %}

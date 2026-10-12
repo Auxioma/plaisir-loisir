@@ -58,7 +58,7 @@
                 {% set p = providers[devis.id ~ ''] ?? null %}
                 <article class="pf-card rq-quote{{ devis.status.value == 'accepted' ? ' is-accepted' : (devis.status.value == 'declined' ? ' is-declined') }}">
                     <div class="rq-quote__head">
-                        <span class="pd-avatar">{% if p and p.avatar %}<img src="{{ asset(p.avatar) }}" alt="">{% else %}{{ devis.provider.displayName|first|upper }}{% endif %}</span>
+                        <span class="pd-avatar">{% if p and p.avatar %}<img src="{{ asset(p.avatar) }}" alt="" loading="lazy" decoding="async">{% else %}{{ devis.provider.displayName|first|upper }}{% endif %}</span>
                         <span class="rq-quote__who">
                             <a href="{{ path('app_provider_profile', {slug: devis.provider.slug}) }}"><strong>{{ devis.provider.displayName }}</strong></a>
                             <small>

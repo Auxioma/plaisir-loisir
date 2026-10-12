@@ -39,7 +39,7 @@
             <section class="pf-card pf-photo">
                 <h2 class="pf-card__title">{{ 'Photo de profil'|trans }}</h2>
                 <div class="pf-photo__avatar">
-                    <img src="{{ asset(user.avatar) }}" alt="" data-avatar-preview>
+                    <img src="{{ asset(user.avatar) }}" alt="" data-avatar-preview loading="lazy" decoding="async">
                     <label for="{{ form.photo.vars.id }}" class="pf-photo__cam" aria-label="{{ 'Changer la photo'|trans }}">{{ icon.camera(16) }}</label>
                 </div>
                 <p class="pf-photo__hint">{{ 'JPG, PNG ou WEBP. Taille max 5 Mo.'|trans }}</p>

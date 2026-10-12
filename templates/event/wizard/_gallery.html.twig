@@ -1,0 +1,23 @@
+{#
+    Galerie d'images des assistants (12/10, retour client) : une seule zone où
+    l'on sélectionne ou glisse PLUSIEURS photos d'un coup, au lieu d'une case
+    « Aucun fichier choisi » par photo. Aperçus retirables avant l'envoi
+    (assets/event-wizard.js, initGallery). Le serveur reçoit toujours gallery[].
+
+    Variables : gallery (chemins déjà enregistrés), max (nombre maximum).
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+<div class="ew-gallery" data-ew-gallery data-max="{{ max }}">
+    {% for path in gallery %}
+        <span class="ew-gallery__item" data-ew-gallery-saved>
+            <img src="{{ asset(path) }}" alt="">
+            <label class="ew-gallery__remove" title="{{ 'Retirer'|trans }}"><input type="checkbox" name="remove_gallery[]" value="{{ path }}"> {{ icon.x(12) }}</label>
+        </span>
+    {% endfor %}
+    <label class="ew-gallery__drop" data-ew-gallery-drop{{ gallery|length >= max ? ' hidden' }}>
+        <input type="file" name="gallery[]" multiple accept="image/jpeg,image/png,image/webp" data-ew-gallery-input>
+        <span class="ew-gallery__drop-ico">{{ icon.plus(20) }}</span>
+        <span class="ew-gallery__drop-text"><strong>{{ 'Ajouter des photos'|trans }}</strong><small>{{ 'Glissez-déposez ou cliquez · plusieurs à la fois'|trans }}</small></span>
+    </label>
+</div>
+<p class="ew-hint" data-ew-gallery-count data-label="{{ 'photos'|trans }}">{{ gallery|length }} / {{ max }} {{ 'photos'|trans }}</p>

@@ -1,0 +1,11 @@
+{#
+    Événements Google Analytics posés dans la page (12/10), envoyés par
+    assets/analytics.js si le visiteur a accepté la mesure d'audience.
+    once : identifiant qui empêche de compter deux fois (achat).
+    Rien n'est rendu tant que GA_MEASUREMENT_ID est vide.
+#}
+{% macro event(name, params = {}, once = null) %}
+    {%- if ga_measurement_id is not empty -%}
+        <span hidden data-ga-event="{{ name }}" data-ga-params="{{ params|json_encode }}"{% if once %} data-ga-once="{{ once }}"{% endif %}></span>
+    {%- endif -%}
+{% endmacro %}

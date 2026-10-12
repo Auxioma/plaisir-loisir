@@ -19,7 +19,7 @@
         {% set where = entity.address ?: (entity.location ?: entity.city) %}
         {% if where %}<p class="fa-invite__where">{{ where }}</p>{% endif %}
         {% if entity.shortDescription %}<p class="fa-invite__text">{{ entity.shortDescription }}</p>{% endif %}
-        <span class="fa-invite__qr"><img src="{{ qr }}" alt="{{ 'QR code de l’invitation'|trans }}">{{ 'Scanne pour confirmer ta présence'|trans }}</span>
+        <span class="fa-invite__qr"><img src="{{ qr }}" alt="{{ 'QR code de l’invitation'|trans }}" loading="lazy" decoding="async">{{ 'Scanne pour confirmer ta présence'|trans }}</span>
         <p class="fa-invite__foot">{{ 'Invitation créée gratuitement sur TrouveMoi'|trans }}</p>
     </div>
 {% endmacro %}

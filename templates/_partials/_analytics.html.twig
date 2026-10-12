@@ -1,0 +1,21 @@
+{#
+    Google Analytics 4 (12/10). Rien n'est chargé sans identifiant
+    (GA_MEASUREMENT_ID) ni sans l'accord du visiteur pour la mesure
+    d'audience : en mode « consentement préalable » (exigence CNIL), le script
+    de Google n'est même pas téléchargé avant le choix.
+
+    window.tmAnalytics porte la configuration ; assets/analytics.js charge le
+    script quand l'accord arrive (au chargement, ou juste après un clic sur le
+    bandeau) et envoie les événements e-commerce posés par les pages
+    (data-ga-event).
+#}
+{% if ga_measurement_id is not empty %}
+    <script>
+        window.tmAnalytics = { id: {{ ga_measurement_id|json_encode|raw }}, allowed: {{ cookie_allows('statistics') ? 'true' : 'false' }}, currency: 'EUR' };
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+    </script>
+    {% if cookie_allows('statistics') %}
+        <link rel="preconnect" href="https://www.googletagmanager.com">
+    {% endif %}
+{% endif %}

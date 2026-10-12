@@ -80,3 +80,6 @@ import './free-activities.js';
 
 // Suggestions pendant la frappe dans les champs de recherche (26/08).
 import './autocomplete.js';
+// Bandeau cookies et Google Analytics (12/10).
+import './cookie-consent.js';
+import './analytics.js';

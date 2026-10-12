@@ -21,7 +21,7 @@
         </nav>
         <p class="pg-muted">{{ jobs|length }} {{ jobs|length > 1 ? 'offres'|trans : 'offre'|trans }}</p>
         <div class="pg-jobs pg-jobs--all">
-            {% for j in jobs %}{% include 'corporate/_partials/_job_card.html.twig' with { job: j } %}{% else %}<p>{{ 'Aucune offre dans ce service pour le moment.'|trans }}</p>{% endfor %}
+            {% for j in jobs %}{% include 'corporate/_partials/_job_card.html.twig' with { job: j, heading: 'h2' } %}{% else %}<p>{{ 'Aucune offre dans ce service pour le moment.'|trans }}</p>{% endfor %}
         </div>
         <div class="pg-card pg-spont pg-spont--row">
             <h2>{{ 'Envoyez-nous votre candidature spontanée !'|trans }}</h2>

@@ -1,0 +1,59 @@
+{#
+    Gabarit HTML commun des e-mails (12/10). Styles EN LIGNE et mise en page
+    en tableaux : c'est ce que lisent correctement Gmail, Outlook et les
+    webmails. Construit par App\Notification\Mailer\HtmlEmailSubscriber à
+    partir du texte de l'e-mail (gardé en alternative text/plain).
+    Variables : subject, blocks.
+#}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>{{ subject }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f3f4f9;font-family:Arial,Helvetica,sans-serif;color:#0b1437;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">{{ subject }}</div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f4f9;">
+        <tr>
+            <td align="center" style="padding:32px 12px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(11,20,55,.06);">
+                    <tr>
+                        <td style="background:#0b1437;padding:22px 32px;">
+                            <a href="{{ url('app_home') }}" style="text-decoration:none;">
+                                <img src="{{ absolute_url(asset('images/logo-trouvemoi-horizontal.png')) }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="190" style="display:block;border:0;max-width:190px;height:auto;">
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:32px 32px 8px;">
+                            <h1 style="margin:0 0 20px;font-size:22px;line-height:30px;font-weight:700;color:#0b1437;">{{ subject }}</h1>
+                            {% for b in blocks %}
+                                {% if b.type == 'code' %}
+                                    <p style="margin:0 0 8px;font-size:15px;line-height:24px;">{{ b.text }} :</p>
+                                    <p style="margin:0 0 20px;"><span style="display:inline-block;padding:14px 22px;background:#f1edff;border:1px dashed #b9a6fb;border-radius:10px;font-family:'Courier New',monospace;font-size:26px;font-weight:700;letter-spacing:4px;color:#3b19e6;">{{ b.code }}</span></p>
+                                {% elseif b.type == 'button' %}
+                                    <p style="margin:8px 0 24px;"><a href="{{ b.url }}" style="display:inline-block;padding:13px 26px;background:#3b19e6;border-radius:8px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;">{{ b.label }}</a></p>
+                                {% elseif b.type == 'signature' %}
+                                    <p style="margin:24px 0 0;font-size:14px;line-height:22px;color:#4b4f66;">{{ b.html|raw }}</p>
+                                {% else %}
+                                    <p style="margin:0 0 16px;font-size:15px;line-height:24px;color:#0b1437;">{{ b.html|raw }}</p>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:24px 32px 28px;border-top:1px solid #eceef4;font-size:12px;line-height:18px;color:#6b6f85;">
+                            TrouveMoi Plaisirs &amp; Loisirs — {{ 'Les meilleures activités et loisirs partout en France.'|trans }}<br>
+                            <a href="{{ url('app_home') }}" style="color:#3b19e6;text-decoration:none;">trouvemoi.eu</a>
+                            · <a href="{{ url('app_help_center') }}" style="color:#6b6f85;">{{ "Centre d'aide"|trans }}</a>
+                            · <a href="{{ url('app_corporate_privacy') }}" style="color:#6b6f85;">{{ 'Politique de confidentialité'|trans }}</a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

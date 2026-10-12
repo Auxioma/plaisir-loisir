@@ -15,7 +15,7 @@
         {% for a in albums %}
             <a href="{{ path('app_group_album', { groupSlug: group.slug, albumId: a.id }) }}" class="evn-album">
                 <span class="evn-album__media">
-                    <img src="{{ asset(a.image) }}" alt="{{ a.title }}">
+                    <img src="{{ asset(a.image) }}" alt="{{ a.title }}" loading="lazy" decoding="async">
                     {% if loop.first %}
                         <span class="evn-album__nav evn-album__nav--prev" aria-hidden="true">{{ icon.chevron_left(14) }}</span>
                         <span class="evn-album__nav evn-album__nav--next" aria-hidden="true">{{ icon.chevron_right(14) }}</span>

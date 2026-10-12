@@ -42,7 +42,7 @@ class DestinationFixtures extends Fixture
             'name' => 'Paris, France', 'slug' => 'paris-france', 'country' => 'FR',
             'tagline' => 'Ville lumière et capitale de la culture',
             'rating' => '4.80', 'reviews' => 256, 'count' => 32, 'price' => 25,
-            'badge' => 'Populaire', 'image' => 'images/home/dest-paris.png',
+            'badge' => 'Populaire', 'image' => 'images/home/dest-paris.webp',
         ],
         [
             'name' => 'Annecy, France', 'slug' => 'annecy-france', 'country' => 'FR',

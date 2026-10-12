@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Controller;
 
+use App\Shared\Analytics\AnalyticsEventQueue;
 use App\Shared\Controller\FlashesFormErrorsTrait;
 use App\User\Form\RegistrationFormType;
 use App\User\Security\LoginErrorPresenter;
@@ -243,7 +244,7 @@ final class SecurityController extends AbstractController
     // redirection permanente, le temps que les liens deja partages et
     // l'index des moteurs de recherche suivent.
     #[Route(path: ['fr' => '/inscription', 'en' => '/en/signup'], name: 'app_register')]
-    public function register(Request $request, RegistrationService $registrationService): Response
+    public function register(Request $request, RegistrationService $registrationService, AnalyticsEventQueue $analytics): Response
     {
         // Si l'utilisateur est déjà connecté, on le redirige vers l'accueil.
         if ($this->getUser()) {
@@ -274,6 +275,7 @@ final class SecurityController extends AbstractController
                 // l'adresse (Lot I) : on enchaîne directement sur cet écran
                 // plutôt que d'envoyer vers une connexion qui échouerait.
                 $request->getSession()->set(self::SESSION_VERIFY_EMAIL, $user->getEmail());
+                $analytics->push('sign_up', ['method' => 'email', 'account_type' => 'client']);
 
                 return $this->redirectToRoute('app_email_verification');
             } catch (ConflictHttpException) {

@@ -19,6 +19,15 @@
 {% block title %}{{ 'Questions fréquentes'|trans }}{% endblock %}
 {% block meta_description %}{{ 'Réservation, paiement, annulation, bons cadeaux : les réponses aux questions les plus posées sur TrouveMoi Plaisirs & Loisirs.'|trans }}{% endblock %}
 
+{# SEO (12/10) : questions-réponses en données structurées FAQPage. #}
+{% block structured_data %}
+    {% set ld_faq = [] %}
+    {% for cle, questions in groupes %}{% for q in questions %}
+        {% set ld_faq = ld_faq|merge([{'@type': 'Question', 'name': q.entry.question, 'acceptedAnswer': {'@type': 'Answer', 'text': q.answer|replace({'</p>': ' </p>', '<br>': ' ', '<br/>': ' ', '</li>': ' </li>'})|striptags|trim}}]) %}
+    {% endfor %}{% endfor %}
+    {% if ld_faq is not empty %}{{ json_ld({'@type': 'FAQPage', 'mainEntity': ld_faq}) }}{% endif %}
+{% endblock %}
+
 {% block header %}
     {% include '_partials/navbar_corporate.html.twig' with { nav_active: 'faq' } %}
 {% endblock %}

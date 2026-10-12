@@ -79,7 +79,7 @@
                             <span>{{ a.date|pf_date('d MMMM y') }}</span>
                             <span>{{ a.location ?: '—' }}</span>
                             {% if a.avatars is not empty %}
-                                <span class="fv-avatars">{% for f in a.avatars %}<img src="{{ asset(f) }}" alt="">{% endfor %}{% if a.more > 0 %}<em>+{{ a.more }}</em>{% endif %}</span>
+                                <span class="fv-avatars">{% for f in a.avatars %}<img src="{{ asset(f) }}" alt="" loading="lazy" decoding="async">{% endfor %}{% if a.more > 0 %}<em>+{{ a.more }}</em>{% endif %}</span>
                             {% endif %}
                         </span>
                     </a>

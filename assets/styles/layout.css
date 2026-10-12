@@ -424,11 +424,26 @@
     .tm-nav__dropdown .tm-menu__item:hover { background: rgba(255, 255, 255, .1); color: var(--pl-white); }
 }
 
+/* 1024-1199 : sans ce palier, l'en-tête pro (badge, tableau de bord, compte,
+   bouton orange, burger) débordait de l'écran (12/10). */
+@media (max-width: 1199.98px) {
+    .tm-btn--dashboard { padding: 0 12px; }
+    .tm-btn--dashboard .tm-btn__label { display: none; }
+    .tm-account__id { display: none; }
+}
+.tm-header__langs { display: none; }
+@media (max-width: 1439.98px) {
+    .tm-header__langs { display: flex; gap: 8px; padding: 0 16px 24px; }
+    .tm-header__langs a { display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 8px; padding: 10px; border: 1px solid rgba(255, 255, 255, .18); border-radius: 8px; color: var(--pl-white); font-size: 14px; text-decoration: none; }
+    .tm-header__langs a.is-active { background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .4); }
+}
 @media (max-width: 991.98px) {
     .tm-search { display: none; }
+    .tm-header--pro .tm-btn--cta { display: none; }
 }
 @media (max-width: 767.98px) {
     .tm-header__space { display: none; }
+    .tm-btn--cta { display: none; }
 }
 
 @media (max-width: 575.98px) {
@@ -1187,4 +1202,33 @@
        déborderaient d'une boîte à défilement : il garde son débordement
        visible et ne se cale que sous l'en-tête. */
     .act-booking { top: calc(var(--tm-header-h) + 16px); }
+}
+
+/* ===========================================================================
+ *  BANDEAU COOKIES (12/10) — _partials/_cookie_banner.html.twig
+ *  « Tout refuser » et « Tout accepter » de même taille (exigence CNIL).
+ * ======================================================================== */
+.tm-cookies { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 1080; display: flex; justify-content: center; pointer-events: none; }
+.tm-cookies[hidden] { display: none; }
+.tm-cookies__box { width: min(760px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; padding: 22px 24px; background: var(--pl-white); border: 1px solid #e3e5ee; border-radius: 16px; box-shadow: 0 18px 48px rgba(11, 20, 55, .22); color: var(--tm-ink, #0b1437); pointer-events: auto; }
+.tm-cookies__title { margin: 0 0 6px; font-size: 17px; font-weight: 700; }
+.tm-cookies__text { margin: 0 0 14px; color: #4b4f66; font-size: 14px; line-height: 22px; }
+.tm-cookies__text a { color: var(--tm-pro, #3b0ef5); font-weight: 600; }
+.tm-cookies__prefs { display: grid; gap: 10px; margin: 0 0 16px; }
+.tm-cookies__prefs[hidden] { display: none; }
+.tm-cookies__pref { display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px; border: 1px solid #e6e8ef; border-radius: 10px; cursor: pointer; }
+.tm-cookies__pref input { flex: none; width: 18px; height: 18px; margin-top: 2px; accent-color: var(--tm-pro, #3b0ef5); }
+.tm-cookies__pref span { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+.tm-cookies__pref small { color: #6b6f85; font-size: 12.5px; }
+.tm-cookies__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; }
+.tm-cookies__btn { min-width: 150px; height: 42px; padding: 0 18px; background: var(--pl-white); border: 1.5px solid var(--tm-ink, #0b1437); border-radius: 8px; color: var(--tm-ink, #0b1437); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.tm-cookies__btn--primary { background: var(--tm-ink, #0b1437); color: var(--pl-white); }
+.tm-cookies__btn--link { min-width: 0; margin-right: auto; padding: 0 4px; border: 0; text-decoration: underline; }
+.tm-cookies__btn[hidden] { display: none; }
+@media (max-width: 575.98px) {
+    .tm-cookies { left: 8px; right: 8px; bottom: 8px; }
+    .tm-cookies__box { padding: 18px 16px; }
+    .tm-cookies__actions { display: grid; grid-template-columns: 1fr 1fr; }
+    .tm-cookies__btn { min-width: 0; }
+    .tm-cookies__btn--link { grid-column: 1 / -1; order: 3; justify-self: center; margin: 0; }
 }

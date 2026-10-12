@@ -1,6 +1,7 @@
 {# Étape 1 — Informations principales. #}
 {% import 'event/wizard/_ui.html.twig' as ui %}
 {% import '_partials/_icons.html.twig' as icon %}
+{% import '_partials/_flags.html.twig' as flags %}
 
 <h2 class="ew-main__title">1. {{ 'Informations principales'|trans }}</h2>
 <p class="ew-main__lead">{{ 'Ce qui apparaît en premier sur la carte et la fiche de votre activité.'|trans }}</p>
@@ -39,7 +40,7 @@
 <fieldset class="ew-field{{ errors.languages is defined ? ' has-error' }}">
     <legend>{{ 'Langues parlées'|trans }} <em>*</em></legend>
     <div class="aw-tags">
-        {% for l in languages %}<label class="aw-tag"><input type="checkbox" name="languages[]" value="{{ l }}"{{ l in draft.languages ? ' checked' }}> {{ l|trans }}</label>{% endfor %}
+        {% for l in languages %}<label class="aw-tag"><input type="checkbox" name="languages[]" value="{{ l }}"{{ l in draft.languages ? ' checked' }}> {{ flags.language(l, 20) }} {{ l|trans }}</label>{% endfor %}
     </div>
     {{ ui.err(errors, 'languages') }}
 </fieldset>

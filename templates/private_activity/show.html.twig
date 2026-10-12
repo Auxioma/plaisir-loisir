@@ -12,6 +12,19 @@
 
 {% block title %}{{ activity.title }}{% endblock %}
 {% block meta_description %}{{ activity.title }}{{ activity.city ? ' — ' ~ activity.city }} : {{ 'activité gratuite entre membres.'|trans }}{% endblock %}
+{# SEO (12/10) : seule une activité publique et en ligne est indexée. #}
+{% set ld_public = activity.visibility.value == 'public' and activity.status.value in ['open', 'full'] %}
+{% block meta_robots %}{% if not ld_public %}<meta name="robots" content="noindex, nofollow">{% endif %}{% endblock %}
+{% block og_image %}{{ absolute_url(asset(activity.coverImage ?: 'images/brand/og-default.jpg')) }}{% endblock %}
+{% block structured_data %}
+    {% if ld_public %}
+        {% include '_partials/_event_ld.html.twig' with {
+            name: activity.title, description: activity.description, url: url('app_private_activity_show', {id: activity.id}),
+            image: activity.coverImage, start: activity.scheduledAt, end: activity.endsAt, city: activity.city, postal_code: activity.postalCode,
+            online: false, organizer: activity.organizer ? activity.organizer.firstName : null, capacity: activity.maxParticipants,
+        } %}
+    {% endif %}
+{% endblock %}
 
 {% block body %}
 <div class="evn-page evn-detail">
@@ -31,7 +44,7 @@
                     {% if activity.status.value == 'cancelled' %}<span class="pa-pill pa-pill--red">{{ 'Annulée'|trans }}</span>{% elseif activity.status.value == 'full' %}<span class="pa-pill">{{ 'Complet'|trans }}</span>{% endif %}
                 </h1>
                 <p class="evn-organizer">
-                    <img src="{{ asset(activity.organizer and activity.organizer.avatarPath ? activity.organizer.avatarPath : 'images/account/avatar-default.svg') }}" alt="">
+                    <img src="{{ asset(activity.organizer and activity.organizer.avatarPath ? activity.organizer.avatarPath : 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
                     {{ 'Organisé par'|trans }} <strong>{{ activity.organizer.firstName }} {{ activity.organizer.lastName|first }}.</strong>
                     {% if activity.category %}<span class="pa-pill">{{ activity.category.name|trans }}</span>{% endif %}{% if activity.status.value == 'draft' %}<span class="pa-pill pa-pill--red">{{ 'Brouillon'|trans }}</span>{% elseif activity.status.value == 'pending_category' %}<span class="pa-pill pa-pill--red">{{ 'En attente de validation de la catégorie'|trans }}</span>{% endif %}
                     {% if activity.visibility.value == 'members_only' %}<span class="pa-pill">{{ 'Réservée aux membres'|trans }}</span>{% elseif activity.visibility.value == 'private' %}<span class="pa-pill">{{ 'Privée'|trans }}</span>{% endif %}
@@ -56,14 +69,14 @@
                     <ul class="fa-faces__list">
                         {% if activity.organizer %}
                             <li class="is-organizer">
-                                <img src="{{ asset(activity.organizer.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="">
+                                <img src="{{ asset(activity.organizer.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
                                 <span>{{ activity.organizer.firstName }}</span>
                                 <small>{{ 'Organisateur'|trans }}</small>
                             </li>
                         {% endif %}
                         {% for person in faces|slice(0, 15) %}
                             <li>
-                                <img src="{{ asset(person.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="">
+                                <img src="{{ asset(person.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
                                 <span>{{ person.firstName }} {{ person.lastName|first }}.</span>
                             </li>
                         {% endfor %}
@@ -133,7 +146,7 @@
 
             <aside class="evn-detail__side">
                 <div class="evn-cover">
-                    <img src="{% include 'private_activity/_cover.html.twig' %}" alt="">
+                    <img src="{% include 'private_activity/_cover.html.twig' %}" alt="" loading="lazy" decoding="async">
                     <button type="button" class="evn-cover__flyer" data-share-url="{{ url('app_private_activity_show', {id: activity.id}) }}" data-share-title="{{ activity.title }}" data-share-done="{{ 'Lien copié !'|trans }}">{{ icon.share(16) }} {{ 'Partager'|trans }}</button>
                 </div>
 

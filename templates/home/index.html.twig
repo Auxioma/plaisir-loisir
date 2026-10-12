@@ -14,6 +14,34 @@
 {% block title %}{{ 'Explorez vos envies, partagez vos passions'|trans }}{% endblock %}
 {% block meta_description %}{{ 'Découvrez des activités avec nos prestataires ou créez et rejoignez gratuitement des activités entre particuliers près de chez vous.'|trans }}{% endblock %}
 
+{# Données structurées (12/10) : l'organisation et le site, avec sa recherche
+   interne (zone de recherche dans les résultats Google). #}
+{% block structured_data %}
+    {% set same_as = [] %}
+    {% for link in social_links %}{% if link starts with 'http' %}{% set same_as = same_as|merge([link]) %}{% endif %}{% endfor %}
+    {{ json_ld({
+        '@type': 'Organization',
+        '@id': url('app_home') ~ '#organization',
+        'name': 'TrouveMoi Plaisirs & Loisirs',
+        'url': url('app_home'),
+        'logo': absolute_url(asset('images/brand/icon-512.png')),
+        'sameAs': same_as,
+    }) }}
+    {{ json_ld({
+        '@type': 'WebSite',
+        '@id': url('app_home') ~ '#website',
+        'name': 'TrouveMoi Plaisirs & Loisirs',
+        'url': url('app_home'),
+        'inLanguage': app.request.locale == 'en' ? 'en' : 'fr',
+        'publisher': {'@id': url('app_home') ~ '#organization'},
+        'potentialAction': {
+            '@type': 'SearchAction',
+            'target': {'@type': 'EntryPoint', 'urlTemplate': url('app_activities') ~ '?q={search_term_string}'},
+            'query-input': 'required name=search_term_string',
+        },
+    }) }}
+{% endblock %}
+
 {# En-tête : celui de tout le site (bleu nuit, _partials/navbar.html.twig).
    La maquette montre un en-tête blanc différent ; on garde l'en-tête commun
    pour que la navigation reste la même d'une page à l'autre (choix du 05/10). #}
@@ -22,7 +50,9 @@
 <div class="ld">
     {# ===================== HÉROS + 3 ENTRÉES ===================== #}
     <section class="ld-hero">
-        <img class="ld-hero__bg" src="{{ asset('images/home/hero.png') }}" alt="">
+        {# Image LCP de l'accueil (12/10, performance) : WebP 107 Ko au lieu d'un
+           PNG de 1,5 Mo, version 960 px pour les mobiles, priorité haute. #}
+        <img class="ld-hero__bg" src="{{ asset('images/home/hero.webp') }}" srcset="{{ asset('images/home/hero-960.webp') }} 960w, {{ asset('images/home/hero.webp') }} 1632w" sizes="100vw" width="1632" height="656" alt="" fetchpriority="high" decoding="async">
         <div class="ld-hero__shade" aria-hidden="true"></div>
         <div class="ld-wrap ld-hero__inner">
             <h1 class="ld-hero__title">{{ 'Explorez vos envies,'|trans }}<br><span>{{ 'partagez vos passions.'|trans }}</span></h1>

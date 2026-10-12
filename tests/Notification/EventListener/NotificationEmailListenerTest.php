@@ -13,6 +13,7 @@ use App\User\Entity\User;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class NotificationEmailListenerTest extends TestCase
 {
@@ -26,7 +27,7 @@ final class NotificationEmailListenerTest extends TestCase
 
     public function testDispatchesEmailWhenNoPreference(): void
     {
-        $recipient = (new User())->setEmail('client@example.com');
+        $recipient = (new User())->setEmail('client@example.com')->setFirstName('Camille');
 
         $preferences = $this->createStub(NotificationPreferenceRepository::class);
         $preferences->method('findOneByUser')->willReturn(null);
@@ -36,12 +37,12 @@ final class NotificationEmailListenerTest extends TestCase
             ->with(self::isInstanceOf(SendNotificationEmail::class))
             ->willReturn(new Envelope(new \stdClass()));
 
-        (new NotificationEmailListener($bus, $preferences))->onPostPersist($this->notificationFor($recipient));
+        (new NotificationEmailListener($bus, $preferences, $this->urls()))->onPostPersist($this->notificationFor($recipient));
     }
 
     public function testDoesNotDispatchWhenEmailDisabled(): void
     {
-        $recipient = (new User())->setEmail('client@example.com');
+        $recipient = (new User())->setEmail('client@example.com')->setFirstName('Camille');
 
         $preferences = $this->createStub(NotificationPreferenceRepository::class);
         $preferences->method('findOneByUser')->willReturn((new NotificationPreference())->setEmailEnabled(false));
@@ -49,6 +50,14 @@ final class NotificationEmailListenerTest extends TestCase
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::never())->method('dispatch');
 
-        (new NotificationEmailListener($bus, $preferences))->onPostPersist($this->notificationFor($recipient));
+        (new NotificationEmailListener($bus, $preferences, $this->urls()))->onPostPersist($this->notificationFor($recipient));
+    }
+
+    private function urls(): UrlGeneratorInterface
+    {
+        $urls = $this->createStub(UrlGeneratorInterface::class);
+        $urls->method('generate')->willReturn('https://trouvemoi.test/compte/notifications');
+
+        return $urls;
     }
 }

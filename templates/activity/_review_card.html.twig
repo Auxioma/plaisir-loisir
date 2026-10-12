@@ -38,7 +38,7 @@
     <p class="review-card__text">{{ r.text }}</p>
     {% if r.reply is defined and r.reply %}<p class="review-card__reply"><strong>{{ 'Réponse de l’organisateur'|trans }}</strong> {{ r.reply }}</p>{% endif %}
     <div class="review-card__author">
-        <img class="review-card__avatar" src="{{ asset(r.avatar) }}" alt="">
+        <img class="review-card__avatar" src="{{ asset(r.avatar) }}" alt="" loading="lazy" decoding="async">
         <div>
             <div class="review-card__name">{{ r.author }}</div>
             <div class="review-card__meta">{{ r.meta }} · {{ r.date.timestamp is defined ? r.date|pf_date('d MMMM y') : r.date }}</div>

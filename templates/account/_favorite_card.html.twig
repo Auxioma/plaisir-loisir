@@ -30,7 +30,7 @@
                 {{ icon.img_off(46) }}
             </span>
         {% else %}
-            <img src="{{ asset(f.image) }}" alt="">
+            <img src="{{ asset(f.image) }}" alt="" loading="lazy" decoding="async">
             {% if f.badge %}
                 <span class="pl-card__tag pl-card__tag--bestseller">{{ f.badge|trans }}</span>
             {% endif %}

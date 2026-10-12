@@ -10,6 +10,11 @@
 {% block body %}
 {% set paid = payment and payment.status.value == 'paid' %}
 {% set failed = payment and payment.status.value == 'failed' %}
+{% import '_partials/_ga.html.twig' as ga %}
+{% set ga_items = [] %}
+{% for it in booking.items %}{% set ga_items = ga_items|merge([{item_id: (service ? service.slug : 'activite'), item_name: (service ? service.title : it.label), item_variant: it.label, price: it.unitPrice + 0, quantity: it.quantity}]) %}{% endfor %}
+{% if ga_items is empty and service %}{% set ga_items = [{item_id: service.slug, item_name: service.title, price: booking.totalPrice + 0, quantity: 1}] %}{% endif %}
+{% if paid %}{{ ga.event('purchase', {transaction_id: booking.reference, currency: 'EUR', value: booking.totalPrice + 0, items: ga_items}, 'booking-' ~ booking.reference) }}{% endif %}
 <main class="bk container">
     <ol class="bk-steps" aria-label="{{ 'Étapes'|trans }}">
         <li class="is-done">{{ 'Sélection'|trans }}</li>

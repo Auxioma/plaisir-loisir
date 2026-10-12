@@ -64,7 +64,7 @@
                         <tr>
                             <td>
                                 <div class="pp-offer">
-                                    <span class="pp-offer__img"><img src="{{ asset(p.service|pp_cover) }}" alt=""><b>{{ p.badge }}</b></span>
+                                    <span class="pp-offer__img"><img src="{{ asset(p.service|pp_cover) }}" alt="" loading="lazy" decoding="async"><b>{{ p.badge }}</b></span>
                                     <div><strong>{{ p.title }}</strong><small>{{ p.subtitle ?? p.kind.label|trans }}</small></div>
                                 </div>
                             </td>

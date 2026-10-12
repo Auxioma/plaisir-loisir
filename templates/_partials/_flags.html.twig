@@ -1,0 +1,42 @@
+{#
+    Drapeaux des langues parlées (12/10, demande du client), en SVG intégré :
+    les drapeaux emoji ne s'affichent pas sous Windows (Chrome y écrit « FR »).
+
+    Usage : {% import '_partials/_flags.html.twig' as flags %}
+            {{ flags.language('Français', 20) }}
+    La clé est le libellé enregistré sur l'activité (Service::languages,
+    StaticActivityWizard::languages()). Langue inconnue : rien n'est affiché.
+#}
+{% macro language(name, size = 20) %}
+    {%- set code = {'Français': 'fr', 'Anglais': 'gb', 'Espagnol': 'es', 'Allemand': 'de', 'Italien': 'it', 'Néerlandais': 'nl', 'Portugais': 'pt', 'Langue des signes': 'sign'}[name] ?? null -%}
+    {%- if code -%}
+        {%- set h = (size * 2 / 3)|round -%}
+        <svg class="pl-flag" width="{{ size }}" height="{{ code == 'sign' ? size : h }}" viewBox="{{ code == 'sign' ? '0 0 24 24' : '0 0 30 20' }}" aria-hidden="true" focusable="false">
+        {%- if code == 'fr' -%}
+            <rect width="10" height="20" fill="#002395"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ed2939"/>
+        {%- elseif code == 'gb' -%}
+            <clipPath id="pl-flag-gb-{{ size }}"><rect width="30" height="20"/></clipPath>
+            <g clip-path="url(#pl-flag-gb-{{ size }})">
+                <rect width="30" height="20" fill="#012169"/>
+                <path d="M0 0L30 20M30 0L0 20" stroke="#fff" stroke-width="4"/>
+                <path d="M0 0L30 20M30 0L0 20" stroke="#c8102e" stroke-width="1.6"/>
+                <path d="M15 0V20M0 10H30" stroke="#fff" stroke-width="6"/>
+                <path d="M15 0V20M0 10H30" stroke="#c8102e" stroke-width="3.6"/>
+            </g>
+        {%- elseif code == 'es' -%}
+            <rect width="30" height="20" fill="#aa151b"/><rect y="5" width="30" height="10" fill="#f1bf00"/>
+        {%- elseif code == 'de' -%}
+            <rect width="30" height="7" fill="#000"/><rect y="6.67" width="30" height="6.67" fill="#dd0000"/><rect y="13.33" width="30" height="6.67" fill="#ffce00"/>
+        {%- elseif code == 'it' -%}
+            <rect width="10" height="20" fill="#009246"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ce2b37"/>
+        {%- elseif code == 'nl' -%}
+            <rect width="30" height="7" fill="#ae1c28"/><rect y="6.67" width="30" height="6.67" fill="#fff"/><rect y="13.33" width="30" height="6.67" fill="#21468b"/>
+        {%- elseif code == 'pt' -%}
+            <rect width="12" height="20" fill="#046a38"/><rect x="12" width="18" height="20" fill="#da291c"/><circle cx="12" cy="10" r="3.6" fill="#ffe900"/>
+        {%- else -%}
+            {# Langue des signes : une main. #}
+            <path d="M18 11V6a2 2 0 0 0-4 0v1M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        {%- endif -%}
+        </svg>
+    {%- endif -%}
+{% endmacro %}

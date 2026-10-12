@@ -1,0 +1,28 @@
+{#
+    Données structurées schema.org « Event » (12/10, SEO) pour les événements
+    entre membres et les activités gratuites. Seule la VILLE est publiée :
+    l'adresse exacte d'une activité gratuite est réservée aux participants
+    acceptés, elle ne doit pas fuiter par les moteurs de recherche.
+
+    Variables : name, description, url, image (chemin d'asset ou null), start,
+    end (DateTimeImmutable ou null), city, postal_code, online (bool),
+    organizer (nom), capacity (int ou null).
+#}
+{{ json_ld({
+    '@type': 'Event',
+    'name': name,
+    'description': description ? description|striptags|slice(0, 300) : null,
+    'url': url,
+    'image': image ? [absolute_url(asset(image))] : [absolute_url(asset('images/brand/og-default.jpg'))],
+    'startDate': start ? start|date('c') : null,
+    'endDate': end ? end|date('c') : null,
+    'eventStatus': 'https://schema.org/EventScheduled',
+    'eventAttendanceMode': online|default(false) ? 'https://schema.org/OnlineEventAttendanceMode' : 'https://schema.org/OfflineEventAttendanceMode',
+    'location': online|default(false)
+        ? {'@type': 'VirtualLocation', 'url': url}
+        : (city ? {'@type': 'Place', 'name': city, 'address': {'@type': 'PostalAddress', 'addressLocality': city, 'postalCode': postal_code|default(null), 'addressCountry': 'FR'}} : null),
+    'organizer': organizer ? {'@type': 'Person', 'name': organizer} : null,
+    'maximumAttendeeCapacity': capacity|default(null),
+    'isAccessibleForFree': true,
+    'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'EUR', 'availability': 'https://schema.org/InStock', 'url': url},
+}) }}

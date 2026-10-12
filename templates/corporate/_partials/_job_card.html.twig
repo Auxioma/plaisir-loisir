@@ -1,6 +1,7 @@
 {#
     <JobCard> — carte d'offre d'emploi (Carrières et listing). Maquette carrieres.jpeg.
-    Variable : job (StaticCorporate::jobs()).
+    Variables : job (StaticCorporate::jobs()), heading (niveau du titre, h3 par
+    défaut ; h2 sur la page des offres, où la carte suit directement le h1).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 {% import 'provider/space/_ico.html.twig' as ico %}
@@ -8,7 +9,7 @@
 <article class="pg-card pg-job">
     <div class="pg-job__head">
         <span class="pg-ico is-{{ job.tone }}">{{ ico.svg(job.icon, 22) }}</span>
-        <span><h3>{{ job.title }}</h3><small>{{ job.city }}</small></span>
+        {% set hx = heading|default('h3') %}<span><{{ hx }} class="pg-job__title">{{ job.title }}</{{ hx }}><small>{{ job.city }}</small></span>
     </div>
     <ul class="pg-tags"><li>{{ job.contract }}</li><li>{{ job.dept|trans }}</li></ul>
     <a href="{{ path('app_corporate_jobs', { offre: job.slug }) }}" class="pg-link">{{ "Voir l'offre"|trans }} {{ icon.arrow_right(14) }}</a>

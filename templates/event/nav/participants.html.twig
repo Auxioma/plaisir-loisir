@@ -48,7 +48,7 @@
                 <div class="evn-plist" data-evn-plist>
                     {% for r in going %}
                         <div class="evn-prow" data-name="{{ (r.user.firstName ~ ' ' ~ r.user.lastName)|lower }}" data-order="{{ loop.index }}">
-                            {% if r.user.avatarPath %}<img class="evn-prow__avatar" src="{{ asset(r.user.avatarPath) }}" alt="">{% else %}<span class="evn-prow__avatar evn-part__initials">{{ (r.user.firstName|first ~ r.user.lastName|first)|upper }}</span>{% endif %}
+                            {% if r.user.avatarPath %}<img class="evn-prow__avatar" src="{{ asset(r.user.avatarPath) }}" alt="" loading="lazy" decoding="async">{% else %}<span class="evn-prow__avatar evn-part__initials">{{ (r.user.firstName|first ~ r.user.lastName|first)|upper }}</span>{% endif %}
                             <span class="evn-prow__id">
                                 <span class="evn-prow__name">{{ r.user.firstName }} {{ r.user.lastName|first }}.</span>
                                 {% if r.user == entity.organizer %}<span class="evn-role-badge">{{ icon.crown(13) }} {{ 'Organisateur'|trans }}</span>{% endif %}
