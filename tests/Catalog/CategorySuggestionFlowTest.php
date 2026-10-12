@@ -41,9 +41,9 @@ final class CategorySuggestionFlowTest extends WebTestCase
         self::assertNotNull($suggestion);
         self::assertTrue($suggestion->isPending());
 
-        // Sans catégorie, l'étape 1 refuse ; le brouillon, lui, s'enregistre.
+        // La proposition en attente suffit pour avancer (12/10) ; le brouillon s'enregistre aussi.
         $this->post($client, 1, ['action' => 'next']);
-        self::assertResponseStatusCodeSame(422);
+        self::assertResponseRedirects(self::WIZARD.'2');
         $this->post($client, 1, ['action' => 'draft']);
         self::assertResponseRedirects(self::WIZARD.'1');
         $draft = static::getContainer()->get(PrivateActivityRepository::class)->findOneBy(['title' => $title]);
@@ -83,6 +83,72 @@ final class CategorySuggestionFlowTest extends WebTestCase
         self::assertSame($category->getSlug(), $published->getCategory()?->getSlug());
         self::assertSame('Dassa-Zoumè', $published->getCity());
         self::assertCount(1, static::getContainer()->get(PrivateActivityRepository::class)->findBy(['title' => $title]));
+    }
+
+    /**
+     * Demande du client (12/10) : le membre publie sans attendre la validation ;
+     * l'activité reste invisible puis passe en ligne quand la catégorie est validée.
+     */
+    public function testAnActivityPublishedWithAProposedCategoryGoesOnlineWhenItIsApproved(): void
+    {
+        [$client, $title, $name] = $this->publishWithProposedCategory();
+
+        $activity = static::getContainer()->get(PrivateActivityRepository::class)->findOneBy(['title' => $title]);
+        self::assertNotNull($activity);
+        self::assertSame(PrivateActivityStatus::PendingCategory, $activity->getStatus());
+        self::assertNull($activity->getCategory());
+        self::assertSame($name, $activity->getCategorySuggestion()?->getName());
+
+        // Invisible des autres membres tant que la catégorie n'est pas validée.
+        $client->loginUser($this->makeUser());
+        $client->request('GET', '/activites-privees/'.$activity->getId());
+        self::assertResponseStatusCodeSame(403);
+
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $suggestion = $em->getRepository(CategorySuggestion::class)->findOneBy(['name' => $name]);
+        $category = static::getContainer()->get(CategorySuggestionService::class)->approve($suggestion);
+
+        $em->clear();
+        $activity = static::getContainer()->get(PrivateActivityRepository::class)->findOneBy(['title' => $title]);
+        self::assertSame(PrivateActivityStatus::Open, $activity->getStatus());
+        self::assertSame($category->getSlug(), $activity->getCategory()?->getSlug());
+        self::assertNull($activity->getCategorySuggestion());
+    }
+
+    public function testARejectedCategorySendsTheActivityBackToDraft(): void
+    {
+        [, $title, $name] = $this->publishWithProposedCategory();
+
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $suggestion = $em->getRepository(CategorySuggestion::class)->findOneBy(['name' => $name]);
+        static::getContainer()->get(CategorySuggestionService::class)->reject($suggestion, 'Trop proche de « Sport »');
+
+        $em->clear();
+        $activity = static::getContainer()->get(PrivateActivityRepository::class)->findOneBy(['title' => $title]);
+        self::assertSame(PrivateActivityStatus::Draft, $activity->getStatus());
+        self::assertNull($activity->getCategorySuggestion());
+    }
+
+    /** @return array{0: KernelBrowser, 1: string, 2: string} */
+    private function publishWithProposedCategory(): array
+    {
+        $client = static::createClient();
+        $client->loginUser($this->makeUser());
+        $name = 'Catégorie attente '.substr(uniqid(), -6);
+        $title = 'Sortie en attente '.uniqid();
+        $description = 'Une activité publiée avant la validation de sa catégorie.';
+
+        $client->request('GET', '/compte/activites-privees/nouvelle?vierge=1');
+        $this->post($client, 1, ['action' => 'suggest', 'title' => $title, 'description' => $description, 'suggest_context' => 'private', 'suggest_name' => $name], '/categories/proposer');
+        $this->post($client, 1, ['action' => 'next', 'title' => $title, 'level' => 'all_levels', 'description' => $description]);
+        self::assertResponseRedirects(self::WIZARD.'2');
+        $this->post($client, 2, ['action' => 'next', 'date' => (new \DateTimeImmutable('+8 days'))->format('Y-m-d'), 'start_time' => '14:00', 'address' => 'Forêt de Montgeon, 76620 Le Havre', 'show_exact' => '1']);
+        $this->post($client, 3, ['action' => 'next']);
+        $this->post($client, 4, ['action' => 'next', 'mode' => 'automatic', 'visibility' => 'public']);
+        $this->post($client, 5, ['action' => 'next', 'accept_terms' => '1']);
+        self::assertResponseRedirects();
+
+        return [$client, $title, $name];
     }
 
     public function testProposingAnExistingCategorySelectsIt(): void

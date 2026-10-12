@@ -63,7 +63,7 @@
         <article class="aw-card">
             <span class="aw-card__media">
                 {% if draft.cover %}<img src="{{ asset(draft.cover) }}" alt="" data-ew-preview="cover">{% else %}<img alt="" data-ew-preview="cover" hidden><span class="aw-card__placeholder">{{ icon.image_frame(36) }}</span>{% endif %}
-                {% if category %}<span class="aw-card__badge">{{ category.name|trans }}</span>{% endif %}
+                {% if category %}<span class="aw-card__badge">{{ category.name|trans }}</span>{% elseif pending_suggestion %}<span class="aw-card__badge">{{ pending_suggestion.name }}</span>{% endif %}
             </span>
             <span class="aw-card__body">
                 <small>{{ icon.map_pin(12) }} {{ (draft.city ?? '') ?: 'Lieu'|trans }}</small>

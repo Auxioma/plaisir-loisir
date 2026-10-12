@@ -44,7 +44,7 @@ class PrivateActivityRepository extends ServiceEntityRepository
             ->andWhere('a.visibility = :visibility')
             ->andWhere('a.status NOT IN (:hidden)')
             ->setParameter('visibility', PrivateActivityVisibility::Public)
-            ->setParameter('hidden', [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft])
+            ->setParameter('hidden', [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft, PrivateActivityStatus::PendingCategory])
             ->orderBy('a.scheduledAt', 'ASC');
 
         if (null !== $category) {
@@ -70,7 +70,7 @@ class PrivateActivityRepository extends ServiceEntityRepository
             ->andWhere('a.visibility IN (:visibilities)')
             ->andWhere('a.status NOT IN (:hidden)')
             ->setParameter('visibilities', [PrivateActivityVisibility::Public, PrivateActivityVisibility::MembersOnly])
-            ->setParameter('hidden', [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft])
+            ->setParameter('hidden', [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft, PrivateActivityStatus::PendingCategory])
             ->orderBy('a.scheduledAt', 'ASC');
 
         if (null !== $category) {
@@ -106,7 +106,7 @@ class PrivateActivityRepository extends ServiceEntityRepository
             ->andWhere('a.status NOT IN (:hidden)')
             ->andWhere('a.scheduledAt IS NULL OR a.scheduledAt >= :now')
             ->setParameter('visibilities', $members ? [PrivateActivityVisibility::Public, PrivateActivityVisibility::MembersOnly] : [PrivateActivityVisibility::Public])
-            ->setParameter('hidden', [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft])
+            ->setParameter('hidden', [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft, PrivateActivityStatus::PendingCategory])
             ->setParameter('now', new \DateTimeImmutable());
 
         // « Les plus vues » (11/10) : compteur de consultations, puis la date.

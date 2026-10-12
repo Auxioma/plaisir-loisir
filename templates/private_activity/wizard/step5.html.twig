@@ -2,11 +2,13 @@
 {% import 'event/wizard/_ui.html.twig' as ui %}
 {% import '_partials/_icons.html.twig' as icon %}
 <h2 class="ew-main__title">5. {{ 'Vérifier et publier'|trans }}</h2>
-<p class="ew-main__lead">{{ 'Relisez votre activité : elle sera visible dès la publication.'|trans }}</p>
+<p class="ew-main__lead">{{ (category or not pending_suggestion
+    ? 'Relisez votre activité : elle sera visible dès la publication.'
+    : 'Relisez votre activité : publiez-la dès maintenant, elle sera mise en ligne automatiquement dès que votre catégorie sera validée par notre équipe.')|trans }}</p>
 
 {% set rows = [
     [1, 'Titre', draft.title ?? ''],
-    [1, 'Catégorie', category ? category.name : ''],
+    [1, 'Catégorie', category ? category.name : (pending_suggestion ? pending_suggestion.name ~ ' (' ~ 'en attente de validation'|trans ~ ')' : '')],
     [1, 'Niveau', {all_levels: 'Tous niveaux', beginner: 'Débutant', intermediate: 'Intermédiaire', advanced: 'Confirmé'}[draft.level ?? ''] ?? ''],
     [2, 'Date', ((draft.date ?? '') matches '/^\\d{4}-\\d{2}-\\d{2}$/' ? date(draft.date)|pf_date('EEEE d MMMM y') : '') ~ ((draft.start_time ?? '') ? ' · ' ~ draft.start_time ~ ((draft.end_time ?? '') ? ' – ' ~ draft.end_time : '') : '')],
     [2, 'Lieu', draft.address ?? ''],

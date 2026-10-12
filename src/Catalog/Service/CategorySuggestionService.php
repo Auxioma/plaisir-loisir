@@ -10,6 +10,9 @@ use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Repository\CategorySuggestionRepository;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\Service\NotificationService;
+use App\PrivateActivity\Entity\PrivateActivity;
+use App\PrivateActivity\Enum\PrivateActivityStatus;
+use App\PrivateActivity\Repository\PrivateActivityRepository;
 use App\User\Entity\User;
 use App\User\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,6 +22,10 @@ use Symfony\Component\String\Slugger\SluggerInterface;
  * Propositions de catégories (05/10) : un membre ou un professionnel qui ne
  * trouve pas sa catégorie la propose depuis l'assistant ; l'équipe la
  * valide ou la refuse dans le back-office (CategorySuggestionCrudController).
+ *
+ * Activités entre membres (12/10) : l'organisateur publie sans attendre ; les
+ * activités qui portent la proposition reçoivent la catégorie et passent en
+ * ligne à la validation, ou redeviennent des brouillons au refus.
  */
 final class CategorySuggestionService
 {
@@ -29,6 +36,7 @@ final class CategorySuggestionService
         private readonly UserRepository $users,
         private readonly NotificationService $notifications,
         private readonly SluggerInterface $slugger,
+        private readonly PrivateActivityRepository $privateActivities,
     ) {
     }
 
@@ -93,10 +101,24 @@ final class CategorySuggestionService
         $this->entityManager->persist($category);
 
         $suggestion->setStatus(CategorySuggestion::STATUS_APPROVED)->setCategory($category)->setDecidedAt(new \DateTimeImmutable());
+
+        $published = [];
+        foreach ($this->activitiesWaitingFor($suggestion) as $activity) {
+            $activity->setCategory($category)->setCategorySuggestion(null);
+            if (PrivateActivityStatus::PendingCategory === $activity->getStatus()) {
+                $activity->setStatus(0 === $activity->remainingPlaces() ? PrivateActivityStatus::Full : PrivateActivityStatus::Open);
+                $published[] = $activity;
+            }
+        }
         $this->entityManager->flush();
 
-        if (null !== ($author = $suggestion->getRequestedBy())) {
-            $this->notifications->notify($author, NotificationCategory::Activity, 'Catégorie ajoutée', sprintf('Votre catégorie « %s » est validée : elle est maintenant proposée. Reprenez votre brouillon pour la choisir.', $category->getName()));
+        foreach ($published as $activity) {
+            if (null !== ($organizer = $activity->getOrganizer())) {
+                $this->notifications->notify($organizer, NotificationCategory::Activity, 'Activité en ligne', sprintf('La catégorie « %s » est validée : votre activité « %s » est maintenant en ligne.', $category->getName(), $activity->getTitle()));
+            }
+        }
+        if (null !== ($author = $suggestion->getRequestedBy()) && !\in_array($author, array_map(static fn (PrivateActivity $a): ?User => $a->getOrganizer(), $published), true)) {
+            $this->notifications->notify($author, NotificationCategory::Activity, 'Catégorie ajoutée', sprintf('Votre catégorie « %s » est validée : elle est maintenant proposée.', $category->getName()));
         }
 
         return $category;
@@ -109,10 +131,31 @@ final class CategorySuggestionService
         }
         $suggestion->setStatus(CategorySuggestion::STATUS_REJECTED)->setDecidedAt(new \DateTimeImmutable())
             ->setAdminNote(null !== $note && '' !== trim($note) ? mb_substr(trim($note), 0, 255) : $suggestion->getAdminNote());
+
+        $back = [];
+        foreach ($this->activitiesWaitingFor($suggestion) as $activity) {
+            $activity->setCategorySuggestion(null);
+            if (PrivateActivityStatus::PendingCategory === $activity->getStatus()) {
+                $activity->setStatus(PrivateActivityStatus::Draft);
+                $back[] = $activity;
+            }
+        }
         $this->entityManager->flush();
 
-        if (null !== ($author = $suggestion->getRequestedBy())) {
-            $this->notifications->notify($author, NotificationCategory::Activity, 'Catégorie non retenue', sprintf('Votre proposition « %s » n’a pas été retenue%s. Choisissez la catégorie la plus proche dans la liste.', $suggestion->getName(), $suggestion->getAdminNote() ? ' : '.$suggestion->getAdminNote() : ''));
+        foreach ($back as $activity) {
+            if (null !== ($organizer = $activity->getOrganizer()) && $organizer !== $suggestion->getRequestedBy()) {
+                $this->notifications->notify($organizer, NotificationCategory::Activity, 'Catégorie non retenue', sprintf('La catégorie « %s » n’a pas été retenue : votre activité « %s » est repassée en brouillon. Choisissez la catégorie la plus proche et publiez-la de nouveau.', $suggestion->getName(), $activity->getTitle()));
+            }
         }
+
+        if (null !== ($author = $suggestion->getRequestedBy())) {
+            $this->notifications->notify($author, NotificationCategory::Activity, 'Catégorie non retenue', sprintf('Votre proposition « %s » n’a pas été retenue%s. Choisissez la catégorie la plus proche dans la liste%s.', $suggestion->getName(), $suggestion->getAdminNote() ? ' : '.$suggestion->getAdminNote() : '', [] !== $back ? ' : votre activité est repassée en brouillon, publiez-la de nouveau après ce choix' : ''));
+        }
+    }
+
+    /** @return list<PrivateActivity> */
+    private function activitiesWaitingFor(CategorySuggestion $suggestion): array
+    {
+        return $this->privateActivities->findBy(['categorySuggestion' => $suggestion]);
     }
 }

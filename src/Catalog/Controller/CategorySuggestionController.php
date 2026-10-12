@@ -53,8 +53,12 @@ final class CategorySuggestionController extends AbstractController
             $patch(['category' => $result['category']->getSlug(), 'category_suggestion' => null]);
             $this->addFlash('success', sprintf('La catégorie « %s » existe déjà : elle est sélectionnée.', $result['category']->getName()));
         } else {
-            $patch(['category_suggestion' => $result['suggestion']->getName()]);
-            $this->addFlash('success', sprintf('Catégorie « %s » proposée : notre équipe la valide sous 48 h et vous prévient. Enregistrez votre activité en brouillon pour la reprendre ensuite.', $result['suggestion']->getName()));
+            $patch(['category' => '', 'category_suggestion' => $result['suggestion']->getName(), 'category_suggestion_id' => (string) $result['suggestion']->getId()]);
+            // Activité entre membres (12/10) : on continue sans attendre, la mise
+            // en ligne se fera à la validation. L'assistant pro garde le brouillon.
+            $this->addFlash('success', $pro
+                ? sprintf('Catégorie « %s » proposée : notre équipe la valide sous 48 h et vous prévient. Enregistrez votre activité en brouillon pour la reprendre ensuite.', $result['suggestion']->getName())
+                : sprintf('Catégorie « %s » proposée : continuez et publiez votre activité, elle sera mise en ligne dès que notre équipe aura validé la catégorie (sous 48 h).', $result['suggestion']->getName()));
         }
 
         return $this->redirect($back.'#categorie');
