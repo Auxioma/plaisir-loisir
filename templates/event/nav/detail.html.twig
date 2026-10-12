@@ -9,6 +9,19 @@
 {% block title %}{{ event.title }}{% endblock %}
 {% block meta_description %}{{ event.title }} {{ event.location ? ('à ' ~ event.location) : '' }} : {{ "rejoignez l'événement et découvrez les participants."|trans }}{% endblock %}
 
+{# SEO (12/10) : seul un événement public et publié est indexé. #}
+{% block meta_robots %}{% if entity.visibility != 'public' or entity.status != 'published' %}<meta name="robots" content="noindex, nofollow">{% endif %}{% endblock %}
+{% block og_image %}{{ absolute_url(asset(event.image ?: 'images/brand/og-default.jpg')) }}{% endblock %}
+{% block structured_data %}
+    {% if entity.visibility == 'public' and entity.status == 'published' %}
+        {% include '_partials/_event_ld.html.twig' with {
+            name: entity.title, description: entity.description, url: url('app_events_detail', {slug: entity.slug}),
+            image: entity.imagePath, start: entity.startsAt, end: entity.endsAt, city: entity.city, postal_code: entity.postalCode,
+            online: entity.locationType == 'online', organizer: entity.organizer ? entity.organizer.firstName : null, capacity: entity.capacity,
+        } %}
+    {% endif %}
+{% endblock %}
+
 {% block header %}
     {% include '_partials/navbar_events.html.twig' with { nav_active: 'evenements' } %}
 {% endblock %}
@@ -41,7 +54,7 @@
                 <h1 class="evn-detail__title">{{ event.title }}</h1>
 
                 <p class="evn-organizer">
-                    <img src="{{ asset(entity.organizer and entity.organizer.avatarPath ? entity.organizer.avatarPath : 'images/account/avatar-default.svg') }}" alt="">
+                    <img src="{{ asset(entity.organizer and entity.organizer.avatarPath ? entity.organizer.avatarPath : 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
                     {{ 'Organisé par'|trans }} <strong>{{ event.organizer }}</strong>
                     {# Suivre l'organisateur : il apparaît dans « Mes favoris » (01/10). #}
                     {% if app.user and event.organizerId and event.organizerId != app.user.id ~ '' %}
@@ -78,7 +91,7 @@
                         {% for r in going|slice(0, 5) %}
                             <div class="evn-part">
                                 <span class="evn-part__avatar">
-                                    {% if r.user.avatarPath %}<img src="{{ asset(r.user.avatarPath) }}" alt="">{% else %}<span class="evn-part__initials">{{ (r.user.firstName|first ~ r.user.lastName|first)|upper }}</span>{% endif %}
+                                    {% if r.user.avatarPath %}<img src="{{ asset(r.user.avatarPath) }}" alt="" loading="lazy" decoding="async">{% else %}<span class="evn-part__initials">{{ (r.user.firstName|first ~ r.user.lastName|first)|upper }}</span>{% endif %}
                                     {% if r.user == entity.organizer %}<span class="evn-part__tag">{{ 'Hôte'|trans }}</span>{% endif %}
                                 </span>
                                 <span class="evn-part__name">{{ r.user.firstName }} {{ r.user.lastName|first }}.</span>
@@ -115,7 +128,7 @@
                ======================================================== #}
             <aside class="evn-detail__side">
                 <div class="evn-cover">
-                    <img src="{{ asset(event.image ?? 'images/events/ev-raft-clean.jpg') }}" alt="">
+                    <img src="{{ asset(event.image ?? 'images/events/ev-raft-clean.jpg') }}" alt="" loading="lazy" decoding="async">
                     <button type="button" class="evn-cover__flyer" data-share-url="{{ url('app_events_detail', {slug: event.slug}) }}" data-share-title="{{ event.title }}" data-share-done="{{ 'Lien copié !'|trans }}">{{ icon.share(16) }} {{ 'Partager l’événement'|trans }}</button>
                 </div>
 

@@ -23,6 +23,8 @@
 
 {% block body %}
 {% set selected = categories|default([]) %}
+{% import '_partials/_ga.html.twig' as ga %}
+{% if q %}{{ ga.event('search', {search_term: q}) }}{% endif %}
 <div class="ex">
     {# ---- Filtres ---- #}
     <aside class="ex-filters" aria-label="{{ 'Filtres'|trans }}">
@@ -30,7 +32,7 @@
             {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
             {% if app.request.query.get('tri') %}<input type="hidden" name="tri" value="{{ tri.value }}">{% endif %}
             <div class="ex-filters__head">
-                <h2>{{ 'Filtres'|trans }}</h2>
+                <p class="ex-filters__title">{{ 'Filtres'|trans }}</p>
                 <a href="{{ path('app_activities') }}">{{ 'Réinitialiser'|trans }}</a>
             </div>
 
@@ -61,7 +63,7 @@
             <fieldset class="ex-fieldset">
                 <legend class="ex-label">{{ 'Prix'|trans }}</legend>
                 <div class="ex-range" data-ex-range data-max="1050">
-                    <div class="ex-range__labels"><span data-ex-range-min-label>{{ prixMin ?? 0 }} €</span><span data-ex-range-max-label>{{ prixMax is null or prixMax >= 1050 ? '1050 € et +' : prixMax ~ ' €' }}</span></div>
+                    <div class="ex-range__labels"><span data-ex-range-min-label>{{ prixMin ?? 0 }} €</span><span data-ex-range-max-label>{{ prixMax is null or prixMax >= 1050 ? '1050 € et +'|trans : prixMax ~ ' €' }}</span></div>
                     <div class="ex-range__track"><span data-ex-range-bar></span></div>
                     <input type="range" min="0" max="1050" step="5" name="prix_min" value="{{ prixMin ?? 0 }}" aria-label="{{ 'Prix minimum'|trans }}" data-ex-range-min>
                     <input type="range" min="0" max="1050" step="5" name="prix_max" value="{{ prixMax ?? 1050 }}" aria-label="{{ 'Prix maximum'|trans }}" data-ex-range-max>
@@ -133,7 +135,7 @@
                 {% else %}
                     <div class="card-grid act-grid ex-grid" data-ex-grid>
                         {% for a in gridActivities %}
-                            {% include 'activity/_ex_card.html.twig' with { a: a } %}
+                            {% include 'activity/_ex_card.html.twig' with { a: a, eager: loop.index == 1 ? 'high' : loop.index <= 4 } %}
                         {% endfor %}
                     </div>
                 {% endif %}

@@ -15,7 +15,7 @@
 {% block body %}
 <div class="pg ofm">
     <header class="ofm-hero">
-        <img class="ofm-hero__bg" src="{{ asset('images/offers/hero-offres.jpg') }}" alt="">
+        <img class="ofm-hero__bg" src="{{ asset('images/offers/hero-offres.jpg') }}" alt="" fetchpriority="high">
         <div class="ofm-hero__text">
             <h1>{{ 'Offres du moment'|trans }} 🔥</h1>
             <p>{{ 'Profitez des meilleures offres et promotions sur vos activités préférées'|trans }}</p>
@@ -47,7 +47,7 @@
             <form method="get" action="{{ path('app_offers') }}" id="ofm-filters">
                 {% if filters.categorie %}<input type="hidden" name="categorie" value="{{ filters.categorie }}">{% endif %}
                 {% if filters.tri != 'meilleures' %}<input type="hidden" name="tri" value="{{ filters.tri }}">{% endif %}
-                <div class="ofm-filters__head"><h2>{{ 'Filtres'|trans }}</h2><a href="{{ path('app_offers') }}">{{ 'Réinitialiser'|trans }}</a></div>
+                <div class="ofm-filters__head"><p class="ex-filters__title">{{ 'Filtres'|trans }}</p><a href="{{ path('app_offers') }}">{{ 'Réinitialiser'|trans }}</a></div>
                 <fieldset>
                     <legend>{{ 'Prix'|trans }}</legend>
                     <div class="ofm-range"><span>0 €</span><output id="ofm-prix-out">{{ filters.prix }} €</output></div>

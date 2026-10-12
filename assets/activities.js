@@ -92,7 +92,9 @@ function initBookingPanel(root = document) {
         });
         if (seatsEl) {
             seatsEl.hidden = !(hasSlots && timeEl?.value);
-            seatsEl.textContent = `${max} place${max > 1 ? 's' : ''} restante${max > 1 ? 's' : ''} sur ce créneau`;
+            seatsEl.textContent = document.documentElement.lang?.startsWith('en')
+                ? `${max} place${max > 1 ? 's' : ''} left for this time slot`
+                : `${max} place${max > 1 ? 's' : ''} restante${max > 1 ? 's' : ''} sur ce créneau`;
         }
     };
 
@@ -515,7 +517,7 @@ function initExplore(root = document) {
             const lo = Math.min(+min.value, +max.value);
             const hi = Math.max(+min.value, +max.value);
             minLabel.textContent = `${lo} €`;
-            maxLabel.textContent = hi >= top ? `${top} € et +` : `${hi} €`;
+            maxLabel.textContent = hi >= top ? `${top} € ${document.documentElement.lang?.startsWith('en') ? 'and up' : 'et +'}` : `${hi} €`;
             bar.style.left = `${(lo / top) * 100}%`;
             bar.style.width = `${((hi - lo) / top) * 100}%`;
         };

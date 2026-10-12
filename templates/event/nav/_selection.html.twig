@@ -20,10 +20,10 @@
         <div class="card-grid evn-sel-grid">
             {% for s in selections %}
                 <a href="{{ path('app_events_all') }}" class="pl-card evn-sel-card">
-                    <div class="pl-card__media"><img src="{{ asset(s.image) }}" alt="{{ s.title }}"></div>
+                    <div class="pl-card__media"><img src="{{ asset(s.image) }}" alt="{{ s.title|trans }}" loading="lazy" decoding="async"></div>
                     <div class="pl-card__body">
-                        <span class="pl-card__title">{{ s.title }}</span>
-                        <span class="evn-sel-card__count">{{ icon.book_open(16) }} {{ s.count }}</span>
+                        <span class="pl-card__title">{{ s.title|trans }}</span>
+                        <span class="evn-sel-card__count">{{ icon.book_open(16) }} {{ s.count|split(' ')|first }} {{ 'événements'|trans }}</span>
                     </div>
                 </a>
             {% endfor %}

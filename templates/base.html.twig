@@ -3,23 +3,53 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{% block title %}Plaisir & Loisir{% endblock %} — Plaisir & Loisir</title>
-        <meta name="description" content="{% block meta_description %}Trouvez et réservez les meilleurs prestataires de loisirs près de chez vous.{% endblock %}">
+        {# SEO (12/10) : titre « page | TrouveMoi », description, robots,
+           canonique + hreflang, Open Graph / Twitter et données structurées
+           (bloc structured_data, rempli par les pages qui s'y prêtent).
+           Les blocs rendus sont déjà échappés, d'où |raw ci-dessous (sinon
+           « l'Ardèche » sortait « l&amp;#039;Ardèche »). #}
+        {%- set page_title = block('title') is defined ? block('title')|trim : '' -%}
+        {%- set full_title = page_title is not empty and page_title != 'TrouveMoi' ? page_title ~ ' | TrouveMoi' : 'TrouveMoi Plaisirs & Loisirs — ' ~ 'Activités et loisirs partout en France'|trans -%}
+        <title>{{ full_title|raw }}</title>
+        <meta name="description" content="{% block meta_description %}{{ 'Trouvez et réservez les meilleures activités et loisirs près de chez vous, partout en France.'|trans }}{% endblock %}">
+        {% block meta_robots %}{% endblock %}
         {# Referencement multilingue. Chaque page existe a une adresse par
            langue : la canonique designe celle de la page affichee, les balises
            alternate declarent les autres. Sans elles, un moteur de recherche
            traite les deux versions comme du contenu duplique et n'en garde
            qu'une. x-default pointe vers le francais, langue de reference. #}
         {% set alternates = locale_alternates() %}
+        {% set canonical = alternates[app.request.locale] ?? app.request.uri %}
         {% if alternates is not empty %}
-            <link rel="canonical" href="{{ alternates[app.request.locale] ?? app.request.uri }}">
+            <link rel="canonical" href="{{ canonical }}">
             {% for hreflang, href in alternates %}
                 <link rel="alternate" hreflang="{{ hreflang }}" href="{{ href }}">
             {% endfor %}
             <link rel="alternate" hreflang="x-default" href="{{ alternates.fr }}">
         {% endif %}
 
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🎯</text></svg>">
+        {# Partage sur les réseaux (Open Graph, Twitter/X). #}
+        <meta property="og:site_name" content="TrouveMoi Plaisirs &amp; Loisirs">
+        <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+        <meta property="og:title" content="{{ (page_title is not empty ? page_title : full_title)|raw }}">
+        <meta property="og:description" content="{{ block('meta_description')|striptags|trim|raw }}">
+        <meta property="og:url" content="{{ canonical }}">
+        <meta property="og:image" content="{% block og_image %}{{ absolute_url(asset('images/brand/og-default.jpg')) }}{% endblock %}">
+        <meta property="og:locale" content="{{ app.request.locale == 'en' ? 'en_GB' : 'fr_FR' }}">
+        <meta property="og:locale:alternate" content="{{ app.request.locale == 'en' ? 'fr_FR' : 'en_GB' }}">
+        <meta name="twitter:card" content="summary_large_image">
+
+        {# Performance (12/10) : les deux polices du texte et des titres sont
+           demandées tout de suite, au lieu d'attendre la lecture des CSS. #}
+        <link rel="preload" href="{{ asset('fonts/inter-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="{{ asset('fonts/lexend-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+
+        <link rel="icon" href="{{ asset('images/brand/favicon-32.png') }}" type="image/png" sizes="32x32">
+        <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon.png') }}">
+        <meta name="theme-color" content="#091938">
+
+        {% block structured_data %}{% endblock %}
+        {% include '_partials/_analytics.html.twig' %}
 
         {# Inter est désormais hébergée par le projet (assets/styles/fonts.css) :
            plus de requête vers Google, plus de clignotement de police. #}
@@ -68,5 +98,14 @@
         {% if app.user is not null %}
             {% include '_partials/_logout_modal.html.twig' %}
         {% endif %}
+
+        {# Événements Analytics mis en attente avant une redirection (12/10). #}
+        {% if ga_measurement_id is not empty %}
+            {% import '_partials/_ga.html.twig' as ga %}
+            {% for e in ga_queued_events() %}{{ ga.event(e.name, e.params) }}{% endfor %}
+        {% endif %}
+
+        {# Bandeau cookies (12/10) : enfant direct de body, comme la modale. #}
+        {% include '_partials/_cookie_banner.html.twig' %}
     </body>
 </html>

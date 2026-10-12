@@ -22,7 +22,7 @@
         <form class="ex-filters__form" method="get" action="{{ path('app_destinations') }}">
             {% if continent %}<input type="hidden" name="continent" value="{{ continent }}">{% endif %}
             <div class="ex-filters__head">
-                <h2>{{ 'Filtres'|trans }}</h2>
+                <p class="ex-filters__title">{{ 'Filtres'|trans }}</p>
                 <a class="ex-link" href="{{ path('app_destinations') }}">{{ 'Réinitialiser'|trans }}</a>
             </div>
 
@@ -47,7 +47,7 @@
             <fieldset class="ex-fieldset">
                 <legend class="ex-label">{{ 'Budget (par personne)'|trans }}</legend>
                 <div class="ex-range" data-ex-range data-max="500" data-single>
-                    <div class="ex-range__labels"><span>0 €</span><span data-ex-range-max-label>{{ budget is null or budget >= 500 ? '500 € et +' : budget ~ ' €' }}</span></div>
+                    <div class="ex-range__labels"><span>0 €</span><span data-ex-range-max-label>{{ budget is null or budget >= 500 ? '500 € et +'|trans : budget ~ ' €' }}</span></div>
                     <div class="ex-range__track"><span data-ex-range-bar></span></div>
                     <input type="range" min="0" max="0" value="0" tabindex="-1" aria-hidden="true" data-ex-range-min disabled>
                     <input type="range" min="0" max="500" step="5" name="budget" value="{{ budget ?? 500 }}" aria-label="{{ 'Budget maximum'|trans }}" data-ex-range-max>
@@ -83,7 +83,7 @@
         </nav>
 
         <section class="ds-hero">
-            <img class="ds-hero__bg" src="{{ asset('images/destinations/banniere-monde.jpg') }}" alt="">
+            <img class="ds-hero__bg" src="{{ asset('images/destinations/banniere-monde.jpg') }}" alt="" fetchpriority="high">
             <div class="ds-hero__text">
                 <h2>{{ 'Partez à la'|trans }} <span>{{ 'découverte du monde'|trans }}</span></h2>
                 <p>{{ 'Des expériences uniques vous attendent,'|trans }}<br>{{ 'où que vous soyez.'|trans }}</p>
@@ -127,7 +127,7 @@
                         </span>
                         <span class="ds-card__body">
                             <strong>{{ d.name }}</strong>
-                            {% if d.tagline %}<small>{{ d.tagline }}</small>{% endif %}
+                            {% if d.tagline %}<small>{{ d.tagline|trans }}</small>{% endif %}
                             {% if d.rating %}<span class="ex-card__rating">{{ icon.star_solid(14) }} {{ d.rating }} <em>({{ d.reviews }})</em></span>{% endif %}
                             <span class="ds-card__foot">
                                 <span>{{ icon.calendar_grid(14) }} {{ d.count }} {{ 'activités'|trans }}</span>

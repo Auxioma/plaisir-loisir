@@ -8,7 +8,53 @@
     {% include '_partials/navbar_connected.html.twig' with { nav_active: 'activites' } %}
 {% endblock %}
 
+{# SEO (12/10) : image de partage = première photo ; données structurées
+   Product (prix « à partir de », note et avis) + fil d'Ariane. #}
+{% block og_type %}product{% endblock %}
+{% block og_image %}{{ detail.gallery is not empty ? absolute_url(asset(detail.gallery|first)) : absolute_url(asset('images/brand/og-default.jpg')) }}{% endblock %}
+{% block structured_data %}
+    {% set ld_total = reviews|length %}
+    {% set ld_price = booking.price ?? detail.price %}
+    {% set ld_reviews = [] %}
+    {% for r in reviews|slice(0, 5) %}
+        {% set ld_reviews = ld_reviews|merge([{'@type': 'Review', 'author': {'@type': 'Person', 'name': r.author}, 'reviewRating': {'@type': 'Rating', 'ratingValue': r.stars, 'bestRating': 5}, 'name': r.title ?? null, 'reviewBody': r.text}]) %}
+    {% endfor %}
+    {% set ld_images = [] %}
+    {% for img in detail.gallery %}{% set ld_images = ld_images|merge([absolute_url(asset(img))]) %}{% endfor %}
+    {{ json_ld({
+        '@type': 'Product',
+        'name': detail.title,
+        'description': detail.presentation.subtitle ?: detail.presentation.text,
+        'image': ld_images,
+        'url': url('app_activity_show', {slug: activity.slug}),
+        'brand': {'@type': 'Organization', 'name': detail.organizer},
+        'category': (detail.breadcrumb|length > 2 ? detail.breadcrumb[2].label : null),
+        'offers': ld_price ? {
+            '@type': 'Offer',
+            'price': ld_price|number_format(2, '.', ''),
+            'priceCurrency': 'EUR',
+            'availability': 'https://schema.org/InStock',
+            'url': url('app_activity_show', {slug: activity.slug}),
+        } : null,
+        'aggregateRating': ld_total > 0 ? {
+            '@type': 'AggregateRating',
+            'ratingValue': (reviews|reduce((c, r) => c + r.stars, 0) / ld_total)|round(1),
+            'reviewCount': ld_total,
+            'bestRating': 5,
+        } : null,
+        'review': ld_reviews,
+    }) }}
+    {% set ld_crumbs = [] %}
+    {% for crumb in detail.breadcrumb %}
+        {% set ld_crumbs = ld_crumbs|merge([{'@type': 'ListItem', 'position': loop.index, 'name': crumb.label|trans, 'item': crumb.route ? url(crumb.route, crumb.params) : url('app_activity_show', {slug: activity.slug})}]) %}
+    {% endfor %}
+    {{ json_ld({'@type': 'BreadcrumbList', 'itemListElement': ld_crumbs}) }}
+{% endblock %}
+
 {% block body %}
+{% import '_partials/_ga.html.twig' as ga %}
+{% set ga_price = (booking.price ?? detail.price ?? 0) + 0 %}
+{{ ga.event('view_item', {currency: 'EUR', value: ga_price, items: [{item_id: activity.slug, item_name: detail.title, item_category: (detail.breadcrumb|length > 2 ? detail.breadcrumb[2].label : null), price: ga_price}]}) }}
 {% set review_total = reviews|length %}
 {% set review_score = review_total > 0 ? (reviews|reduce((c, r) => c + r.stars, 0) / review_total)|round(1) : null %}
 <div class="act-detail">
@@ -84,10 +130,15 @@
 <div class="act-facts">
                 {% for fact in detail.keyFacts %}
                     <div class="act-fact">
-                        <span class="act-fact__label">{{ fact.label }}</span>
+                        <span class="act-fact__label">{{ fact.label|trans }}</span>
                         <span class="act-fact__value">
                             {% if fact.star is defined %}{{ icon.star(16) }}{% endif %}
-                            {{ fact.value }}
+                            {# « 18 personnes », « 12 ans + » : nombre gardé, unité traduite (12/10). #}
+                            {% set v = fact.value ~ '' %}
+                            {% if v matches '/^\\d+\\s+personnes$/u' %}{{ v|split(' ')|first }} {{ 'personnes'|trans }}
+                            {% elseif v matches '/^\\d+\\s+ans\\s*\\+$/u' %}{{ v|split(' ')|first|trim }} {{ 'ans +'|trans }}
+                            {% elseif v matches '/^[\\d,.]+ \\(\\d+ avis\\)$/' %}{{ v|split(' ')|first }} ({{ v|split('(')|last|split(' ')|first }} {{ 'avis'|trans }})
+                            {% else %}{{ v|trans }}{% endif %}
                         </span>
                     </div>
                 {% endfor %}
@@ -156,7 +207,7 @@
             <section class="act-block" id="logistique">
                 <div class="act-logistics">
                     <div class="act-logistics__map">
-                        <img src="{{ asset(detail.logistics.map) }}" alt="Carte du lieu de rendez-vous">
+                        <img src="{{ asset(detail.logistics.map) }}" alt="Carte du lieu de rendez-vous" loading="lazy" decoding="async">
                         <div class="act-logistics__map-actions">
                             {% if detail.place %}
                                 {# Lien de navigation Google Maps par adresse texte : ne demande ni
@@ -178,7 +229,7 @@
                             {% for g in detail.logistics.guarantees %}
                                 <li>
                                     <span class="act-guarantees__mark" aria-hidden="true">{{ icon.check_badge(20) }}</span>
-                                    <span><strong>{{ g.title }}</strong> {{ g.text }}</span>
+                                    <span><strong>{{ g.title|trans }}</strong> {{ g.text|trans }}</span>
                                 </li>
                             {% endfor %}
                         </ul>

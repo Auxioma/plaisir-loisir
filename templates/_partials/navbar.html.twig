@@ -45,7 +45,7 @@
 <header class="tm-header{{ is_provider ? ' tm-header--pro' }}">
     <div class="tm-header__inner">
         <a href="{{ path('app_home') }}" class="tm-header__logo" aria-label="{{ 'Accueil TrouveMoi'|trans }}">
-            <img src="{{ asset('images/logo-trouvemoi-horizontal.png') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="239" height="48">
+            <img src="{{ asset('images/logo-trouvemoi-horizontal.webp') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="239" height="48" fetchpriority="high">
         </a>
 
         {% if is_provider %}
@@ -64,7 +64,7 @@
            en ligne (mécanique de `navbar-expand-xl`). #}
         <div class="tm-header__panel offcanvas offcanvas-end" id="tmNav" tabindex="-1" aria-label="{{ 'Menu'|trans }}">
             <div class="tm-header__panel-head">
-                <img src="{{ asset('images/logo-trouvemoi-horizontal.png') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="179" height="36">
+                <img src="{{ asset('images/logo-trouvemoi-horizontal.webp') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="179" height="36" loading="lazy">
                 <button type="button" class="tm-header__panel-close" data-bs-dismiss="offcanvas" aria-label="{{ 'Fermer'|trans }}">{{ icon.x(18) }}</button>
             </div>
 
@@ -114,6 +114,11 @@
                 </a>
                 {% endif %}
             </nav>
+            {# Langue (12/10) : aussi dans le menu mobile, pas seulement en pied de page. #}
+            <div class="tm-header__langs" role="group" aria-label="{{ 'Langue'|trans }}">
+                <a href="{{ locale_switch_path('fr') }}" hreflang="fr" lang="fr"{{ app.request.locale != 'en' ? ' class="is-active" aria-current="true"' }}>{{ icon.flag_fr(16) }} Français</a>
+                <a href="{{ locale_switch_path('en') }}" hreflang="en" lang="en"{{ app.request.locale == 'en' ? ' class="is-active" aria-current="true"' }}>{{ icon.flag_gb(16) }} English</a>
+            </div>
         </div>
 
         <div class="tm-header__actions">

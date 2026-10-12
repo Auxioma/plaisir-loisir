@@ -63,7 +63,11 @@ final class PublishLegalDocumentsCommand extends Command
         // commande au démarrage.
         $this
             ->addOption('doc-version', null, InputOption::VALUE_REQUIRED, 'Numéro de version à publier', self::INITIAL_VERSION)
-            ->addOption('locale', null, InputOption::VALUE_REQUIRED, 'Langue du texte', 'fr');
+            ->addOption('locale', null, InputOption::VALUE_REQUIRED, 'Langue du texte', 'fr')
+            // Republier seulement certains textes (ex. après l'ajout de Google
+            // Analytics, 12/10 : --type=cookie_policy --type=privacy_policy),
+            // sans créer de nouvelle version des CGU.
+            ->addOption('type', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Type(s) de texte à publier (valeur de LegalDocumentType) ; tous par défaut', []);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -71,18 +75,19 @@ final class PublishLegalDocumentsCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $version = (string) $input->getOption('doc-version');
         $locale = (string) $input->getOption('locale');
+        $only = array_map('strval', (array) $input->getOption('type'));
 
         $aPublier = [
             [
                 'type' => LegalDocumentType::TermsOfService,
                 'titre' => 'Conditions générales d\'utilisation',
-                'contenu' => LegalDefaults::content(LegalDocumentType::TermsOfService),
+                'contenu' => LegalDefaults::content(LegalDocumentType::TermsOfService, $locale),
                 'resume' => 'Première mise en base du texte déjà publié sur le site.',
             ],
             [
                 'type' => LegalDocumentType::LegalNotice,
                 'titre' => 'Mentions légales',
-                'contenu' => LegalDefaults::content(LegalDocumentType::LegalNotice),
+                'contenu' => LegalDefaults::content(LegalDocumentType::LegalNotice, $locale),
                 'resume' => 'Première mise en base du texte déjà publié sur le site.',
             ],
             // Les trois suivants n'avaient aucun texte : ils sont écrits, pas
@@ -90,19 +95,19 @@ final class PublishLegalDocumentsCommand extends Command
             [
                 'type' => LegalDocumentType::PrivacyPolicy,
                 'titre' => 'Politique de confidentialité',
-                'contenu' => InitialLegalTexts::privacyPolicy(),
+                'contenu' => LegalDefaults::content(LegalDocumentType::PrivacyPolicy, $locale),
                 'resume' => 'Première rédaction. À FAIRE RELIRE PAR UN JURISTE avant usage en production : ce texte a été écrit par l\'équipe technique, il décrit fidèlement le site mais n\'a reçu aucune validation juridique.',
             ],
             [
                 'type' => LegalDocumentType::TermsOfSale,
                 'titre' => 'Conditions générales de vente',
-                'contenu' => InitialLegalTexts::termsOfSale(),
+                'contenu' => LegalDefaults::content(LegalDocumentType::TermsOfSale, $locale),
                 'resume' => 'Première rédaction. À FAIRE RELIRE PAR UN JURISTE avant usage en production : ce texte a été écrit par l\'équipe technique, il décrit fidèlement le site mais n\'a reçu aucune validation juridique.',
             ],
             [
                 'type' => LegalDocumentType::CookiePolicy,
                 'titre' => 'Politique de cookies',
-                'contenu' => InitialLegalTexts::cookiePolicy(),
+                'contenu' => LegalDefaults::content(LegalDocumentType::CookiePolicy, $locale),
                 'resume' => 'Première rédaction. À FAIRE RELIRE PAR UN JURISTE avant usage en production : ce texte a été écrit par l\'équipe technique, il décrit fidèlement le site mais n\'a reçu aucune validation juridique.',
             ],
         ];
@@ -111,6 +116,9 @@ final class PublishLegalDocumentsCommand extends Command
 
         foreach ($aPublier as $doc) {
             $type = $doc['type'];
+            if ([] !== $only && !\in_array($type->value, $only, true)) {
+                continue;
+            }
 
             if (null !== $this->documents->findOneByVersion($type, $version, $locale)) {
                 $io->text(sprintf('· %s %s (%s) : déjà en base, rien à faire.', $type->label(), $version, $locale));

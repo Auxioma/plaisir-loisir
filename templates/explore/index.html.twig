@@ -15,7 +15,7 @@
     <aside class="gc-filters">
         <form method="get" action="{{ path('app_activities') }}" data-pg-form>
             <input type="hidden" name="panneau" value="1">
-            <div class="ofm-filters__head"><h2>{{ 'Filtres'|trans }}</h2><a href="{{ path('app_explore') }}">{{ 'Réinitialiser'|trans }}</a></div>
+            <div class="ofm-filters__head"><p class="ex-filters__title">{{ 'Filtres'|trans }}</p><a href="{{ path('app_explore') }}">{{ 'Réinitialiser'|trans }}</a></div>
             <label class="ex2-field">{{ 'Où voulez-vous ?'|trans }}
                 <span class="ex2-input"><input name="lieu" placeholder="{{ 'Destination, ville, lieu…'|trans }}" maxlength="80">{{ icon.map_pin(16) }}</span></label>
             <label class="ex2-field">{{ 'Date'|trans }}

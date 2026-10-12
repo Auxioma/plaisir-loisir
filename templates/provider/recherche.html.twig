@@ -19,7 +19,7 @@
     <aside class="gc-filters">
         <form method="get" action="{{ path('app_provider_search') }}">
             {% if filters.sort != 'pertinence' %}<input type="hidden" name="tri" value="{{ filters.sort }}">{% endif %}
-            <div class="ofm-filters__head"><h2>{{ 'Filtres'|trans }}</h2><a href="{{ path('app_provider_search') }}">{{ 'Réinitialiser'|trans }}</a></div>
+            <div class="ofm-filters__head"><p class="ex-filters__title">{{ 'Filtres'|trans }}</p><a href="{{ path('app_provider_search') }}">{{ 'Réinitialiser'|trans }}</a></div>
             <label class="ex2-field">{{ 'Nom ou activité'|trans }}
                 <span class="ex2-input"><input name="q" value="{{ filters.q }}" placeholder="{{ 'Ex : kayak, escape game…'|trans }}" maxlength="80">{{ icon.search(16) }}</span></label>
             <label class="ex2-field">{{ 'Ville'|trans }}
@@ -88,7 +88,7 @@
                                 </a>
                                 <div class="pd-card__body">
                                     <div class="pd-card__id">
-                                        <span class="pd-avatar">{% if r.avatar %}<img src="{{ asset(r.avatar) }}" alt="">{% else %}{{ r.name|first|upper }}{% endif %}</span>
+                                        <span class="pd-avatar">{% if r.avatar %}<img src="{{ asset(r.avatar) }}" alt="" loading="lazy" decoding="async">{% else %}{{ r.name|first|upper }}{% endif %}</span>
                                         <span>
                                             <a class="pd-card__name" href="{{ path('app_provider_profile', {slug: r.slug}) }}">{{ r.name }}</a>
                                             <small>{% if r.category %}{{ r.category|trans }}{% endif %}{% if r.city %} · {{ icon.map_pin(12) }} {{ r.city }}{% endif %}{% if r.distance is not null %} · {{ r.distance }} km{% endif %}</small>

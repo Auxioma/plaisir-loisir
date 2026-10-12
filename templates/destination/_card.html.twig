@@ -13,7 +13,7 @@
    gardent l'ancien lien par defaut. #}
 <a href="{{ href|default(d.slug is defined and d.slug ? path('app_destination_city', { ville: d.slug }) : path('app_destination_city', { ville: 'lille' })) }}" class="pl-card dest-card">
     <div class="pl-card__media">
-        <img src="{{ asset(d.image) }}" alt="{{ d.name }}">
+        <img src="{{ asset(d.image) }}" alt="{{ d.name }}" loading="lazy" decoding="async">
         {% if d.badge %}
             <span class="pl-card__tag {{ { 'Populaire': 'pl-card__tag--popular', 'Bestseller': 'pl-card__tag--bestseller', 'Tendance': 'pl-card__tag--trend' }[d.badge] }}">{{ d.badge|trans }}</span>
         {% endif %}
@@ -32,7 +32,7 @@
         </button>
     </div>
     <div class="pl-card__body">
-        <span class="pl-card__place">{{ icon.map_pin(14) }} {{ d.tagline }}</span>
+        <span class="pl-card__place">{{ icon.map_pin(14) }} {{ d.tagline|trans }}</span>
         <span class="pl-card__title">{{ d.name }}</span>
         <div class="act-card__meta">
             <span class="act-rating">{{ icon.star(12) }} {{ d.rating }}</span>

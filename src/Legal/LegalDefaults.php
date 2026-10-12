@@ -17,8 +17,19 @@ use App\Legal\Enum\LegalDocumentType;
  */
 final class LegalDefaults
 {
-    public static function content(LegalDocumentType $type): string
+    public static function content(LegalDocumentType $type, string $locale = 'fr'): string
     {
+        // Version anglaise (12/10) : le site anglais affichait les textes français.
+        if ('en' === $locale) {
+            return match ($type) {
+                LegalDocumentType::TermsOfService => self::renderSections(InitialLegalTextsEn::termsOfServiceSections()),
+                LegalDocumentType::LegalNotice => self::renderSections(InitialLegalTextsEn::legalNoticeSections()),
+                LegalDocumentType::PrivacyPolicy => InitialLegalTextsEn::privacyPolicy(),
+                LegalDocumentType::TermsOfSale => InitialLegalTextsEn::termsOfSale(),
+                LegalDocumentType::CookiePolicy => InitialLegalTextsEn::cookiePolicy(),
+            };
+        }
+
         return match ($type) {
             LegalDocumentType::TermsOfService => self::renderSections(StaticCorporate::cguSections()),
             LegalDocumentType::LegalNotice => self::renderSections(StaticCorporate::legalSections()),
