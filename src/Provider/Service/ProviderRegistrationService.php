@@ -7,6 +7,8 @@ namespace App\Provider\Service;
 use App\Catalog\Entity\Category;
 use App\Legal\Entity\CompanyIdentity;
 use App\Legal\Service\ConsentService;
+use App\Notification\Enum\NotificationCategory;
+use App\Notification\Service\NotificationService;
 use App\Provider\Entity\ProviderProfile;
 use App\Provider\Repository\ProviderProfileRepository;
 use App\User\Entity\User;
@@ -49,6 +51,7 @@ final class ProviderRegistrationService
         private readonly RequestStack $requestStack,
         private readonly Registry $workflowRegistry,
         private readonly ProviderSlugService $slugService,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -123,6 +126,11 @@ final class ProviderRegistrationService
         // IP et l'agent utilisateur.
         $request = $this->requestStack->getCurrentRequest();
         $this->consentService->recordRegistrationConsent($user, $request, $request?->getLocale() ?? 'fr');
+
+        // Le parcours de validation est annoncé dès la création du compte
+        // (12/10) : la suite (dossier reçu, validé…) est notifiée par
+        // ProviderStatusNotifier.
+        $this->notifications->notify($user, NotificationCategory::System, 'Bienvenue sur TrouveMoi Pro', 'Votre compte professionnel est créé. Prochaines étapes : 1) déposez vos justificatifs (licence, assurance…) ; 2) notre équipe vérifie votre dossier sous 48 h ouvrées ; 3) une fois votre compte validé, vos activités payantes sont publiées. Vous pouvez dès maintenant préparer vos activités dans votre espace.');
 
         return $profile;
     }

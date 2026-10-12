@@ -11,6 +11,7 @@ use App\Catalog\Repository\ServiceRepository;
 use App\Catalog\Service\ActivityDraftService;
 use App\Catalog\Service\ActivityPublishingService;
 use App\Catalog\StaticActivityWizard;
+use App\Provider\Enum\ProviderStatus;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -150,7 +151,12 @@ final class ProviderActivityWizardController extends AbstractProviderSpaceContro
                 $this->publishing->submit($service);
                 $this->addFlash('success', sprintf('« %s » est envoyée en validation : notre équipe la publie sous 24 h.', $service->getTitle()));
             } catch (\InvalidArgumentException $e) {
-                $this->addFlash('error', sprintf('« %s » est enregistrée en brouillon. %s', $service->getTitle(), $e->getMessage()));
+                // Compte pas encore validé (12/10) : on dit où en est le dossier et la suite.
+                $this->addFlash('error', sprintf('« %s » est enregistrée en brouillon. %s', $service->getTitle(), match ($this->currentProvider()->getStatus()) {
+                    ProviderStatus::Draft => 'Votre compte professionnel doit d’abord être validé : envoyez vos justificatifs depuis « Mon profil › Documents », puis renvoyez l’activité une fois le compte validé.',
+                    ProviderStatus::PendingVerification => 'Votre dossier est en cours de vérification (sous 48 h ouvrées). Vous serez prévenu par e-mail dès la validation et pourrez alors envoyer l’activité.',
+                    default => $e->getMessage(),
+                }));
             }
         } else {
             $this->addFlash('success', sprintf('Modifications de « %s » enregistrées.', $service->getTitle()));
