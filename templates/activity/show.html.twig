@@ -49,15 +49,23 @@
         <div class="act-detail__main">
 
             {# --- Galerie mosaïque : 1 grande + 4 vignettes. --- #}
-            <div class="act-gallery">
-                {% for img in detail.gallery %}
-                    <figure class="act-gallery__item {{ loop.first ? 'act-gallery__item--big' }}">
-                        <img src="{{ asset(img) }}" alt="{{ detail.title }} — photo {{ loop.index }}">
-                        {% if loop.last %}
-                            <button type="button" class="act-gallery__all" data-bs-toggle="modal" data-bs-target="#gallery-modal">{{ icon.grid(16) }} {{ 'Voir toutes les photos'|trans }}</button>
-                        {% endif %}
-                    </figure>
-                {% endfor %}
+            {# Sur mobile (12/10), la mosaïque devient un slider : une photo par
+               écran, défilement au doigt, compteur et points (activity-gallery.js). #}
+            <div class="act-gallery-wrap" data-act-slider>
+                <div class="act-gallery" data-act-slider-track>
+                    {% for img in detail.gallery %}
+                        <figure class="act-gallery__item {{ loop.first ? 'act-gallery__item--big' }}">
+                            <img src="{{ asset(img) }}" alt="{{ detail.title }} — photo {{ loop.index }}"{% if loop.first %} fetchpriority="high"{% else %} loading="lazy" decoding="async"{% endif %}>
+                            {% if loop.last %}
+                                <button type="button" class="act-gallery__all" data-bs-toggle="modal" data-bs-target="#gallery-modal">{{ icon.grid(16) }} {{ 'Voir toutes les photos'|trans }}</button>
+                            {% endif %}
+                        </figure>
+                    {% endfor %}
+                </div>
+                {% if detail.gallery|length > 1 %}
+                    <button type="button" class="act-slider__count" data-bs-toggle="modal" data-bs-target="#gallery-modal" aria-label="{{ 'Voir toutes les photos'|trans }}">{{ icon.grid(14) }} <span data-act-slider-index>1</span> / {{ detail.gallery|length }}</button>
+                    <div class="act-slider__dots" aria-hidden="true">{% for img in detail.gallery %}<span{{ loop.first ? ' class="is-active"' }}></span>{% endfor %}</div>
+                {% endif %}
             </div>
 
             {# --- Localisation + partage / favori. --- #}

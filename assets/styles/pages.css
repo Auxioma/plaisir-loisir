@@ -202,7 +202,7 @@
 .pg-team__list small { font-size: 11px; color: #4b4f66; }
 .pg-team__list a { margin-top: 6px; color: var(--pg-violet); }
 .pg-join { padding: 26px 20px; background: var(--pg-violet); border-radius: 12px; color: #fff; }
-.pg-join h2 { font-size: 18px; font-weight: 800; }
+.pg-join h2 { color: #fff; font-size: 18px; font-weight: 800; }
 .pg-join p { font-size: 13px; line-height: 21px; }
 
 @media (max-width: 1199.98px) {
@@ -747,4 +747,16 @@
 .pg-job { padding: 20px; }
 .pg-job__head { flex: 1; align-items: flex-start; }
 .pg-job h3 { min-height: 54px; }
-@media (max-width: 1199.98px) { .pg-careers > div:first-child { grid-column: auto; } }
+/* 12/10 (retour client) : les offres gardent toute la largeur à toutes les
+   tailles ; témoignages et candidature spontanée passent DESSOUS. Sur
+   mobile, offres en cartes à 50 % (deux par ligne), icône au-dessus. */
+@media (max-width: 1199.98px) { .pg-jobs { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pg-job h3 { min-height: 0; } }
+@media (max-width: 767.98px) {
+    .pg-careers { grid-template-columns: minmax(0, 1fr); }
+    .pg-rowhead { flex-wrap: wrap; margin-bottom: 4px; }
+    .pg-jobs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .pg-job { padding: 14px; gap: 10px; }
+    .pg-job__head { flex-direction: column; gap: 10px; }
+    .pg-job h3 { min-height: 0; font-size: 13.5px; }
+    .pg-quotes, .pg-spont { width: 100%; }
+}
