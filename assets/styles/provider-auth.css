@@ -550,7 +550,10 @@
     justify-self: center;
 }
 
-.pa-grid {
+/* Ciblé sous le formulaire : .pa-grid sert aussi à la liste des activités
+   gratuites (event-list.css, 4 colonnes), qui écrasait cette grille et
+   réduisait Nom / Prénom à deux petites cases (12/10). */
+.pa-signup__form > .pa-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px; /* 226 - 210 : gouttière Nom / Prénom */
@@ -584,6 +587,7 @@
     justify-items: center;
     align-content: center;
     gap: 8px;
+    min-width: 0; /* sinon un nom de fichier long élargit la case et déborde */
     min-height: 150px;
     padding: 20px 16px;
     border: 1px dashed #cfd3dd;
@@ -620,6 +624,8 @@
 }
 
 .pa-drop__hint {
+    max-width: 100%;
+    overflow-wrap: anywhere;
     font-size: var(--pl-fs-caption);
     line-height: var(--pl-lh-caption);
     color: var(--pl-text-secondary);
@@ -638,6 +644,9 @@
 }
 
 .pa-drop.is-filled .pa-drop__hint {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     color: var(--pl-success);
     font-weight: var(--pl-fw-semibold);
 }

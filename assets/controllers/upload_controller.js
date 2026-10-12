@@ -49,9 +49,11 @@ export default class extends Controller {
         const libelle = zone.querySelector('.pa-drop__hint');
 
         if (fichier && libelle) {
-            libelle.textContent = fichier.name;
+            libelle.textContent = raccourcir(fichier.name);
+            libelle.title = fichier.name;
             zone.classList.add('is-filled');
         } else if (libelle) {
+            libelle.removeAttribute('title');
             zone.classList.remove('is-filled');
         }
     }
@@ -96,4 +98,22 @@ export default class extends Controller {
             champ.dispatchEvent(new Event('change', { bubbles: true }));
         });
     }
+}
+
+/**
+ * Nom de fichier trop long pour la case : coupé AU MILIEU pour garder le début
+ * et l'extension (« attestation-urssaf-…-2026.pdf »). Le nom complet reste
+ * dans l'infobulle.
+ */
+function raccourcir(nom, max = 34) {
+    if (nom.length <= max) {
+        return nom;
+    }
+    const point = nom.lastIndexOf('.');
+    const extension = point > 0 && nom.length - point <= 6 ? nom.slice(point) : '';
+    const base = nom.slice(0, nom.length - extension.length);
+    const reste = max - extension.length - 1;
+    const debut = Math.ceil(reste * 0.6);
+
+    return `${base.slice(0, debut)}…${base.slice(base.length - (reste - debut))}${extension}`;
 }

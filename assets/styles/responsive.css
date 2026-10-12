@@ -1147,6 +1147,6 @@
 @media (max-width: 575.98px) {
     .pa-split { padding: 12px; }
     /* Nom et Prénom s'empilent : deux champs de 140px ne se remplissent pas. */
-    .pa-grid { grid-template-columns: minmax(0, 1fr); }
+    .pa-signup__form > .pa-grid { grid-template-columns: minmax(0, 1fr); }
     .pa-steps { flex-wrap: wrap; }
 }
