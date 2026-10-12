@@ -23,9 +23,20 @@
    qui leur soit destinée. Plutôt qu'en emprunter une sans rapport, on garde
    l'aplat violet clair du socle, déjà employé par les bannières d'aide. */
 .cor-hero--faq {
+    min-height: 0;
     background: var(--pl-action-light);
     padding-block: var(--pl-sp-64);
     text-align: center;
+}
+/* Le héros corporate de base est pensé pour une photo à droite : voile blanc
+   à gauche, 112px de marge haute, paragraphe borné à 485px collé à gauche.
+   Sans photo, tout cela décentrait le bloc : on le neutralise. */
+.cor-hero--faq::after { content: none; }
+.cor-hero--faq .cor-hero__inner { padding-top: 0; }
+.cor-hero--faq .cor-hero__title { margin-bottom: var(--pl-sp-16); }
+.cor-hero--faq .cor-hero__text {
+    max-width: 640px;
+    margin: 0 auto;
 }
 
 .sp-search {

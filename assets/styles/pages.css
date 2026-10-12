@@ -5,14 +5,18 @@
  * ============================================================================
  */
 .lg2 { --lg-violet: #3b19e6; --lg-line: #e6e8ef; --lg-ink: #0b1437; font-family: var(--tm-font, inherit); color: var(--lg-ink); }
-.lg2-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: 300px; overflow: hidden; background: #f6f7fc; }
-.lg2-hero__text { position: relative; z-index: 1; padding: 34px 40px 34px 72px; }
+/* Héros commun aux trois textes juridiques : même hauteur, même photo
+   (assets/images/legal/legal-hero.jpg, tirée de la maquette en 2x pour rester
+   nette), et colonne de texte alignée sur le contenu (max 1440 centré) même
+   sur un écran très large. */
+.lg2-hero { position: relative; display: flex; align-items: center; min-height: 280px; overflow: hidden; background: #f6f7fc; }
+.lg2-hero__text { position: relative; z-index: 1; width: max(45%, calc((100vw - 1440px) / 2 + 680px)); padding: 24px 40px 24px max(72px, calc((100vw - 1440px) / 2 + 72px)); }
 .lg2-crumb { margin-bottom: 14px; color: #6b6f85; font-size: 13px; }
 .lg2-crumb a { color: inherit; text-decoration: none; }
 .lg2-hero h1 { margin: 0 0 10px; color: var(--lg-ink); font-size: 40px; font-weight: 800; letter-spacing: -.01em; }
 .lg2-hero__date { margin: 0 0 22px; font-size: 15px; }
 .lg2-hero__intro { max-width: 520px; margin: 0; font-size: 15px; line-height: 24px; }
-.lg2-hero__img { width: 100%; height: 100%; object-fit: cover; -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%); mask-image: linear-gradient(90deg, transparent 0%, #000 30%); }
+.lg2-hero__img { position: absolute; top: 0; right: 0; width: 55%; height: 100%; object-fit: cover; object-position: 60% 40%; -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%); mask-image: linear-gradient(90deg, transparent 0%, #000 30%); }
 
 .lg2-body { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 28px; max-width: 1440px; margin: 0 auto; padding: 24px 72px 56px; }
 .lg2-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
@@ -60,11 +64,12 @@
 @media (max-width: 1199.98px) {
     .lg2-body { grid-template-columns: 1fr; padding: 24px 24px 48px; }
     .lg2-toc { position: static; }
-    .lg2-hero__text { padding: 28px 24px; }
+    .lg2-hero__text { padding: 24px; }
 }
 @media (max-width: 767.98px) {
-    .lg2-hero { grid-template-columns: 1fr; }
-    .lg2-hero__img { position: absolute; inset: 0; opacity: .18; -webkit-mask-image: none; mask-image: none; }
+    .lg2-hero { min-height: 240px; }
+    .lg2-hero__text { width: 100%; }
+    .lg2-hero__img { inset: 0; width: 100%; opacity: .18; -webkit-mask-image: none; mask-image: none; }
     .lg2-grid { grid-template-columns: 1fr; }
     .lg2-card { grid-template-columns: 34px minmax(0, 1fr); }
     .lg2-card .lg2-ico { display: none; }
