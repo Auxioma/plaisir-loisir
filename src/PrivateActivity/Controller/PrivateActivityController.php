@@ -175,7 +175,7 @@ final class PrivateActivityController extends AbstractController
 
             return $this->redirect($back);
         }
-        if (\in_array($activity->getStatus(), [PrivateActivityStatus::Cancelled, PrivateActivityStatus::Draft], true)) {
+        if (PrivateActivityStatus::Cancelled === $activity->getStatus() || $activity->getStatus()->isUnpublished()) {
             $this->addFlash('error', 'Publiez l’activité avant d’inviter des participants.');
 
             return $this->redirect($back);
@@ -323,7 +323,7 @@ final class PrivateActivityController extends AbstractController
         $this->denyAccessUnlessGranted(PrivateActivityVoter::MANAGE, $activity);
         // Modifier une annonce publiée (07/10) passe par la même reprise ;
         // une activité annulée ou passée ne se modifie plus.
-        if (PrivateActivityStatus::Cancelled === $activity->getStatus() || ($activity->getScheduledAt() && $activity->getScheduledAt() < new \DateTimeImmutable() && PrivateActivityStatus::Draft !== $activity->getStatus())) {
+        if (PrivateActivityStatus::Cancelled === $activity->getStatus() || ($activity->getScheduledAt() && $activity->getScheduledAt() < new \DateTimeImmutable() && !$activity->getStatus()->isUnpublished())) {
             $this->addFlash('error', 'Cette activité est annulée ou passée : elle ne peut plus être modifiée.');
 
             return $this->redirectToRoute('app_private_activity_show', ['id' => $id]);
@@ -374,7 +374,11 @@ final class PrivateActivityController extends AbstractController
                 $editing = (bool) ($drafts->current($session)['editing'] ?? false);
                 $activity = $drafts->publish($drafts->current($session), $this->currentUser());
                 $drafts->clear($session);
-                $this->addFlash('success', $editing ? 'Vos modifications sont enregistrées.' : 'Votre activité est publiée ! Partagez-la pour réunir vos participants.');
+                $this->addFlash('success', match (true) {
+                    PrivateActivityStatus::PendingCategory === $activity->getStatus() => sprintf('Votre activité est enregistrée. Elle sera mise en ligne automatiquement dès que la catégorie « %s » sera validée par notre équipe : vous serez prévenu.', $activity->getCategorySuggestion()?->getName()),
+                    $editing => 'Vos modifications sont enregistrées.',
+                    default => 'Votre activité est publiée ! Partagez-la pour réunir vos participants.',
+                });
 
                 return $this->redirectToRoute('app_private_activity_show', ['id' => (string) $activity->getId()]);
             }
@@ -401,6 +405,7 @@ final class PrivateActivityController extends AbstractController
             'errors' => $errors,
             'categories' => $this->categories->findRoots(),
             'category' => $this->categories->findOneBy(['slug' => (string) ($draft['category'] ?? '')]),
+            'pending_suggestion' => $drafts->pendingSuggestion($draft),
             'all_categories' => $this->categories->findRoots(),
         ], new Response(null, [] === $errors ? 200 : 422));
     }

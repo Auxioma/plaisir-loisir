@@ -282,7 +282,7 @@ final class PrivateActivityService
         $activity = $participation->getPrivateActivity();
         $promoted = null;
 
-        if ($wasAccepted && null !== $activity) {
+        if ($wasAccepted && null !== $activity && !$activity->getStatus()->isUnpublished()) {
             $activity->setStatus(PrivateActivityStatus::Open);
             $promoted = $this->promoteFromWaitingList($activity);
         }
@@ -375,7 +375,7 @@ final class PrivateActivityService
 
     private function refreshFullStatus(PrivateActivity $activity): void
     {
-        if (PrivateActivityStatus::Cancelled === $activity->getStatus()) {
+        if (PrivateActivityStatus::Cancelled === $activity->getStatus() || $activity->getStatus()->isUnpublished()) {
             return;
         }
 

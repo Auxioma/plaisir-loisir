@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\PrivateActivity\Entity;
 
 use App\Catalog\Entity\Category;
+use App\Catalog\Entity\CategorySuggestion;
 use App\Catalog\Entity\Service;
 use App\Catalog\Enum\ActivityLevel;
 use App\PrivateActivity\Enum\ParticipationMode;
@@ -53,6 +54,14 @@ class PrivateActivity
     #[ORM\ManyToOne(targetEntity: Category::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?Category $category = null;
+
+    /**
+     * Catégorie proposée par l'organisateur et pas encore validée (12/10) :
+     * l'activité attend au statut PendingCategory.
+     */
+    #[ORM\ManyToOne(targetEntity: CategorySuggestion::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?CategorySuggestion $categorySuggestion = null;
 
     #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
     private ?\DateTimeImmutable $scheduledAt = null;
@@ -218,6 +227,18 @@ class PrivateActivity
     public function setCategory(?Category $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getCategorySuggestion(): ?CategorySuggestion
+    {
+        return $this->categorySuggestion;
+    }
+
+    public function setCategorySuggestion(?CategorySuggestion $categorySuggestion): static
+    {
+        $this->categorySuggestion = $categorySuggestion;
 
         return $this;
     }

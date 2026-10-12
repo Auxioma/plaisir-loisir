@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\PrivateActivity\Service;
 
+use App\Catalog\Entity\CategorySuggestion;
 use App\Catalog\Enum\ActivityLevel;
 use App\Catalog\Repository\CategoryRepository;
+use App\Catalog\Repository\CategorySuggestionRepository;
 use App\PrivateActivity\Entity\PrivateActivity;
 use App\PrivateActivity\Enum\ParticipationMode;
 use App\PrivateActivity\Enum\PrivateActivityStatus;
@@ -48,6 +50,7 @@ final class PrivateActivityDraftService
         private readonly PublicImageStorage $images,
         private readonly PrivateActivityRepository $repository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly CategorySuggestionRepository $suggestions,
     ) {
     }
 
@@ -111,8 +114,9 @@ final class PrivateActivityDraftService
 
         $errors += $this->validateStep($step, $draft);
         // Une catégorie existante est choisie : la proposition en attente n'a plus à s'afficher.
-        if (1 === $step && !isset($errors['category'])) {
+        if (1 === $step && null !== $this->categories->findOneBy(['slug' => (string) ($draft['category'] ?? '')])) {
             $draft['category_suggestion'] = null;
+            $draft['category_suggestion_id'] = null;
         }
         $done = array_values(array_diff((array) $draft['done'], [$step]));
         if ([] === $errors) {
@@ -141,7 +145,9 @@ final class PrivateActivityDraftService
                 } elseif ($len('title') > 150) {
                     $e['title'] = 'Le titre ne doit pas dépasser 150 caractères.';
                 }
-                if (null === $this->categories->findOneBy(['slug' => (string) ($d['category'] ?? '')])) {
+                // Une catégorie proposée et en attente suffit (12/10) : l'activité
+                // sera mise en ligne à sa validation.
+                if (null === $this->categories->findOneBy(['slug' => (string) ($d['category'] ?? '')]) && null === $this->pendingSuggestion($d)) {
                     $e['category'] = 'Choisissez une catégorie.';
                 }
                 if (null === ActivityLevel::tryFrom((string) ($d['level'] ?? ''))) {
@@ -231,24 +237,26 @@ final class PrivateActivityDraftService
 
     /**
      * Publie l'activité : met à jour le brouillon enregistré s'il existe
-     * (sinon la crée), au statut « ouverte ».
+     * (sinon la crée), au statut « ouverte » — ou « en attente de catégorie »
+     * si sa catégorie est une proposition pas encore validée (12/10).
      *
      * @param array<string, mixed> $d
      */
     public function publish(array $d, User $organizer): PrivateActivity
     {
         $category = $this->categories->findOneBy(['slug' => (string) $d['category']]);
-        if (null === $category) {
+        if (null === $category && null === $this->pendingSuggestion($d)) {
             throw new \InvalidArgumentException('Choisissez une catégorie.');
         }
 
         $activity = $this->existing($d, $organizer) ?? (new PrivateActivity())->setOrganizer($organizer);
         $this->fill($activity, $d);
-        // Modification d'une activité déjà en ligne (07/10) : son statut suit
-        // la capacité (une place libérée par un maximum relevé la rouvre).
-        $remaining = $activity->remainingPlaces();
-        if (PrivateActivityStatus::Cancelled !== $activity->getStatus()) {
-            $activity->setStatus(0 === $remaining ? PrivateActivityStatus::Full : PrivateActivityStatus::Open);
+        if (null === $activity->getCategory()) {
+            $activity->setStatus(PrivateActivityStatus::PendingCategory);
+        } elseif (PrivateActivityStatus::Cancelled !== $activity->getStatus()) {
+            // Modification d'une activité déjà en ligne (07/10) : son statut suit
+            // la capacité (une place libérée par un maximum relevé la rouvre).
+            $activity->setStatus(0 === $activity->remainingPlaces() ? PrivateActivityStatus::Full : PrivateActivityStatus::Open);
         }
         $this->entityManager->persist($activity);
         $this->entityManager->flush();
@@ -288,6 +296,8 @@ final class PrivateActivityDraftService
             'editing' => PrivateActivityStatus::Draft !== $activity->getStatus(),
             'title' => $activity->getTitle(),
             'category' => $activity->getCategory()?->getSlug() ?? '',
+            'category_suggestion' => $activity->getCategorySuggestion()?->isPending() ? $activity->getCategorySuggestion()->getName() : null,
+            'category_suggestion_id' => $activity->getCategorySuggestion()?->isPending() ? (string) $activity->getCategorySuggestion()->getId() : null,
             'level' => ($activity->getLevel() ?? ActivityLevel::AllLevels)->value,
             'description' => (string) $activity->getDescription(),
             'date' => $start?->format('Y-m-d') ?? '',
@@ -307,7 +317,7 @@ final class PrivateActivityDraftService
             'mode' => $activity->getParticipationMode()->value,
             'visibility' => $activity->getVisibility()->value,
             // Étapes déjà valides : navigation libre jusqu'à la première incomplète.
-            'done' => array_values(array_filter([1, 2, 3, 4], fn (int $n): bool => [] === $this->validateStep($n, ['title' => $activity->getTitle(), 'category' => $activity->getCategory()?->getSlug() ?? '', 'level' => ($activity->getLevel() ?? ActivityLevel::AllLevels)->value, 'description' => (string) $activity->getDescription(), 'date' => $start?->format('Y-m-d') ?? '', 'start_time' => $start?->format('H:i') ?? '', 'address' => (string) $activity->getLocation(), 'city' => (string) $activity->getCity(), 'mode' => $activity->getParticipationMode()->value, 'visibility' => $activity->getVisibility()->value]))),
+            'done' => array_values(array_filter([1, 2, 3, 4], fn (int $n): bool => [] === $this->validateStep($n, ['title' => $activity->getTitle(), 'category' => $activity->getCategory()?->getSlug() ?? '', 'category_suggestion_id' => $activity->getCategorySuggestion()?->isPending() ? (string) $activity->getCategorySuggestion()->getId() : null, 'level' => ($activity->getLevel() ?? ActivityLevel::AllLevels)->value, 'description' => (string) $activity->getDescription(), 'date' => $start?->format('Y-m-d') ?? '', 'start_time' => $start?->format('H:i') ?? '', 'address' => (string) $activity->getLocation(), 'city' => (string) $activity->getCity(), 'mode' => $activity->getParticipationMode()->value, 'visibility' => $activity->getVisibility()->value]))),
         ]);
     }
 
@@ -319,6 +329,22 @@ final class PrivateActivityDraftService
     public function patch(SessionInterface $session, array $values): void
     {
         $session->set(self::SESSION_KEY, $values + $this->current($session));
+    }
+
+    /**
+     * Proposition de catégorie de l'organisateur, encore en attente.
+     *
+     * @param array<string, mixed> $d
+     */
+    public function pendingSuggestion(array $d): ?CategorySuggestion
+    {
+        $id = (string) ($d['category_suggestion_id'] ?? '');
+        if ('' === $id || !Ulid::isValid($id)) {
+            return null;
+        }
+        $suggestion = $this->suggestions->find(Ulid::fromString($id));
+
+        return null !== $suggestion && $suggestion->isPending() ? $suggestion : null;
     }
 
     /** @param array<string, mixed> $d */
@@ -340,6 +366,8 @@ final class PrivateActivityDraftService
         $activity
             ->setTitle(mb_substr(trim((string) ($d['title'] ?? '')), 0, 150))
             ->setCategory($this->categories->findOneBy(['slug' => (string) ($d['category'] ?? '')]) ?? $activity->getCategory())
+            // Catégorie proposée en attente : l'activité la recevra à sa validation.
+            ->setCategorySuggestion($this->pendingSuggestion($d))
             ->setLevel(ActivityLevel::tryFrom((string) ($d['level'] ?? '')))
             ->setDescription($str('description', 3000))
             ->setScheduledAt($this->start($d))

@@ -24,7 +24,9 @@
     {{ ui.err(errors, 'category') }}
 
     {% if suggestion %}
-        <p class="cp-pending">{{ icon.hourglass(16) }} <span>{{ 'Catégorie proposée :'|trans }} <strong>{{ suggestion }}</strong> — {{ 'en attente de validation. Enregistrez votre activité en brouillon : vous serez prévenu dès qu’elle sera disponible.'|trans }}</span></p>
+        <p class="cp-pending">{{ icon.hourglass(16) }} <span>{{ 'Catégorie proposée :'|trans }} <strong>{{ suggestion }}</strong> — {{ (context == 'private'
+            ? 'en attente de validation. Vous pouvez continuer et publier : votre activité sera mise en ligne dès que la catégorie sera validée.'
+            : 'en attente de validation. Enregistrez votre activité en brouillon : vous serez prévenu dès qu’elle sera disponible.')|trans }}</span></p>
     {% endif %}
 
     {% if allow_suggest|default(true) %}

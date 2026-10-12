@@ -68,6 +68,58 @@ final class EmailVerificationFlowTest extends WebTestCase
         self::assertEmailCount(1, message: 'Le renvoi n\'a pas envoyé de nouvel e-mail.');
     }
 
+    /**
+     * 12/10 : un compte non vérifié qui revient se connecter (session
+     * d'inscription perdue) a un bouton qui l'amène, en un clic, sur la saisie
+     * d'un code tout juste envoyé.
+     */
+    public function testTheLoginErrorLeadsStraightToTheVerificationScreen(): void
+    {
+        $client = static::createClient();
+        $email = sprintf('verif-connexion-%s@example.com', uniqid());
+        $this->register($client, $email);
+        $client->getCookieJar()->clear();
+
+        $client->request('GET', '/login');
+        $form = $client->getCrawler()->filterXPath('//form[.//input[@name="_email"]]')->form();
+        $form['_email'] = $email;
+        $form['_password'] = 'un-mot-de-passe-solide';
+        $client->submit($form);
+        $crawler = $client->followRedirect();
+
+        $button = $crawler->filter('.tm-login__alert button.tm-login__alert-action');
+        self::assertCount(1, $button, 'Le message « adresse non vérifiée » doit proposer d\'aller à la vérification.');
+
+        $login = $crawler->filterXPath('//form[.//input[@name="_email"]]');
+        $client->request('POST', (string) $button->attr('formaction'), [
+            '_email' => $email,
+            '_csrf_token' => (string) $login->filter('input[name="_csrf_token"]')->attr('value'),
+        ]);
+
+        self::assertResponseRedirects('/verification-email');
+        self::assertEmailCount(1, message: 'Un nouveau code doit partir.');
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('.auth-card__subtitle', $email);
+    }
+
+    public function testTheProLoginAlsoOffersTheVerification(): void
+    {
+        $client = static::createClient();
+        $email = sprintf('verif-pro-%s@example.com', uniqid());
+        $this->register($client, $email);
+        $client->getCookieJar()->clear();
+
+        $crawler = $client->request('GET', '/pro/connexion');
+        $form = $crawler->filterXPath('//form[.//input[@name="_email"]]')->form();
+        $form['_email'] = $email;
+        $form['_password'] = 'un-mot-de-passe-solide';
+        $client->submit($form);
+        $client->followRedirect();
+
+        self::assertSelectorExists('.tm-login__alert button.tm-login__alert-action');
+    }
+
     private function register(object $client, string $email): void
     {
         $crawler = $client->request('GET', '/inscription');

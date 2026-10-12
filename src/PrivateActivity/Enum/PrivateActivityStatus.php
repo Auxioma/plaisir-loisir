@@ -22,6 +22,15 @@ enum PrivateActivityStatus: string
      */
     case Draft = 'draft';
 
+    /**
+     * Publiée par l'organisateur avec une catégorie qu'il a proposée (12/10,
+     * demande du client) : il n'attend pas la validation pour tout remplir.
+     * Invisible comme un brouillon ; passe en ligne dès que l'équipe valide
+     * la catégorie, redevient brouillon si elle la refuse
+     * (CategorySuggestionService).
+     */
+    case PendingCategory = 'pending_category';
+
     /** Ouverte : accepte des demandes de participation. */
     case Open = 'open';
 
@@ -30,4 +39,10 @@ enum PrivateActivityStatus: string
 
     /** Annulée par l'organisateur. */
     case Cancelled = 'cancelled';
+
+    /** Pas (encore) en ligne : visible du seul organisateur, absente des listes. */
+    public function isUnpublished(): bool
+    {
+        return self::Draft === $this || self::PendingCategory === $this;
+    }
 }

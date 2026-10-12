@@ -30,6 +30,7 @@ final class LoginErrorPresenter
             // UserNotFound est parfois enveloppée dans BadCredentials.
             $error instanceof BadCredentialsException && $error->getPrevious() instanceof UserNotFoundException => ['kind' => 'unknown', 'message' => 'Aucun compte n’est associé à cette adresse e-mail.', 'params' => []],
             $error instanceof BadCredentialsException => ['kind' => 'password', 'message' => 'Mot de passe incorrect.', 'params' => []],
+            $error instanceof EmailNotVerifiedException => ['kind' => 'unverified', 'message' => $error->getMessageKey(), 'params' => []],
             $error instanceof TooManyLoginAttemptsAuthenticationException => ['kind' => 'throttled', 'message' => 'Trop de tentatives de connexion. Réessayez dans quelques minutes ou réinitialisez votre mot de passe.', 'params' => []],
             default => ['kind' => 'other', 'message' => $error->getMessageKey(), 'params' => array_map('strval', $error->getMessageData())],
         };
