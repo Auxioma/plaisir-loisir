@@ -16,7 +16,7 @@
     --pp-ink-soft:  #6b6f85;
     grid-template-columns: 262px minmax(0, 1fr);
 }
-.pp .pf-main { gap: 28px; padding: 30px 28px 56px 34px; }
+.pp .pf-main { gap: 28px; padding: 32px 40px 64px; }
 .pp .pf-aside { flex-basis: 352px; gap: 20px; }
 .pp .pf-content { gap: 20px; }
 .pp .pf-card { padding: 20px; }
@@ -329,7 +329,8 @@ a.pp-minitile:hover { border-color: var(--pp-blue); }
 /* ---- Messagerie ------------------------------------------------------------ */
 .pp-inbox { display: grid; grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); gap: 20px; align-items: stretch; }
 .pp-inbox__list { display: flex; flex-direction: column; padding: 14px !important; }
-.pp-inbox__search { display: flex; gap: 10px; }
+.pp-inbox__search { display: flex; gap: 10px; min-width: 0; }
+.pp-inbox__search > :first-child { flex: 1 1 auto; min-width: 0; }
 .pp-inbox__tabs { margin: 10px 0 6px; border-bottom: 1px solid #e8eaf0; flex-wrap: nowrap; overflow-x: auto; }
 .pp-inbox__tabs .pf-tab { padding: 12px 10px; font-size: 12.5px; white-space: nowrap; }
 .pp-threads { margin: 0; padding: 0; list-style: none; }
@@ -576,10 +577,10 @@ a.pp-minitile:hover { border-color: var(--pp-blue); }
     .pp-dash-top, .pp-grid--dash, .pp-grid--stats, .pp-profile-top { grid-template-columns: 1fr; }
     .pp-hero { min-height: 140px; }
     .pp-grid--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .pp-inbox { grid-template-columns: 1fr; }
+    .pp-inbox { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 1199.98px) {
-    .pp { grid-template-columns: 1fr; }
+    .pp { grid-template-columns: minmax(0, 1fr); }
     .pp-menu { flex-direction: row; overflow-x: auto; padding-bottom: 6px; }
     .pp-menu__item { flex-shrink: 0; min-height: 0; padding: 10px 14px; }
     .pp-boost { display: none; }
@@ -617,12 +618,17 @@ a.pp-minitile:hover { border-color: var(--pp-blue); }
    Composants .ew-* de l'assistant des événements, dans la coquille pro. */
 .aw-head { flex-wrap: wrap; gap: 14px; }
 .aw-head__actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.aw-steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 0 0 16px; }
+/* 3 étapes par ligne : à 6 de front, les libellés étaient tronqués
+   (« Titre, catégorie, pub… », retour client du 12/10). 6 seulement quand la
+   place le permet vraiment. */
+.aw-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0 0 20px; }
+@media (min-width: 1800px) { .aw-steps { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (max-width: 479.98px) { .aw-steps { grid-template-columns: minmax(0, 1fr); } }
 .aw-step { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #fff; border: 1px solid #e6e8ef; border-radius: 10px; color: #0b1437; text-decoration: none; }
 .aw-step__dot { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #eef0f6; color: #4b4f66; font-size: 13px; font-weight: 800; }
 .aw-step__text { display: flex; flex-direction: column; min-width: 0; }
 .aw-step__text strong { font-size: 12.5px; line-height: 16px; }
-.aw-step__text small { overflow: hidden; color: #6b6f85; font-size: 11px; white-space: nowrap; text-overflow: ellipsis; }
+.aw-step__text small { color: #6b6f85; font-size: 11.5px; line-height: 15px; }
 .aw-step.is-active { border-color: #2563eb; box-shadow: 0 0 0 1px #2563eb; }
 .aw-step.is-active .aw-step__dot { background: #2563eb; color: #fff; }
 .aw-step.is-done .aw-step__dot { background: #16a34a; color: #fff; }
@@ -632,8 +638,9 @@ a.pp-minitile:hover { border-color: var(--pp-blue); }
 .aw-tag { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid #d5d8e3; border-radius: 999px; font-size: 13px; cursor: pointer; }
 .aw-tag:has(input:checked) { border-color: #2563eb; background: #eff4ff; color: #1d4ed8; }
 .aw-tag input { accent-color: #2563eb; }
+.pl-flag { flex: none; border-radius: 2px; box-shadow: 0 0 0 1px rgba(11, 20, 55, .12); }
+svg.pl-flag[viewBox="0 0 24 24"] { box-shadow: none; color: #4b4f66; }
 .aw-choices--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.aw-gallery { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .aw-packages { display: flex; flex-direction: column; gap: 10px; }
 .aw-package { position: relative; display: grid; grid-template-columns: minmax(0, 2fr) 120px 150px; gap: 8px; padding: 12px; background: #f8f9fc; border: 1px solid #e6e8ef; border-radius: 10px; }
 .aw-package input, .aw-package select { height: 40px; padding: 0 12px; border: 1px solid #d5d8e3; border-radius: 8px; background: #fff; font-size: 13.5px; }
@@ -674,12 +681,10 @@ a.pp-minitile:hover { border-color: var(--pp-blue); }
 .aw-check li.is-ok { color: #16a34a; }
 .aw-advice ul { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; font-size: 12.5px; }
 .aw-advice .pl-icon { color: #2563eb; }
-@media (max-width: 1399.98px) { .aw-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 767.98px) {
     .aw-steps, .aw-choices--2, .aw-recap dl { grid-template-columns: 1fr; }
     .aw-package { grid-template-columns: 1fr 1fr; }
     .aw-package > input:first-child { grid-column: 1 / -1; }
-    .aw-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .aw-steps--5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .ew-row--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }

@@ -424,11 +424,20 @@
     .tm-nav__dropdown .tm-menu__item:hover { background: rgba(255, 255, 255, .1); color: var(--pl-white); }
 }
 
+/* 1024-1199 : sans ce palier, l'en-tête pro (badge, tableau de bord, compte,
+   bouton orange, burger) débordait de l'écran (12/10). */
+@media (max-width: 1199.98px) {
+    .tm-btn--dashboard { padding: 0 12px; }
+    .tm-btn--dashboard .tm-btn__label { display: none; }
+    .tm-account__id { display: none; }
+}
 @media (max-width: 991.98px) {
     .tm-search { display: none; }
+    .tm-header--pro .tm-btn--cta { display: none; }
 }
 @media (max-width: 767.98px) {
     .tm-header__space { display: none; }
+    .tm-btn--cta { display: none; }
 }
 
 @media (max-width: 575.98px) {
