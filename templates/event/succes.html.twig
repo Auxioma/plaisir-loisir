@@ -14,7 +14,7 @@
         {% elseif event.status == 'scheduled' %}{{ 'Publication programmée'|trans }}
         {% else %}{{ 'Événement créé avec succès'|trans }}{% endif %}
     </h1>
-    <img class="ev-success__badge" src="{{ asset('images/events/success-badge.jpg') }}" alt="">
+    <img class="ev-success__badge" src="{{ asset('images/events/success-badge.jpg') }}" alt="" loading="lazy" decoding="async">
     <p class="ev-success__text">
         {% if event.status == 'draft' %}{{ 'Votre événement est enregistré en brouillon : reprenez-le quand vous voulez depuis « Mes événements ».'|trans }}
         {% elseif event.status == 'scheduled' %}{{ '« %title% » sera publié le %date%.'|trans({'%title%': event.title, '%date%': event.publishAt|date('d/m/Y à H:i')}) }}

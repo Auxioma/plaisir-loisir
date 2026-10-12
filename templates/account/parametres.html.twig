@@ -42,7 +42,7 @@
         </div>
         <div class="pf-settings-account__body">
             <span class="pf-settings-account__avatar">
-                <img src="{{ asset(user.avatar) }}" alt="">
+                <img src="{{ asset(user.avatar) }}" alt="" loading="lazy" decoding="async">
                 <a href="{{ path('app_account_profile') }}" aria-label="{{ 'Changer la photo'|trans }}">{{ icon.camera(14) }}</a>
             </span>
             <dl>

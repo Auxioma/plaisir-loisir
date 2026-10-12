@@ -25,7 +25,7 @@
         <h1 class="ev-success__title">{{ 'Votre groupe a été créé'|trans }}</h1>
         {# Badge croppé de la maquette groupe (fond blanc, halo + ombre) —
            même visuel que le badge partagé des flows Événement/Cadeaux. #}
-        <img class="ev-success__badge" src="{{ asset('images/groups/success-badge.png') }}" alt="">
+        <img class="ev-success__badge" src="{{ asset('images/groups/success-badge.png') }}" alt="" loading="lazy" decoding="async">
         <p class="ev-success__text">{{ 'Vous pouvez désormais devenir organisateur :'|trans }}<br>{{ "créez un événement aujourd'hui !"|trans }}</p>
         <div class="ev-success__actions">
             <a href="{{ path('app_event_guide') }}" class="pl-btn pl-btn--primary">{{ 'Créer un événement'|trans }}</a>

@@ -13,7 +13,7 @@
 <div class="evl">
     <div class="evl-main">
         <section class="evl-hero">
-            <img class="evl-hero__bg" src="{{ asset('images/events/banner-explore.jpg') }}" alt="">
+            <img class="evl-hero__bg" src="{{ asset('images/events/banner-explore.jpg') }}" alt="" fetchpriority="high">
             <div class="evl-hero__text">
                 <h1>{{ 'Événements'|trans }}</h1>
                 <p class="evl-hero__lead">{{ 'Trouvez, rejoignez et partagez des moments uniques'|trans }}</p>
@@ -114,7 +114,7 @@
                             <span class="evl-card__meta">{{ icon.clock(13) }} {{ e.hours }}</span>
                             <span class="evl-card__foot">
                                 <span>{{ e.participants }} {{ e.participants > 1 ? 'participants'|trans : 'participant'|trans }}</span>
-                                <span class="evl-avatars">{% for a in avatars|slice(0, 4) %}<img src="{{ asset(a) }}" alt="">{% endfor %}</span>
+                                <span class="evl-avatars">{% for a in avatars|slice(0, 4) %}<img src="{{ asset(a) }}" alt="" loading="lazy" decoding="async">{% endfor %}</span>
                             </span>
                             <a class="evl-btn evl-btn--ghost evl-btn--block" href="{{ path('app_events_detail', {slug: e.slug}) }}">{{ "Voir l'événement"|trans }}</a>
                         </div>
@@ -139,7 +139,7 @@
             <ul class="evl-upcoming">
                 {% for e in upcoming %}
                     <li><a href="{{ path('app_events_detail', {slug: e.slug}) }}">
-                        <img src="{{ asset(e.image ?? 'images/events/ev-raft-clean.jpg') }}" alt="">
+                        <img src="{{ asset(e.image ?? 'images/events/ev-raft-clean.jpg') }}" alt="" loading="lazy" decoding="async">
                         <span><strong>{{ e.title }}</strong><small>{{ e.where }}</small><small>{{ e.startsAt|pf_date('d MMM')|trim('.') }} • {{ e.startsAt|date('H\\hi') }}</small></span>
                         <em>{{ icon.users(13) }} {{ e.participants }}</em>
                     </a></li>

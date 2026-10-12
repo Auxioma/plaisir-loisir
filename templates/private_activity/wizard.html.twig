@@ -62,7 +62,7 @@
         <h2 class="pf-card__title">{{ 'Aperçu'|trans }}</h2>
         <article class="aw-card">
             <span class="aw-card__media">
-                {% if draft.cover %}<img src="{{ asset(draft.cover) }}" alt="" data-ew-preview="cover">{% else %}<img alt="" data-ew-preview="cover" hidden><span class="aw-card__placeholder">{{ icon.image_frame(36) }}</span>{% endif %}
+                {% if draft.cover %}<img src="{{ asset(draft.cover) }}" alt="" data-ew-preview="cover" loading="lazy" decoding="async">{% else %}<img alt="" data-ew-preview="cover" hidden><span class="aw-card__placeholder">{{ icon.image_frame(36) }}</span>{% endif %}
                 {% if category %}<span class="aw-card__badge">{{ category.name|trans }}</span>{% elseif pending_suggestion %}<span class="aw-card__badge">{{ pending_suggestion.name }}</span>{% endif %}
             </span>
             <span class="aw-card__body">

@@ -44,7 +44,7 @@
     <div class="evn-mlist" id="evn-members-all">
         {% for m in members %}
             <div class="evn-mrow {{ m.hovered ? 'is-hovered' }}">
-                <img class="evn-mrow__avatar" src="{{ asset(m.avatar) }}" alt="">
+                <img class="evn-mrow__avatar" src="{{ asset(m.avatar) }}" alt="" loading="lazy" decoding="async">
                 <span class="evn-mrow__id">
                     <span class="evn-prow__name">{{ m.name }}</span>
                     <span class="evn-mrow__meta"><strong>{{ 'Membre'|trans }}</strong> <i>|</i> {{ 'rejoint le 24 Mai 2026'|trans }}</span>
@@ -58,7 +58,7 @@
     {# Vue filtrée « Administrateur » (capture 19) : un seul résultat. #}
     <div class="evn-mlist" id="evn-members-admin" hidden>
         <div class="evn-mrow">
-            <img class="evn-mrow__avatar" src="{{ asset('images/events/avatar-thomas.jpg') }}" alt="">
+            <img class="evn-mrow__avatar" src="{{ asset('images/events/avatar-thomas.jpg') }}" alt="" loading="lazy" decoding="async">
             <span class="evn-mrow__id">
                 <span class="evn-prow__name">Martin Thomas</span>
                 <span class="evn-mrow__meta"><strong>{{ 'Créateur'|trans }}</strong> <i>|</i> {{ 'rejoint le 24 Mai 2026'|trans }}</span>

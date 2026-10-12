@@ -9,7 +9,7 @@
 {% import '_partials/_icons.html.twig' as icon %}
 
 <div class="pf-profile">
-    <img class="pf-profile__avatar" src="{{ asset(user.avatar) }}" alt="">
+    <img class="pf-profile__avatar" src="{{ asset(user.avatar) }}" alt="" loading="lazy" decoding="async">
     <div class="pf-profile__id">
         <strong>{{ user.name }}</strong>
         <span>{{ user.email }}</span>

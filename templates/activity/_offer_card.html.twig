@@ -9,7 +9,7 @@
 
 <div class="pl-card offer-card">
     <div class="pl-card__media">
-        <img src="{{ asset(o.image) }}" alt="{{ o.title }}">
+        <img src="{{ asset(o.image) }}" alt="{{ o.title }}" loading="lazy" decoding="async">
         <span class="pl-card__tag pl-card__tag--bestseller">{{ o.discount }}%</span>
         <button type="button" class="pl-card__fav" aria-label="{{ 'Ajouter aux favoris'|trans }}">{{ icon.heart(16) }}</button>
         <span class="offer-card__timer" data-countdown="{{ o.remaining }}">

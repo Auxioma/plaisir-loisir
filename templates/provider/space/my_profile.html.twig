@@ -86,7 +86,7 @@
                 {% else %}
                     <ul class="pp-mini-list">
                         {% for s in services %}
-                            <li><img src="{{ asset(s|pp_cover) }}" alt=""><div><strong>{{ s.title }}</strong><small>{{ s.category ? s.category.name|trans }} · {{ s.city ?? s.placeLabel }}</small></div><span class="pf-pill pf-pill--{{ s.status.tone }}">{{ s.status.label|trans }}</span><a class="pp-iconlink" href="{{ path('app_pro_activities_edit', {id: s.id}) }}" aria-label="{{ 'Modifier'|trans }}">{{ icon.edit_square(16) }}</a></li>
+                            <li><img src="{{ asset(s|pp_cover) }}" alt="" loading="lazy" decoding="async"><div><strong>{{ s.title }}</strong><small>{{ s.category ? s.category.name|trans }} · {{ s.city ?? s.placeLabel }}</small></div><span class="pf-pill pf-pill--{{ s.status.tone }}">{{ s.status.label|trans }}</span><a class="pp-iconlink" href="{{ path('app_pro_activities_edit', {id: s.id}) }}" aria-label="{{ 'Modifier'|trans }}">{{ icon.edit_square(16) }}</a></li>
                         {% endfor %}
                     </ul>
                 {% endif %}

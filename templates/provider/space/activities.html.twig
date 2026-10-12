@@ -84,7 +84,7 @@
                     {% set s = r.service %}
                     <li class="pp-activity">
                         <input class="pp-check" type="checkbox" name="ids[]" value="{{ s.id }}" form="pp-bulk" aria-label="{{ 'Sélectionner'|trans }} {{ s.title }}" data-pp-bulk-item>
-                        <img class="pp-activity__img" src="{{ asset(r.cover) }}" alt="">
+                        <img class="pp-activity__img" src="{{ asset(r.cover) }}" alt="" loading="lazy" decoding="async">
                         <div class="pp-activity__main">
                             <a class="pp-activity__title" href="{{ path('app_pro_activities_edit', {id: s.id}) }}">{{ s.title }}</a>
                             <span class="pp-activity__meta">{{ s.category ? s.category.name|trans }}{% if s.city or s.placeLabel %} <i>•</i> {{ s.city ?? s.placeLabel }}{% endif %}</span>

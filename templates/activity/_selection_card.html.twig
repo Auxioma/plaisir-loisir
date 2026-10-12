@@ -5,7 +5,7 @@
 {% import '_partials/_icons.html.twig' as icon %}
 <a href="{{ path('app_activities') }}" class="pl-card sel-card">
     <div class="pl-card__media">
-        <img src="{{ asset(s.image) }}" alt="{{ s.title }}">
+        <img src="{{ asset(s.image) }}" alt="{{ s.title }}" loading="lazy" decoding="async">
     </div>
     <div class="pl-card__body">
         <span class="pl-card__title">{{ s.title }}</span>

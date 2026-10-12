@@ -91,12 +91,12 @@
             <aside class="gc-buy__side">
                 <section class="pg-card gc-summary">
                     {% if activity %}
-                        <img src="{{ asset(activity.image) }}" alt="">
+                        <img src="{{ asset(activity.image) }}" alt="" loading="lazy" decoding="async">
                         <strong>{{ activity.title }}</strong>
                         <small>{{ activity.place }}</small>
                         <p class="gc-summary__line">{{ unit|number_format(unit == unit|round ? 0 : 2, ',', ' ') }} € × <span data-gc-people-out>{{ data.people }}</span> {{ 'pers.'|trans }}</p>
                     {% else %}
-                        <img src="{{ asset('images/gifts/giftcards-stack.jpg') }}" alt="">
+                        <img src="{{ asset('images/gifts/giftcards-stack.jpg') }}" alt="" loading="lazy" decoding="async">
                         <strong>{{ 'Bon cadeau libre'|trans }}</strong>
                         <small>{{ 'Le bénéficiaire choisit son activité parmi tout le catalogue.'|trans }}</small>
                     {% endif %}

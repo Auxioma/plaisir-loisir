@@ -80,7 +80,7 @@
         <section class="pf-card">
             <h2 class="pf-card__title pp-mb">{{ 'Photos'|trans }}</h2>
             <div class="pp-photos">
-                {% if cover %}<img src="{{ asset(cover) }}" alt="{{ 'Photo principale actuelle'|trans }}">{% endif %}
+                {% if cover %}<img src="{{ asset(cover) }}" alt="{{ 'Photo principale actuelle'|trans }}" loading="lazy" decoding="async">{% endif %}
                 <div class="pf-form-grid">
                     <div class="pf-field">
                         <label for="f-cover">{{ cover ? 'Remplacer la photo principale'|trans : 'Photo principale'|trans }}</label>

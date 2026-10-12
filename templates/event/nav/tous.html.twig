@@ -63,7 +63,7 @@
             {# État « De vos groupes » vide (capture 8). #}
             <div class="evn-empty evn-empty--organizer" id="evn-empty-mygroups" hidden>
                 <span class="evn-orga-avatars">
-                    {% for a in avatars %}<img src="{{ asset(a) }}" alt="">{% endfor %}
+                    {% for a in avatars %}<img src="{{ asset(a) }}" alt="" loading="lazy" decoding="async">{% endfor %}
                     <span class="evn-orga-plus">+48</span>
                 </span>
                 <p class="evn-empty__title">{{ 'Devenez un organisateur'|trans }}</p>

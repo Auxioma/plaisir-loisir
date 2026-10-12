@@ -9,7 +9,7 @@
     <div class="evn-card__media">
         {# Meme garde-fou que la carte d'evenement : un groupe cree par
            l'assistant n'a pas de photo, et `asset(null)` fait tomber la page. #}
-        <img src="{{ asset(g.image ?? 'images/events/grp-nature.jpg') }}" alt="{{ g.name }}">
+        <img src="{{ asset(g.image ?? 'images/events/grp-nature.jpg') }}" alt="{{ g.name }}" loading="lazy" decoding="async">
         {% if g.badge %}<span class="evn-badge evn-badge--new">{{ g.badge|trans }}</span>{% endif %}
         {% include '_partials/_event_fav.html.twig' with { type: 'groupe', key: g.slug } %}
     </div>
@@ -21,7 +21,7 @@
         <span class="evn-card__foot">
             <span class="evn-card__meta">{{ icon.person(15) }} {{ g.members }} {{ 'membres'|trans }}</span>
             <span class="evn-avatars">
-                {% for a in avatars %}<img src="{{ asset(a) }}" alt="">{% endfor %}
+                {% for a in avatars %}<img src="{{ asset(a) }}" alt="" loading="lazy" decoding="async">{% endfor %}
             </span>
         </span>
     </div>

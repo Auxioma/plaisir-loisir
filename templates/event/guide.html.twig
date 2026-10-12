@@ -85,7 +85,7 @@
                 <h2>{{ 'Exemples d’événements'|trans }}</h2>
                 <p>{{ 'Laissez-vous inspirer par ces idées'|trans }}</p>
                 {% for e in examples %}
-                    <a href="{{ path('app_events_detail', {slug: e.slug}) }}"><img src="{{ asset(e.imagePath ?? 'images/events/ev-rando-clean.jpg') }}" alt=""><span><strong>{{ e.title }}</strong><small>{{ e.category ? e.category.name|trans }}</small></span></a>
+                    <a href="{{ path('app_events_detail', {slug: e.slug}) }}"><img src="{{ asset(e.imagePath ?? 'images/events/ev-rando-clean.jpg') }}" alt="" loading="lazy" decoding="async"><span><strong>{{ e.title }}</strong><small>{{ e.category ? e.category.name|trans }}</small></span></a>
                 {% endfor %}
                 <a class="ew-btn ew-btn--outline ew-btn--block" href="{{ path('app_events') }}">{{ 'Découvrir plus d’événements'|trans }}</a>
             </aside>

@@ -38,7 +38,7 @@
             </div>
         </div>
         <a class="pp-hero" href="{{ path('app_pro_activities_new') }}">
-            <img src="{{ asset('images/activities/visite-guidee.jpg') }}" alt="">
+            <img src="{{ asset('images/activities/visite-guidee.jpg') }}" alt="" loading="lazy" decoding="async">
             <span>{{ 'Gérez vos activités et développez votre entreprise avec TrouveMoi !'|trans }}</span>
         </a>
     </div>
@@ -101,7 +101,7 @@
                     {% for t in top %}
                         <li>
                             <span class="pp-top__rank">{{ loop.index }}</span>
-                            <img src="{{ asset(t.image) }}" alt="">
+                            <img src="{{ asset(t.image) }}" alt="" loading="lazy" decoding="async">
                             <div>
                                 <strong class="pp-ellipsis">{{ t.service.title }}</strong>
                                 <small>{{ t.count }} {{ t.count > 1 ? 'réservations'|trans : 'réservation'|trans }}</small>

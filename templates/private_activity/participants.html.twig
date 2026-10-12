@@ -16,7 +16,7 @@
     <a class="fa-manage__back" href="{{ path('app_account_private_activities') }}">{{ icon.arrow_left(14) }} {{ 'Retour à mes activités'|trans }}</a>
 
     <section class="fa-manage__hero">
-        <img src="{% include 'private_activity/_cover.html.twig' %}" alt="">
+        <img src="{% include 'private_activity/_cover.html.twig' %}" alt="" loading="lazy" decoding="async">
         <div>
             <h1>{{ activity.title }}</h1>
             <ul>
@@ -59,7 +59,7 @@
                     {% for participation in rows %}
                         {% set person = participation.participant %}
                         <li>
-                            <img src="{{ asset(person and person.avatarPath ? person.avatarPath : 'images/account/avatar-default.svg') }}" alt="">
+                            <img src="{{ asset(person and person.avatarPath ? person.avatarPath : 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
                             <span class="fa-people__who">
                                 <strong>{{ person ? person.firstName ~ ' ' ~ person.lastName : 'Membre supprimé'|trans }}</strong>
                                 <small>{{ 'Demande du'|trans }} {{ participation.createdAt ? participation.createdAt|pf_date('d MMM y') : '—' }}</small>

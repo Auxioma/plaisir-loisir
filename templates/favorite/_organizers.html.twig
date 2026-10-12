@@ -7,7 +7,7 @@
     <ul class="pf-list fv-orgs" data-favorite-list data-favorite-removed="{{ 'Retiré de vos favoris.'|trans }}" data-favorite-undo="{{ 'Annuler'|trans }}">
         {% for o in list %}
             <li data-favorite-card>
-                <img src="{{ asset(o.user.avatarPath ?? 'images/account/avatar-default.svg') }}" alt="">
+                <img src="{{ asset(o.user.avatarPath ?? 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
                 <span class="pf-list__body"><strong>{{ o.name }}</strong><small>{{ o.events }} {{ o.events > 1 ? 'événements'|trans : 'événement'|trans }}</small></span>
                 {% include '_partials/_event_fav.html.twig' with { type: 'organisateur', key: o.user.id ~ '', class: 'fv-heart fv-heart--boxed' } %}
             </li>

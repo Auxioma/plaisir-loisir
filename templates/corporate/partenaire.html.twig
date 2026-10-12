@@ -23,7 +23,7 @@
             </div>
             <ul class="pg-hero__checks pg-mt"><li>{{ icon.shield_check(18) }} {{ 'Partenariat 100% gratuit à la création • Sans engagement'|trans }}</li></ul>
         </div>
-        <img class="pg-hero__img" src="{{ asset('images/corporate/partner-hero.jpg') }}" alt="">
+        <img class="pg-hero__img" src="{{ asset('images/corporate/partner-hero.jpg') }}" alt="" fetchpriority="high">
         {% include 'corporate/_partials/_hero_stats.html.twig' with { items: stats } %}
     </header>
 
@@ -51,7 +51,7 @@
                 {% for t in testimonials %}
                     <figure class="pg-quote">
                         <blockquote>« {{ t.quote|trans }} »</blockquote>
-                        <figcaption><img src="{{ asset(t.photo) }}" alt=""><span><strong>{{ t.author }}</strong><small>{{ t.role|trans }}</small></span></figcaption>
+                        <figcaption><img src="{{ asset(t.photo) }}" alt="" loading="lazy" decoding="async"><span><strong>{{ t.author }}</strong><small>{{ t.role|trans }}</small></span></figcaption>
                     </figure>
                 {% endfor %}
             </div>

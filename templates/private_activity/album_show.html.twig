@@ -39,7 +39,7 @@
         <div class="card-grid evn-grid evn-album-photos">
             {% for photo in photos %}
                 <span class="pl-album-photo">
-                    <img src="{{ asset(photo.path) }}" alt="">
+                    <img src="{{ asset(photo.path) }}" alt="" loading="lazy" decoding="async">
                     {% if photo.author == app.user or activity.organizer == app.user %}
                         <form method="post" action="{{ path('app_account_album_photo_delete', {id: activity.id, photoId: photo.id}) }}" class="pl-album-photo__form">
                             <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">

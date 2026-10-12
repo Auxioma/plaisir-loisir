@@ -15,11 +15,11 @@
     {% for button in social_buttons %}
         {% if social_login_enabled(button.service) %}
             <a class="tm-login__social" href="{{ path('app_social_start', { service: button.service }) }}">
-                <img src="{{ asset('images/social-' ~ button.service ~ '.svg') }}" alt="">{{ button.label|trans }}
+                <img src="{{ asset('images/social-' ~ button.service ~ '.svg') }}" alt="" loading="lazy" decoding="async">{{ button.label|trans }}
             </a>
         {% else %}
             <button type="button" class="tm-login__social" disabled title="{{ 'Bientôt disponible'|trans }}">
-                <img src="{{ asset('images/social-' ~ button.service ~ '.svg') }}" alt="">{{ button.label|trans }}
+                <img src="{{ asset('images/social-' ~ button.service ~ '.svg') }}" alt="" loading="lazy" decoding="async">{{ button.label|trans }}
             </button>
         {% endif %}
     {% endfor %}

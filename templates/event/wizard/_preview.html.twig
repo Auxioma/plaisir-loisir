@@ -8,7 +8,7 @@
 <aside class="ew-card ew-preview" aria-label="{{ 'Aperçu de l’événement'|trans }}">
     <h2 class="ew-preview__title">{{ 'Aperçu de l’événement'|trans }}</h2>
     <div class="ew-preview__cover{{ draft.cover ?? '' ? '' : ' is-empty' }}">
-        <img src="{{ asset((draft.cover ?? '') ?: 'images/events/preview-yoga.jpg') }}" alt="" data-ew-preview="cover">
+        <img src="{{ asset((draft.cover ?? '') ?: 'images/events/preview-yoga.jpg') }}" alt="" data-ew-preview="cover" loading="lazy" decoding="async">
         {% if step == 5 %}<label class="ew-preview__add" for="ew-cover">{{ icon.camera(16) }} {{ 'Ajouter une image'|trans }}</label>
         {% else %}<span class="ew-preview__add">{{ icon.camera(16) }} {{ (draft.cover ?? '') ? 'Image ajoutée'|trans : 'Image à l’étape 5'|trans }}</span>{% endif %}
     </div>
@@ -23,7 +23,7 @@
         <div>
             <small>{{ 'Organisé par'|trans }}</small>
             <span class="ew-preview__org">
-                {% if me.avatarPath %}<img src="{{ asset(me.avatarPath) }}" alt="">{% else %}<i>{{ (me.firstName|first ~ me.lastName|first)|upper }}</i>{% endif %}
+                {% if me.avatarPath %}<img src="{{ asset(me.avatarPath) }}" alt="" loading="lazy" decoding="async">{% else %}<i>{{ (me.firstName|first ~ me.lastName|first)|upper }}</i>{% endif %}
                 {{ me.firstName }} {{ me.lastName|first }}.
             </span>
         </div>

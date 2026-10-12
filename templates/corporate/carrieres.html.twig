@@ -23,7 +23,7 @@
             </div>
             <ul class="pg-hero__checks pg-mt"><li>{{ icon.users(20) }} {{ 'Rejoignez une équipe passionnée et bienveillante'|trans }}</li></ul>
         </div>
-        <img class="pg-hero__img" src="{{ asset('images/corporate/careers-hero.jpg') }}" alt="">
+        <img class="pg-hero__img" src="{{ asset('images/corporate/careers-hero.jpg') }}" alt="" fetchpriority="high">
         {% include 'corporate/_partials/_hero_stats.html.twig' with { items: stats } %}
     </header>
 
@@ -52,14 +52,14 @@
                 {% for t in testimonials %}
                     <figure class="pg-quote">
                         <blockquote>« {{ t.quote|trans }} »</blockquote>
-                        <figcaption><img src="{{ asset(t.photo) }}" alt=""><span><strong>{{ t.author }}</strong><small>{{ t.role|trans }}</small></span></figcaption>
+                        <figcaption><img src="{{ asset(t.photo) }}" alt="" loading="lazy" decoding="async"><span><strong>{{ t.author }}</strong><small>{{ t.role|trans }}</small></span></figcaption>
                     </figure>
                 {% endfor %}
             </div>
             <div class="pg-quotes__nav"><button type="button" data-pg-dir="-1" aria-label="{{ 'Précédent'|trans }}">{{ icon.chevron_left(16) }}</button><button type="button" data-pg-dir="1" aria-label="{{ 'Suivant'|trans }}">{{ icon.chevron_right(16) }}</button></div>
         </aside>
         <aside class="pg-card pg-spont">
-            <img src="{{ asset('images/corporate/careers-candidature.png') }}" alt="">
+            <img src="{{ asset('images/corporate/careers-candidature.png') }}" alt="" loading="lazy" decoding="async">
             <h2>{{ 'Envoyez-nous votre candidature spontanée !'|trans }}</h2>
             <p>{{ 'Vous ne trouvez pas l’offre qui vous correspond ?'|trans }}</p>
             <a class="pg-btn" href="{{ path('app_corporate_contact', {sujet: 'Candidature spontanée'}) }}">{{ 'Postuler spontanément'|trans }}</a>

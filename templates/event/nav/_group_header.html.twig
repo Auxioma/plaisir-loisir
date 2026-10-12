@@ -13,7 +13,7 @@
 {% import '_partials/_icons.html.twig' as icon %}
 
 <div class="evn-ghead">
-    <img class="evn-ghead__cover" src="{{ asset(group.image ?? 'images/events/grp-fitness-cover.jpg') }}" alt="{{ group.name }}">
+    <img class="evn-ghead__cover" src="{{ asset(group.image ?? 'images/events/grp-fitness-cover.jpg') }}" alt="{{ group.name }}" fetchpriority="high">
     <div class="evn-ghead__id">
         <h1 class="evn-ghead__title">{{ group.name }}</h1>
         <p class="evn-groupcard__rating evn-ghead__rating">
