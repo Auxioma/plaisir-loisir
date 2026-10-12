@@ -27,17 +27,13 @@
                     {# Messages distincts (05/10) : adresse inconnue / mot de passe / trop d'essais. #}
                     <div class="tm-login__alert" role="alert">
                         {{ login_error.message|trans }}
-                        {% if login_error.kind == 'unknown' %}<a href="{{ path('app_register') }}">{{ 'Créer un compte'|trans }}</a>
+                        {% if login_error.kind == 'unverified' %}<button type="submit" class="tm-login__alert-action" formaction="{{ path('app_email_verification_from_login') }}" formnovalidate>{{ 'Vérifier mon adresse e-mail'|trans }}</button>
+                        {% elseif login_error.kind == 'unknown' %}<a href="{{ path('app_register') }}">{{ 'Créer un compte'|trans }}</a>
                         {% else %}<a href="{{ path('app_forgot_password_request') }}">{{ 'Mot de passe oublié ?'|trans }}</a>{% endif %}
                     </div>
                 {% elseif error %}
                     <div class="tm-login__alert" role="alert">
                         {{ error.messageKey|trans(error.messageData, 'security') }}
-                        {# Compte « en attente » (AccountChecker::checkPreAuth) : il doit
-                           pouvoir redemander un code. #}
-                        {% if 'pas encore vérifiée' in error.messageKey %}
-                            <a href="{{ path('app_email_verification_request') }}">{{ 'Recevoir un nouveau code'|trans }}</a>
-                        {% endif %}
                     </div>
                 {% endif %}
 

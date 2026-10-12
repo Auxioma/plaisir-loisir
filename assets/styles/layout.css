@@ -889,6 +889,8 @@
     font-size: 14px;
 }
 .tm-login__alert a { display: block; margin-top: 4px; color: var(--tm-pro); font-weight: 600; }
+/* Bouton qui poste le formulaire de connexion vers la vérification d'e-mail : même allure que le lien. */
+.tm-login__alert-action { display: block; margin-top: 4px; padding: 0; background: none; border: 0; color: var(--tm-pro); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
 
 .tm-login__label {
     margin-top: 22px;

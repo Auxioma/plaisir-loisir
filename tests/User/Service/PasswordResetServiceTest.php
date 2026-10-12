@@ -8,6 +8,7 @@ use App\Notification\Entity\Notification;
 use App\Notification\Repository\NotificationRepository;
 use App\Notification\Service\NotificationService;
 use App\User\Entity\User;
+use App\User\Enum\UserStatus;
 use App\User\Repository\UserRepository;
 use App\User\Service\PasswordResetService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -48,6 +49,28 @@ final class PasswordResetServiceTest extends TestCase
         self::assertTrue($service->reset($user->getEmail(), $code, 'NouveauMotDePasse123'));
         self::assertCount(1, $notified);
         self::assertSame($user, $notified[0]->getRecipient());
+    }
+
+    /**
+     * 12/10 : le code de réinitialisation arrive dans la boîte mail, il prouve
+     * l'adresse. Un compte jamais vérifié n'est plus bloqué à la connexion
+     * juste après avoir changé son mot de passe.
+     */
+    public function testResettingThePasswordVerifiesAPendingAccount(): void
+    {
+        $user = (new User())->setEmail('pending@example.com')->setFirstName('Paul')->setLastName('Attente')->setStatus(UserStatus::Pending);
+
+        $users = $this->createStub(UserRepository::class);
+        $users->method('findOneBy')->willReturn($user);
+        $hasher = $this->createStub(UserPasswordHasherInterface::class);
+        $hasher->method('hashPassword')->willReturn('hashed');
+        $em = $this->createStub(EntityManagerInterface::class);
+
+        $code = $this->captureSentCode($em, $users, $hasher, $user);
+        $service = new PasswordResetService($em, $users, $hasher, $this->createStub(MailerInterface::class), new NotificationService($em, $this->createStub(NotificationRepository::class)));
+
+        self::assertTrue($service->reset($user->getEmail(), $code, 'NouveauMotDePasse123'));
+        self::assertSame(UserStatus::Active, $user->getStatus());
     }
 
     private function captureSentCode(

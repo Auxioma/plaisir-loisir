@@ -7,6 +7,7 @@ namespace App\User\Service;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\Service\NotificationService;
 use App\User\Entity\User;
+use App\User\Enum\UserStatus;
 use App\User\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -147,6 +148,12 @@ final class PasswordResetService
         $user->setPassword($this->passwordHasher->hashPassword($user, $newPassword));
         // Un code ne sert qu'une fois.
         $user->clearPasswordReset();
+        // Le code est arrivé dans la boîte mail : l'adresse est prouvée. Sans
+        // cela, un compte jamais vérifié changeait son mot de passe puis
+        // restait bloqué à la connexion (12/10).
+        if (UserStatus::Pending === $user->getStatus()) {
+            $user->markEmailVerified();
+        }
 
         $this->entityManager->flush();
 

@@ -60,7 +60,7 @@ final class AccountChecker implements UserCheckerInterface
         }
 
         if (UserStatus::Pending === $user->getStatus()) {
-            throw new CustomUserMessageAccountStatusException('Votre adresse e-mail n\'est pas encore vérifiée. Consultez vos e-mails ou demandez un nouveau code depuis la page de vérification.');
+            throw new EmailNotVerifiedException();
         }
     }
 

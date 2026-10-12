@@ -358,6 +358,46 @@ final class SecurityController extends AbstractController
         ]);
     }
 
+    /**
+     * Bouton « Vérifier mon adresse e-mail » de l'écran de connexion (12/10) :
+     * un compte jamais vérifié y était refusé sans chemin vers la
+     * vérification. Le bouton poste le formulaire de connexion lui-même
+     * (formaction) : l'adresse tapée et le jeton « authenticate » arrivent ici,
+     * un code part et l'on atterrit directement sur la saisie du code.
+     */
+    #[Route(path: ['fr' => '/verification-email/depuis-connexion', 'en' => '/en/verify-email/from-login'], name: 'app_email_verification_from_login', methods: ['POST'])]
+    public function emailVerificationFromLogin(Request $request, EmailVerificationService $emailVerification, #[\Symfony\Component\DependencyInjection\Attribute\Autowire(service: 'limiter.password_reset_request')] \Symfony\Component\RateLimiter\RateLimiterFactory $requestLimiter): Response
+    {
+        $session = $request->getSession();
+        $email = trim((string) $request->request->get('_email'));
+
+        if (!$this->isCsrfTokenValid('authenticate', (string) $request->request->get('_csrf_token')) || '' === $email) {
+            return $this->redirectToRoute('app_email_verification_request');
+        }
+        if (!$requestLimiter->create((string) $request->getClientIp())->consume()->isAccepted()) {
+            $this->addFlash('error', 'Trop de demandes. Réessayez dans quelques minutes.');
+
+            return $this->redirectToRoute('app_login');
+        }
+
+        $outcome = $emailVerification->resend($email);
+        if ('unknown' === $outcome) {
+            $this->addFlash('error', 'Aucun compte n’est associé à cette adresse e-mail. Vérifiez l’adresse ou créez un compte.');
+
+            return $this->redirectToRoute('app_email_verification_request');
+        }
+        if ('verified' === $outcome) {
+            $this->addFlash('success', 'Cette adresse est déjà vérifiée : vous pouvez vous connecter.');
+
+            return $this->redirectToRoute('app_login');
+        }
+
+        $session->set(self::SESSION_VERIFY_EMAIL, $email);
+        $this->addFlash('success', sprintf('Un code de vérification vient d’être envoyé à %s.', $email));
+
+        return $this->redirectToRoute('app_email_verification');
+    }
+
     #[Route(path: ['fr' => '/verification-email', 'en' => '/en/verify-email'], name: 'app_email_verification', methods: ['GET', 'POST'])]
     public function emailVerification(Request $request, EmailVerificationService $emailVerification): Response
     {
@@ -392,7 +432,7 @@ final class SecurityController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        return $this->render('security/email_verification.html.twig');
+        return $this->render('security/email_verification.html.twig', ['email' => $email]);
     }
 
     #[Route(path: ['fr' => '/verification-email/renvoyer', 'en' => '/en/verify-email/resend'], name: 'app_email_verification_resend', methods: ['POST'])]

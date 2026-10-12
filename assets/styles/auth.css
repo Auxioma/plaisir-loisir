@@ -34,7 +34,9 @@
        entière, d'un bord à l'autre, et le texte garde son ciel derrière lui.
        913 / 1440 = 0,634. */
     min-height: max(913px, calc(100vw * 913 / 1440));
-    padding: 82px 141px 103px 164px;
+    /* 164 / 141 px à 1440 (maquette), proportionnels en dessous : entre 1200
+       et 1440 les marges fixes poussaient la carte hors de l'écran (12/10). */
+    padding: 82px min(141px, 9.8vw) 103px min(164px, 11.4vw);
     overflow: hidden;
 }
 
@@ -57,11 +59,11 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 92px;
+    gap: min(92px, 6.4vw);
 }
 
 /* ---- Colonne de gauche (accroche) -------------------------------------- */
-.auth-welcome { width: 590px; flex-shrink: 0; }
+.auth-welcome { width: 590px; min-width: 0; flex-shrink: 1; }
 
 .auth-welcome__title {
     font-size: 44px;
@@ -322,6 +324,14 @@
     border-radius: var(--pl-radius-sm);
     color: var(--pl-error);
     font-size: var(--pl-fs-body-sm);
+}
+
+/* Sous 1440, la colonne d'accroche se resserre : le titre suit la largeur
+   pour que le nom de marque tienne toujours sur sa ligne, sans glisser sous
+   la carte ni descendre le texte sur l'illustration. */
+@media (min-width: 1200px) and (max-width: 1439.98px) {
+    .auth-welcome__title { font-size: 2.6vw; line-height: 1.2; }
+    .auth-welcome__subtitle { font-size: 16px; }
 }
 
 /* ---- Adaptation pour largeurs intermédiaires (< 1200px) ---------------- */
