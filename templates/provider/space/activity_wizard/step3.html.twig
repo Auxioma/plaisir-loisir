@@ -25,19 +25,7 @@
 <div class="ew-field{{ errors.gallery is defined ? ' has-error' }}">
     <label>{{ 'Galerie de la fiche'|trans }} ({{ 'conseillé'|trans }})</label>
     <p class="ew-hint">{{ 'Jusqu’à'|trans }} {{ max_gallery }} {{ 'photos : le lieu, l’activité en action, l’équipement, les participants.'|trans }}</p>
-    <div class="ew-gallery aw-gallery" data-ew-gallery data-max="{{ max_gallery }}">
-        {% for path in draft.gallery %}
-            <span class="ew-gallery__item">
-                <img src="{{ asset(path) }}" alt="">
-                <label class="ew-gallery__remove" title="{{ 'Retirer'|trans }}"><input type="checkbox" name="remove_gallery[]" value="{{ path }}"> {{ icon.x(12) }}</label>
-            </span>
-        {% endfor %}
-        {% if draft.gallery|length < max_gallery %}
-            {% for i in 1..(max_gallery - draft.gallery|length) %}
-                <label class="ew-gallery__add" data-ew-gallery-slot><input type="file" name="gallery[]" accept="image/jpeg,image/png,image/webp"><span>{{ icon.plus(18) }}</span></label>
-            {% endfor %}
-        {% endif %}
-    </div>
+    {% include 'event/wizard/_gallery.html.twig' with {gallery: draft.gallery, max: max_gallery} %}
     {{ ui.err(errors, 'gallery') }}
 </div>
 

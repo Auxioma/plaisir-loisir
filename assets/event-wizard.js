@@ -225,15 +225,62 @@ function initImages(form) {
             if (e.dataTransfer.files.length) { cover.files = e.dataTransfer.files; show(cover.files[0]); }
         });
     }
-    qsa(form, '[data-ew-gallery-slot] input').forEach((input) => input.addEventListener('change', () => {
-        const slot = input.parentElement;
-        qs(slot, 'img')?.remove();
-        if (input.files[0]) {
+    qsa(form, '[data-ew-gallery]').forEach(initGallery);
+}
+
+/*
+ * Galerie (12/10) : sélection ou dépôt de plusieurs photos à la fois. La liste
+ * choisie est tenue ici et recopiée dans le champ (DataTransfer) : on peut
+ * ajouter en plusieurs fois et retirer une photo avant l'envoi.
+ */
+function initGallery(gallery) {
+    const input = qs(gallery, '[data-ew-gallery-input]');
+    const drop = qs(gallery, '[data-ew-gallery-drop]');
+    const count = gallery.parentElement.querySelector('[data-ew-gallery-count]');
+    if (!input || !drop || typeof DataTransfer === 'undefined') return;
+    const max = parseInt(gallery.dataset.max, 10) || 5;
+    const removeLabel = document.documentElement.lang?.startsWith('en') ? 'Remove' : 'Retirer';
+    let files = [];
+
+    const kept = () => qsa(gallery, '[data-ew-gallery-saved]').filter((i) => !qs(i, 'input')?.checked).length;
+    const render = () => {
+        const dt = new DataTransfer();
+        files.forEach((f) => dt.items.add(f));
+        input.files = dt.files;
+        qsa(gallery, '[data-ew-gallery-new]').forEach((n) => n.remove());
+        files.forEach((file, index) => {
+            const item = document.createElement('span');
+            item.className = 'ew-gallery__item';
+            item.dataset.ewGalleryNew = '1';
             const img = document.createElement('img');
-            img.src = URL.createObjectURL(input.files[0]);
-            slot.prepend(img);
-        }
-    }));
+            img.src = URL.createObjectURL(file);
+            img.alt = '';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'ew-gallery__remove';
+            btn.title = removeLabel;
+            btn.setAttribute('aria-label', `${removeLabel} ${file.name}`);
+            btn.textContent = '×';
+            btn.addEventListener('click', () => { files.splice(index, 1); render(); });
+            item.append(img, btn);
+            gallery.insertBefore(item, drop);
+        });
+        const total = kept() + files.length;
+        drop.hidden = total >= max;
+        if (count) count.textContent = `${total} / ${max} ${count.dataset.label || ''}`;
+    };
+    const add = (list) => {
+        const room = max - kept() - files.length;
+        files = files.concat([...list].filter((f) => /^image\/(jpeg|png|webp)$/.test(f.type)).slice(0, Math.max(0, room)));
+        render();
+    };
+
+    input.addEventListener('change', () => add(input.files));
+    ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('is-over'); }));
+    ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, () => drop.classList.remove('is-over')));
+    drop.addEventListener('drop', (e) => { e.preventDefault(); add(e.dataTransfer.files); });
+    // Une photo enregistrée cochée « retirer » libère une place.
+    qsa(gallery, '[data-ew-gallery-saved] input').forEach((c) => c.addEventListener('change', render));
 }
 
 function initInvites(form) {
@@ -305,17 +352,81 @@ function initPublish(form) {
     apply();
 }
 
-// Contrôle navigateur des champs requis, seulement pour « Suivant / Publier ».
+// Contrôle des champs requis, seulement pour « Suivant / Publier ». Plus de
+// bulles du navigateur (12/10, retour client) : le message s'affiche sous le
+// champ, comme les erreurs renvoyées par le serveur, avec la formulation du
+// validateur Symfony.
+const SYMFONY_MESSAGES = {
+    fr: {
+        missing: 'Cette valeur ne doit pas être vide.',
+        choice: 'Vous devez sélectionner au moins un choix.',
+        short: (n) => `Cette chaîne est trop courte. Elle doit avoir au minimum ${n} caractère${n > 1 ? 's' : ''}.`,
+        long: (n) => `Cette chaîne est trop longue. Elle doit avoir au maximum ${n} caractère${n > 1 ? 's' : ''}.`,
+        min: (n) => `Cette valeur doit être supérieure ou égale à ${n}.`,
+        max: (n) => `Cette valeur doit être inférieure ou égale à ${n}.`,
+        email: 'Cette valeur n\'est pas une adresse email valide.',
+        url: 'Cette valeur n\'est pas une URL valide.',
+        invalid: 'Cette valeur n\'est pas valide.',
+    },
+    en: {
+        missing: 'This value should not be blank.',
+        choice: 'You must select at least one choice.',
+        short: (n) => `This value is too short. It should have ${n} character${n > 1 ? 's' : ''} or more.`,
+        long: (n) => `This value is too long. It should have ${n} character${n > 1 ? 's' : ''} or less.`,
+        min: (n) => `This value should be greater than or equal to ${n}.`,
+        max: (n) => `This value should be less than or equal to ${n}.`,
+        email: 'This value is not a valid email address.',
+        url: 'This value is not a valid URL.',
+        invalid: 'This value is not valid.',
+    },
+};
+
+function validationMessage(field) {
+    const t = SYMFONY_MESSAGES[(document.documentElement.lang || 'fr').slice(0, 2)] || SYMFONY_MESSAGES.fr;
+    const v = field.validity;
+    if (v.valueMissing) return field.type === 'radio' || field.type === 'checkbox' ? t.choice : t.missing;
+    if (v.tooShort) return t.short(field.minLength);
+    if (v.tooLong) return t.long(field.maxLength);
+    if (v.rangeUnderflow) return t.min(field.min);
+    if (v.rangeOverflow) return t.max(field.max);
+    if (v.typeMismatch) return field.type === 'email' ? t.email : field.type === 'url' ? t.url : t.invalid;
+    return t.invalid;
+}
+
 function initSubmit(form) {
+    const holder = (field) => field.closest('.ew-field, .ew-choices, .ew-cats, .ew-visibility, .ew-publish, fieldset') || field.parentElement;
+    const clear = (box) => {
+        box.querySelectorAll(':scope > .ew-error[data-client]').forEach((e) => e.remove());
+        if (box.dataset.clientError) { box.classList.remove('has-error'); delete box.dataset.clientError; }
+    };
     form.addEventListener('submit', (event) => {
         const action = event.submitter?.value;
         if (action !== 'next') return;
-        if (!form.checkValidity()) {
-            event.preventDefault();
-            const invalid = form.querySelector(':invalid');
-            invalid?.closest('.ew-field, .ew-choices, .ew-cats, .ew-visibility, .ew-publish')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            form.reportValidity();
-        }
+        form.querySelectorAll('.ew-error[data-client]').forEach((e) => e.remove());
+        if (form.checkValidity()) return;
+        event.preventDefault();
+        const done = new Set();
+        let first = null;
+        form.querySelectorAll(':invalid').forEach((field) => {
+            if (!field.matches('input, select, textarea')) return;
+            const box = holder(field);
+            if (done.has(box)) return;
+            done.add(box);
+            first ??= box;
+            box.querySelectorAll(':scope > .ew-error').forEach((e) => e.remove());
+            const p = document.createElement('p');
+            p.className = 'ew-error';
+            p.setAttribute('role', 'alert');
+            p.dataset.client = '1';
+            p.textContent = validationMessage(field);
+            box.appendChild(p);
+            if (!box.classList.contains('has-error')) { box.classList.add('has-error'); box.dataset.clientError = '1'; }
+            const off = () => { if (field.checkValidity()) clear(box); };
+            field.addEventListener('input', off);
+            field.addEventListener('change', off);
+        });
+        first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        form.querySelector(':invalid')?.focus({ preventScroll: true });
     });
 }
 

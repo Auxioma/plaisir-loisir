@@ -25,20 +25,7 @@
 <div class="ew-field{{ errors.gallery is defined ? ' has-error' }}">
     <label>{{ 'Galerie d’images'|trans }} ({{ 'optionnel'|trans }})</label>
     <p class="ew-hint">{{ 'Ajoutez jusqu’à 5 images supplémentaires pour présenter votre événement.'|trans }}</p>
-    <div class="ew-gallery" data-ew-gallery data-max="5">
-        {% for path in draft.gallery %}
-            <span class="ew-gallery__item">
-                <img src="{{ asset(path) }}" alt="">
-                <label class="ew-gallery__remove" title="{{ 'Retirer'|trans }}"><input type="checkbox" name="remove_gallery[]" value="{{ path }}"> {{ icon.x(12) }}</label>
-            </span>
-        {% endfor %}
-        {% for i in 1..(5 - draft.gallery|length) %}
-            <label class="ew-gallery__add" data-ew-gallery-slot>
-                <input type="file" name="gallery[]" accept="image/jpeg,image/png,image/webp">
-                <span>{{ icon.plus(18) }}</span>
-            </label>
-        {% endfor %}
-    </div>
+    {% include 'event/wizard/_gallery.html.twig' with {gallery: draft.gallery, max: 5} %}
     {{ ui.err(errors, 'gallery') }}
 </div>
 

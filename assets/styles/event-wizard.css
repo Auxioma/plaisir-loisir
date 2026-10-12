@@ -213,6 +213,15 @@ a.ew-step:hover { background: #f7f7fb; }
 .ew-gallery__remove { position: absolute; top: 4px; right: 4px; display: inline-flex; align-items: center; gap: 2px; padding: 2px 4px; background: rgba(255, 255, 255, .9); border-radius: 6px; font-size: 11px; cursor: pointer; }
 .ew-gallery__remove input { margin: 0; }
 .ew-gallery__item:has(input:checked) img { opacity: .3; }
+/* Zone d'ajout multiple (12/10). */
+.ew-gallery__drop { position: relative; display: flex; flex: 1 1 220px; align-items: center; gap: 12px; min-height: 80px; padding: 12px 16px; border: 1.5px dashed #b9a6fb; border-radius: 8px; background: #fbfaff; color: var(--ew-ink); cursor: pointer; }
+.ew-gallery__drop[hidden] { display: none; }
+.ew-gallery__drop.is-over, .ew-gallery__drop:hover { border-color: var(--ew-violet); background: var(--ew-violet-soft); }
+.ew-gallery__drop input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+.ew-gallery__drop-ico { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ew-violet-soft); color: var(--ew-violet); }
+.ew-gallery__drop-text { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; }
+.ew-gallery__drop-text small { color: #6b6f85; font-size: 12px; }
+button.ew-gallery__remove { border: 0; font-size: 16px; line-height: 1; padding: 2px 7px; }
 
 /* Invitations. */
 .ew-tabs { display: flex; gap: 24px; margin-bottom: 16px; border-bottom: 1px solid var(--ew-line); }
