@@ -12,6 +12,7 @@ use App\Provider\Repository\ProviderDocumentRepository;
 use App\Provider\Repository\ProviderProfileRepository;
 use App\Provider\Service\ProviderDocumentStorage;
 use App\Provider\Service\ProviderRegistrationService;
+use App\Shared\Analytics\AnalyticsEventQueue;
 use App\Shared\Controller\FlashesFormErrorsTrait;
 use App\User\Entity\User;
 use App\User\Service\PasswordResetService;
@@ -75,7 +76,7 @@ final class ProviderAuthController extends AbstractController
         name: 'app_pro_register',
         methods: ['GET', 'POST'],
     )]
-    public function register(Request $request, ProviderRegistrationService $registration): Response
+    public function register(Request $request, ProviderRegistrationService $registration, AnalyticsEventQueue $analytics): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_home');
@@ -100,6 +101,8 @@ final class ProviderAuthController extends AbstractController
                 );
 
                 $request->getSession()->set(self::SESSION_PROFILE, (string) $profile->getId());
+
+                $analytics->push('sign_up', ['method' => 'email', 'account_type' => 'pro']);
 
                 return $this->redirectToRoute('app_pro_register_documents');
             } catch (ConflictHttpException) {

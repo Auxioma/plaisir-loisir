@@ -9,6 +9,8 @@ twig:
             tiktok: '%env(SOCIAL_TIKTOK_URL)%'
             youtube: '%env(SOCIAL_YOUTUBE_URL)%'
             linkedin: '%env(SOCIAL_LINKEDIN_URL)%'
+        # Google Analytics 4 (12/10) : vide = aucune mesure d'audience.
+        ga_measurement_id: '%env(GA_MEASUREMENT_ID)%'
 
 when@test:
     twig:

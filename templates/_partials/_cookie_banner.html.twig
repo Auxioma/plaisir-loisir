@@ -1,0 +1,51 @@
+{#
+    Bandeau cookies (12/10, obligation légale rappelée par le client).
+
+    Règles CNIL respectées : aucun traceur facultatif avant le choix ;
+    « Tout refuser » aussi visible et accessible que « Tout accepter » ;
+    choix par catégorie ; choix modifiable à tout moment (lien « Gérer mes
+    cookies » du pied de page, data-cookie-open). Durée : 13 mois
+    (CookieConsentService).
+
+    Toujours présent dans la page (masqué une fois le choix fait) pour pouvoir
+    être rouvert. Fonctionne sans JavaScript (envoi de formulaire classique) ;
+    avec, assets/cookie-consent.js enregistre le choix sans recharger et lance
+    Google Analytics si la mesure d'audience est acceptée.
+#}
+{% set needed = cookie_banner_needed() %}
+<section class="tm-cookies" data-cookie-banner{{ not needed ? ' hidden' }} role="dialog" aria-live="polite" aria-labelledby="tm-cookies-title">
+    <form class="tm-cookies__box" method="post" action="{{ path('app_cookie_consent') }}" data-cookie-form>
+        <input type="hidden" name="_token" value="{{ csrf_token('cookie_consent') }}">
+        <p class="tm-cookies__title" id="tm-cookies-title">{{ 'Nous respectons votre vie privée'|trans }}</p>
+        <p class="tm-cookies__text">
+            {{ 'Nous utilisons des cookies nécessaires au fonctionnement du site et, avec votre accord, des cookies de mesure d’audience (Google Analytics) pour améliorer nos services. Vous pouvez changer d’avis à tout moment.'|trans }}
+            <a href="{{ path('app_corporate_cookies') }}">{{ 'Politique de cookies'|trans }}</a>
+        </p>
+
+        <div class="tm-cookies__prefs" data-cookie-prefs hidden>
+            <label class="tm-cookies__pref">
+                <input type="checkbox" checked disabled>
+                <span><strong>{{ 'Nécessaires'|trans }}</strong><small>{{ 'Connexion, sécurité, panier, langue. Toujours actifs.'|trans }}</small></span>
+            </label>
+            <label class="tm-cookies__pref">
+                <input type="checkbox" name="categories[]" value="statistics"{{ cookie_allows('statistics') ? ' checked' }}>
+                <span><strong>{{ 'Mesure d’audience'|trans }}</strong><small>{{ 'Google Analytics : pages vues et réservations, pour améliorer le site.'|trans }}</small></span>
+            </label>
+            <label class="tm-cookies__pref">
+                <input type="checkbox" name="categories[]" value="preferences"{{ cookie_allows('preferences') ? ' checked' }}>
+                <span><strong>{{ 'Préférences'|trans }}</strong><small>{{ 'Mémorisation de vos filtres et de votre affichage.'|trans }}</small></span>
+            </label>
+            <label class="tm-cookies__pref">
+                <input type="checkbox" name="categories[]" value="marketing"{{ cookie_allows('marketing') ? ' checked' }}>
+                <span><strong>{{ 'Publicité'|trans }}</strong><small>{{ 'Aucun traceur publicitaire utilisé à ce jour.'|trans }}</small></span>
+            </label>
+        </div>
+
+        <div class="tm-cookies__actions">
+            <button type="submit" name="choice" value="none" class="tm-cookies__btn">{{ 'Tout refuser'|trans }}</button>
+            <button type="button" class="tm-cookies__btn tm-cookies__btn--link" data-cookie-customize>{{ 'Personnaliser'|trans }}</button>
+            <button type="submit" name="choice" value="custom" class="tm-cookies__btn" data-cookie-save hidden>{{ 'Enregistrer mes choix'|trans }}</button>
+            <button type="submit" name="choice" value="all" class="tm-cookies__btn tm-cookies__btn--primary">{{ 'Tout accepter'|trans }}</button>
+        </div>
+    </form>
+</section>

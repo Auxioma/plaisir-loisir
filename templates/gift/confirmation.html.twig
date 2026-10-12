@@ -11,6 +11,8 @@
 {% block body %}
 <div class="pg gc-done">
     <div class="pg-wrap">
+        {% import '_partials/_ga.html.twig' as ga %}
+        {% if card.paid %}{{ ga.event('purchase', {transaction_id: card.code, currency: 'EUR', value: card.amount + 0, items: [{item_id: 'bon-cadeau', item_name: card.label, item_category: 'Bon cadeau', price: card.amount + 0, quantity: 1}]}, 'gift-' ~ card.code) }}{% endif %}
         {% if card.paid %}
             <p class="gc-done__ok">{{ icon.check_badge(28) }} {{ 'Merci ! Votre bon cadeau est prêt.'|trans }}</p>
             <article class="gc-voucher">

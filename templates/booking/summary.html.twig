@@ -8,6 +8,11 @@
 {% block title %}{{ 'Récapitulatif de votre réservation'|trans }}{% endblock %}
 
 {% block body %}
+{% import '_partials/_ga.html.twig' as ga %}
+{% set ga_items = [] %}
+{% for it in booking.items %}{% set ga_items = ga_items|merge([{item_id: (service ? service.slug : 'activite'), item_name: (service ? service.title : it.label), item_variant: it.label, price: it.unitPrice + 0, quantity: it.quantity}]) %}{% endfor %}
+{% if ga_items is empty and service %}{% set ga_items = [{item_id: service.slug, item_name: service.title, price: booking.totalPrice + 0, quantity: 1}] %}{% endif %}
+{{ ga.event('begin_checkout', {currency: 'EUR', value: booking.totalPrice + 0, items: ga_items}) }}
 <main class="bk container">
     <ol class="bk-steps" aria-label="{{ 'Étapes'|trans }}">
         <li class="is-done">{{ 'Sélection'|trans }}</li>

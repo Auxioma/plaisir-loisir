@@ -123,7 +123,7 @@ final class InitialLegalTexts
                     .'<li>nos sous-traitants techniques, listés ci-dessous, liés par contrat et sans droit d\'usage propre sur vos données ;</li>'
                     .'<li>les autorités administratives ou judiciaires, sur réquisition régulière.</li>'
                     .'</ul>',
-                    '<p>Nos sous-traitants sont : <strong>OVHcloud</strong> (hébergement, France) ; <strong>Stripe</strong> (paiement) ; <strong>Google</strong>, <strong>Facebook</strong> et <strong>Apple</strong>, uniquement si vous choisissez de vous connecter par leur intermédiaire ; ainsi que notre service d\'envoi de courriers électroniques.</p>',
+                    '<p>Nos sous-traitants sont : <strong>OVHcloud</strong> (hébergement, France) ; <strong>Stripe</strong> (paiement) ; <strong>Google</strong>, <strong>Facebook</strong> et <strong>Apple</strong>, uniquement si vous choisissez de vous connecter par leur intermédiaire ; <strong>Google Analytics</strong> (mesure d\'audience), uniquement si vous l\'acceptez via le bandeau cookies ; ainsi que notre service d\'envoi de courriers électroniques.</p>',
                 ],
             ],
             [
@@ -288,7 +288,7 @@ final class InitialLegalTexts
                     .'<li>votre choix de langue.</li>'
                     .'</ul>',
                     '<p><strong>Préférences</strong> — soumis à votre consentement : mémorisation de vos filtres de recherche et de votre mode d\'affichage.</p>',
-                    '<p><strong>Mesure d\'audience</strong> — soumise à votre consentement : statistiques de fréquentation destinées à améliorer le site. <em>Aucun outil de mesure d\'audience n\'est déposé à ce jour ; cette rubrique sera complétée si un outil est mis en place.</em></p>',
+                    '<p><strong>Mesure d\'audience</strong> — soumise à votre consentement : <strong>Google Analytics</strong> (Google Ireland Limited) mesure la fréquentation du site, les pages consultées et les réservations effectuées, afin d\'améliorer nos services. Ses cookies (<code>_ga</code>, <code>_ga_*</code>) ne sont déposés qu\'après votre accord et sont conservés treize mois au plus. L\'adresse IP n\'est pas conservée par Google Analytics 4.</p>',
                     '<p><strong>Publicité et réseaux sociaux</strong> — soumis à votre consentement. <em>Aucun traceur publicitaire n\'est déposé à ce jour.</em></p>',
                 ],
             ],
@@ -306,8 +306,8 @@ final class InitialLegalTexts
             [
                 'Votre choix, et comment en changer',
                 [
-                    '<p><strong>À ce jour, le site ne dépose que des traceurs strictement nécessaires à son fonctionnement.</strong> Aucun consentement n\'est donc requis, et aucun bandeau ne vous est présenté : demander l\'autorisation de déposer un cookie de session serait vous poser une question sans objet.</p>',
-                    '<p>Dès qu\'un traceur facultatif sera mis en place — mesure d\'audience ou fonction fournie par un réseau social —, un bandeau vous permettra de l\'accepter ou de le refuser catégorie par catégorie. <strong>Refuser y sera aussi simple qu\'accepter</strong> et n\'empêchera pas d\'utiliser le site. Votre choix sera conservé <strong>treize mois</strong>, durée recommandée par la CNIL, au terme desquels la question vous sera reposée.</p>',
+                    '<p>Lors de votre première visite, un bandeau vous permet d\'accepter ou de refuser les traceurs facultatifs, en bloc ou catégorie par catégorie. <strong>Refuser est aussi simple qu\'accepter</strong> et n\'empêche pas d\'utiliser le site. Tant que vous n\'avez pas fait de choix, aucun traceur facultatif n\'est déposé.</p>',
+                    '<p>Votre choix est conservé <strong>treize mois</strong>, durée recommandée par la CNIL, au terme desquels la question vous est reposée. Vous pouvez le modifier à tout moment grâce au lien <strong>« Gérer mes cookies »</strong> en bas de chaque page.</p>',
                     '<p>Vous pouvez également configurer votre navigateur pour refuser les cookies ou supprimer ceux déjà déposés. Cette voie est plus radicale : elle peut empêcher le maintien de votre connexion et le bon déroulement d\'un paiement.</p>',
                 ],
             ],
