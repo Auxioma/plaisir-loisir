@@ -172,29 +172,18 @@ async function initLocation(form) {
         if (q.length < 3) { list.hidden = true; return; }
         timer = setTimeout(async () => {
             try {
-                // Base Adresse Nationale (France) d'abord ; à défaut, Photon
-                // (OpenStreetMap, monde entier) : une adresse hors de France
-                // (ex. Bénin) n'avait aucune suggestion et l'étape bloquait.
-                let features = [];
-                try {
-                    const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=6`);
-                    features = (await res.json()).features || [];
-                } catch (e) { features = []; }
-                if (!features.length) {
-                    const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=fr`);
-                    features = ((await res.json()).features || []).map((f) => {
-                        const p = f.properties || {};
-                        const city = p.city || p.town || p.village || p.county || p.state || p.name || '';
-                        const name = [p.name, p.street && p.housenumber ? `${p.housenumber} ${p.street}` : p.street].filter(Boolean)[0] || city;
-                        const label = [name, city !== name ? city : null, p.country].filter(Boolean).join(', ');
-                        return { geometry: f.geometry, properties: { name, city, postcode: p.postcode || '', label } };
-                    });
-                }
+                // Deux sources interrogées ensemble (12/10) : la Base Adresse
+                // Nationale ne connaît que les adresses (« Forêt de Montgeon »
+                // n'y donnait qu'un lieu-dit « Chez Forêt, Montjean ») ; Photon
+                // (OpenStreetMap, monde entier) apporte les lieux et points
+                // d'intérêt : forêts, parcs, monuments, salles, plages…
+                const features = mergePlaces(...await Promise.all([searchBan(q), searchPhoton(q)]));
+                if (address.value.trim() !== q) return; // réponse dépassée par une frappe plus récente
                 const data = { features };
                 list.innerHTML = '';
                 data.features.forEach((f) => {
                     const li = document.createElement('li');
-                    li.innerHTML = `${f.properties.name}<small>${f.properties.postcode || ''} ${f.properties.city || ''}</small>`;
+                    li.innerHTML = `${escapeHtml(f.properties.name)}<small>${escapeHtml([f.properties.postcode, f.properties.city, f.properties.country].filter(Boolean).join(' '))}</small>`;
                     li.addEventListener('mousedown', (e) => { e.preventDefault(); pick(f); });
                     list.appendChild(li);
                 });
@@ -224,6 +213,8 @@ function initImages(form) {
             const img = qs(drop, '[data-ew-drop-img]');
             img.src = url; img.hidden = false;
             drop.classList.add('has-image');
+            const btn = qs(drop, '.ew-drop__body .ew-btn');
+            if (btn) btn.textContent = 'Changer l’image';
             qsa(document, '[data-ew-preview="cover"]').forEach((p) => { p.src = url; });
         };
         cover.addEventListener('change', () => show(cover.files[0]));
@@ -451,3 +442,40 @@ function initParticipants() {
 }
 document.addEventListener('turbo:load', initParticipants);
 if (document.readyState !== 'loading') initParticipants(); else document.addEventListener('DOMContentLoaded', initParticipants);
+
+const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+/* --- Recherche de lieu : BAN (adresses françaises) + Photon (lieux et POI) --- */
+
+async function searchBan(q) {
+    try {
+        const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=5`);
+        return ((await res.json()).features || []).map((f) => ({ ...f, source: 'ban' }));
+    } catch (e) { return []; }
+}
+
+async function searchPhoton(q) {
+    try {
+        // Résultats proches de la France d'abord, sans exclure le reste du monde.
+        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&lang=fr&lat=46.6&lon=2.4&location_bias_scale=0.3`);
+        return ((await res.json()).features || []).map((f) => {
+            const p = f.properties || {};
+            const street = p.street ? [p.housenumber, p.street].filter(Boolean).join(' ') : '';
+            const city = p.city || p.town || p.village || p.county || p.state || '';
+            const name = p.name || street || city;
+            const country = p.countrycode && p.countrycode !== 'FR' ? p.country : '';
+            const place = [p.postcode, city !== name ? city : ''].filter(Boolean).join(' ');
+            const label = [name, street && street !== name ? street : '', place, country].filter(Boolean).join(', ');
+            return { geometry: f.geometry, source: 'photon', properties: { name, city, postcode: p.postcode || '', country, label } };
+        });
+    } catch (e) { return []; }
+}
+
+function mergePlaces(ban, photon) {
+    const precise = ban.filter((f) => f.properties.type === 'housenumber' && f.properties.score >= 0.8);
+    const seen = new Set();
+    const key = (f) => `${(f.properties.name || '').toLowerCase()}|${(f.properties.city || '').toLowerCase()}`;
+    return [...precise.slice(0, 2), ...photon, ...ban]
+        .filter((f) => { const k = key(f); if (seen.has(k)) return false; seen.add(k); return true; })
+        .slice(0, 8);
+}
