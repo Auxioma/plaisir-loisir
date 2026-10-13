@@ -798,3 +798,6 @@ svg.pl-flag[viewBox="0 0 24 24"] { box-shadow: none; color: #4b4f66; }
 .pp-status.is-pending .pp-status__ico { color: var(--pp-blue); }
 .pp-status.is-suspended { background: #fff1f2; border-color: #fecdd3; }
 .pp-status.is-suspended .pp-status__ico { color: #e5324b; }
+
+/* Visibilité des offres sur « Offres du moment » (13/10). */
+.pp-offer-note { display: block; margin-top: 4px; font-size: 12px; color: #15803d; } .pp-offer-note a { color: inherit; } .pp-offer-note.is-warn { color: #b45309; }

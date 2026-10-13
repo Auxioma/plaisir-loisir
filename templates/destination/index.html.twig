@@ -13,13 +13,14 @@
 {% block title %}{{ 'Destinations'|trans }}{% endblock %}
 
 {% set continents = {'': 'Toutes', france: 'France', europe: 'Europe', 'amerique-nord': 'Amérique du Nord', 'amerique-sud': 'Amérique du Sud', afrique: 'Afrique', asie: 'Asie', oceanie: 'Océanie'} %}
+{% set types_labels = {villes: 'Villes', montagne: 'Montagne', mer: 'Mer & Plage', campagne: 'Campagne', lacs: 'Lacs & Rivières'} %}
 {% set types = {'': 'Toutes les destinations', villes: 'Villes', montagne: 'Montagne', mer: 'Mer & Plage', campagne: 'Campagne', lacs: 'Lacs & Rivières'} %}
 {% set badgeTone = {'Populaire': 'violet', 'Bestseller': 'red', 'Best-seller': 'red', 'Tendance': 'blue'} %}
 
 {% block body %}
 <div class="ex">
     <aside class="ex-filters" aria-label="{{ 'Filtres'|trans }}">
-        <form class="ex-filters__form" method="get" action="{{ path('app_destinations') }}">
+        <form class="ex-filters__form" method="get" action="{{ path('app_destinations') }}" data-autosubmit>
             {% if continent %}<input type="hidden" name="continent" value="{{ continent }}">{% endif %}
             <div class="ex-filters__head">
                 <p class="ex-filters__title">{{ 'Filtres'|trans }}</p>
@@ -37,7 +38,7 @@
                 <div class="ds-types">
                     {% for key, label in types %}
                         <label class="ds-type{{ type == key ? ' is-active' }}">
-                            <input type="radio" name="type" value="{{ key }}"{{ type == key ? ' checked' }} onchange="this.form.submit()">
+                            <input type="radio" name="type" value="{{ key }}"{{ type == key ? ' checked' }}>
                             {%- if key == '' %}{{ icon.globe_simple(18) }}{% elseif key == 'villes' %}{{ icon.building(18) }}{% elseif key == 'mer' %}{{ icon.beach(18) }}{% elseif key == 'campagne' %}{{ icon.tree(18) }}{% else %}{{ icon.cat_hiking(18) }}{% endif %} {{ label|trans }}
                         </label>
                     {% endfor %}
@@ -46,20 +47,21 @@
 
             <fieldset class="ex-fieldset">
                 <legend class="ex-label">{{ 'Budget (par personne)'|trans }}</legend>
-                <div class="ex-range" data-ex-range data-max="500" data-single>
-                    <div class="ex-range__labels"><span>0 €</span><span data-ex-range-max-label>{{ budget is null or budget >= 500 ? '500 € et +'|trans : budget ~ ' €' }}</span></div>
+                <div class="ex-range" data-ex-range data-max="{{ budget_max }}" data-single>
+                    <div class="ex-range__labels"><span>0 €</span><span data-ex-range-max-label>{{ budget is null ? budget_max ~ ' € ' ~ 'et +'|trans : budget ~ ' €' }}</span></div>
                     <div class="ex-range__track"><span data-ex-range-bar></span></div>
                     <input type="range" min="0" max="0" value="0" tabindex="-1" aria-hidden="true" data-ex-range-min disabled>
-                    <input type="range" min="0" max="500" step="5" name="budget" value="{{ budget ?? 500 }}" aria-label="{{ 'Budget maximum'|trans }}" data-ex-range-max>
+                    <input type="range" min="0" max="{{ budget_max }}" step="5" name="budget" value="{{ budget ?? budget_max }}" aria-label="{{ 'Budget maximum'|trans }}" data-ex-range-max>
                     <span hidden data-ex-range-min-label></span>
                 </div>
             </fieldset>
 
             <fieldset class="ex-fieldset">
                 <legend class="ex-label">{{ 'Note des utilisateurs'|trans }}</legend>
-                <div class="ex-ratings">
-                    {% for n in [4, 3, 2] %}
-                        <label class="ex-rating"><input type="radio" name="note" value="{{ n }}"{{ rating == n ? ' checked' }}><span>{{ icon.star_solid(12) }} {{ n }} {{ 'et +'|trans }}</span></label>
+                <div class="ex-ratings ds-ratings">
+                    <label class="ex-rating"><input type="radio" name="note" value=""{{ rating is null ? ' checked' }}><span>{{ 'Toutes'|trans }}</span></label>
+                    {% for n in ratings %}
+                        <label class="ex-rating"><input type="radio" name="note" value="{{ n }}"{{ rating == n ? ' checked' }}><span>{{ icon.star_solid(12) }}&nbsp;{{ n|number_format(1, ',') }}+</span></label>
                     {% endfor %}
                 </div>
             </fieldset>
@@ -82,7 +84,7 @@
             {% endfor %}
         </nav>
 
-        <section class="ds-hero">
+        <section class="ds-hero{{ filtering ? ' is-filtering' }}">
             <img class="ds-hero__bg" src="{{ asset('images/destinations/banniere-monde.jpg') }}" alt="" fetchpriority="high">
             <div class="ds-hero__text">
                 <h2>{{ 'Partez à la'|trans }} <span>{{ 'découverte du monde'|trans }}</span></h2>
@@ -99,8 +101,21 @@
             </div>
         </section>
 
+        {# Filtres actifs (13/10) : visibles au-dessus des résultats, retirables d'un clic. #}
+        {% if filtering %}
+            {% set q = app.request.query.all|filter((v, k) => k != 'page') %}
+            <div class="ds-active" aria-label="{{ 'Filtres actifs'|trans }}">
+                {% if query %}<a href="{{ path('app_destinations', q|filter((v, k) => k != 'q')) }}">« {{ query }} » {{ icon.x(12) }}</a>{% endif %}
+                {% if continent %}<a href="{{ path('app_destinations', q|filter((v, k) => k != 'continent')) }}">{{ continents[continent]|trans }} {{ icon.x(12) }}</a>{% endif %}
+                {% if type %}<a href="{{ path('app_destinations', q|filter((v, k) => k != 'type')) }}">{{ types_labels[type]|trans }} {{ icon.x(12) }}</a>{% endif %}
+                {% if budget is not null %}<a href="{{ path('app_destinations', q|filter((v, k) => k != 'budget')) }}">{{ 'Jusqu’à'|trans }} {{ budget }} € {{ icon.x(12) }}</a>{% endif %}
+                {% if rating is not null %}<a href="{{ path('app_destinations', q|filter((v, k) => k != 'note')) }}">{{ icon.star_solid(12) }} {{ rating|number_format(1, ',') }}+ {{ icon.x(12) }}</a>{% endif %}
+                <a class="ds-active__reset" href="{{ path('app_destinations') }}">{{ 'Tout effacer'|trans }}</a>
+            </div>
+        {% endif %}
+
         <div class="ds-section-head">
-            <h2>{{ 'Destinations populaires'|trans }}</h2>
+            <h2>{% if filtering %}{{ total }} {{ (total > 1 ? 'destinations trouvées' : 'destination trouvée')|trans }}{% else %}{{ 'Destinations populaires'|trans }}{% endif %}</h2>
             <a href="{{ path('app_destinations_popular') }}">{{ 'Voir toutes les destinations'|trans }} {{ icon.arrow_right(16) }}</a>
         </div>
 
@@ -137,6 +152,11 @@
                     </a>
                 {% endfor %}
             </div>
+            {% if has_more %}
+                <div class="act-more ex-more">
+                    <a class="pf-btn pf-btn--lg" href="{{ path('app_destinations', app.request.query.all|merge({page: page + 1})) }}">{{ 'Voir plus de destinations'|trans }} {{ icon.chevron_down(16) }}</a>
+                </div>
+            {% endif %}
         {% endif %}
 
         <section class="ex-trust ds-trust">

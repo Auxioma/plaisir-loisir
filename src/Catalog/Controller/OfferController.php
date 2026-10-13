@@ -39,7 +39,7 @@ final class OfferController extends AbstractController
             'reduction' => array_values(array_intersect(array_map('intval', $q->all('reduction')), [10, 20, 30, 40, 50])),
             'dispo' => array_values(array_intersect($q->all('dispo'), array_keys(OfferCatalog::AVAILABILITY))),
             'type' => array_values(array_intersect($q->all('type'), array_keys(OfferCatalog::TYPES))),
-            'tri' => \array_key_exists((string) $q->get('tri'), OfferCatalog::SORTS) ? (string) $q->get('tri') : 'meilleures',
+            'tri' => \array_key_exists((string) $q->get('tri'), OfferCatalog::SORTS) ? (string) $q->get('tri') : OfferCatalog::DEFAULT_SORT,
         ];
         $page = max(1, $q->getInt('page', 1));
 
@@ -63,7 +63,7 @@ final class OfferController extends AbstractController
             'reduction' => $filters['reduction'] ?: null,
             'dispo' => $filters['dispo'] ?: null,
             'type' => $filters['type'] ?: null,
-            'tri' => 'meilleures' !== $filters['tri'] ? $filters['tri'] : null,
+            'tri' => OfferCatalog::DEFAULT_SORT !== $filters['tri'] ? $filters['tri'] : null,
         ], static fn (mixed $v): bool => null !== $v);
 
         return $this->render('offer/index.html.twig', [

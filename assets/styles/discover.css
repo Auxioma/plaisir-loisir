@@ -438,3 +438,13 @@
 @media (max-width: 991.98px) { .ex-free__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 575.98px) { .ex-free__grid { grid-template-columns: minmax(0, 1fr); } }
 .ex-check--sub { padding-left: 22px; font-size: 13px; }
+
+/* Destinations (13/10, retour client n° 22) : filtres actifs, notes lisibles. */
+.ds-active { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 18px; }
+.ds-active a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--pl-action-light, #f0eafb); color: var(--pl-action, #5d00ff); font-size: 13px; font-weight: 600; text-decoration: none; }
+.ds-active a.ds-active__reset { background: none; color: var(--tm-ink-2, #5d6178); text-decoration: underline; }
+.ds-ratings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ds-ratings .ex-rating, .ds-ratings .ex-rating span { width: 100%; }
+.ds-ratings .ex-rating span { white-space: nowrap; justify-content: center; }
+/* En recherche, la bannière laisse la place aux résultats. */
+.ds-hero.is-filtering { display: none; }

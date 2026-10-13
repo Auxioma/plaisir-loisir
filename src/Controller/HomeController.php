@@ -14,7 +14,6 @@ use App\PrivateActivity\Entity\PrivateActivity;
 use App\PrivateActivity\Repository\PrivateActivityRepository;
 use App\User\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -43,16 +42,15 @@ final class HomeController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/', 'en' => '/en'], name: 'app_home')]
-    public function index(Request $request): Response
+    public function index(): Response
     {
         $featured = $this->services->paginateForListing(1, 8, ActivitySort::Popular);
         $members = $this->isGranted('ROLE_USER');
 
         // « Mettre en avant les activités proches de la ville de
-        // l'utilisateur » (07/10) : ville saisie sur l'accueil, sinon adresse
-        // principale du membre. Les sorties de son département passent en
+        // l'utilisateur » (07/10) : adresse principale du membre. Les sorties de son département passent en
         // premier, les autres complètent la sélection.
-        $city = $this->homeCity($request);
+        $city = $this->homeCity();
         $near = null !== $city ? $this->privateActivities->findUpcomingDiscoverable($members, place: $city['place'], limit: 8) : [];
         $others = array_filter(
             $this->privateActivities->findUpcomingDiscoverable($members, limit: 8 + \count($near)),
@@ -73,25 +71,14 @@ final class HomeController extends AbstractController
     }
 
     /**
-     * Ville de référence : « ?ville= » (mémorisée en session, « ?ville= »
-     * vide l'oublie), sinon l'adresse principale du membre connecté.
+     * Ville de référence : l'adresse principale du membre connecté. Le champ
+     * « Votre ville ou code postal » de l'accueil a été retiré (13/10, retour
+     * client n° 21 : il ne faisait pas partie des fonctionnalités demandées).
      *
      * @return array{name: string, place: string}|null
      */
-    private function homeCity(Request $request): ?array
+    private function homeCity(): ?array
     {
-        $session = $request->getSession();
-        if ($request->query->has('ville')) {
-            $typed = mb_substr(trim((string) $request->query->get('ville')), 0, 80);
-            '' === $typed ? $session->remove('home_city') : $session->set('home_city', $typed);
-        }
-
-        $typed = (string) $session->get('home_city', '');
-        if ('' !== $typed) {
-            // Un code postal vise le département ; un nom, la ville.
-            return ['name' => $typed, 'place' => preg_match('/^\d{5}$/', $typed) ? substr($typed, 0, 2) : $typed];
-        }
-
         $user = $this->getUser();
         $address = $user instanceof User ? ($user->getMainAddress() ?? $user->getAddresses()->first() ?: null) : null;
         if (null === $address || '' === trim($address->getCity())) {

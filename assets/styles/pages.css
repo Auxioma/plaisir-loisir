@@ -760,3 +760,24 @@
     .pg-job .pg-job__title { min-height: 0; font-size: 13.5px; }
     .pg-quotes, .pg-spont { width: 100%; }
 }
+
+/* Carrières et pages à bandeau photo sur mobile (13/10, retour client n° 28,
+   maquette carrieres.jpeg) : la photo passe au-dessus du texte au lieu d'un
+   fond délavé, valeurs et avantages sur deux colonnes, offres à 50 %. */
+@media (max-width: 767.98px) {
+    .pg-hero { display: flex; flex-direction: column; min-height: 0; }
+    .pg-hero__img { position: static; order: -1; width: 100%; height: 200px; min-height: 0; opacity: 1; -webkit-mask-image: none; mask-image: none; }
+    .pg-hero__text { padding: 22px 16px 8px; }
+    .pg-hero__stats { position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 10px 16px 6px; padding: 14px; box-shadow: none; border: 1px solid #e7e9f3; }
+    .pg-hero__checks { background: none; }
+    .pg-values--6 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .pg-values--6 .pg-value { padding: 14px; }
+    .pg-values--6 .pg-value h3 { flex-direction: column; align-items: flex-start; gap: 8px; font-size: 14px; }
+    .pg-values--6 .pg-value p { margin-left: 0; padding-left: 0; font-size: 12.5px; }
+    .pg-jobs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .pg-band--5 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 0 16px; background: none; }
+    .pg-band--5 li { flex-direction: column; align-items: flex-start; gap: 8px; padding: 14px; border-radius: 12px !important; }
+}
+@media (max-width: 359.98px) {
+    .pg-values--6, .pg-jobs, .pg-band--5 { grid-template-columns: 1fr; }
+}

@@ -184,12 +184,6 @@
                 <div>
                     <h2>{{ (free_near_count > 0 ? 'Sorties gratuites près de chez vous' : 'Sorties gratuites à venir')|trans }}</h2>
                     <p>{{ 'Rejoignez des activités entre particuliers ou créez la vôtre gratuitement !'|trans }}</p>
-                    <form class="ld-near" method="get" action="{{ path('app_home') }}#sorties">
-                        {{ icon.map_pin(14) }}
-                        {% if home_city %}{{ 'Autour de'|trans }} <b>{{ home_city.name }}</b> ·{% endif %}
-                        <input name="ville" value="" placeholder="{{ (home_city ? 'Changer de ville' : 'Votre ville ou code postal')|trans }}" aria-label="{{ 'Votre ville'|trans }}" list="ld-places" class="ld-near__input">
-                        <button class="ld-near__btn">{{ 'OK'|trans }}</button>
-                    </form>
                 </div>
                 <a class="ld-more" href="{{ path('app_private_activities') }}">{{ 'Voir toutes les activités gratuites'|trans }} {{ icon.arrow_right(16) }}</a>
             </header>

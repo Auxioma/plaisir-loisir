@@ -675,7 +675,21 @@ function initTabArrows(root = document) {
     });
 }
 
+/* Filtres appliqués dès le choix sur ordinateur (13/10) ; sur mobile, le
+   panneau garde son bouton « Afficher les résultats ». */
+function initAutoSubmitFilters(root = document) {
+    root.querySelectorAll('form[data-autosubmit]').forEach((form) => {
+        if (form.dataset.autosubmitReady) return;
+        form.dataset.autosubmitReady = '1';
+        form.addEventListener('change', (e) => {
+            if (!window.matchMedia('(min-width: 992px)').matches) return;
+            if (e.target.matches('input[type="radio"], input[type="checkbox"], input[type="range"], select')) form.requestSubmit();
+        });
+    });
+}
+
 const start = () => {
+    initAutoSubmitFilters();
     initTabArrows();
     initCollapsibleFilters();
     initActivitySlider();

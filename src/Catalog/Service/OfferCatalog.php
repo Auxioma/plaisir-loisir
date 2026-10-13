@@ -29,7 +29,9 @@ final class OfferCatalog
     /** Filtres « Disponibilité » de la maquette. */
     public const AVAILABILITY = ['maintenant' => 'Réservable maintenant', 'derniere-minute' => 'Dernière minute', 'semaine' => 'Cette semaine', 'mois' => 'Ce mois-ci'];
 
-    public const SORTS = ['meilleures' => 'Meilleures offres', 'fin' => 'Se terminent bientôt', 'prix' => 'Prix croissant', 'recentes' => 'Plus récentes'];
+    /** Tri par défaut « Plus récentes » (13/10, retour client n° 26) : une offre qui vient d'être publiée apparaît en tête. */
+    public const SORTS = ['recentes' => 'Plus récentes', 'meilleures' => 'Meilleures réductions', 'fin' => 'Se terminent bientôt', 'prix' => 'Prix croissant'];
+    public const DEFAULT_SORT = 'recentes';
 
     public function __construct(
         private readonly PromotionRepository $promotions,
@@ -98,11 +100,11 @@ final class OfferCatalog
             return true;
         }));
 
-        usort($rows, match ($filters['tri'] ?? 'meilleures') {
+        usort($rows, match ($filters['tri'] ?? self::DEFAULT_SORT) {
             'fin' => static fn (array $a, array $b): int => $a['endsAt'] <=> $b['endsAt'],
             'prix' => static fn (array $a, array $b): int => ($a['price'] ?? \PHP_INT_MAX) <=> ($b['price'] ?? \PHP_INT_MAX),
-            'recentes' => static fn (array $a, array $b): int => $b['startsAt'] <=> $a['startsAt'],
-            default => static fn (array $a, array $b): int => [$b['discount'] ?? 0, $a['endsAt']] <=> [$a['discount'] ?? 0, $b['endsAt']],
+            'meilleures' => static fn (array $a, array $b): int => [$b['discount'] ?? 0, $a['endsAt']] <=> [$a['discount'] ?? 0, $b['endsAt']],
+            default => static fn (array $a, array $b): int => [$b['startsAt'], $b['createdAt']] <=> [$a['startsAt'], $a['createdAt']],
         });
 
         return $rows;
@@ -142,8 +144,11 @@ final class OfferCatalog
             'discount' => $discount,
             'oldPrice' => $price !== $full ? $full : null,
             'price' => $price,
-            'categorySlug' => $service->getCategory()?->getSlug(),
+            // Catégorie principale (13/10) : une offre sur une sous-catégorie
+            // restait introuvable depuis les tuiles de catégories.
+            'categorySlug' => ($service->getCategory()?->getParent() ?? $service->getCategory())?->getSlug(),
             'startsAt' => $promotion->getStartsAt(),
+            'createdAt' => $promotion->getCreatedAt() ?? $promotion->getStartsAt(),
             'endsAt' => $promotion->getEndsAt(),
             'hoursLeft' => $hoursLeft,
             'types' => $types,
