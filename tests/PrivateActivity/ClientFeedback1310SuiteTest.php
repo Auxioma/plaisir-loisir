@@ -126,6 +126,22 @@ final class ClientFeedback1310SuiteTest extends WebTestCase
         self::assertCount(0, $crawler->filter('.evl-avatars'));
     }
 
+    public function testAPaidActivityPresentsItsOrganizerLikeAFreeOne(): void
+    {
+        $client = static::createClient();
+        $crawler = $client->request('GET', '/activites/atelier-cuisine-provencale');
+
+        self::assertResponseIsSuccessful();
+        $link = $crawler->filter('.act-org a[href^="/professionnels/"]')->first();
+        self::assertCount(1, $link);
+        self::assertSelectorTextContains('.act-org', 'Professionnel vérifié');
+
+        $client->request('GET', (string) $link->attr('href'));
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('.pdp .mb-head .mb-head__avatar');
+        self::assertSelectorExists('.pdp-trust');
+    }
+
     public function testMembersAreWishedAHappyBirthdayOnce(): void
     {
         $user = $this->makeUser()->setBirthDate(new \DateTimeImmutable('-30 years'));

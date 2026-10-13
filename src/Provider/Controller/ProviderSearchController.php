@@ -7,6 +7,7 @@ namespace App\Provider\Controller;
 use App\Catalog\Repository\CategoryRepository;
 use App\Provider\Repository\ProviderProfileRepository;
 use App\Provider\Service\ProviderDirectory;
+use App\Provider\Service\ProviderSummary;
 use App\Review\Enum\ReviewStatus;
 use App\Review\Repository\ReviewRepository;
 use App\Stats\Service\PageViewRecorder;
@@ -83,7 +84,7 @@ final class ProviderSearchController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/professionnels/{slug}', 'en' => '/en/professionals/{slug}'], name: 'app_provider_profile')]
-    public function profile(string $slug, Request $request, PageViewRecorder $pageViews, ProviderDirectory $directory): Response
+    public function profile(string $slug, Request $request, PageViewRecorder $pageViews, ProviderDirectory $directory, ProviderSummary $summary): Response
     {
         $profile = $this->providers->findVerifiedBySlug($slug);
 
@@ -102,6 +103,8 @@ final class ProviderSearchController extends AbstractController
         return $this->render('provider/profil_public.html.twig', [
             'provider' => $profile,
             'card' => $directory->card($profile),
+            // En-tête au modèle du profil membre (13/10) : note, avis positifs, ancienneté, délai de réponse.
+            'summary' => $summary->of($profile),
             'reviews' => $reviews,
             'average_rating' => $this->reviews->averageRatingForProvider($profile),
         ]);

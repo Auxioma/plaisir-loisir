@@ -15,40 +15,60 @@
 
 {% block body %}
 <div class="pg pdp">
-    <header class="pdp-cover">
-        {% if card.cover %}<img src="{{ asset(card.cover) }}" alt="" loading="lazy" decoding="async">{% endif %}
-    </header>
     <div class="pg-wrap pdp-wrap">
         <nav class="lg2-crumb act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}"><a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a> <span>/</span> <a href="{{ path('app_provider_search') }}">{{ 'Professionnels'|trans }}</a> <span>/</span> <span aria-current="page">{{ provider.displayName }}</span></nav>
 
-        <section class="pg-card pdp-id">
-            <span class="pd-avatar pd-avatar--lg">{% if card.avatar %}<img src="{{ asset(card.avatar) }}" alt="" loading="lazy" decoding="async">{% else %}{{ provider.displayName|first|upper }}{% endif %}</span>
-            <div class="pdp-id__main">
-                <h1>{{ provider.displayName }} <span class="pd-card__verified pd-inline">{{ icon.check_badge(14) }} {{ 'Professionnel vérifié'|trans }}</span></h1>
-                <p class="pdp-id__meta">
-                    {% if card.category %}<span>{{ card.category|trans }}</span>{% endif %}
-                    {% if provider.city %}<span>{{ icon.map_pin(14) }} {{ provider.city }}</span>{% endif %}
-                    {% if provider.companyName %}<span>{{ icon.building(14) }} {{ provider.companyName }}</span>{% endif %}
-                </p>
-                <ul class="pdp-stats">
-                    <li><b>{{ card.rating ? card.rating|number_format(1, ',') : (average_rating is not null ? average_rating|number_format(1, ',') : '—') }}</b><small>{{ icon.star_solid(12) }} {{ max(card.reviews, reviews|length) }} {{ 'avis'|trans }}</small></li>
-                    <li><b>{{ card.activities|length }}</b><small>{{ card.activities|length > 1 ? 'activités'|trans : 'activité'|trans }}</small></li>
-                    {% if card.priceFrom is not null %}<li><b>{{ card.priceFrom|number_format(card.priceFrom == card.priceFrom|round ? 0 : 2, ',', ' ') }} €</b><small>{{ 'prix d’appel'|trans }}</small></li>{% endif %}
-                </ul>
+        {# En-tête au modèle du profil membre (13/10) : couverture, photo en
+           chevauchement, identité, note, actions. Styles : member.css (.mb-head). #}
+        <header class="mb-head pdp-head">
+            <div class="mb-head__cover">{% if card.cover %}<img src="{{ asset(card.cover) }}" alt="" fetchpriority="high">{% endif %}</div>
+            <div class="mb-head__body">
+                {% if card.avatar %}<img class="mb-head__avatar" src="{{ asset(card.avatar) }}" alt="" width="160" height="160">{% else %}<span class="mb-head__avatar pdp-head__initial" aria-hidden="true">{{ provider.displayName|first|upper }}</span>{% endif %}
+                <div class="mb-head__id">
+                    <h1>{{ provider.displayName }} <span class="mb-verified" title="{{ 'Professionnel vérifié'|trans }}">{{ icon.badge_check(22) }}</span></h1>
+                    <p class="mb-head__meta">
+                        {% if card.category %}<span>{{ icon.tag(16) }} {{ card.category|trans }}</span>{% endif %}
+                        {% if provider.city %}<span>{{ icon.map_pin(16) }} {{ provider.city }}</span>{% endif %}
+                        {% if summary.since %}<span>{{ icon.calendar(16) }} {{ 'Sur TrouveMoi depuis'|trans }} {{ summary.since|pf_date('MMMM y') }}</span>{% endif %}
+                    </p>
+                    <p class="mb-chips">
+                        <span class="mb-chip is-green">{{ icon.check_badge(14) }} {{ 'Professionnel vérifié'|trans }}</span>
+                        {% if provider.companyName %}<span class="mb-chip">{{ icon.building(14) }} {{ provider.companyName }}</span>{% endif %}
+                        <span class="mb-chip">{{ summary.activities }} {{ (summary.activities > 1 ? 'activités' : 'activité')|trans }}</span>
+                        {% if card.priceFrom is not null %}<span class="mb-chip">{{ 'À partir de'|trans }} {{ card.priceFrom|number_format(card.priceFrom == card.priceFrom|round ? 0 : 2, ',', ' ') }} €</span>{% endif %}
+                    </p>
+                </div>
+                <div class="mb-head__score{{ summary.rating is null ? ' is-new' }}">
+                    {% if summary.rating is not null %}
+                        <strong>{{ icon.star_solid(26) }} {{ summary.rating|number_format(1, ',') }} <small>/ 5</small></strong>
+                        <span>{{ summary.reviews_count }} {{ 'avis'|trans }}{% if summary.positive_rate is not null %} · {{ summary.positive_rate }} % {{ 'positifs'|trans }}{% endif %}</span>
+                    {% else %}
+                        <strong>{{ icon.star_solid(20) }} {{ 'Nouveau professionnel'|trans }}</strong>
+                        <span>{{ 'Pas encore d’avis'|trans }}</span>
+                    {% endif %}
+                </div>
+                <div class="mb-head__actions">
+                    <a class="mb-btn mb-btn--primary" href="#activites">{{ icon.calendar_check(18) }} {{ 'Réserver une activité'|trans }}</a>
+                    {% if app.user and app.user != provider.user %}
+                        <form method="post" action="{{ path('app_account_messages_start', {slug: provider.slug}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                            <button type="submit" class="mb-btn">{{ icon.chat_bubble(18) }} {{ 'Envoyer un message'|trans }}</button>
+                        </form>
+                    {% elseif not app.user %}
+                        <a class="mb-btn" href="{{ path('app_login', {_target_path: app.request.requestUri}) }}">{{ icon.chat_bubble(18) }} {{ 'Envoyer un message'|trans }}</a>
+                    {% endif %}
+                    <a class="pg-link pdp-head__quote" href="{{ path('app_account_requests_new', provider.mainCategory ? {metier: provider.mainCategory.slug} : {}) }}">{{ icon.receipt(14) }} {{ 'Demander un devis'|trans }}</a>
+                </div>
             </div>
-            <div class="pdp-id__actions">
-                <a class="pg-btn" href="#activites">{{ icon.calendar_check(16) }} {{ 'Réserver une activité'|trans }}</a>
-                {% if app.user and app.user != provider.user %}
-                    <form method="post" action="{{ path('app_account_messages_start', {slug: provider.slug}) }}">
-                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                        <button type="submit" class="pg-btn pg-btn--outline pg-btn--block">{{ icon.chat_bubble(16) }} {{ 'Contacter'|trans }}</button>
-                    </form>
-                {% elseif not app.user %}
-                    <a class="pg-btn pg-btn--outline" href="{{ path('app_login') }}">{{ icon.chat_bubble(16) }} {{ 'Se connecter pour contacter'|trans }}</a>
-                {% endif %}
-                <a class="pg-link" href="{{ path('app_account_requests_new', provider.mainCategory ? {metier: provider.mainCategory.slug} : {}) }}">{{ icon.receipt(14) }} {{ 'Demander un devis'|trans }}</a>
-            </div>
-        </section>
+        </header>
+
+        {# Confiance : mêmes repères que le profil membre. #}
+        <ul class="pdp-trust">
+            <li>{{ icon.shield_check(20) }}<span><b>{{ 'Identité et documents vérifiés'|trans }}</b><small>{{ 'par l’équipe TrouveMoi'|trans }}</small></span></li>
+            {% if summary.response_hours is not null %}<li>{{ icon.clock(20) }}<span><b>{{ 'Répond en moins de'|trans }} {{ max(1, summary.response_hours|round(0, 'ceil')) }} h</b><small>{{ 'en général'|trans }}</small></span></li>{% endif %}
+            <li>{{ icon.card_lock(20) }}<span><b>{{ 'Paiement sécurisé'|trans }}</b><small>{{ 'à la réservation'|trans }}</small></span></li>
+            {% if summary.positive_rate is not null %}<li>{{ icon.star(20) }}<span><b>{{ summary.positive_rate }} % {{ 'd’avis positifs'|trans }}</b><small>{{ summary.reviews_count }} {{ 'avis'|trans }}</small></span></li>{% endif %}
+        </ul>
 
         <div class="pdp-cols">
             <div>
@@ -81,6 +101,7 @@
                                 </article>
                             {% endfor %}
                         </div>
+                        {% if reviews|length > 6 %}<button type="button" class="pg-btn pg-btn--outline pdp-more" onclick="this.previousElementSibling.querySelectorAll('[hidden]').forEach((e) => e.hidden = false); this.remove();">{{ 'Voir tous les avis'|trans }} ({{ reviews|length }})</button>{% endif %}
                     {% endif %}
                 </section>
 
@@ -89,9 +110,9 @@
                     {% if reviews is empty %}
                         <p class="pg-muted">{{ 'Pas encore d’avis publié sur ce professionnel.'|trans }}</p>
                     {% else %}
-                        <div class="pdp-reviews">
+                        <div class="pdp-reviews" data-pdp-reviews>
                             {% for review in reviews %}
-                                <article class="pg-card pdp-review">
+                                <article class="pg-card pdp-review"{{ loop.index > 6 ? ' hidden' }}>
                                     <header><strong>{{ review.author.firstName }}</strong><span class="pdp-stars" aria-label="{{ review.rating }}/5">{% for i in 1..5 %}{{ i <= review.rating ? icon.star_solid(13) : icon.star(13) }}{% endfor %}</span></header>
                                     {% if review.comment %}<p>{{ review.comment|nl2br }}</p>{% endif %}
                                     {% if review.providerReply %}<blockquote><small>{{ 'Réponse du professionnel'|trans }}</small>{{ review.providerReply|nl2br }}</blockquote>{% endif %}

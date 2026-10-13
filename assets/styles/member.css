@@ -6,7 +6,7 @@
  * d'action, bleu nuit) ; le vert ne sert qu'à l'étiquette « Gratuit »,
  * comme partout sur le site.
  */
-.mb, .fd {
+.mb, .fd, .pdp {
     --mb-accent: var(--pl-action, #5d00ff); --mb-accent-2: #7b3dff; --mb-accent-soft: var(--pl-action-light, #f0eafb);
     --mb-navy: var(--pl-primary, #061b56);
     --mb-free: var(--pl-success, #16a34a); --mb-free-soft: #e9f8ee;
