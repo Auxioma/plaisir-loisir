@@ -30,9 +30,18 @@ class Conversation
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $client = null;
 
+    /** Professionnel contacté ; null pour une conversation entre deux membres. */
     #[ORM\ManyToOne(targetEntity: ProviderProfile::class)]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?ProviderProfile $provider = null;
+
+    /**
+     * Membre contacté (13/10, « Envoyer un message » du profil public) : le
+     * client est alors celui qui a ouvert la conversation.
+     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?User $member = null;
 
     #[ORM\ManyToOne(targetEntity: Service::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
@@ -123,7 +132,30 @@ class Conversation
     public function hasParticipant(User $user): bool
     {
         return $this->client === $user
-            || ($this->provider?->getUser() === $user);
+            || ($this->provider?->getUser() === $user)
+            || $this->member === $user;
+    }
+
+    public function getMember(): ?User
+    {
+        return $this->member;
+    }
+
+    public function setMember(?User $member): static
+    {
+        $this->member = $member;
+
+        return $this;
+    }
+
+    /** L'autre participant, vu par $user. */
+    public function otherParticipant(User $user): ?User
+    {
+        if ($this->client === $user) {
+            return $this->member ?? $this->provider?->getUser();
+        }
+
+        return $this->client;
     }
 
     public function isArchivedByProvider(): bool

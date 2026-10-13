@@ -11,6 +11,7 @@ use App\Messaging\Service\MessagingService;
 use App\Provider\Repository\ProviderProfileRepository;
 use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
+use App\User\Repository\UserRepository;
 use App\User\StaticAccount;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -110,6 +111,32 @@ final class ConversationController extends AbstractController
      * Ouvre (ou retrouve) une conversation avec un professionnel, depuis sa
      * fiche publique, puis redirige vers le fil.
      */
+    /**
+     * Ouvre (ou retrouve) une conversation avec un autre membre, depuis son
+     * profil public (13/10), puis redirige vers le fil.
+     */
+    #[Route(path: ['fr' => '/compte/messages/membre/{id}', 'en' => '/en/account/messages/member/{id}'], name: 'app_account_messages_start_member', methods: ['POST'])]
+    public function startWithMember(string $id, Request $request, UserRepository $users): Response
+    {
+        $member = Ulid::isValid($id) ? $users->find(Ulid::fromString($id)) : null;
+        if (!$member instanceof User || $member->isDeleted()) {
+            throw new NotFoundHttpException('Ce membre est introuvable.');
+        }
+        if (!$this->isCsrfTokenValid('submit', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+            return $this->redirectToRoute('app_member_profile', ['id' => $id]);
+        }
+        $user = $this->currentUser();
+        if ($member === $user) {
+            return $this->redirectToRoute('app_member_profile', ['id' => $id]);
+        }
+
+        $conversation = $this->messagingService->openMemberConversation($user, $member);
+
+        return $this->redirectToRoute('app_account_messages_show', ['id' => (string) $conversation->getId()]);
+    }
+
     #[Route(path: ['fr' => '/compte/messages/nouvelle/{slug}', 'en' => '/en/account/messages/new/{slug}'], name: 'app_account_messages_start', methods: ['POST'])]
     public function start(string $slug, Request $request): Response
     {
@@ -146,6 +173,11 @@ final class ConversationController extends AbstractController
 
     private function otherPartyLabel(Conversation $conversation, User $user): string
     {
+        if (null !== $conversation->getMember()) {
+            $other = $conversation->otherParticipant($user);
+
+            return null !== $other ? trim($other->getFirstName().' '.mb_substr($other->getLastName(), 0, 1).'.') : '';
+        }
         if ($conversation->getClient() === $user) {
             return $conversation->getProvider()?->getDisplayName() ?? '';
         }

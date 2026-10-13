@@ -11,6 +11,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CountryType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -82,6 +83,9 @@ final class PersonalInformationFormType extends AbstractType
             // Non mappé sur l'entité : l'upload est géré à part par
             // AvatarStorageService, comme le mot de passe l'est déjà dans
             // RegistrationFormType.
+            // Profil public (13/10) : présentation et centres d'intérêt.
+            ->add('bio', TextareaType::class, ['label' => 'Présentation', 'required' => false, 'constraints' => [new Assert\Length(max: 1500)]])
+            ->add('interestsText', TextType::class, ['label' => 'Centres d’intérêt', 'required' => false, 'mapped' => false, 'constraints' => [new Assert\Length(max: 400)]])
             ->add('photo', FileType::class, [
                 'label' => 'Photo de profil',
                 'required' => false,

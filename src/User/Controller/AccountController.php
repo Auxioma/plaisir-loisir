@@ -628,6 +628,9 @@ final class AccountController extends AbstractController
             $form->get('city')->setData($address->getCity());
             $form->get('addressCountry')->setData($address->getCountry());
         }
+        if (!$form->isSubmitted()) {
+            $form->get('interestsText')->setData(implode(', ', $user->getInterests()));
+        }
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
@@ -661,6 +664,10 @@ final class AccountController extends AbstractController
                     }
                     $address->setLine1($line1)->setLine2('' !== $line2 ? $line2 : null)->setPostalCode($postalCode)->setCity($city)->setCountry($country);
                 }
+
+                // Profil public (13/10) : centres d'intérêt et ville (jamais l'adresse).
+                $user->setInterests(preg_split('/[,;\n]+/', (string) $form->get('interestsText')->getData()) ?: []);
+                $user->setCity('' !== $city ? $city : null);
 
                 $this->entityManager->flush();
                 $this->addFlash('success', 'Vos informations ont été mises à jour.');

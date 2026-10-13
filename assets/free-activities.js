@@ -99,7 +99,35 @@ function initCopyButtons() {
     });
 }
 
+/*
+ * Carte de la fiche (13/10, maquette « detail-activites »). Mode
+ * approximatif : un cercle autour d'une position déjà ARRONDIE côté serveur
+ * (≈ 1 km), pour qui n'a pas encore accès à l'adresse exacte. Mode exact :
+ * un marqueur, réservé aux participants acceptés.
+ */
+async function initActivityMap() {
+    document.querySelectorAll('[data-fd-map]').forEach(async (el) => {
+        if (el.dataset.ready) return;
+        el.dataset.ready = '1';
+        const lat = parseFloat(el.dataset.lat);
+        const lng = parseFloat(el.dataset.lng);
+        if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+        const mod = await import('leaflet');
+        const L = mod.default ?? mod;
+        const approx = el.dataset.approx === '1';
+        const map = L.map(el, { scrollWheelZoom: false, zoomControl: !approx, dragging: !L.Browser.mobile }).setView([lat, lng], approx ? 13 : 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(map);
+        const color = getComputedStyle(document.documentElement).getPropertyValue('--pl-action').trim() || '#5d00ff';
+        if (approx) {
+            L.circle([lat, lng], { radius: 1500, color, weight: 2, fillColor: color, fillOpacity: 0.12 }).addTo(map);
+        } else {
+            L.marker([lat, lng]).addTo(map);
+        }
+    });
+}
+
 const start = () => {
+    initActivityMap();
     initCountdowns();
     initFreeParticipants();
     initCopyButtons();

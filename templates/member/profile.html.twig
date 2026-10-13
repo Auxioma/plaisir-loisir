@@ -1,0 +1,211 @@
+{#
+    Profil public d'un membre (13/10) — maquette docs/maquettes/detail-profil.
+    Action : App\User\Controller\MemberProfileController::show().
+    Variables : member, rep (MemberReputation::of), organized, participated,
+    reviews, photos, now, is_me. Styles : assets/styles/member.css (.mb-*).
+
+    Le nom public est « Prénom N. ». Niveau, badges et statistiques sont
+    calculés (MemberReputation) : aucun chiffre n'est saisi à la main.
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% set display_name = member.firstName ~ ' ' ~ (member.lastName|first|upper) ~ '.' %}
+{% block title %}{{ display_name }} — {{ 'Profil membre'|trans }}{% endblock %}
+{% block meta_description %}{{ display_name }}{{ member.city ? ', ' ~ member.city }} : {{ 'membre de TrouveMoi, activités organisées et avis.'|trans }}{% endblock %}
+{# Profil d'un particulier : consultable, mais pas indexé par les moteurs. #}
+{% block meta_robots %}<meta name="robots" content="noindex, follow">{% endblock %}
+
+{% macro ico(name, size) %}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    {%- if name == 'crown' %}{{ icon.crown(size) }}{% elseif name == 'calendar' %}{{ icon.calendar(size) }}{% elseif name == 'clock' %}{{ icon.clock(size) }}{% elseif name == 'users' %}{{ icon.users(size) }}{% elseif name == 'star' %}{{ icon.star_solid(size) }}{% elseif name == 'leaf' %}{{ icon.leaf(size) }}{% elseif name == 'footprints' %}{{ icon.footprints(size) }}{% elseif name == 'shield_check' %}{{ icon.shield_check(size) }}{% else %}{{ icon.star(size) }}{% endif -%}
+{% endmacro %}
+
+{% macro stars(value, size) %}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    <span class="mb-stars" aria-hidden="true">{% for i in 1..5 %}<span class="{{ value is not null and i <= value|round ? 'is-on' : '' }}">{{ icon.star_solid(size) }}</span>{% endfor %}</span>
+{% endmacro %}
+
+{% macro activity_card(a, now, show_status) %}
+    {%- import '_partials/_icons.html.twig' as icon -%}
+    {% set past = a.scheduledAt and a.scheduledAt < now %}
+    <article class="mb-card">
+        <a class="mb-card__media" href="{{ path('app_private_activity_show', {id: a.id}) }}">
+            <img src="{% include 'private_activity/_cover.html.twig' with {activity: a} %}" alt="" loading="lazy" decoding="async">
+            {% if show_status %}<span class="mb-card__status{{ past ? ' is-past' : '' }}">{{ (past ? 'Terminée' : (a.status.value == 'cancelled' ? 'Annulée' : 'À venir'))|trans }}</span>{% endif %}
+            <span class="mb-card__count">{{ a.countAccepted }}{% if a.maxParticipants %} / {{ a.maxParticipants }}{% endif %}</span>
+        </a>
+        <div class="mb-card__body">
+            <a class="mb-card__title" href="{{ path('app_private_activity_show', {id: a.id}) }}">{{ a.title }}</a>
+            {% if a.scheduledAt %}<span class="mb-card__meta">{{ icon.calendar(14) }} {{ a.scheduledAt|pf_date('EEE d MMM y')|capitalize }} • {{ a.scheduledAt|date('H\\hi') }}</span>{% endif %}
+            {% if a.city %}<span class="mb-card__meta">{{ icon.map_pin(14) }} {{ a.city }}{{ a.postalCode ? ' (' ~ a.postalCode|slice(0, 2) ~ ')' }}</span>{% endif %}
+            <span class="mb-card__tags">{% if a.level %}<span class="mb-tag">{{ a.level.label|trans }}</span>{% endif %}<span class="mb-tag is-green">{{ 'Gratuit'|trans }}</span></span>
+        </div>
+    </article>
+{% endmacro %}
+
+{% block body %}
+<div class="mb">
+    <nav class="mb-crumb act-breadcrumb" aria-label="{{ "Fil d'Ariane"|trans }}">
+        <a href="{{ path('app_home') }}">{{ 'Accueil'|trans }}</a> <span aria-hidden="true">›</span>
+        <a href="{{ path('app_private_activities') }}">{{ 'Membres'|trans }}</a> <span aria-hidden="true">›</span>
+        <span aria-current="page">{{ display_name }}</span>
+    </nav>
+
+    {# ---- En-tête : couverture, photo, identité, note, actions ---- #}
+    <header class="mb-head">
+        <div class="mb-head__cover"><img src="{{ asset('images/legal/legal-hero.jpg') }}" alt="" fetchpriority="high"><span class="mb-head__motto">{{ 'Partager'|trans }}<br>{{ 'Découvrir'|trans }}<br>{{ 'Rencontrer'|trans }}</span></div>
+        <div class="mb-head__body">
+            <img class="mb-head__avatar" src="{{ asset(member.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="" width="160" height="160">
+            <div class="mb-head__id">
+                <h1>{{ display_name }} {% if rep.verified %}<span class="mb-verified" title="{{ 'Profil vérifié'|trans }}">{{ icon.badge_check(22) }}</span>{% endif %}</h1>
+                <p class="mb-head__meta">
+                    {% if member.city %}<span>{{ icon.map_pin(16) }} {{ member.city }}</span>{% endif %}
+                    {% if rep.member_since %}<span>{{ icon.calendar(16) }} {{ 'Membre depuis'|trans }} {{ rep.member_since|pf_date('MMMM y') }}</span>{% endif %}
+                </p>
+                <p class="mb-chips">
+                    {% if rep.verified %}<span class="mb-chip is-green">{{ icon.check_badge(14) }} {{ 'Profil vérifié'|trans }}</span>{% endif %}
+                    {% if rep.level >= 4 %}<span class="mb-chip is-orange">{{ icon.crown(14) }} {{ rep.level_label|trans }}</span>{% endif %}
+                    {% for interest in member.interests|slice(0, 2) %}<span class="mb-chip">{{ interest }}</span>{% endfor %}
+                </p>
+            </div>
+            <div class="mb-head__score{{ rep.rating is null ? ' is-new' }}">
+                {% if rep.rating is not null %}
+                    <strong>{{ icon.star_solid(26) }} {{ rep.rating|number_format(1, ',') }} <small>/ 5</small></strong>
+                    <span>{{ rep.reviews_count }} {{ 'avis'|trans }}</span>
+                {% else %}
+                    <strong>{{ icon.star_solid(20) }} {{ 'Nouveau membre'|trans }}</strong>
+                    <span>{{ 'Pas encore d’avis'|trans }}</span>
+                {% endif %}
+            </div>
+            <div class="mb-head__actions">
+                {% if is_me %}
+                    <a class="mb-btn mb-btn--primary" href="{{ path('app_account_profile') }}">{{ icon.edit_square(18) }} {{ 'Modifier mon profil'|trans }}</a>
+                {% elseif is_granted('ROLE_USER') %}
+                    <form method="post" action="{{ path('app_account_messages_start_member', {id: member.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                        <button type="submit" class="mb-btn mb-btn--primary">{{ icon.chat_bubble(18) }} {{ 'Envoyer un message'|trans }}</button>
+                    </form>
+                {% else %}
+                    <a class="mb-btn mb-btn--primary" href="{{ path('app_login') }}">{{ icon.chat_bubble(18) }} {{ 'Envoyer un message'|trans }}</a>
+                {% endif %}
+                <a class="mb-btn" href="#activites">{{ icon.users(18) }} {{ 'Voir ses activités'|trans }}</a>
+                {% if not is_me %}
+                    <div class="mb-report">{% include '_partials/_report_form.html.twig' with {subject_type: 'profile', subject_id: member.id, subject_label: display_name} %}</div>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    {# ---- Niveau, réputation et badges ---- #}
+    <div class="mb-grid mb-grid--rep">
+        <section class="mb-box">
+            <div class="mb-box__head">
+                <h2>{{ icon.chart_up(20) }} {{ 'Niveau et réputation'|trans }}</h2>
+                <p class="mb-level">{{ 'Niveau'|trans }} {{ rep.level }} · <strong>{{ rep.level_label|trans }}</strong></p>
+            </div>
+            <div class="mb-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ rep.progress }}" aria-label="{{ 'Progression vers le niveau suivant'|trans }}"><span style="width: {{ rep.progress }}%"></span></div>
+            {% if rep.next_label %}<p class="mb-hint">{{ 'Prochain niveau :'|trans }} {{ rep.next_label|trans }}</p>{% endif %}
+            <ol class="mb-levels">
+                {% for n, l in constant('App\\PrivateActivity\\Service\\MemberReputation::LEVELS') %}
+                    <li class="{{ n < rep.level ? 'is-done' : (n == rep.level ? 'is-current' : '') }}"><span class="mb-levels__dot">{{ _self.ico(l[2], 16) }}</span><strong>{{ l[0]|trans }}</strong><small>{{ 'Niveau'|trans }} {{ n }}</small></li>
+                {% endfor %}
+            </ol>
+            <ul class="mb-stats">
+                <li><span>{{ icon.users(22) }}</span><strong>{{ rep.done }}</strong><small>{{ 'activités réalisées'|trans }}</small></li>
+                <li><span>{{ icon.calendar(22) }}</span><strong>{{ rep.organized }}</strong><small>{{ 'activités organisées'|trans }}</small></li>
+                <li><span>{{ icon.shield_check(22) }}</span><strong>{{ rep.honored_rate is not null ? rep.honored_rate ~ ' %' : '—' }}</strong><small>{{ 'de participations honorées'|trans }}</small></li>
+                <li><span class="is-red">{{ icon.info(22) }}</span><strong>{{ rep.cancellations_12m }}</strong><small>{{ 'annulation(s) sur les 12 derniers mois'|trans }}</small></li>
+                <li><span class="is-green">{{ icon.chat_bubble(22) }}</span>{% if rep.response_hours is not null %}<small>{{ 'Répond généralement'|trans }}</small><strong class="is-small">{{ rep.response_hours < 1 ? 'en moins d’1 h'|trans : 'en moins de'|trans ~ ' ' ~ (rep.response_hours|round(0, 'ceil')) ~ ' h' }}</strong>{% else %}<small>{{ 'Temps de réponse'|trans }}</small><strong class="is-small">{{ 'pas encore mesuré'|trans }}</strong>{% endif %}</li>
+            </ul>
+        </section>
+
+        <section class="mb-box">
+            <div class="mb-box__head"><h2>{{ icon.check_badge(20) }} {{ 'Badges obtenus'|trans }}</h2></div>
+            {% if rep.badges is empty %}
+                <p class="mb-empty">{{ 'Les badges se débloquent au fil des activités organisées et des participations.'|trans }}</p>
+            {% else %}
+                <ul class="mb-badges">
+                    {% for b in rep.badges %}<li><span class="mb-badge is-{{ b.tone }}">{{ _self.ico(b.icon, 26) }}</span><small>{{ b.label|trans }}</small></li>{% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+    </div>
+
+    {# ---- Onglets (ancres, défilement fluide) ---- #}
+    <nav class="mb-tabs" aria-label="{{ 'Sections du profil'|trans }}">
+        <a href="#a-propos" class="is-active">{{ icon.person(18) }} {{ 'À propos'|trans }}</a>
+        <a href="#activites">{{ icon.calendar(18) }} {{ 'Activités organisées'|trans }}</a>
+        <a href="#participations">{{ icon.users(18) }} {{ 'Participations'|trans }}</a>
+        <a href="#avis">{{ icon.star(18) }} {{ 'Avis reçus'|trans }}</a>
+        <a href="#photos">{{ icon.image(18) }} {{ 'Photos'|trans }}</a>
+    </nav>
+
+    <div class="mb-grid mb-grid--main">
+        <div class="mb-col">
+            <section class="mb-box" id="a-propos">
+                <h2>{{ icon.person(20) }} {{ 'À propos de'|trans }} {{ member.firstName }}</h2>
+                {% if member.bio %}<p class="mb-bio">{{ member.bio|nl2br }}</p>{% else %}<p class="mb-empty">{{ is_me ? 'Présentez-vous en quelques lignes depuis « Mes informations ».'|trans : 'Ce membre ne s’est pas encore présenté.'|trans }}</p>{% endif %}
+                {% if member.interests is not empty %}<p class="mb-interests">{% for interest in member.interests %}<span>{{ interest }}</span>{% endfor %}</p>{% endif %}
+            </section>
+
+            <section class="mb-box" id="activites">
+                <div class="mb-box__head"><h2>{{ icon.calendar(20) }} {{ 'Activités organisées par'|trans }} {{ member.firstName }}</h2></div>
+                {% if organized is empty %}<p class="mb-empty">{{ 'Aucune activité organisée pour le moment.'|trans }}</p>{% else %}
+                    <div class="mb-cards">{% for a in organized|slice(0, 6) %}{{ _self.activity_card(a, now, true) }}{% endfor %}</div>
+                {% endif %}
+            </section>
+
+            <section class="mb-box" id="participations">
+                <div class="mb-box__head"><h2>{{ icon.users(20) }} {{ 'Participations'|trans }}</h2></div>
+                {% if participated is empty %}<p class="mb-empty">{{ 'Aucune participation visible pour le moment.'|trans }}</p>{% else %}
+                    <div class="mb-cards">{% for a in participated|slice(0, 6) %}{{ _self.activity_card(a, now, true) }}{% endfor %}</div>
+                {% endif %}
+            </section>
+
+            <section class="mb-box" id="photos">
+                <div class="mb-box__head"><h2>{{ icon.image(20) }} {{ 'Photos'|trans }}</h2></div>
+                {% if photos is empty %}<p class="mb-empty">{{ 'Aucune photo partagée pour le moment.'|trans }}</p>{% else %}
+                    <div class="mb-photos">{% for p in photos %}<a href="{{ asset(p.path) }}" target="_blank" rel="noopener"><img src="{{ asset(p.path) }}" alt="" loading="lazy" decoding="async"></a>{% endfor %}</div>
+                {% endif %}
+            </section>
+        </div>
+
+        <aside class="mb-col mb-col--side">
+            <section class="mb-box mb-trust">
+                <h2>{{ icon.shield_check(20) }} {{ 'La confiance sur TrouveMoi'|trans }}</h2>
+                <p>{{ rep.verified ? 'L’adresse e-mail de ce membre a été vérifiée par TrouveMoi.'|trans : 'Ce membre n’a pas encore vérifié son adresse e-mail.'|trans }} {{ 'Sa réputation repose sur les avis et la participation réelle aux activités réalisées avec la communauté.'|trans }}</p>
+                <a href="{{ path('app_faq') }}">{{ 'En savoir plus sur la vérification des profils'|trans }} {{ icon.arrow_right(14) }}</a>
+            </section>
+
+            <section class="mb-box" id="avis">
+                <h2>{{ icon.comment(20) }} {{ 'Avis reçus'|trans }} ({{ rep.reviews_count }})</h2>
+                {% if rep.reviews_count == 0 %}
+                    <p class="mb-empty">{{ 'Pas encore d’avis : ils sont laissés par les participants après chaque activité.'|trans }}</p>
+                {% else %}
+                    <div class="mb-score">
+                        <div class="mb-score__total"><strong>{{ icon.star_solid(24) }} {{ rep.rating|number_format(1, ',') }} <small>/ 5</small></strong>{{ _self.stars(rep.rating, 16) }}<small>{{ rep.reviews_count }} {{ 'avis'|trans }}</small></div>
+                        <dl class="mb-score__detail">
+                            {% for key, label in constant('App\\PrivateActivity\\Entity\\MemberReview::CRITERIA') %}
+                                <div><dt>{{ label|trans }}</dt><dd><span class="mb-bar"><span style="width: {{ ((rep.criteria[key] ?? 0) * 20)|round }}%"></span></span><b>{{ rep.criteria[key] is not null ? rep.criteria[key]|number_format(1, ',') : '—' }}</b></dd></div>
+                            {% endfor %}
+                        </dl>
+                    </div>
+                    <ul class="mb-reviews">
+                        {% for r in reviews %}
+                            <li>
+                                <img src="{{ asset(r.author.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
+                                <div>
+                                    <p class="mb-reviews__head"><strong>{{ r.author.firstName }} {{ r.author.lastName|first|upper }}.</strong> {{ _self.stars(r.rating, 13) }} <span>{{ r.rating }}/5</span> <time>{{ r.createdAt|pf_date('d MMM y') }}</time></p>
+                                    {% if r.comment %}<p>{{ r.comment }}</p>{% endif %}
+                                    <small><a href="{{ path('app_private_activity_show', {id: r.privateActivity.id}) }}">{{ r.privateActivity.title }}</a></small>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </section>
+        </aside>
+    </div>
+</div>
+{% endblock %}

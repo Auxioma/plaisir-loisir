@@ -55,7 +55,7 @@
 
                 <p class="evn-organizer">
                     <img src="{{ asset(entity.organizer and entity.organizer.avatarPath ? entity.organizer.avatarPath : 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
-                    {{ 'Organisé par'|trans }} <strong>{{ event.organizer }}</strong>
+                    {{ 'Organisé par'|trans }} <strong>{% if entity.organizer and not entity.organizer.isProvider %}<a href="{{ path('app_member_profile', {id: entity.organizer.id}) }}">{{ event.organizer }}</a>{% else %}{{ event.organizer }}{% endif %}</strong>
                     {# Suivre l'organisateur : il apparaît dans « Mes favoris » (01/10). #}
                     {% if app.user and event.organizerId and event.organizerId != app.user.id ~ '' %}
                         {% include '_partials/_event_fav.html.twig' with { type: 'organisateur', key: event.organizerId, class: 'pa-fav' } %}

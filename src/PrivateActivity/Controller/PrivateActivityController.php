@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace App\PrivateActivity\Controller;
 
 use App\Catalog\Repository\CategoryRepository;
+use App\PrivateActivity\Entity\MemberReview;
 use App\PrivateActivity\Entity\Participation;
 use App\PrivateActivity\Entity\PrivateActivity;
 use App\PrivateActivity\Enum\ParticipationStatus;
 use App\PrivateActivity\Enum\PrivateActivityStatus;
 use App\PrivateActivity\Enum\PrivateActivityVisibility;
+use App\PrivateActivity\Repository\AlbumRepository;
 use App\PrivateActivity\Repository\ParticipationRepository;
 use App\PrivateActivity\Repository\PrivateActivityRepository;
 use App\PrivateActivity\Security\ParticipationVoter;
 use App\PrivateActivity\Security\PrivateActivityVoter;
+use App\PrivateActivity\Service\MemberReputation;
+use App\PrivateActivity\Service\MemberReviewService;
 use App\PrivateActivity\Service\PrivateActivityDraftService;
 use App\PrivateActivity\Service\PrivateActivityInvitations;
 use App\PrivateActivity\Service\PrivateActivityInviteLink;
@@ -81,7 +85,7 @@ final class PrivateActivityController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/activites-privees/{id}', 'en' => '/en/private-activities/{id}'], name: 'app_private_activity_show')]
-    public function show(string $id, Request $request, PageViewRecorder $pageViews): Response
+    public function show(string $id, Request $request, PageViewRecorder $pageViews, MemberReputation $reputation, MemberReviewService $memberReviews, AlbumRepository $albums): Response
     {
         $activity = $this->findOrFail($id);
         // Lien d'invitation d'une activité privée (07/10) : la clé ouvre l'accès pour la session.
@@ -104,7 +108,44 @@ final class PrivateActivityController extends AbstractController
             'accepted' => array_filter($activity->getParticipations()->toArray(), static fn (Participation $p): bool => ParticipationStatus::Accepted === $p->getStatus()),
             'waiting' => array_filter($activity->getParticipations()->toArray(), static fn (Participation $p): bool => ParticipationStatus::WaitingList === $p->getStatus()),
             'share_url' => $this->shareUrl($activity),
+            // Refonte selon la maquette « detail-activites » (13/10).
+            'organizer_rep' => null !== $activity->getOrganizer() ? $reputation->of($activity->getOrganizer()) : null,
+            'can_review' => $memberReviews->canReview($activity, $user instanceof User ? $user : null),
+            'album_photos' => $this->isGranted(PrivateActivityVoter::VIEW_ALBUM, $activity) ? array_slice($albums->findOneByActivity($activity)?->getPhotos()->toArray() ?? [], 0, 8) : [],
+            'similar' => array_slice(array_values(array_filter(
+                $this->activities->findUpcomingDiscoverable($this->isGranted('ROLE_USER'), $activity->getCategory(), limit: 6),
+                static fn (PrivateActivity $a): bool => $a !== $activity,
+            )), 0, 2),
         ]);
+    }
+
+    /** Avis d'un participant sur l'organisateur, une fois l'activité passée (13/10). */
+    #[Route(path: ['fr' => '/activites-privees/{id}/avis', 'en' => '/en/private-activities/{id}/review'], name: 'app_private_activity_review', methods: ['POST'])]
+    public function review(string $id, Request $request, MemberReviewService $reviews): Response
+    {
+        $activity = $this->findOrFail($id);
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_login');
+        }
+        if (!$this->isCsrfTokenValid('member_review', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+            return $this->redirectToRoute('app_private_activity_show', ['id' => $id, '_fragment' => 'avis']);
+        }
+
+        try {
+            $criteria = [];
+            foreach (array_keys(MemberReview::CRITERIA) as $c) {
+                $criteria[$c] = $request->request->getInt($c, 5);
+            }
+            $reviews->submit($activity, $user, $criteria, (string) $request->request->get('comment', ''));
+            $this->addFlash('success', 'Merci ! Votre avis est publié sur le profil de l’organisateur.');
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_private_activity_show', ['id' => $id, '_fragment' => 'avis']);
     }
 
     /**

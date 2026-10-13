@@ -47,6 +47,7 @@ import './styles/free-activities.css';
 
 // Adaptations telephone / tablette. Charge EN DERNIER : a specificite egale,
 // ses regles doivent l'emporter sur le CSS de bureau qu'elles degradent.
+import './styles/member.css';   // profil membre et fiche d'activité gratuite (13/10)
 import './styles/responsive.css';
 
 // Comportement des menus déroulants de l'en-tête d'accueil.
