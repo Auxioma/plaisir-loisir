@@ -59,21 +59,24 @@ final class StaticAccount
      */
     public static function menu(): array
     {
+        // Menu réorganisé par usage (13/10, retour client n° 29) : ce que je
+        // fais (sorties), avec qui j'échange, puis mon compte. Les titres
+        // disent ce que l'on trouve, sans jargon interne.
         return [
-            ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Aperçu de votre activité', 'route' => 'app_account_dashboard', 'badge' => false],
-            ['icon' => 'camera', 'title' => 'Mes albums photos', 'subtitle' => 'Gérez vos albums et photos', 'route' => 'app_account_albums', 'badge' => false],
-            ['icon' => 'edit', 'title' => 'Mes activités créées', 'subtitle' => 'Gérez vos activités sur Event', 'route' => 'app_account_private_activities', 'badge' => false],
+            ['icon' => 'grid', 'title' => 'Tableau de bord', 'subtitle' => 'Mon résumé', 'route' => 'app_account_dashboard', 'badge' => false],
+            ['icon' => 'calendar', 'title' => 'Mes réservations', 'subtitle' => 'Activités payantes réservées', 'route' => 'app_account_history', 'badge' => false, 'section' => 'Mes sorties'],
+            ['icon' => 'edit', 'title' => 'Mes activités gratuites', 'subtitle' => 'Créées et inscriptions', 'route' => 'app_account_private_activities', 'badge' => false],
             // Retours client du 11/10 : la page n'était joignable qu'après la création d'un événement.
             ['icon' => 'calendar_check', 'title' => 'Mes événements', 'subtitle' => 'Organisés et inscriptions', 'route' => 'app_account_events', 'badge' => false],
-            ['icon' => 'calendar', 'title' => 'Mes réservations', 'subtitle' => 'Suivi de vos réservations', 'route' => 'app_account_history', 'badge' => false],
-            ['icon' => 'person', 'title' => 'Informations personnelles', 'subtitle' => 'Gérez vos informations', 'route' => 'app_account_profile', 'badge' => false, 'section' => 'Compte'],
-            ['icon' => 'wallet', 'title' => 'Paiements et abonnements', 'subtitle' => 'Gérez vos paiements', 'route' => 'app_account_payments', 'badge' => false],
-            ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Paramétrez vos notifications', 'route' => 'app_account_notifications', 'badge' => 'notifications'],
-            ['icon' => 'heart', 'title' => 'Favoris', 'subtitle' => 'Vos activités favorites', 'route' => 'app_account_favorites', 'badge' => false],
+            ['icon' => 'camera', 'title' => 'Mes albums photos', 'subtitle' => 'Souvenirs de vos sorties', 'route' => 'app_account_albums', 'badge' => false],
+            ['icon' => 'heart', 'title' => 'Favoris', 'subtitle' => 'Activités et destinations gardées', 'route' => 'app_account_favorites', 'badge' => false],
+            ['icon' => 'mail', 'title' => 'Messages', 'subtitle' => 'Membres et professionnels', 'route' => 'app_account_messages', 'badge' => 'messages', 'section' => 'Échanges'],
+            ['icon' => 'bell', 'title' => 'Notifications', 'subtitle' => 'Alertes et réglages', 'route' => 'app_account_notifications', 'badge' => 'notifications'],
+            ['icon' => 'receipt', 'title' => 'Mes demandes de devis', 'subtitle' => 'Réponses des professionnels', 'route' => 'app_account_requests', 'badge' => false],
+            ['icon' => 'person', 'title' => 'Informations personnelles', 'subtitle' => 'Identité et profil public', 'route' => 'app_account_profile', 'badge' => false, 'section' => 'Mon compte'],
+            ['icon' => 'wallet', 'title' => 'Paiements', 'subtitle' => 'Moyens de paiement et factures', 'route' => 'app_account_payments', 'badge' => false],
             ['icon' => 'users', 'title' => 'Parrainage', 'subtitle' => 'Invitez vos amis', 'route' => 'app_account_referral', 'badge' => false],
-            ['icon' => 'gear', 'title' => 'Paramètres du compte', 'subtitle' => 'Supprimer ou désactiver', 'route' => 'app_account_settings', 'badge' => false],
-            ['icon' => 'mail', 'title' => 'Messages', 'subtitle' => 'Conversations avec les professionnels', 'route' => 'app_account_messages', 'badge' => 'messages', 'section' => 'Échanges'],
-            ['icon' => 'receipt', 'title' => 'Mes demandes', 'subtitle' => 'Devis reçus des professionnels', 'route' => 'app_account_requests', 'badge' => false],
+            ['icon' => 'gear', 'title' => 'Paramètres du compte', 'subtitle' => 'Mot de passe, suppression', 'route' => 'app_account_settings', 'badge' => false],
             ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Se déconnecter', 'route' => 'app_account_logout_confirm', 'badge' => false, 'section' => ''],
         ];
     }

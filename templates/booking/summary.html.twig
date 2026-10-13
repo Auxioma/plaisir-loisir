@@ -38,6 +38,12 @@
                 <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">
                 <button class="pl-btn pl-btn--primary pl-btn--block">{{ icon.card_lock(18) }} {{ 'Confirmer et payer'|trans }}</button>
             </form>
+            {# Parcours de paiement expliqué (13/10, retour client n° 36). #}
+            <ol class="bk-steps">
+                <li>{{ 'Vous payez en ligne par carte bancaire, sur la page sécurisée de notre prestataire de paiement (Stripe, 3-D Secure).'|trans }}</li>
+                <li>{{ 'Votre réservation est confirmée aussitôt : vous recevez un e-mail et le professionnel est prévenu.'|trans }}</li>
+                <li>{{ 'TrouveMoi reverse ensuite le montant au professionnel, après l’activité.'|trans }}</li>
+            </ol>
             <p class="bk-note">✓ {{ 'Annulation gratuite'|trans }} {{ "Jusqu'à 7 jours avant"|trans }}</p>
             <form method="post" action="{{ path('app_booking_abandon', {id: booking.id}) }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">

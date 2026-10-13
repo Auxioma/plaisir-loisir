@@ -94,7 +94,7 @@
         </section>
 
         {# Profil public (13/10) : visible des autres membres sur « /membres/… ». #}
-        <section class="pf-card">
+        <section class="pf-card" id="profil-public">
             <div class="pf-card__head">
                 <h2 class="pf-card__title">{{ 'Mon profil public'|trans }}</h2>
                 <a class="pf-link" href="{{ path('app_member_profile', {id: app.user.id}) }}">{{ 'Voir mon profil'|trans }}</a>

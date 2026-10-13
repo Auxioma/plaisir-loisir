@@ -165,7 +165,7 @@ final class AccountController extends AbstractController
         return $this->render('account/paiements.html.twig', [
             'user' => $this->accountUser(),
             'menu' => StaticAccount::menu(),
-            'active' => 'Paiements et abonnements',
+            'active' => 'Paiements',
             'account' => $user,
             'payments' => \array_slice($payments, 0, 5),
             'payments_count' => \count($payments),

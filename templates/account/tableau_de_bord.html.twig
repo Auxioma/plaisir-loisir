@@ -156,13 +156,14 @@
 
     {# ---- Conseils ---- #}
     <section class="pf-card pf-card--soft pf-tips">
-        <h2 class="pf-card__title">{{ 'Conseils pour booster votre activité'|trans }}</h2>
+        {# Conseils pour un membre (13/10) : les anciens visaient les professionnels. #}
+        <h2 class="pf-card__title">{{ 'Pour bien profiter de TrouveMoi'|trans }}</h2>
         <div class="pf-tips__grid">
-            <div><span class="pf-tips__icon">{{ icon.image_frame(18) }}</span><strong>{{ 'Ajoutez de nouvelles photos'|trans }}</strong><p>{{ 'Les activités avec au moins 10 photos reçoivent 3 fois plus de réservations.'|trans }}</p></div>
-            <div><span class="pf-tips__icon">{{ icon.calendar_grid(18) }}</span><strong>{{ 'Répondez aux avis'|trans }}</strong><p>{{ 'Répondez aux avis pour améliorer votre visibilité et la confiance des clients.'|trans }}</p></div>
-            <div><span class="pf-tips__icon">{{ icon.user_pin(18) }}</span><strong>{{ 'Mettez à jour vos disponibilités'|trans }}</strong><p>{{ 'Des disponibilités à jour augmentent vos chances de réservation.'|trans }}</p></div>
+            <div><span class="pf-tips__icon">{{ icon.user_pin(18) }}</span><strong><a href="{{ path('app_account_profile') }}#profil-public">{{ 'Complétez votre profil public'|trans }}</a></strong><p>{{ 'Une présentation et vos centres d’intérêt rassurent les organisateurs et les autres membres.'|trans }}</p></div>
+            <div><span class="pf-tips__icon">{{ icon.calendar_grid(18) }}</span><strong><a href="{{ path('app_private_activities') }}">{{ 'Rejoignez une sortie gratuite'|trans }}</a></strong><p>{{ 'Des activités et des événements entre membres, près de chez vous.'|trans }}</p></div>
+            <div><span class="pf-tips__icon">{{ icon.image_frame(18) }}</span><strong><a href="{{ path('app_create_free') }}">{{ 'Organisez votre propre sortie'|trans }}</a></strong><p>{{ 'Créez une activité gratuite en quelques étapes et partagez l’album photo avec le groupe.'|trans }}</p></div>
         </div>
-        <a class="pf-btn pf-tips__cta" href="{{ path('app_help_center') }}">{{ 'Voir tous les conseils'|trans }}</a>
+        <a class="pf-btn pf-tips__cta" href="{{ path('app_help_center') }}">{{ 'Centre d’aide'|trans }}</a>
     </section>
 {% endblock %}
 

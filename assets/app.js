@@ -84,3 +84,13 @@ import './autocomplete.js';
 // Bandeau cookies et Google Analytics (12/10).
 import './cookie-consent.js';
 import './analytics.js';
+
+// Menu du compte replié sur mobile (13/10) : bouton « Menu de mon compte ».
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-pf-menu-toggle]');
+    if (!btn) return;
+    const menu = document.getElementById(btn.getAttribute('aria-controls'));
+    const open = btn.getAttribute('aria-expanded') !== 'true';
+    btn.setAttribute('aria-expanded', String(open));
+    menu?.classList.toggle('is-open', open);
+});

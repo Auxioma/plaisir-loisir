@@ -77,7 +77,7 @@ final class ServiceRequestController extends AbstractController
         return $this->render('quote/mes_demandes.html.twig', [
             'user' => $this->identity->identityFor($this->currentUser()),
             'menu' => StaticAccount::menu(),
-            'active' => 'Mes demandes',
+            'active' => 'Mes demandes de devis',
             'requests' => $rows,
             'tab' => $tab,
             'counts' => [
@@ -155,7 +155,7 @@ final class ServiceRequestController extends AbstractController
         return $this->render('quote/nouvelle_demande.html.twig', [
             'user' => $this->identity->identityFor($this->currentUser()),
             'menu' => StaticAccount::menu(),
-            'active' => 'Mes demandes',
+            'active' => 'Mes demandes de devis',
             'categories' => $this->categories->findRoots(),
             'values' => $values,
             'errors' => $errors,
@@ -187,7 +187,7 @@ final class ServiceRequestController extends AbstractController
         return $this->render('quote/demande_detail.html.twig', [
             'user' => $this->identity->identityFor($this->currentUser()),
             'menu' => StaticAccount::menu(),
-            'active' => 'Mes demandes',
+            'active' => 'Mes demandes de devis',
             'demande' => $serviceRequest,
             'quotes' => $quotes,
             'providers' => $providers,

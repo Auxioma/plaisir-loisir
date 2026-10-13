@@ -2,7 +2,7 @@
     <EventCard> (spec §E1) : badge catégorie coloré, cœur, pastille date
     navy translucide en bas de l'image, titre, lieu (pin), horaire
     (horloge), participants + pile d'avatars. Pas de prix (événements
-    communautaires). Variables : e, avatars.
+    communautaires). Variables : e (avatars, facultatif, n'est plus affiché).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
@@ -22,10 +22,9 @@
         <span class="evn-card__meta">{{ icon.map_pin(15) }} {{ e.location }}</span>
         <span class="evn-card__meta">{{ icon.clock(15) }} {{ e.hours }}</span>
         <span class="evn-card__foot">
-            <span class="evn-card__meta">{{ icon.person(15) }} {{ e.participants }} {{ 'Participants'|trans }}</span>
-            <span class="evn-avatars">
-                {% for a in avatars %}<img src="{{ asset(a) }}" alt="" loading="lazy" decoding="async">{% endfor %}
-            </span>
+            {# Nombre réel d'inscrits (13/10) : plus de photos de démonstration
+               identiques sur toutes les cartes. #}
+            <span class="evn-card__meta">{{ icon.person(15) }} {{ e.participants }} {{ (e.participants > 1 ? 'participants' : 'participant')|trans }}</span>
         </span>
     </div>
 </a>

@@ -11,17 +11,29 @@
 #}
 {% extends 'account/_layout.html.twig' %}
 
+{% import '_partials/_icons.html.twig' as icon %}
+
 {% block title %}{{ 'Messages'|trans }}{% endblock %}
 
 {% block account %}
     {% include 'account/_page_head.html.twig' with {
         crumbs: [{ label: 'Messages'|trans }],
         title: 'Messages'|trans,
-        subtitle: 'Vos conversations avec les professionnels.'|trans,
+        subtitle: 'Vos conversations avec les membres et les professionnels.'|trans,
     } %}
 
+    {# Parcours expliqué sur la page (13/10, retour client n° 35). #}
+    <details class="acc-howto"{{ rows is empty ? ' open' }}>
+        <summary>{{ icon.info(16) }} {{ 'Comment démarrer une conversation ?'|trans }}</summary>
+        <ul>
+            <li><strong>{{ 'Avec un professionnel'|trans }}</strong> — {{ 'bouton « Contacter le professionnel » sur la fiche d’une activité, sur sa fiche professionnelle, ou après une réservation.'|trans }}</li>
+            <li><strong>{{ 'Avec un membre'|trans }}</strong> — {{ 'bouton « Contacter » sur son profil (cliquez sur le nom de l’organisateur d’une activité gratuite ou d’un événement).'|trans }}</li>
+            <li><strong>{{ 'Ensuite'|trans }}</strong> — {{ 'la conversation apparaît ici ; vous êtes prévenu de chaque réponse dans vos notifications.'|trans }}</li>
+        </ul>
+    </details>
+
     {% if rows is empty %}
-        {% include 'account/_empty.html.twig' with { message: "Vous n'avez encore aucune conversation. Elle démarre depuis la fiche d'un professionnel."|trans } %}
+        {% include 'account/_empty.html.twig' with { message: "Vous n'avez encore aucune conversation."|trans } %}
     {% else %}
         <div class="acc-conv-list">
             {% for row in rows %}

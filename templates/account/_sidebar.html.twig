@@ -17,7 +17,16 @@
     </div>
 </div>
 
-<nav class="pf-menu" aria-label="{{ 'Menu du compte'|trans }}">
+{# Mobile et tablette (13/10, retour client n° 30) : le menu complet, avec ses
+   groupes, se déplie depuis ce bouton au lieu d'un ruban où l'on ne voyait
+   que deux entrées. Script : assets/app.js (data-pf-menu-toggle). #}
+{% set current = menu|filter(i => i.title == active)|first %}
+<button type="button" class="pf-menu-toggle" aria-expanded="false" aria-controls="pf-menu" data-pf-menu-toggle>
+    <span>{{ icon.list_view(20) }} {{ 'Menu de mon compte'|trans }}</span>
+    {% if current %}<em>{{ current.title|trans }}</em>{% endif %}
+    {{ icon.chevron_down(18) }}
+</button>
+<nav class="pf-menu" id="pf-menu" aria-label="{{ 'Menu du compte'|trans }}">
     {% for item in menu %}
         {% if item.section is defined %}
             {% if item.section %}<p class="pf-menu__section">{{ item.section|trans }}</p>{% else %}<span class="pf-menu__gap"></span>{% endif %}

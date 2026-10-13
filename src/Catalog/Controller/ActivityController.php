@@ -194,7 +194,6 @@ final class ActivityController extends AbstractController
             // quatre en double, et la page 2 aurait recommence a la neuvieme :
             // le visiteur aurait vu des doublons ET cru en avoir vu douze.
             'gridActivities' => $activities,
-            'offers' => StaticCatalog::offers(),
             'selections' => StaticCatalog::selections(),
             'cities' => StaticCatalog::cities(),
             'filterChips' => StaticCatalog::filterChips(),
@@ -393,6 +392,9 @@ final class ActivityController extends AbstractController
         return $this->render('activity/show.html.twig', [
             'activity' => $this->presenter->card($service, favoriteSlugs: $this->favorites->activitySlugs()),
             'detail' => $detail,
+            // Professionnel de l'activité (13/10, retour client n° 35) : sa
+            // fiche et « Contacter » sont accessibles depuis l'activité.
+            'activity_provider' => $service->getProvider(),
             'promotion' => $promotion,
             'booking' => $this->bookingPanel($service, $request, $availabilities),
             // Avis réels de l'activité (réservations terminées, 04/10) : les
