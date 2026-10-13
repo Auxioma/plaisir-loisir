@@ -128,7 +128,7 @@
 .pp-hero span { position: absolute; left: 18px; right: 18px; bottom: 22px; color: var(--pl-white); font-size: 17px; font-weight: 700; line-height: 23px; text-shadow: 0 2px 8px rgba(0, 0, 0, .45); }
 .pp-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, rgba(1, 17, 52, .75)); }
 .pp-hero span { z-index: 1; }
-.pp-period { display: inline-flex; align-items: center; gap: 8px; padding: 0 12px; height: 42px; border: 1px solid var(--pf-field); border-radius: 8px; color: var(--tm-ink); background: var(--pl-white); }
+.pp-period { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: 100%; min-width: 0; padding: 0 12px; min-height: 42px; border: 1px solid var(--pf-field); border-radius: 8px; color: var(--tm-ink); background: var(--pl-white); }
 .pp-period select { border: 0; background: none; color: var(--tm-ink); font-size: 13.5px; font-weight: 600; cursor: pointer; }
 .pp-grid { display: grid; gap: 20px; }
 .pp-grid--dash { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }

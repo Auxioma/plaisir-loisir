@@ -1183,3 +1183,145 @@
     .pa-signup__form > .pa-grid { grid-template-columns: minmax(0, 1fr); }
     .pa-steps { flex-wrap: wrap; }
 }
+
+/* ==========================================================================
+ *  HARMONISATION DES PAGES DE LISTE (13/10, retour client : « Activités » et
+ *  « Offres du moment » n'avaient pas la même largeur).
+ *
+ *  Une seule règle pour Activités, Destinations, Offres du moment, Bons
+ *  cadeaux, Explorer, Professionnels, Activités gratuites et Événements :
+ *  contenu centré sur 1440 px maximum, mêmes marges latérales (32 px, puis
+ *  24 et 16 px), colonne de filtres de 260 px.
+ * ======================================================================== */
+:root { --tm-page-max: 1440px; --tm-page-gutter: 32px; --tm-filters-w: 260px; }
+.ex, .gc, .evl {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: var(--tm-page-max);
+    margin-inline: auto;
+    padding-inline: var(--tm-page-gutter);
+}
+.ex, .gc { grid-template-columns: var(--tm-filters-w) minmax(0, 1fr); }
+.ex-main { padding-right: 0; padding-left: 32px; }
+.gc-hero { padding-left: 32px; }
+.ofm .pg-wrap { max-width: var(--tm-page-max); padding-inline: var(--tm-page-gutter); }
+.ofm-layout { grid-template-columns: var(--tm-filters-w) minmax(0, 1fr) 290px; }
+.ofm-hero__text { padding-left: max(var(--tm-page-gutter), calc((100vw - var(--tm-page-max)) / 2 + var(--tm-page-gutter))); }
+@media (max-width: 1399.98px) {
+    .ofm-layout { grid-template-columns: var(--tm-filters-w) minmax(0, 1fr); }
+    .ofm-layout > :last-child:not(:nth-child(2)) { grid-column: 1 / -1; }
+}
+@media (max-width: 1199.98px) {
+    :root { --tm-page-gutter: 24px; }
+    .ex-main { padding-left: 24px; }
+    .gc-hero { padding-left: 24px; }
+}
+@media (max-width: 991.98px) {
+    .ex, .gc { grid-template-columns: minmax(0, 1fr); }
+    .ex-main { padding-left: 0; }
+    .gc-hero { padding-left: 0; }
+    .ofm-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 575.98px) {
+    :root { --tm-page-gutter: 16px; }
+    .ex-main { padding: 20px 0 32px; }
+}
+
+/* ==========================================================================
+ *  CARTES : BADGES ET CŒUR SUR UNE MÊME LIGNE (13/10, retour client).
+ *  Toutes les cartes du site (activités, offres, activités gratuites,
+ *  événements, bons cadeaux, destinations) : badges à 12 px du coin, 26 px
+ *  de haut ; cœur rond blanc de 32 px dont le centre est sur la même ligne
+ *  (9 + 16 = 12 + 13). Une seule apparence de cœur partout.
+ * ======================================================================== */
+.ofm-badge, .gc-badge, .pl-card__tag, .evn-card__media > .evn-badge, .fa-card__badges {
+    top: 12px; left: 12px;
+}
+.ofm-badge, .gc-badge, .pl-card__tag, .evn-card__media > .evn-badge, .fa-card__badges > * {
+    box-sizing: border-box;
+    display: inline-flex; align-items: center;
+    height: 26px; padding-block: 0; line-height: 1;
+}
+.ofm-card__fav, .fa-card__fav, .pl-card__fav, .evn-card__fav, .ex-card__fav {
+    position: absolute; top: 9px; right: 9px; z-index: 2;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; padding: 0;
+    background: var(--pl-white); border: 0; border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(11, 20, 55, .18);
+    color: #1f2433; filter: none; cursor: pointer;
+}
+.ofm-card__fav:hover, .fa-card__fav:hover, .pl-card__fav:hover, .evn-card__fav:hover, .ex-card__fav:hover,
+.ofm-card__fav.is-active, .fa-card__fav.is-active, .pl-card__fav.is-active, .evn-card__fav.is-active, .ex-card__fav.is-active { color: #e11d48; }
+
+/* Activités gratuites, filtres sur mobile (13/10) : la barre passe en colonne
+   et la base flexible de 520 px du formulaire devenait une HAUTEUR — d'où de
+   grands vides entre les champs. Grille compacte à la place. */
+@media (max-width: 767.98px) {
+    .pa-list .evl-bar { align-items: stretch; }
+    .pa-list .pa-filters { flex: 0 0 auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; }
+    .pa-list .pa-filters > * { width: 100%; min-width: 0; }
+    .pa-list .pa-filters input[name="lieu"], .pa-list .pa-filters input[name="q"], .pa-list .pa-filters select[name="tri"], .pa-list .pa-filters .evl-btn { grid-column: 1 / -1; }
+    .pa-list .pa-filters .evl-btn { justify-content: center; height: 40px; }
+    .pa-list .evl-bar > strong { margin-top: 4px; }
+    .pa-list .evl-bar > .evl-btn { justify-content: center; }
+}
+
+/* Bons cadeaux sur mobile (13/10) : à deux par ligne, les cartes étaient trop
+   étroites (bouton « Offrir ce bon cadeau » sur deux lignes). Une par ligne. */
+@media (max-width: 575.98px) {
+    .gc-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .gc-card__body { padding: 12px 14px 14px; gap: 4px; }
+    .gc-card__body > small { font-size: 12px; }
+}
+
+/* Bandeau des listes Événements / Activités gratuites : il s'étend jusqu'aux
+   bords du conteneur, dont les marges suivent désormais --tm-page-gutter. */
+.evl-hero { margin-inline: calc(-1 * var(--tm-page-gutter)); padding-inline: var(--tm-page-gutter); }
+
+/* Très petits écrans (< 400 px, ex. 360) : l'en-tête dépassait de 2 px. */
+@media (max-width: 399.98px) {
+    .tm-header__inner { padding: 0 10px; }
+    .tm-header__logo img { height: 32px; }
+    .tm-header__actions { gap: 8px; }
+    .tm-btn { padding: 0 10px; }
+}
+
+/* Offres du moment, colonne latérale sous 576 px : blocs pleine largeur
+   (l'encart newsletter débordait de 4 px à 360). */
+@media (max-width: 575.98px) {
+    .ofm-side > * { flex: 1 1 100%; min-width: 0; box-sizing: border-box; }
+}
+
+/* Assistants (événement, activité gratuite, activité pro) sur mobile
+   (13/10) : la colonne d'étapes imposait sa largeur (1 000 px). */
+.ew-col { min-width: 0; }
+@media (max-width: 991.98px) {
+    .ew-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Espace client à 360 px (13/10) : cartes contraintes à la largeur de leur
+   colonne, les longs mots (e-mails, liens) passent à la ligne. */
+.pf-card { min-width: 0; overflow-wrap: break-word; }
+.pf-contact > *, .pf-grid > *, .pf-row > * { min-width: 0; }
+@media (max-width: 767.98px) {
+    .pf-contact { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Espace pro à 360 px : onglets en ruban défilant, titre du calendrier
+   resserré (ils dépassaient de 8 à 13 px). */
+.pf-tabs-row, .pf-tabs { min-width: 0; }
+@media (max-width: 575.98px) {
+    .pf-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .pf-tabs::-webkit-scrollbar { display: none; }
+    .pf-tab { flex: none; }
+    .pp-cal-title { min-width: 0; flex-wrap: wrap; justify-content: center; }
+    .pp-cal-title h2 { font-size: 18px; }
+}
+/* Pagination de l'espace pro : les numéros passent à la ligne. */
+.pf-pager nav { flex-wrap: wrap; min-width: 0; }
+@media (max-width: 575.98px) { .pf-pager { flex-wrap: wrap; } .pf-pager nav { gap: 6px; } }
+
+/* Filet de sécurité (13/10) : aucune page ne doit défiler horizontalement
+   sur mobile. « clip » (et non « hidden ») ne crée pas de conteneur de
+   défilement : les en-têtes et colonnes « sticky » continuent de fonctionner. */
+html, body { overflow-x: clip; }

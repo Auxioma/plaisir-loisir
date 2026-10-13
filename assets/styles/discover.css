@@ -325,18 +325,20 @@
 /* Filtres repliables (12/10) : bouton + panneau plein écran sous 992 px. */
 .ex-filter-toggle, .ex-filters__close { display: none; }
 @media (max-width: 991.98px) {
-    .ex--collapsible .ex-filters {
+    .ex--collapsible .ex-filters-panel {
         position: fixed; inset: 0; z-index: 1065;
         overflow-y: auto; overscroll-behavior: contain;
         border: 0; background: var(--pl-white);
         transform: translateY(100%); visibility: hidden;
         transition: transform .25s ease, visibility .25s;
     }
-    .ex--collapsible .ex-filters.is-open { transform: none; visibility: visible; }
-    .ex--collapsible .ex-filters__form { padding-bottom: 32px; }
-    .ex--collapsible .ex-filters__form > button[type=submit] { position: sticky; bottom: 12px; z-index: 1; box-shadow: 0 6px 18px rgba(59, 14, 245, .25); }
-    .ex--collapsible .ex-filters__head { gap: 12px; }
-    .ex--collapsible .ex-filters__head a { margin-left: auto; }
+    .ex--collapsible .ex-filters-panel.is-open { transform: none; visibility: visible; }
+    .ex--collapsible .ex-filters-panel { padding: 16px; border-radius: 0; box-shadow: none; }
+    .ex--collapsible .ex-filters-panel form { position: static; padding-bottom: 32px; }
+    .ex--collapsible .ex-filters-panel form > button[type=submit] { position: sticky; bottom: 12px; z-index: 1; box-shadow: 0 6px 18px rgba(59, 14, 245, .25); }
+    .ex--collapsible .ex-filters__head, .ex--collapsible .ofm-filters__head { display: flex; align-items: center; gap: 12px; }
+    .ex--collapsible .ex-filters__head a, .ex--collapsible .ofm-filters__head a { margin-left: auto; }
+    .ex--collapsible .ex-filters__head .ex-filters__close, .ex--collapsible .ofm-filters__head .ex-filters__close { order: 3; }
     .ex--collapsible .ex-filters__close { display: inline-flex; padding: 6px; background: none; border: 0; color: var(--tm-ink); cursor: pointer; }
     .ex-filter-toggle {
         display: inline-flex; align-items: center; gap: 8px;
