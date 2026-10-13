@@ -48,6 +48,24 @@ final class MessagingService
     }
 
     /**
+     * Fil entre deux membres (13/10, « Envoyer un message » du profil public) :
+     * retrouvé dans un sens comme dans l'autre, sinon créé.
+     */
+    public function openMemberConversation(User $from, User $to): Conversation
+    {
+        $existing = $this->conversations->findBetweenMembers($from, $to);
+        if (null !== $existing) {
+            return $existing;
+        }
+
+        $conversation = (new Conversation())->setClient($from)->setMember($to);
+        $this->entityManager->persist($conversation);
+        $this->entityManager->flush();
+
+        return $conversation;
+    }
+
+    /**
      * @throws \InvalidArgumentException si l'auteur ne participe pas à la conversation
      */
     public function sendMessage(Conversation $conversation, User $author, string $body): Message
@@ -79,11 +97,7 @@ final class MessagingService
 
     private function otherParticipant(Conversation $conversation, User $author): ?User
     {
-        if ($conversation->getClient() === $author) {
-            return $conversation->getProvider()?->getUser();
-        }
-
-        return $conversation->getClient();
+        return $conversation->otherParticipant($author);
     }
 
     /**

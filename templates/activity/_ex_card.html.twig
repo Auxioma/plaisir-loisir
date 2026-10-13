@@ -21,6 +21,7 @@
         {% endif %}
     </span>
     <span class="ex-card__body">
+        <span class="card-kind card-kind--pro">{{ icon.briefcase(13) }} {{ 'Avec un professionnel'|trans }}</span>
         <strong class="ex-card__title">{{ a.title }}</strong>
         <span class="ex-card__place">{{ a.place }}</span>
         {% if a.rating %}<span class="ex-card__rating">{{ icon.star_solid(14) }} {{ a.rating }} <em>({{ a.reviews }})</em></span>{% endif %}

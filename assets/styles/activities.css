@@ -1112,3 +1112,9 @@ a.act-popup__title:hover { color: var(--pl-action); }
 .act-gallery-all { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
 .act-gallery-all img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; }
 .pl-iconbtn.is-active { color: #e5324b; }
+
+/* Fiche activité : écrire au professionnel (13/10). */
+.act-detail__organizer a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.act-detail__contact { display: inline-flex; margin: 0; }
+.act-detail__contact button, a.act-detail__contact { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border: 1px solid var(--pl-action, #5d00ff); border-radius: 999px; background: #fff; color: var(--pl-action, #5d00ff); font: inherit; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; }
+.bk-steps { display: grid; gap: 6px; margin: 4px 0 12px; padding-left: 18px; color: #4b4f66; font-size: 13px; line-height: 1.45; }

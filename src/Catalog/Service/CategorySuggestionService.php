@@ -6,6 +6,7 @@ namespace App\Catalog\Service;
 
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\CategorySuggestion;
+use App\Catalog\Entity\Service;
 use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Repository\CategorySuggestionRepository;
 use App\Notification\Enum\NotificationCategory;
@@ -16,6 +17,7 @@ use App\PrivateActivity\Repository\PrivateActivityRepository;
 use App\User\Entity\User;
 use App\User\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
@@ -80,6 +82,32 @@ final class CategorySuggestionService
         return ['status' => 'created', 'suggestion' => $suggestion];
     }
 
+    /**
+     * Étape 1 des assistants (13/10, retour client n° 23) : un nom de
+     * catégorie tapé dans « Ma catégorie n'existe pas » est envoyé avec le
+     * bouton « Suivant », sans clic supplémentaire ni autre catégorie à
+     * choisir. Retourne les valeurs à poser dans le brouillon, ou null.
+     *
+     * @return array<string, string|null>|null
+     *
+     * @throws \InvalidArgumentException nom de catégorie invalide
+     */
+    public function fromWizardStep(Request $request, User $user, string $context): ?array
+    {
+        $name = trim((string) $request->request->get('suggest_name', ''));
+        if ('' === $name || '' !== (string) $request->request->get('category', '')) {
+            return null;
+        }
+        $result = $this->suggest($name, (string) $request->request->get('suggest_description', ''), $user, $context);
+        if ('existing' === $result['status']) {
+            $request->request->set('category', (string) $result['category']->getSlug());
+
+            return ['category_suggestion' => null, 'category_suggestion_id' => null];
+        }
+
+        return ['category' => '', 'category_suggestion' => $result['suggestion']->getName(), 'category_suggestion_id' => (string) $result['suggestion']->getId()];
+    }
+
     public function approve(CategorySuggestion $suggestion): Category
     {
         if (!$suggestion->isPending()) {
@@ -101,6 +129,12 @@ final class CategorySuggestionService
         $this->entityManager->persist($category);
 
         $suggestion->setStatus(CategorySuggestion::STATUS_APPROVED)->setCategory($category)->setDecidedAt(new \DateTimeImmutable());
+
+        // Activités pro en attente de cette catégorie (13/10) : elle leur est
+        // posée ; l'équipe les valide ensuite comme toute activité pro.
+        foreach ($this->servicesWaitingFor($suggestion) as $service) {
+            $service->setCategory($category)->setCategorySuggestion(null);
+        }
 
         $published = [];
         foreach ($this->activitiesWaitingFor($suggestion) as $activity) {
@@ -132,6 +166,10 @@ final class CategorySuggestionService
         $suggestion->setStatus(CategorySuggestion::STATUS_REJECTED)->setDecidedAt(new \DateTimeImmutable())
             ->setAdminNote(null !== $note && '' !== trim($note) ? mb_substr(trim($note), 0, 255) : $suggestion->getAdminNote());
 
+        foreach ($this->servicesWaitingFor($suggestion) as $service) {
+            $service->setCategorySuggestion(null);
+        }
+
         $back = [];
         foreach ($this->activitiesWaitingFor($suggestion) as $activity) {
             $activity->setCategorySuggestion(null);
@@ -151,6 +189,12 @@ final class CategorySuggestionService
         if (null !== ($author = $suggestion->getRequestedBy())) {
             $this->notifications->notify($author, NotificationCategory::Activity, 'Catégorie non retenue', sprintf('Votre proposition « %s » n’a pas été retenue%s. Choisissez la catégorie la plus proche dans la liste%s.', $suggestion->getName(), $suggestion->getAdminNote() ? ' : '.$suggestion->getAdminNote() : '', [] !== $back ? ' : votre activité est repassée en brouillon, publiez-la de nouveau après ce choix' : ''));
         }
+    }
+
+    /** @return list<Service> */
+    private function servicesWaitingFor(CategorySuggestion $suggestion): array
+    {
+        return $this->entityManager->getRepository(Service::class)->findBy(['categorySuggestion' => $suggestion]);
     }
 
     /** @return list<PrivateActivity> */

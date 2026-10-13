@@ -36,6 +36,10 @@ final class ActivityPublishingService
             throw new \InvalidArgumentException('Seule une activité en brouillon ou en attente peut être publiée.');
         }
 
+        if (null === $service->getCategory() && null !== ($suggestion = $service->getCategorySuggestion())) {
+            throw new \InvalidArgumentException(sprintf('Validez d’abord la catégorie proposée « %s » (menu « Catégories proposées »).', $suggestion->getName()));
+        }
+
         $service->setStatus(ServiceStatus::Published);
         $this->entityManager->flush();
     }

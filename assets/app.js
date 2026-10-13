@@ -47,6 +47,7 @@ import './styles/free-activities.css';
 
 // Adaptations telephone / tablette. Charge EN DERNIER : a specificite egale,
 // ses regles doivent l'emporter sur le CSS de bureau qu'elles degradent.
+import './styles/member.css';   // profil membre et fiche d'activité gratuite (13/10)
 import './styles/responsive.css';
 
 // Comportement des menus déroulants de l'en-tête d'accueil.
@@ -83,3 +84,13 @@ import './autocomplete.js';
 // Bandeau cookies et Google Analytics (12/10).
 import './cookie-consent.js';
 import './analytics.js';
+
+// Menu du compte replié sur mobile (13/10) : bouton « Menu de mon compte ».
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-pf-menu-toggle]');
+    if (!btn) return;
+    const menu = document.getElementById(btn.getAttribute('aria-controls'));
+    const open = btn.getAttribute('aria-expanded') !== 'true';
+    btn.setAttribute('aria-expanded', String(open));
+    menu?.classList.toggle('is-open', open);
+});

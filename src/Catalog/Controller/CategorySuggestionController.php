@@ -57,7 +57,7 @@ final class CategorySuggestionController extends AbstractController
             // Activité entre membres (12/10) : on continue sans attendre, la mise
             // en ligne se fera à la validation. L'assistant pro garde le brouillon.
             $this->addFlash('success', $pro
-                ? sprintf('Catégorie « %s » proposée : notre équipe la valide sous 48 h et vous prévient. Enregistrez votre activité en brouillon pour la reprendre ensuite.', $result['suggestion']->getName())
+                ? sprintf('Catégorie « %s » proposée : continuez la création, notre équipe validera la catégorie en même temps que votre activité.', $result['suggestion']->getName())
                 : sprintf('Catégorie « %s » proposée : continuez et publiez votre activité, elle sera mise en ligne dès que notre équipe aura validé la catégorie (sous 48 h).', $result['suggestion']->getName()));
         }
 

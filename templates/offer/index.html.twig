@@ -46,7 +46,7 @@
         <aside class="ofm-filters">
             <form method="get" action="{{ path('app_offers') }}" id="ofm-filters">
                 {% if filters.categorie %}<input type="hidden" name="categorie" value="{{ filters.categorie }}">{% endif %}
-                {% if filters.tri != 'meilleures' %}<input type="hidden" name="tri" value="{{ filters.tri }}">{% endif %}
+                {% if filters.tri != 'recentes' %}<input type="hidden" name="tri" value="{{ filters.tri }}">{% endif %}
                 <div class="ofm-filters__head"><p class="ex-filters__title">{{ 'Filtres'|trans }}</p><a href="{{ path('app_offers') }}">{{ 'Réinitialiser'|trans }}</a></div>
                 <fieldset>
                     <legend>{{ 'Prix'|trans }}</legend>

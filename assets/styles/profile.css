@@ -107,6 +107,7 @@
 
 /* ---- Menu ------------------------------------------------------------------ */
 .pf-menu { display: flex; flex-direction: column; gap: 2px; margin-top: 31px; }
+.pf-menu-toggle { display: none; }
 .pf-menu__section {
     margin: 16px 0 6px;
     padding: 0 19px;
@@ -635,9 +636,15 @@
     .pf { grid-template-columns: minmax(0, 1fr); }
     .pf-side { min-width: 0; }
     .pf-side__scroll { position: static; max-height: none; overflow: visible; padding: 20px 16px; }
-    .pf-menu { flex-direction: row; overflow-x: auto; gap: 6px; margin-top: 18px; padding-bottom: 6px; }
-    .pf-menu__section, .pf-menu__gap, .pf-menu__text small { display: none; }
-    .pf-menu__item { flex-shrink: 0; min-height: 0; padding: 10px 14px; gap: 10px; }
+    /* Menu repliable (13/10) : bouton « Menu de mon compte », puis le menu
+       complet en colonne, groupes compris. */
+    .pf-menu-toggle { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 16px; padding: 12px 14px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .16); border-radius: 10px; color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .pf-menu-toggle > span { display: inline-flex; align-items: center; gap: 8px; }
+    .pf-menu-toggle em { flex: 1; overflow: hidden; color: #c9cff0; font-size: 13px; font-style: normal; font-weight: 500; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+    .pf-menu-toggle[aria-expanded="true"] > svg:last-child { transform: rotate(180deg); }
+    .pf-menu { display: none; margin-top: 10px; }
+    .pf-menu.is-open { display: flex; }
+    .pf-menu__item { min-height: 0; padding: 10px 12px; }
     .pf-main { padding: 28px 20px 48px; }
     .pf .pf-row--4, .pf .pf-row--5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -917,3 +924,18 @@
 /* Cœur favori des cartes d'activités privées (01/10). */
 .pa-fav { flex-shrink: 0; display: inline-flex; padding: 4px; background: none; border: 0; color: var(--tm-ink-3); cursor: pointer; }
 .pa-fav.is-active { color: var(--tm-pro); }
+
+/* Tableau de bord sur mobile (13/10) : compteurs en 2 × 2, compacts. */
+@media (max-width: 767.98px) {
+    .pf .pf-row--4.pf-kpis-row, .pf .pf-row--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .pf .pf-row--4 .pf-stat { padding: 14px; }
+    .pf .pf-row--4 .pf-stat__top { flex-direction: column; gap: 8px; }
+    .pf .pf-row--4 .pf-stat .pf-ico { width: 40px; height: 40px; }
+    .pf .pf-row--4 .pf-stat__value { margin-top: 2px; font-size: 22px; }
+    .pf .pf-row--4 .pf-stat svg.pf-spark, .pf .pf-row--4 .pf-stat__chart { display: none; }
+}
+
+/* Messagerie : mode d'emploi (13/10). */
+.acc-howto { margin-bottom: 18px; padding: 14px 18px; border: 1px solid #e3e6f0; border-radius: 12px; background: #f7f5ff; font-size: 14px; }
+.acc-howto summary { display: flex; align-items: center; gap: 8px; color: var(--pl-action, #5d00ff); font-weight: 700; cursor: pointer; }
+.acc-howto ul { display: grid; gap: 8px; margin: 12px 0 0; padding-left: 20px; color: #3d4363; }

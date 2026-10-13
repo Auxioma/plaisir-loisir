@@ -5,15 +5,23 @@ declare(strict_types=1);
 namespace App\PrivateActivity\Controller;
 
 use App\Catalog\Repository\CategoryRepository;
+use App\Catalog\Service\CategorySuggestionService;
+use App\Event\Presenter\EventPresenter;
+use App\Event\Repository\EventRepository;
+use App\Event\StaticEvents;
+use App\PrivateActivity\Entity\MemberReview;
 use App\PrivateActivity\Entity\Participation;
 use App\PrivateActivity\Entity\PrivateActivity;
 use App\PrivateActivity\Enum\ParticipationStatus;
 use App\PrivateActivity\Enum\PrivateActivityStatus;
 use App\PrivateActivity\Enum\PrivateActivityVisibility;
+use App\PrivateActivity\Repository\AlbumRepository;
 use App\PrivateActivity\Repository\ParticipationRepository;
 use App\PrivateActivity\Repository\PrivateActivityRepository;
 use App\PrivateActivity\Security\ParticipationVoter;
 use App\PrivateActivity\Security\PrivateActivityVoter;
+use App\PrivateActivity\Service\MemberReputation;
+use App\PrivateActivity\Service\MemberReviewService;
 use App\PrivateActivity\Service\PrivateActivityDraftService;
 use App\PrivateActivity\Service\PrivateActivityInvitations;
 use App\PrivateActivity\Service\PrivateActivityInviteLink;
@@ -45,6 +53,18 @@ use Symfony\Component\Uid\Ulid;
  */
 final class PrivateActivityController extends AbstractController
 {
+    /** Catégorie d'activité → catégories d'événements équivalentes (13/10). */
+    private const EVENT_CATEGORIES = [
+        'sports-aventures' => ['sports', 'plein-air', 'randonnee'],
+        'cultures-decouvertes' => ['culture', 'culture-arts', 'sorties-loisir', 'voyages-evasion'],
+        'ateliers-creations' => ['ateliers-apprentissage'],
+        'bien-etre' => ['bien-etre', 'bien-etre-sante'],
+        'natures-plein-air' => ['plein-air', 'randonnee'],
+        'soirees-evenements' => ['soirees-fetes', 'rencontres-echanges', 'loisirs', 'jeu'],
+        'en-famille' => ['en-famille'],
+        'gastronomies' => ['repas', 'repas-gastronomie'],
+    ];
+
     public function __construct(
         private readonly PrivateActivityRepository $activities,
         private readonly ParticipationRepository $participations,
@@ -57,7 +77,7 @@ final class PrivateActivityController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/activites-privees', 'en' => '/en/private-activities'], name: 'app_private_activities')]
-    public function index(Request $request): Response
+    public function index(Request $request, EventRepository $events, EventPresenter $eventPresenter): Response
     {
         $categorySlug = (string) $request->query->get('metier', '');
         $category = '' !== $categorySlug ? $this->categories->findOneBy(['slug' => $categorySlug]) : null;
@@ -72,8 +92,21 @@ final class PrivateActivityController extends AbstractController
         // Activités à venir seulement (05/10) : une sortie passée ne se rejoint plus.
         $results = $this->activities->findUpcomingDiscoverable($this->isGranted('ROLE_USER'), $category, $place, $keywords, $day, mostViewed: 'plus-vues' === $sort);
 
+        // Événements entre membres (13/10, retours client n° 15 et 32) : mêmes
+        // mot-clé, lieu et date, et la catégorie choisie est traduite vers
+        // les catégories d'événements équivalentes (EVENT_CATEGORIES).
+        $root = $category?->getParent() ?? $category;
+        $eventFilters = ['q' => $keywords, 'where' => $place, 'date' => $day?->format('Y-m-d') ?? '', 'sort' => 'date'];
+        if (null !== $root) {
+            $eventFilters['categories'] = self::EVENT_CATEGORIES[(string) $root->getSlug()] ?? ['__aucune__'];
+        }
+        [$memberEvents, $eventsTotal] = $events->searchPublic($eventFilters, 8);
+
         return $this->render('private_activity/index.html.twig', [
             'activities' => $results,
+            'member_events' => $eventPresenter->cards($memberEvents),
+            'events_total' => $eventsTotal,
+            'event_avatars' => StaticEvents::avatars(),
             'categories' => $this->categories->findRoots(),
             'selected_category' => $category,
             'filters' => ['lieu' => $place, 'q' => $keywords, 'date' => null !== $day ? $date : '', 'tri' => $sort],
@@ -81,7 +114,7 @@ final class PrivateActivityController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/activites-privees/{id}', 'en' => '/en/private-activities/{id}'], name: 'app_private_activity_show')]
-    public function show(string $id, Request $request, PageViewRecorder $pageViews): Response
+    public function show(string $id, Request $request, PageViewRecorder $pageViews, MemberReputation $reputation, MemberReviewService $memberReviews, AlbumRepository $albums): Response
     {
         $activity = $this->findOrFail($id);
         // Lien d'invitation d'une activité privée (07/10) : la clé ouvre l'accès pour la session.
@@ -104,7 +137,44 @@ final class PrivateActivityController extends AbstractController
             'accepted' => array_filter($activity->getParticipations()->toArray(), static fn (Participation $p): bool => ParticipationStatus::Accepted === $p->getStatus()),
             'waiting' => array_filter($activity->getParticipations()->toArray(), static fn (Participation $p): bool => ParticipationStatus::WaitingList === $p->getStatus()),
             'share_url' => $this->shareUrl($activity),
+            // Refonte selon la maquette « detail-activites » (13/10).
+            'organizer_rep' => null !== $activity->getOrganizer() ? $reputation->of($activity->getOrganizer()) : null,
+            'can_review' => $memberReviews->canReview($activity, $user instanceof User ? $user : null),
+            'album_photos' => $this->isGranted(PrivateActivityVoter::VIEW_ALBUM, $activity) ? array_slice($albums->findOneByActivity($activity)?->getPhotos()->toArray() ?? [], 0, 8) : [],
+            'similar' => array_slice(array_values(array_filter(
+                $this->activities->findUpcomingDiscoverable($this->isGranted('ROLE_USER'), $activity->getCategory(), limit: 6),
+                static fn (PrivateActivity $a): bool => $a !== $activity,
+            )), 0, 2),
         ]);
+    }
+
+    /** Avis d'un participant sur l'organisateur, une fois l'activité passée (13/10). */
+    #[Route(path: ['fr' => '/activites-privees/{id}/avis', 'en' => '/en/private-activities/{id}/review'], name: 'app_private_activity_review', methods: ['POST'])]
+    public function review(string $id, Request $request, MemberReviewService $reviews): Response
+    {
+        $activity = $this->findOrFail($id);
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_login');
+        }
+        if (!$this->isCsrfTokenValid('member_review', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
+
+            return $this->redirectToRoute('app_private_activity_show', ['id' => $id, '_fragment' => 'avis']);
+        }
+
+        try {
+            $criteria = [];
+            foreach (array_keys(MemberReview::CRITERIA) as $c) {
+                $criteria[$c] = $request->request->getInt($c, 5);
+            }
+            $reviews->submit($activity, $user, $criteria, (string) $request->request->get('comment', ''));
+            $this->addFlash('success', 'Merci ! Votre avis est publié sur le profil de l’organisateur.');
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_private_activity_show', ['id' => $id, '_fragment' => 'avis']);
     }
 
     /**
@@ -130,7 +200,7 @@ final class PrivateActivityController extends AbstractController
         return $this->render('private_activity/participants.html.twig', [
             'user' => $this->identity->identityFor($this->currentUser()),
             'menu' => StaticAccount::menu(),
-            'active' => 'Mes activités créées',
+            'active' => 'Mes activités gratuites',
             'activity' => $activity,
             'tab' => $tab,
             'groups' => $byGroup,
@@ -276,7 +346,7 @@ final class PrivateActivityController extends AbstractController
         return $this->render('private_activity/mes_activites.html.twig', [
             'user' => $this->identity->identityFor($user),
             'menu' => StaticAccount::menu(),
-            'active' => 'Mes activités créées',
+            'active' => 'Mes activités gratuites',
             'rows' => \array_slice($rows, ($page - 1) * $perPage, $perPage),
             'tab' => $tab,
             'query' => $query,
@@ -334,7 +404,7 @@ final class PrivateActivityController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/compte/activites-privees/creer/{etape}', 'en' => '/en/account/private-activities/create/{etape}'], name: 'app_account_private_activity_wizard', requirements: ['etape' => '[1-5]'], methods: ['GET', 'POST'])]
-    public function wizard(int $etape, Request $request, PrivateActivityDraftService $drafts): Response
+    public function wizard(int $etape, Request $request, PrivateActivityDraftService $drafts, CategorySuggestionService $suggestions): Response
     {
         $session = $request->getSession();
         $errors = [];
@@ -346,6 +416,16 @@ final class PrivateActivityController extends AbstractController
                 return $this->redirectToRoute('app_account_private_activity_wizard', ['etape' => $etape]);
             }
             $action = (string) $request->request->get('action', 'next');
+            // Catégorie tapée puis « Suivant » : la proposition part directement (13/10).
+            if (1 === $etape && 'prev' !== $action && ($me = $this->getUser()) instanceof User) {
+                try {
+                    if (null !== ($patch = $suggestions->fromWizardStep($request, $me, 'private'))) {
+                        $drafts->patch($session, $patch);
+                    }
+                } catch (\InvalidArgumentException $e) {
+                    $this->addFlash('error', $e->getMessage());
+                }
+            }
             $errors = $drafts->submitStep($session, $etape, $request);
 
             if ('prev' === $action) {
@@ -391,7 +471,7 @@ final class PrivateActivityController extends AbstractController
         return $this->render('private_activity/wizard.html.twig', [
             'user' => $this->identity->identityFor($this->currentUser()),
             'menu' => StaticAccount::menu(),
-            'active' => 'Mes activités créées',
+            'active' => 'Mes activités gratuites',
             'step' => $etape,
             'steps' => [
                 ['title' => 'L’activité', 'subtitle' => 'Titre, catégorie, description'],

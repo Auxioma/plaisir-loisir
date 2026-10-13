@@ -224,7 +224,7 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     padding: 26px 24px 30px 25px;
-    scrollbar-width: thin;
+    scrollbar-width: none;
 }
 .ex-filters__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; }
 .ex-filters__head h2, .ex-filters__head .ex-filters__title { margin: 0; color: var(--tm-ink); font-family: inherit; font-size: 20px; font-weight: 700; }
@@ -257,7 +257,17 @@
 .ex-main { min-width: 0; padding: 24px 82px 40px 32px; }
 .ex-head h1 { margin: 0; color: var(--tm-ink); font-family: inherit; font-size: 35px; font-weight: 800; line-height: 42px; }
 .ex-head p { margin: 6px 0 0; color: var(--tm-ink-2); font-size: 16px; }
-.ex-tabs { display: flex; gap: 6px; margin: 20px 0 24px; overflow-x: auto; border-bottom: 1px solid #e8eaf0; scrollbar-width: thin; }
+.ex-tabs { display: flex; gap: 6px; margin: 20px 0 24px; overflow-x: auto; border-bottom: 1px solid #e8eaf0; scrollbar-width: none; scroll-behavior: smooth; }
+.ex-tabs::-webkit-scrollbar { display: none; }
+/* 13/10 : plus de barre de défilement visible (« ascenseur » sous Windows) ;
+   des flèches apparaissent quand le ruban déborde (assets/activities.js). */
+.ex-filters__form:hover, .ex-filters__form:focus-within { scrollbar-width: thin; }
+.ex-tabs-wrap { position: relative; }
+.ex-tabs-wrap > .ex-tabs { margin-inline: 0; }
+.ex-tabs-arrow { position: absolute; top: 50%; z-index: 2; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; margin-top: -17px; padding: 0; background: #fff; border: 1px solid #e3e5ee; border-radius: 50%; box-shadow: 0 2px 8px rgba(11, 20, 55, .12); color: var(--tm-ink); cursor: pointer; }
+.ex-tabs-arrow[hidden] { display: none; }
+.ex-tabs-arrow--prev { left: -6px; }
+.ex-tabs-arrow--next { right: -6px; }
 .ex-tabs a { position: relative; display: inline-flex; align-items: center; gap: 10px; padding: 14px 16px; color: var(--tm-ink); font-size: 14px; font-weight: 500; text-decoration: none; white-space: nowrap; }
 .ex-tabs a .pl-icon { color: var(--tm-ink-2); }
 .ex-tabs a:hover, .ex-tabs a.is-active { color: var(--tm-pro); }
@@ -410,3 +420,31 @@
 @media (max-width: 1199.98px) { .ds-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .ds-ideas { display: none; } }
 @media (max-width: 767.98px) { .ds-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ds-hero { padding: 24px; } .ds-hero__text h2 { font-size: 26px; } }
 @media (max-width: 479.98px) { .ds-grid { grid-template-columns: 1fr; } }
+
+/* Nature de l'activité sur les cartes (13/10) : professionnel payant ou
+   sortie gratuite entre membres, lisible sans ouvrir la fiche. */
+.card-kind { display: inline-flex; align-items: center; gap: 5px; width: fit-content; margin-bottom: 4px; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; line-height: 1.6; }
+.card-kind--pro { background: var(--pl-action-light, #f0eafb); color: var(--pl-action, #5d00ff); }
+.card-kind--members { background: #e9f8ee; color: #15803d; }
+.ex-type .ex-check { margin-bottom: 6px; }
+.ex-type__free { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; color: var(--tm-pro, #3b0ef5); font-size: 13px; font-weight: 600; text-decoration: none; }
+.ex-free { margin: 34px 0 10px; padding-top: 26px; border-top: 1px solid var(--pf-line, #e6e8ef); }
+.ex-free__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-bottom: 16px; }
+.ex-free__head h2 { display: flex; align-items: center; gap: 10px; margin: 0; color: var(--tm-ink, #0b1437); font-size: 22px; font-weight: 800; }
+.ex-free__head h2 .pl-icon, .ex-free__head h2 svg { color: #15803d; }
+.ex-free__head p { flex: 1 1 320px; margin: 0; color: var(--tm-ink-2, #5d6178); font-size: 14px; }
+.ex-free__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 1599.98px) { .ex-free__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 991.98px) { .ex-free__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 575.98px) { .ex-free__grid { grid-template-columns: minmax(0, 1fr); } }
+.ex-check--sub { padding-left: 22px; font-size: 13px; }
+
+/* Destinations (13/10, retour client n° 22) : filtres actifs, notes lisibles. */
+.ds-active { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 18px; }
+.ds-active a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--pl-action-light, #f0eafb); color: var(--pl-action, #5d00ff); font-size: 13px; font-weight: 600; text-decoration: none; }
+.ds-active a.ds-active__reset { background: none; color: var(--tm-ink-2, #5d6178); text-decoration: underline; }
+.ds-ratings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ds-ratings .ex-rating, .ds-ratings .ex-rating span { width: 100%; }
+.ds-ratings .ex-rating span { white-space: nowrap; justify-content: center; }
+/* En recherche, la bannière laisse la place aux résultats. */
+.ds-hero.is-filtering { display: none; }

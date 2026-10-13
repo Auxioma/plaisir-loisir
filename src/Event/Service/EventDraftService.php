@@ -339,6 +339,10 @@ final class EventDraftService
         }
         $isNew = null === $event;
         $event ??= (new Event())->setOrganizer($organizer)->setPosition(100);
+        // État avant modification : sert à prévenir les inscrits d'un
+        // changement de date ou de lieu (13/10, retour client n° 34).
+        $wasPublished = !$isNew && 'published' === $event->getStatus();
+        $before = $isNew ? null : [$event->getStartsAt()->format('Y-m-d H:i'), (string) $event->getLocation()];
 
         $title = mb_substr((string) ($d['title'] ?? ''), 0, 180) ?: 'Brouillon sans titre';
         if ($isNew || $event->getTitle() !== $title) {
@@ -427,6 +431,22 @@ final class EventDraftService
         $this->entityManager->flush();
         $event->setParticipantsCount($repo->count(['event' => $event, 'status' => EventRegistration::GOING]));
         $this->entityManager->flush();
+
+        // Notifications (13/10, retours client n° 33 et 34) : l'organisateur
+        // voit son événement publié ou programmé dans ses notifications ; les
+        // inscrits sont prévenus d'un changement de date ou de lieu.
+        $when = $event->getStartsAt()->setTimezone(new \DateTimeZone('Europe/Paris'))->format('d/m/Y à H\hi');
+        if (!$wasPublished) {
+            $this->notifications->notify($organizer, NotificationCategory::Activity, 'scheduled' === $mode ? 'Événement programmé' : 'Événement publié', 'scheduled' === $mode
+                ? sprintf('« %s » sera publié le %s.', $event->getTitle(), $event->getPublishAt()?->setTimezone(new \DateTimeZone('Europe/Paris'))->format('d/m/Y à H\hi') ?? '')
+                : sprintf('« %s » (le %s) est en ligne : partagez-le et suivez les inscriptions.', $event->getTitle(), $when));
+        } elseif (null !== $before && $before !== [$event->getStartsAt()->format('Y-m-d H:i'), (string) $event->getLocation()]) {
+            foreach ($repo->findBy(['event' => $event, 'status' => EventRegistration::GOING]) as $registration) {
+                if (($user = $registration->getUser()) !== $organizer) {
+                    $this->notifications->notify($user, NotificationCategory::Activity, 'Événement modifié', sprintf('« %s » a changé : rendez-vous le %s, %s.', $event->getTitle(), $when, (string) $event->getLocation()));
+                }
+            }
+        }
 
         $this->clear($session);
 

@@ -93,6 +93,17 @@
             </div>
         </section>
 
+        {# Profil public (13/10) : visible des autres membres sur « /membres/… ». #}
+        <section class="pf-card" id="profil-public">
+            <div class="pf-card__head">
+                <h2 class="pf-card__title">{{ 'Mon profil public'|trans }}</h2>
+                <a class="pf-link" href="{{ path('app_member_profile', {id: app.user.id}) }}">{{ 'Voir mon profil'|trans }}</a>
+            </div>
+            <p class="pf-card__sub">{{ 'Ces informations s’affichent sur votre profil de membre, avec votre prénom, l’initiale de votre nom, votre ville et votre photo. Votre adresse et votre téléphone ne sont jamais publiés.'|trans }}</p>
+            <div class="pf-field">{{ form_label(form.bio, 'Présentation'|trans) }}{{ form_widget(form.bio, { attr: { rows: 4, maxlength: 1500, placeholder: 'Passionné de nature et de sport, j’aime partager des moments conviviaux…'|trans } }) }}{{ form_errors(form.bio) }}</div>
+            <div class="pf-field">{{ form_label(form.interestsText, 'Centres d’intérêt'|trans) }}{{ form_widget(form.interestsText, { attr: { placeholder: 'Course à pied, Randonnée, Photographie'|trans } }) }}<small class="pf-hint">{{ 'Séparez-les par des virgules (12 au maximum).'|trans }}</small>{{ form_errors(form.interestsText) }}</div>
+        </section>
+
         <div><button type="submit" class="pf-btn pf-btn--primary pf-btn--lg">{{ 'Enregistrer les modifications'|trans }}</button></div>
     {{ form_end(form) }}
 {% endblock %}

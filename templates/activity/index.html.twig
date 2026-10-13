@@ -36,6 +36,15 @@
                 <a href="{{ path('app_activities') }}">{{ 'Réinitialiser'|trans }}</a>
             </div>
 
+            {# Type d'activité (13/10) : « Toutes » par défaut, gratuites comprises. #}
+            <fieldset class="ex-fieldset ex-type">
+                <legend class="ex-label">{{ 'Type d’activité'|trans }}</legend>
+                {% for value, label in {toutes: 'Toutes les activités', payantes: 'Payantes (professionnels)'} %}
+                    <label class="ex-check"><input type="radio" name="type" value="{{ value }}"{{ type == value ? ' checked' }}> {{ label|trans }}</label>
+                {% endfor %}
+                <a class="ex-type__free" href="{{ path('app_private_activities', free_params) }}">{{ 'Gratuites entre membres uniquement'|trans }} {{ icon.arrow_right(14) }}</a>
+            </fieldset>
+
             <label class="ex-label" for="ex-lieu">{{ 'Où voulez-vous ?'|trans }}</label>
             <span class="ex-input pl-suggest-anchor">
                 <input id="ex-lieu" type="text" name="lieu" data-suggest="lieu" value="{{ lieu }}" placeholder="{{ 'Destination, ville, lieu...'|trans }}">
@@ -57,6 +66,8 @@
                 <legend class="ex-label">{{ 'Catégorie'|trans }}</legend>
                 {% for c in catalogCategories %}
                     <label class="ex-check"><input type="checkbox" name="categories[]" value="{{ c.slug }}"{{ c.slug in selected ? ' checked' }}> {{ c.name|trans }}</label>
+                    {# Sous-catégories (13/10) : aucune limite au nombre de filtres. #}
+                    {% for child in c.children %}<label class="ex-check ex-check--sub"><input type="checkbox" name="categories[]" value="{{ child.slug }}"{{ child.slug in selected ? ' checked' }}> {{ child.name|trans }}</label>{% endfor %}
                 {% endfor %}
             </fieldset>
 
@@ -90,12 +101,7 @@
             <h1>{{ 'Activités'|trans }}</h1>
             <p>{{ 'Découvrez et réservez des activités inoubliables partout en France.'|trans }}</p>
         </header>
-        {# Recherche « Toutes » de l'accueil : les activités gratuites qui répondent aussi. #}
-        {% if free_matches %}
-            <a class="ex-free-banner" href="{{ path('app_private_activities', free_params) }}">
-                {{ icon.users(18) }} <span><strong>{{ free_matches }} {{ free_matches > 1 ? 'activités gratuites entre membres correspondent aussi à votre recherche'|trans : 'activité gratuite entre membres correspond aussi à votre recherche'|trans }}</strong></span> {{ icon.arrow_right(16) }}
-            </a>
-        {% endif %}
+
 
         <nav class="ex-tabs" aria-label="{{ 'Catégories'|trans }}">
             <a class="{{ selected is empty ? 'is-active' }}" href="{{ path('app_activities', app.request.query.all|merge({categorie: null, 'categories': null, page: null})) }}">{{ icon.grid(20) }} {{ 'Toutes'|trans }}</a>
@@ -138,6 +144,19 @@
                             {% include 'activity/_ex_card.html.twig' with { a: a, eager: loop.index == 1 ? 'high' : loop.index <= 4 } %}
                         {% endfor %}
                     </div>
+                {% endif %}
+
+                {% if type == 'toutes' and page == 1 and free_activities is not empty %}
+                    <section class="ex-free" aria-labelledby="ex-free-title">
+                        <div class="ex-free__head">
+                            <h2 id="ex-free-title">{{ icon.users(22) }} {{ 'Activités gratuites entre membres'|trans }}</h2>
+                            <p>{{ 'Des sorties organisées par des particuliers, à faire avec d’autres membres, sans payer.'|trans }}</p>
+                            <a class="pf-link" href="{{ path('app_private_activities', free_params) }}">{{ 'Voir les'|trans }} {{ free_matches }} {{ free_matches > 1 ? 'activités gratuites'|trans : 'activité gratuite'|trans }} {{ icon.arrow_right(14) }}</a>
+                        </div>
+                        <div class="ex-free__grid">
+                            {% for activity in free_activities %}{% include 'private_activity/_card.html.twig' with {activity: activity} %}{% endfor %}
+                        </div>
+                    </section>
                 {% endif %}
 
                 {% if page < pages %}

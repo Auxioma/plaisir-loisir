@@ -143,7 +143,7 @@ class EventRepository extends ServiceEntityRepository
      * Recherche de la page « Événements » (maquette evenements.jpeg, 04/10) :
      * événements publics publiés, à venir, filtrés et triés.
      *
-     * @param array{q?: string, where?: string, when?: string, date?: string, category?: string, type?: string, sort?: string} $f
+     * @param array{q?: string, where?: string, when?: string, date?: string, category?: string, categories?: list<string>, type?: string, sort?: string} $f
      *
      * @return array{0: list<Event>, 1: int}
      */
@@ -173,6 +173,9 @@ class EventRepository extends ServiceEntityRepository
         }
         if ('' !== ($category = (string) ($f['category'] ?? ''))) {
             $qb->andWhere('c.slug = :cat')->setParameter('cat', $category);
+        }
+        if ([] !== ($categories = (array) ($f['categories'] ?? []))) {
+            $qb->andWhere('c.slug IN (:cats)')->setParameter('cats', $categories);
         }
         if ('' !== ($type = (string) ($f['type'] ?? ''))) {
             $qb->andWhere('e.eventType = :type')->setParameter('type', $type);

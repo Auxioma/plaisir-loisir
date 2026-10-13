@@ -61,7 +61,7 @@ final class LandingPageTest extends WebTestCase
 
         $client->request('GET', '/activites?type=toutes&lieu=Rouen');
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists('.ex-free-banner');
+        self::assertSelectorExists('.ex-free .fa-card');
 
         $client->request('GET', '/activites-privees?lieu=Rouen');
         self::assertResponseIsSuccessful();

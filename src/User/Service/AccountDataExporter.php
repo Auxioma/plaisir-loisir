@@ -87,9 +87,10 @@ final class AccountDataExporter
         $sent = [];
 
         foreach ($this->conversations->findForUser($user) as $conversation) {
-            $other = $conversation->getClient() === $user
+            $otherUser = $conversation->otherParticipant($user);
+            $other = $conversation->getClient() === $user && null === $conversation->getMember()
                 ? $conversation->getProvider()?->getDisplayName()
-                : trim(($conversation->getClient()?->getFirstName() ?? '').' '.($conversation->getClient()?->getLastName() ?? ''));
+                : trim(($otherUser?->getFirstName() ?? '').' '.($otherUser?->getLastName() ?? ''));
 
             foreach ($conversation->getMessages() as $message) {
                 if ($message->getAuthor() === $user) {

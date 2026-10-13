@@ -126,6 +126,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 2, nullable: true)]
     private ?string $country = null;
 
+    /** Présentation affichée sur le profil public (13/10, maquette « detail-profil »). */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $bio = null;
+
+    /** Ville affichée sur le profil public (« Forges-les-Eaux (76) »). */
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $city = null;
+
+    /**
+     * Centres d'intérêt affichés en étiquettes sur le profil public.
+     *
+     * @var list<string>
+     */
+    #[ORM\Column(type: 'json', options: ['default' => '[]'])]
+    private array $interests = [];
+
     /**
      * @var Collection<int, Address>
      */
@@ -410,6 +426,51 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCountry(?string $country): static
     {
         $this->country = $country;
+
+        return $this;
+    }
+
+    public function getBio(): ?string
+    {
+        return $this->bio;
+    }
+
+    public function setBio(?string $bio): static
+    {
+        $this->bio = null !== $bio && '' !== trim($bio) ? trim($bio) : null;
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(?string $city): static
+    {
+        $this->city = null !== $city && '' !== trim($city) ? trim($city) : null;
+
+        return $this;
+    }
+
+    /** @return list<string> */
+    public function getInterests(): array
+    {
+        return $this->interests;
+    }
+
+    /** @param list<string> $interests */
+    public function setInterests(array $interests): static
+    {
+        $clean = [];
+        foreach ($interests as $interest) {
+            $interest = trim((string) $interest);
+            if ('' !== $interest && !\in_array(mb_strtolower($interest), array_map('mb_strtolower', $clean), true)) {
+                $clean[] = mb_substr($interest, 0, 40);
+            }
+        }
+        $this->interests = \array_slice($clean, 0, 12);
 
         return $this;
     }

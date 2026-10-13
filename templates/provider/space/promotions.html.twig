@@ -70,7 +70,13 @@
                             </td>
                             <td><strong class="pp-strong">{{ p.service ? p.service.title : 'Toutes mes activités'|trans }}</strong></td>
                             <td>{{ p.startsAt|pf_date('d MMM y')|trim('.') }}<small>→ {{ p.endsAt|pf_date('d MMM y')|trim('.') }}</small></td>
-                            <td><span class="pf-pill pf-pill--{{ status_labels[r.status][1] }} pp-pill">{{ status_labels[r.status][0]|trans }}</span></td>
+                            <td><span class="pf-pill pf-pill--{{ status_labels[r.status][1] }} pp-pill">{{ status_labels[r.status][0]|trans }}</span>
+                                {# Visibilité sur « Offres du moment » (13/10, retour client n° 27). #}
+                                {% if r.status == 'active' %}
+                                    {% if p.service and p.service.status.value != 'published' %}<small class="pp-offer-note is-warn">{{ 'Non visible : l’activité n’est pas encore publiée (validation en cours).'|trans }}</small>
+                                    {% else %}<small class="pp-offer-note"><a href="{{ path('app_offers', {tri: 'recentes'}) }}" target="_blank" rel="noopener">{{ 'Visible sur « Offres du moment »'|trans }}</a></small>{% endif %}
+                                {% elseif r.status == 'scheduled' %}<small class="pp-offer-note">{{ 'Visible à partir du'|trans }} {{ p.startsAt|pf_date('d MMM')|trim('.') }}</small>{% endif %}
+                            </td>
                             <td>
                                 {% if r.status == 'scheduled' %}<span class="pf-muted">—</span>{% else %}
                                 <div class="pp-perf"><span><small>{{ 'Vues'|trans }}</small>{{ p.viewsCount }}</span><span><small>{{ 'Clics'|trans }}</small>{{ p.clicksCount }}</span><span><small>{{ 'Réservations'|trans }}</small>{{ r.bookings }}</span></div>

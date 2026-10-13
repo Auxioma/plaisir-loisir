@@ -113,10 +113,10 @@
                             <span class="evl-card__meta">{{ icon.map_pin(13) }} {{ e.where }}</span>
                             <span class="evl-card__meta">{{ icon.clock(13) }} {{ e.hours }}</span>
                             <span class="evl-card__foot">
-                                <span>{{ e.participants }} {{ e.participants > 1 ? 'participants'|trans : 'participant'|trans }}</span>
-                                <span class="evl-avatars">{% for a in avatars|slice(0, 4) %}<img src="{{ asset(a) }}" alt="" loading="lazy" decoding="async">{% endfor %}</span>
+                                <span>{{ icon.person(13) }} {{ e.participants }} {{ e.participants > 1 ? 'participants'|trans : 'participant'|trans }}</span>
                             </span>
-                            <a class="evl-btn evl-btn--ghost evl-btn--block" href="{{ path('app_events_detail', {slug: e.slug}) }}">{{ "Voir l'événement"|trans }}</a>
+                            {# Un seul accès par carte (13/10, retour client n° 31) : image et
+                               titre mènent à la fiche, où se fait l'inscription. #}
                         </div>
                     </article>
                 {% endfor %}

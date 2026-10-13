@@ -36,9 +36,22 @@ class ConversationRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->leftJoin('c.provider', 'p')
             ->addSelect('p')
-            ->andWhere('c.client = :user OR p.user = :user')
+            ->andWhere('c.client = :user OR p.user = :user OR c.member = :user')
             ->setParameter('user', $user->getId(), 'ulid')
             ->getQuery()
             ->getResult();
+    }
+
+    /** Conversation existante entre deux membres, dans un sens ou dans l'autre. */
+    public function findBetweenMembers(User $a, User $b): ?Conversation
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.provider IS NULL')
+            ->andWhere('(c.client = :a AND c.member = :b) OR (c.client = :b AND c.member = :a)')
+            ->setParameter('a', $a->getId(), 'ulid')
+            ->setParameter('b', $b->getId(), 'ulid')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

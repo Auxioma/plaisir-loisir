@@ -83,7 +83,19 @@
                 {% if review_score is not null %}<span class="act-rating">{{ icon.star(12) }} {{ review_score|number_format(1, ',') }}</span>{% endif %}
                 <a class="act-detail__reviews-link" href="#avis">{{ review_total }} {{ 'avis'|trans }}</a>
                 <span class="act-detail__views">{{ icon.eye(14) }} {{ detail.views|number_format(0, ',', ' ') }} {{ (detail.views > 1 ? 'vues' : 'vue')|trans }}</span>
-                <span class="act-detail__organizer">{{ "Organisateur de l'activité :"|trans }} <strong>{{ detail.organizer }}</strong></span>
+                <span class="act-detail__organizer">{{ "Organisateur de l'activité :"|trans }}
+                    {% if activity_provider and activity_provider.slug %}<a href="{{ path('app_provider_profile', {slug: activity_provider.slug}) }}"><strong>{{ detail.organizer }}</strong></a>{% else %}<strong>{{ detail.organizer }}</strong>{% endif %}
+                </span>
+                {% if activity_provider and activity_provider.slug and (not app.user or app.user != activity_provider.user) %}
+                    {% if app.user %}
+                        <form method="post" action="{{ path('app_account_messages_start', {slug: activity_provider.slug}) }}" class="act-detail__contact">
+                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                            <button type="submit">{{ icon.chat_bubble(14) }} {{ 'Contacter le professionnel'|trans }}</button>
+                        </form>
+                    {% else %}
+                        <a class="act-detail__contact" href="{{ path('app_login', {_target_path: app.request.requestUri}) }}">{{ icon.chat_bubble(14) }} {{ 'Contacter le professionnel'|trans }}</a>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
     </section>

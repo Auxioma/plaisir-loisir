@@ -99,7 +99,35 @@ function initCopyButtons() {
     });
 }
 
+/*
+ * Carte de la fiche (13/10, maquette « detail-activites »). Mode
+ * approximatif : un cercle autour d'une position déjà ARRONDIE côté serveur
+ * (≈ 1 km), pour qui n'a pas encore accès à l'adresse exacte. Mode exact :
+ * un marqueur, réservé aux participants acceptés.
+ */
+async function initActivityMap() {
+    document.querySelectorAll('[data-fd-map]').forEach(async (el) => {
+        if (el.dataset.ready) return;
+        el.dataset.ready = '1';
+        const lat = parseFloat(el.dataset.lat);
+        const lng = parseFloat(el.dataset.lng);
+        if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+        const mod = await import('leaflet');
+        const L = mod.default ?? mod;
+        const approx = el.dataset.approx === '1';
+        const map = L.map(el, { scrollWheelZoom: false, zoomControl: !approx, dragging: !L.Browser.mobile }).setView([lat, lng], approx ? 13 : 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(map);
+        const color = getComputedStyle(document.documentElement).getPropertyValue('--pl-action').trim() || '#5d00ff';
+        if (approx) {
+            L.circle([lat, lng], { radius: 1500, color, weight: 2, fillColor: color, fillOpacity: 0.12 }).addTo(map);
+        } else {
+            L.marker([lat, lng]).addTo(map);
+        }
+    });
+}
+
 const start = () => {
+    initActivityMap();
     initCountdowns();
     initFreeParticipants();
     initCopyButtons();
@@ -110,3 +138,52 @@ if (window.Turbo === undefined) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
     else start();
 }
+
+/* Album photo (13/10, retour client n° 25) : dépôt de plusieurs photos par
+   glisser-déposer ou sélection multiple, aperçu avant envoi, retrait possible. */
+function initAlbumDropzone(root = document) {
+    root.querySelectorAll('[data-album-drop]').forEach((form) => {
+        if (form.dataset.dropReady) return;
+        form.dataset.dropReady = '1';
+        const input = form.querySelector('[data-album-input]');
+        const zone = form.querySelector('.al-drop__zone');
+        const list = form.querySelector('[data-album-list]');
+        const submit = form.querySelector('[data-album-submit]');
+        const label = form.querySelector('[data-album-label]');
+        const max = parseInt(form.dataset.max || '20', 10);
+        const en = document.documentElement.lang?.startsWith('en');
+        let files = [];
+
+        const render = () => {
+            const dt = new DataTransfer();
+            files.forEach((f) => dt.items.add(f));
+            input.files = dt.files;
+            list.innerHTML = '';
+            files.forEach((f, i) => {
+                const li = document.createElement('li');
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(f);
+                img.alt = '';
+                const rm = document.createElement('button');
+                rm.type = 'button';
+                rm.setAttribute('aria-label', en ? 'Remove' : 'Retirer');
+                rm.textContent = '×';
+                rm.addEventListener('click', () => { files.splice(i, 1); render(); });
+                li.append(img, rm);
+                list.append(li);
+            });
+            list.hidden = submit.hidden = files.length === 0;
+            if (label) label.textContent = en ? `Add ${files.length} photo${files.length > 1 ? 's' : ''}` : `Ajouter ${files.length} photo${files.length > 1 ? 's' : ''}`;
+        };
+        const add = (incoming) => {
+            [...incoming].filter((f) => /^image\/(jpeg|png|webp)$/.test(f.type)).forEach((f) => { if (files.length < max) files.push(f); });
+            render();
+        };
+        input.addEventListener('change', () => add(input.files));
+        ['dragenter', 'dragover'].forEach((t) => zone.addEventListener(t, (e) => { e.preventDefault(); zone.classList.add('is-over'); }));
+        ['dragleave', 'drop'].forEach((t) => zone.addEventListener(t, () => zone.classList.remove('is-over')));
+        zone.addEventListener('drop', (e) => { e.preventDefault(); add(e.dataTransfer.files); });
+    });
+}
+document.addEventListener('turbo:load', () => initAlbumDropzone());
+if (document.readyState !== 'loading') initAlbumDropzone();

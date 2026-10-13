@@ -22,6 +22,8 @@
         {% include '_partials/_event_fav.html.twig' with { type: 'activite-privee', key: activity.id ~ '', class: 'fa-card__fav' } %}
     {% endif %}
     <div class="fa-card__body">
+        {# 13/10 : visible sans ouvrir la fiche — une sortie entre membres, gratuite. #}
+        <span class="card-kind card-kind--members">{{ icon.users(13) }} {{ 'Avec d’autres membres'|trans }}</span>
         {% if activity.category %}<span class="fa-card__cat">{{ activity.category.name|trans }}</span>{% endif %}
         <a class="fa-card__title" href="{{ url }}">{{ activity.title }}</a>
         <ul class="fa-card__meta">

@@ -10,8 +10,10 @@ use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Repository\ServiceRepository;
 use App\Catalog\Service\ActivityDraftService;
 use App\Catalog\Service\ActivityPublishingService;
+use App\Catalog\Service\CategorySuggestionService;
 use App\Catalog\StaticActivityWizard;
 use App\Provider\Enum\ProviderStatus;
+use App\User\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -65,7 +67,7 @@ final class ProviderActivityWizardController extends AbstractProviderSpaceContro
     }
 
     #[Route(path: ['fr' => '/pro/activites/assistant/{etape}', 'en' => '/en/pro/activities/wizard/{etape}'], name: 'app_pro_activity_wizard', requirements: ['etape' => '[1-6]'], methods: ['GET', 'POST'])]
-    public function step(int $etape, Request $request): Response
+    public function step(int $etape, Request $request, CategorySuggestionService $suggestions): Response
     {
         $session = $request->getSession();
         $errors = [];
@@ -78,6 +80,16 @@ final class ProviderActivityWizardController extends AbstractProviderSpaceContro
             }
 
             $action = (string) $request->request->get('action', 'next');
+            // Catégorie tapée puis « Suivant » : la proposition part directement (13/10).
+            if (1 === $etape && 'prev' !== $action && ($me = $this->getUser()) instanceof User) {
+                try {
+                    if (null !== ($patch = $suggestions->fromWizardStep($request, $me, 'pro'))) {
+                        $this->drafts->patch($session, $patch);
+                    }
+                } catch (\InvalidArgumentException $e) {
+                    $this->addFlash('error', $e->getMessage());
+                }
+            }
             $errors = $this->drafts->submitStep($session, $etape, $request);
 
             if ('prev' === $action) {
@@ -86,7 +98,7 @@ final class ProviderActivityWizardController extends AbstractProviderSpaceContro
 
             if ('draft' === $action) {
                 $draft = $this->drafts->current($session);
-                if (mb_strlen((string) ($draft['title'] ?? '')) < 5 || null === $this->categories->findOneBy(['slug' => (string) ($draft['category'] ?? '')])) {
+                if (mb_strlen((string) ($draft['title'] ?? '')) < 5 || (null === $this->categories->findOneBy(['slug' => (string) ($draft['category'] ?? '')]) && null === $this->drafts->pendingSuggestion($draft))) {
                     $this->addFlash('error', 'Donnez au moins un titre et une catégorie (étape 1) pour enregistrer un brouillon.');
                 } else {
                     $service = $this->drafts->persist($draft, $this->currentProvider());

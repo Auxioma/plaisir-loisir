@@ -428,7 +428,8 @@ async function initLeafletMap(mapview) {
     const mod = await import('leaflet');
     const L = mod.default ?? mod;
 
-    const markersData = JSON.parse(el.dataset.markers ?? '[]');
+    const en = document.documentElement.lang?.startsWith('en');
+    const markersData = JSON.parse(el.dataset.markers ?? '[]').filter((m) => Number.isFinite(m.lat) && Number.isFinite(m.lng));
     const clustersData = JSON.parse(el.dataset.clusters ?? '[]');
 
     // Vue France entière d'emblée (tous les marqueurs sont visibles même si
@@ -456,7 +457,7 @@ async function initLeafletMap(mapview) {
     const starSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="pl-icon"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77 5.82 21 7 14.14l-5-4.87 7.1-1.01L12 2z"/></svg>';
 
     const markers = markersData.map((m, i) => {
-        const icon = L.divIcon({ className: '', html: `<span class="act-marker" data-marker-index="${i}">${starSvg} ${m.rating}</span>`, iconSize: null });
+        const icon = L.divIcon({ className: '', html: `<span class="act-marker" data-marker-index="${i}">${m.rating ? `${starSvg} ${m.rating}` : `${m.price} €`}</span>`, iconSize: null });
         const marker = L.marker([m.lat, m.lng], { icon }).addTo(leafletMap);
         marker.bindPopup(`
             <div class="act-popup">
@@ -466,8 +467,8 @@ async function initLeafletMap(mapview) {
                     ${m.url
                         ? `<a class="act-popup__title" href="${m.url}">${m.title}</a>`
                         : `<span class="act-popup__title">${m.title}</span>`}
-                    <span class="act-popup__meta">${starSvg} ${m.rating} (${m.reviews} reviews) · ${m.duration}</span>
-                    <span class="act-popup__foot"><span class="act-popup__from">À partir de</span><span class="act-popup__price">${m.price}€</span></span>
+                    <span class="act-popup__meta">${m.rating ? `${starSvg} ${m.rating} (${m.reviews} ${en ? 'reviews' : 'avis'}) · ` : ''}${m.duration}</span>
+                    <span class="act-popup__foot"><span class="act-popup__from">${en ? 'From' : 'À partir de'}</span><span class="act-popup__price">${m.price}€</span></span>
                 </div>
             </div>`, { className: 'act-map-popup', closeButton: true, offset: [0, -8] });
         marker.on('click', () => {
@@ -621,12 +622,75 @@ function initCollapsibleFilters(root = document) {
         };
         toggle.addEventListener('click', () => set(true));
         close.addEventListener('click', () => set(false));
+
+        // Vue carte (13/10) : les filtres s'ouvrent aussi depuis la carte, et
+        // une recherche lancée depuis la carte y revient (#carte).
+        const mapBox = main.querySelector('.act-mapview__map');
+        if (mapBox) {
+            const onMap = toggle.cloneNode(true);
+            onMap.classList.add('ex-filter-toggle--map');
+            onMap.addEventListener('click', () => set(true));
+            mapBox.append(onMap);
+            form.addEventListener('submit', () => {
+                const mapview = main.querySelector('#act-mapview');
+                const url = new URL(form.action || window.location.href, window.location.href);
+                url.hash = mapview && !mapview.hidden ? 'carte' : '';
+                form.action = url.toString();
+            });
+        }
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && aside.classList.contains('is-open')) set(false); });
         document.addEventListener('turbo:before-visit', () => set(false), { once: true });
     }));
 }
 
+/* Ruban de catégories (13/10) : flèches quand il déborde, barre masquée. */
+function initTabArrows(root = document) {
+    root.querySelectorAll('.ex-tabs').forEach((tabs) => {
+        if (tabs.dataset.arrowsReady) return;
+        tabs.dataset.arrowsReady = '1';
+        const wrap = document.createElement('div');
+        wrap.className = 'ex-tabs-wrap';
+        tabs.before(wrap);
+        wrap.append(tabs);
+        const en = document.documentElement.lang?.startsWith('en');
+        const make = (dir) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = `ex-tabs-arrow ex-tabs-arrow--${dir}`;
+            b.setAttribute('aria-label', dir === 'prev' ? (en ? 'Previous categories' : 'Catégories précédentes') : (en ? 'Next categories' : 'Catégories suivantes'));
+            b.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${dir === 'prev' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'}"/></svg>`;
+            b.addEventListener('click', () => tabs.scrollBy({ left: (dir === 'prev' ? -1 : 1) * tabs.clientWidth * 0.7 }));
+            wrap.append(b);
+            return b;
+        };
+        const prev = make('prev');
+        const next = make('next');
+        const sync = () => {
+            prev.hidden = tabs.scrollLeft <= 2;
+            next.hidden = tabs.scrollLeft + tabs.clientWidth >= tabs.scrollWidth - 2;
+        };
+        tabs.addEventListener('scroll', sync, { passive: true });
+        window.addEventListener('resize', sync);
+        sync();
+    });
+}
+
+/* Filtres appliqués dès le choix sur ordinateur (13/10) ; sur mobile, le
+   panneau garde son bouton « Afficher les résultats ». */
+function initAutoSubmitFilters(root = document) {
+    root.querySelectorAll('form[data-autosubmit]').forEach((form) => {
+        if (form.dataset.autosubmitReady) return;
+        form.dataset.autosubmitReady = '1';
+        form.addEventListener('change', (e) => {
+            if (!window.matchMedia('(min-width: 992px)').matches) return;
+            if (e.target.matches('input[type="radio"], input[type="checkbox"], input[type="range"], select')) form.requestSubmit();
+        });
+    });
+}
+
 const start = () => {
+    initAutoSubmitFilters();
+    initTabArrows();
     initCollapsibleFilters();
     initActivitySlider();
     initOfferCountdowns();

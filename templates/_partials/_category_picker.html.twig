@@ -26,7 +26,7 @@
     {% if suggestion %}
         <p class="cp-pending">{{ icon.hourglass(16) }} <span>{{ 'Catégorie proposée :'|trans }} <strong>{{ suggestion }}</strong> — {{ (context == 'private'
             ? 'en attente de validation. Vous pouvez continuer et publier : votre activité sera mise en ligne dès que la catégorie sera validée.'
-            : 'en attente de validation. Enregistrez votre activité en brouillon : vous serez prévenu dès qu’elle sera disponible.')|trans }}</span></p>
+            : 'en attente de validation. Vous pouvez continuer : notre équipe validera la catégorie en même temps que votre activité.')|trans }}</span></p>
     {% endif %}
 
     {% if allow_suggest|default(true) %}
@@ -37,7 +37,7 @@
             <label>{{ 'Nom de la catégorie'|trans }}<input name="suggest_name" maxlength="60" placeholder="{{ 'Ex : Escalade, Pêche, Jeux de société…'|trans }}" data-cp-suggest-name></label>
             <label>{{ 'Pourquoi cette catégorie ? (facultatif)'|trans }}<textarea name="suggest_description" rows="2" maxlength="500" placeholder="{{ 'Quelques mots pour aider notre équipe'|trans }}"></textarea></label>
             <button type="submit" class="pf-btn" formaction="{{ path('app_category_suggest') }}" formnovalidate name="action" value="suggest">{{ icon.send(14) }} {{ 'Envoyer la proposition'|trans }}</button>
-            <small class="pf-muted">{{ 'Notre équipe la valide sous 48 h. En attendant, enregistrez votre activité en brouillon pour la reprendre ensuite.'|trans }}</small>
+            <small class="pf-muted">{{ 'Vous pouvez aussi cliquer directement sur « Suivant » : la proposition est envoyée et vous continuez sans choisir d’autre catégorie.'|trans }}</small>
         </div>
     </details>
     {% endif %}
