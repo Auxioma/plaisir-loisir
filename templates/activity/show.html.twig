@@ -84,18 +84,8 @@
                 <a class="act-detail__reviews-link" href="#avis">{{ review_total }} {{ 'avis'|trans }}</a>
                 <span class="act-detail__views">{{ icon.eye(14) }} {{ detail.views|number_format(0, ',', ' ') }} {{ (detail.views > 1 ? 'vues' : 'vue')|trans }}</span>
                 <span class="act-detail__organizer">{{ "Organisateur de l'activité :"|trans }}
-                    {% if activity_provider and activity_provider.slug %}<a href="{{ path('app_provider_profile', {slug: activity_provider.slug}) }}"><strong>{{ detail.organizer }}</strong></a>{% else %}<strong>{{ detail.organizer }}</strong>{% endif %}
+                    {% if activity_provider and activity_provider.slug %}<a href="{{ path('app_provider_profile', {slug: activity_provider.slug}) }}"><strong>{{ activity_provider.displayName }}</strong></a>{% else %}<strong>{{ detail.organizer }}</strong>{% endif %}
                 </span>
-                {% if activity_provider and activity_provider.slug and (not app.user or app.user != activity_provider.user) %}
-                    {% if app.user %}
-                        <form method="post" action="{{ path('app_account_messages_start', {slug: activity_provider.slug}) }}" class="act-detail__contact">
-                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                            <button type="submit">{{ icon.chat_bubble(14) }} {{ 'Contacter le professionnel'|trans }}</button>
-                        </form>
-                    {% else %}
-                        <a class="act-detail__contact" href="{{ path('app_login', {_target_path: app.request.requestUri}) }}">{{ icon.chat_bubble(14) }} {{ 'Contacter le professionnel'|trans }}</a>
-                    {% endif %}
-                {% endif %}
             </div>
         </div>
     </section>
@@ -155,6 +145,43 @@
                     </div>
                 {% endfor %}
             </div>
+            {% endif %}
+
+            {# --- Votre organisateur (13/10) : même présentation que la fiche d'une
+                   activité gratuite (maquette detail-activites), avec l'accès à
+                   sa fiche professionnelle. Données : ProviderSummary. --- #}
+            {% if organizer %}
+                {% set pro = activity_provider %}
+                <section class="act-org" aria-labelledby="act-org-title">
+                    <h2 id="act-org-title" class="act-org__title">{{ icon.user_round(20) }} {{ 'Votre organisateur'|trans }}</h2>
+                    <div class="act-org__body">
+                        <a class="act-org__id" href="{{ path('app_provider_profile', {slug: pro.slug}) }}">
+                            <span class="act-org__avatar">{% if organizer.card.avatar %}<img src="{{ asset(organizer.card.avatar) }}" alt="" loading="lazy" decoding="async">{% else %}{{ pro.displayName|first|upper }}{% endif %}</span>
+                            <span>
+                                <strong>{{ pro.displayName }}</strong>
+                                <span class="act-org__verified">{{ icon.check_badge(14) }} {{ 'Professionnel vérifié'|trans }}</span>
+                                {% if organizer.rating %}<span class="act-org__rating">{{ icon.star_solid(14) }} <b>{{ organizer.rating|number_format(1, ',') }} / 5</b> ({{ organizer.reviews_count }} {{ 'avis'|trans }})</span>{% endif %}
+                            </span>
+                        </a>
+                        <ul class="act-org__facts">
+                            {% if organizer.since %}<li>{{ icon.calendar(16) }} <span><b>{{ 'Sur TrouveMoi depuis'|trans }} {{ organizer.since|pf_date('MMMM y') }}</b></span></li>{% endif %}
+                            <li>{{ icon.users(16) }} <span><b>{{ organizer.activities }} {{ (organizer.activities > 1 ? 'activités proposées' : 'activité proposée')|trans }}</b></span></li>
+                            {% if organizer.response_hours is not null %}<li>{{ icon.clock(16) }} <span><b>{{ 'Répond généralement en moins de'|trans }} {{ max(1, organizer.response_hours|round(0, 'ceil')) }} h</b></span></li>{% endif %}
+                            {% if organizer.positive_rate is not null %}<li>{{ icon.star(16) }} <span><b>{{ organizer.positive_rate }} % {{ 'd’avis positifs'|trans }}</b></span></li>{% endif %}
+                        </ul>
+                        <div class="act-org__actions">
+                            <a class="pl-btn pl-btn--primary" href="{{ path('app_provider_profile', {slug: pro.slug}) }}">{{ 'Voir le profil'|trans }} {{ icon.arrow_right(14) }}</a>
+                            {% if app.user and app.user != pro.user %}
+                                <form method="post" action="{{ path('app_account_messages_start', {slug: pro.slug}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                                    <button type="submit" class="pl-btn pl-btn--outline-dark">{{ icon.chat_bubble(14) }} {{ 'Contacter'|trans }}</button>
+                                </form>
+                            {% elseif not app.user %}
+                                <a class="pl-btn pl-btn--outline-dark" href="{{ path('app_login', {_target_path: app.request.requestUri}) }}">{{ icon.chat_bubble(14) }} {{ 'Contacter'|trans }}</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
             {% endif %}
 
             {# --- Présentation générale. --- #}

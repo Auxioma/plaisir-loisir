@@ -16,6 +16,7 @@ use App\Catalog\Repository\PromotionRepository;
 use App\Catalog\Repository\ServiceRepository;
 use App\Catalog\StaticCatalog;
 use App\Favorite\Service\CurrentUserFavorites;
+use App\Provider\Service\ProviderSummary;
 use App\Review\Enum\ReviewStatus;
 use App\Review\Repository\ReviewRepository;
 use App\Stats\Service\PageViewRecorder;
@@ -356,7 +357,7 @@ final class ActivityController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/activites/{slug}', 'en' => '/en/activities/{slug}'], name: 'app_activity_show')]
-    public function show(string $slug, Request $request, PageViewRecorder $pageViews, PromotionRepository $promotions, EntityManagerInterface $entityManager, AvailabilityRepository $availabilities, ReviewRepository $reviewRepository): Response
+    public function show(string $slug, Request $request, PageViewRecorder $pageViews, PromotionRepository $promotions, EntityManagerInterface $entityManager, AvailabilityRepository $availabilities, ReviewRepository $reviewRepository, ProviderSummary $providerSummary): Response
     {
         $service = $this->services->findPublishedBySlug($slug);
 
@@ -395,6 +396,7 @@ final class ActivityController extends AbstractController
             // Professionnel de l'activité (13/10, retour client n° 35) : sa
             // fiche et « Contacter » sont accessibles depuis l'activité.
             'activity_provider' => $service->getProvider(),
+            'organizer' => null !== $service->getProvider()?->getSlug() ? $providerSummary->of($service->getProvider()) : null,
             'promotion' => $promotion,
             'booking' => $this->bookingPanel($service, $request, $availabilities),
             // Avis réels de l'activité (réservations terminées, 04/10) : les
