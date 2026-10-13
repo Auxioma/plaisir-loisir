@@ -65,6 +65,11 @@ jobs:
       - name: Jetons CSS (aucune variable --pl-* non déclarée)
         run: php bin/check-css-tokens.php
 
+      # Du code malveillant a été injecté plusieurs fois, déguisé en polices et
+      # lancé par une tâche VS Code cachée. Voir le script.
+      - name: Intégrité du dépôt (pas de code déguisé en police ou image)
+        run: php bin/check-repo-integrity.php
+
       # Les tests fonctionnels parcourent le site pour de vrai : il leur faut la
       # base et son schema. Doctrine y ajoute le suffixe « _test »
       # (config/packages/doctrine.yaml), les donnees de developpement ne sont
