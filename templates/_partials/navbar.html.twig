@@ -68,6 +68,17 @@
                 <button type="button" class="tm-header__panel-close" data-bs-dismiss="offcanvas" aria-label="{{ 'Fermer'|trans }}">{{ icon.x(18) }}</button>
             </div>
 
+            {# Mobile (13/10) : le bouton de dépôt de l'en-tête est masqué faute de
+               place ; il est repris ici, en tête du menu. #}
+            <div class="tm-header__panel-cta">
+                {% if is_provider %}
+                    <a href="{{ path('app_pro_activities_new') }}" class="tm-btn tm-btn--cta">{{ icon.plus(18) }} {{ 'Créer une activité payante'|trans }}</a>
+                {% elseif app.user %}
+                    <a href="{{ path('app_create_free') }}" class="tm-btn tm-btn--cta">{{ icon.plus(18) }} {{ 'Créer une activité gratuite'|trans }}</a>
+                {% else %}
+                    <a href="{{ path('app_create_free') }}" class="tm-btn tm-btn--cta">{{ icon.plus(18) }} {{ 'Déposer une activité'|trans }}</a>
+                {% endif %}
+            </div>
             <nav class="tm-nav" aria-label="{{ 'Navigation principale'|trans }}">
                 {% if is_provider %}
                 <a href="{{ path('app_pro_activities') }}" class="tm-nav__link{{ active == 'pro_activites' ? ' is-active' }}">{{ 'Mes activités'|trans }}</a>

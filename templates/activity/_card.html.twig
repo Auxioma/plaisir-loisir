@@ -69,7 +69,7 @@
         <span class="pl-card__title">{{ a.title }}</span>
         <div class="act-card__meta">
             <span class="act-rating">{{ icon.star(12) }} {{ a.rating }}</span>
-            <span class="act-card__reviews">{{ a.reviews }} {{ 'reviews'|trans }}</span>
+            <span class="act-card__reviews">{{ a.reviews }} {{ 'avis'|trans }}</span>
             {% if a.views is defined %}
                 <span class="act-card__views" title="{{ 'Nombre de vues'|trans }}">{{ icon.eye(14) }} {{ a.views|number_format(0, ',', ' ') }}</span>
             {% endif %}

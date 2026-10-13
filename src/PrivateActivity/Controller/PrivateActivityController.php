@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\PrivateActivity\Controller;
 
 use App\Catalog\Repository\CategoryRepository;
+use App\Event\Presenter\EventPresenter;
+use App\Event\Repository\EventRepository;
+use App\Event\StaticEvents;
 use App\PrivateActivity\Entity\MemberReview;
 use App\PrivateActivity\Entity\Participation;
 use App\PrivateActivity\Entity\PrivateActivity;
@@ -61,7 +64,7 @@ final class PrivateActivityController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/activites-privees', 'en' => '/en/private-activities'], name: 'app_private_activities')]
-    public function index(Request $request): Response
+    public function index(Request $request, EventRepository $events, EventPresenter $eventPresenter): Response
     {
         $categorySlug = (string) $request->query->get('metier', '');
         $category = '' !== $categorySlug ? $this->categories->findOneBy(['slug' => $categorySlug]) : null;
@@ -76,8 +79,19 @@ final class PrivateActivityController extends AbstractController
         // Activités à venir seulement (05/10) : une sortie passée ne se rejoint plus.
         $results = $this->activities->findUpcomingDiscoverable($this->isGranted('ROLE_USER'), $category, $place, $keywords, $day, mostViewed: 'plus-vues' === $sort);
 
+        // Événements entre membres (13/10, retour client : ils n'apparaissaient
+        // pas dans la rubrique gratuite). Mêmes mot-clé, lieu et date ; les
+        // catégories d'événements étant une autre liste, une catégorie
+        // d'activité sélectionnée les écarte.
+        [$memberEvents, $eventsTotal] = null === $category
+            ? $events->searchPublic(['q' => $keywords, 'where' => $place, 'date' => $day?->format('Y-m-d') ?? '', 'sort' => 'date'], 8)
+            : [[], 0];
+
         return $this->render('private_activity/index.html.twig', [
             'activities' => $results,
+            'member_events' => $eventPresenter->cards($memberEvents),
+            'events_total' => $eventsTotal,
+            'event_avatars' => StaticEvents::avatars(),
             'categories' => $this->categories->findRoots(),
             'selected_category' => $category,
             'filters' => ['lieu' => $place, 'q' => $keywords, 'date' => null !== $day ? $date : '', 'tri' => $sort],

@@ -199,3 +199,13 @@ a.evn-agenda:hover .evn-agenda__title { color: #4f17e8; }
 .pa-grid .evl-card__meta { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .pa-grid .evl-card__foot { margin-top: auto; }
 .pa-grid .evl-btn--block { margin-top: 10px; }
+
+/* Événements entre membres sur la page des activités gratuites (13/10). */
+.pa-events { margin-top: 36px; padding-top: 26px; border-top: 1px solid var(--evl-line, #e6e8ef); }
+.pa-events__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 16px; }
+.pa-events__head h2 { display: flex; align-items: center; gap: 10px; margin: 0; color: var(--evl-ink, #0b1437); font-size: 22px; font-weight: 800; }
+.pa-events__head h2 .pl-icon, .pa-events__head h2 svg { color: var(--pl-action, #5d00ff); }
+.pa-events__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 1199.98px) { .pa-events__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 575.98px) { .pa-events__grid { grid-template-columns: minmax(0, 1fr); } }
+.evl-link { display: inline-flex; align-items: center; gap: 6px; color: var(--pl-action, #5d00ff); font-size: 14px; font-weight: 700; text-decoration: none; }

@@ -99,7 +99,8 @@ final class ActivityController extends AbstractController
         // La barre de recherche de l'accueil pose « date » et « participants ».
         // Jusqu'au 29/08 elle ne les posait pas du tout : on choisissait un jour
         // et un nombre de personnes, et la liste ne bougeait pas.
-        $participants = $request->query->getInt('participants') ?: null;
+        // Plafonné (13/10) : un nombre démesuré dépassait l'entier SQL (erreur 500).
+        $participants = min(1000, max(0, (int) filter_var($request->query->get('participants'), \FILTER_VALIDATE_INT, ['options' => ['default' => 0]]))) ?: null;
         $date = $this->readDate($request);
         // Langue parlée (filtre de la page Explorer, 04/10).
         $language = trim((string) $request->query->get('langue', '')) ?: null;
@@ -139,16 +140,28 @@ final class ActivityController extends AbstractController
             favoriteSlugs: $this->favorites->activitySlugs(),
         );
 
-        // Mode « Toutes » de l'accueil : on signale aussi les activités
-        // gratuites entre membres qui répondent à la même recherche.
+        // Type d'activité (13/10, retour client : « Tous » doit montrer
+        // toutes les activités, gratuites comme payantes). Par défaut
+        // « toutes » : les activités payantes des professionnels, puis les
+        // activités gratuites entre membres qui répondent à la même
+        // recherche. « payantes » : les professionnels seulement.
+        $type = 'payantes' === $request->query->get('type') ? 'payantes' : 'toutes';
+        $freeActivities = [];
         $freeMatches = null;
-        if ('toutes' === $request->query->get('type')) {
-            $freeMatches = \count($privateActivities->findUpcomingDiscoverable($this->isGranted('ROLE_USER'), null, $place, $keywords, $date));
+        if ('toutes' === $type && null === $priceMin && null === $minRating) {
+            $freeCategory = 1 === \count($categories) ? $this->categoryRepository->findOneBy(['slug' => $categories[0]]) : null;
+            $free = [] === $categories || null !== $freeCategory
+                ? $privateActivities->findUpcomingDiscoverable($this->isGranted('ROLE_USER'), $freeCategory, $place, $keywords, $date, mostViewed: true)
+                : [];
+            $freeMatches = \count($free);
+            $freeActivities = \array_slice($free, 0, 8);
         }
 
         return $this->render('activity/index.html.twig', [
             'activities' => $activities,
             'free_matches' => $freeMatches,
+            'free_activities' => $freeActivities,
+            'type' => $type,
             'free_params' => array_filter(['lieu' => $place, 'q' => $keywords, 'date' => $date?->format('Y-m-d')]),
             // Les champs doivent afficher ce qui a été cherché : sinon la barre
             // se réinitialise et l'on ne sait plus ce qui a produit la liste.
@@ -188,7 +201,8 @@ final class ActivityController extends AbstractController
             // Catégories réelles du catalogue : onglets et cases à cocher de
             // la maquette activites.jpeg (01/10).
             'catalogCategories' => $this->categoryRepository->findRoots(),
-            'clusters' => StaticCatalog::mapClusters(),
+            // Plus de pastilles fictives (13/10) : la carte montre exactement la liste.
+            'clusters' => [],
         ]);
     }
 
@@ -249,7 +263,9 @@ final class ActivityController extends AbstractController
 
     private function readMinRating(Request $request): ?float
     {
-        $valeurs = array_filter(array_map('intval', $request->query->all('note')));
+        // « note » accepté en liste (note[]=4) comme en valeur seule (note=4).
+        $brut = $request->query->all()['note'] ?? [];
+        $valeurs = array_filter(array_map('intval', \is_array($brut) ? $brut : [$brut]));
 
         return [] !== $valeurs ? (float) min($valeurs) : null;
     }

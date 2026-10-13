@@ -71,6 +71,19 @@
                 {% endfor %}
             </div>
         {% endif %}
+
+        {# Événements entre membres (13/10) : eux aussi gratuits et ouverts à tous. #}
+        {% if member_events is not empty %}
+            <section class="pa-events" aria-labelledby="pa-events-title">
+                <div class="pa-events__head">
+                    <h2 id="pa-events-title">{{ icon.calendar(22) }} {{ 'Événements entre membres'|trans }}</h2>
+                    <a class="evl-link" href="{{ path('app_events_all', filters|filter((v, k) => k in ['q'] and v)) }}">{{ 'Voir les'|trans }} {{ events_total }} {{ events_total > 1 ? 'événements'|trans : 'événement'|trans }} {{ icon.arrow_right(14) }}</a>
+                </div>
+                <div class="pa-events__grid">
+                    {% for e in member_events %}{% include 'event/nav/_event_card.html.twig' with {e: e, avatars: event_avatars} %}{% endfor %}
+                </div>
+            </section>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

@@ -408,14 +408,18 @@
  * ------------------------------------------------------------------------ */
 @media (max-width: 991.98px) {
     .act-mapview {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         height: auto;
     }
-    .act-mapview__map { height: 320px; order: -1; }
+    /* 13/10 : la carte reste visible (collante) pendant qu'on fait défiler
+       la liste, comme sur les applis de réservation ; les cartes de la
+       liste correspondent exactement aux repères. */
+    .act-mapview__list .act-card--horizontal { min-width: 0; }
+    .act-mapview__map { position: sticky; top: var(--tm-header-h, 64px); z-index: 2; height: min(52vh, 420px); order: -1; border-radius: 14px; overflow: hidden; }
     .act-mapview__list {
         overflow: visible;
         height: auto;
-        padding: 24px 32px;
+        padding: 16px 0 24px;
     }
 }
 
@@ -1325,3 +1329,21 @@
    sur mobile. « clip » (et non « hidden ») ne crée pas de conteneur de
    défilement : les en-têtes et colonnes « sticky » continuent de fonctionner. */
 html, body { overflow-x: clip; }
+
+/* Fiches horizontales de la vue carte sur petit écran (13/10) : image au-dessus. */
+@media (max-width: 575.98px) {
+    .act-mapview__list .act-card--horizontal { flex-direction: column; min-height: 0; }
+    .act-mapview__list .act-card--horizontal .pl-card__media { flex: 0 0 auto; aspect-ratio: 16 / 9; }
+}
+.ex-filter-toggle--map { display: none; }
+@media (max-width: 991.98px) {
+    .act-mapview__map .ex-filter-toggle--map { position: absolute; top: 12px; left: 12px; z-index: 500; display: inline-flex; margin: 0; box-shadow: 0 4px 14px rgba(11, 20, 55, .2); }
+}
+
+/* Photos en carrousel au doigt sur mobile (13/10, même principe que la fiche pro). */
+@media (max-width: 767.98px) {
+    .evn-photos, .fd-photos { display: flex; grid-template-columns: none; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .evn-photos::-webkit-scrollbar, .fd-photos::-webkit-scrollbar { display: none; }
+    .evn-photos > a, .fd-photos > a { flex: 0 0 82%; scroll-snap-align: start; }
+    .evn-photos img, .fd-photos img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; }
+}
