@@ -573,28 +573,37 @@ function initActivitySlider(root = document) {
  * en JS : sans script, les filtres restent affichés comme avant.
  */
 function initCollapsibleFilters(root = document) {
-    root.querySelectorAll('.ex').forEach((layout) => {
-        const aside = layout.querySelector('.ex-filters');
-        const main = layout.querySelector('.ex-main');
+    // Mise en page à colonne de filtres : [conteneur, filtres, contenu, en-tête après lequel placer le bouton].
+    const layouts = [
+        ['.ex', '.ex-filters', '.ex-main', '.ex-head'],
+        ['.gc', '.gc-filters', '.gc-main', '.gc-hero'],
+        ['.ofm-layout', '.ofm-filters', '.ofm-main', null],
+    ];
+    layouts.forEach(([layoutSel, asideSel, mainSel, headSel]) => root.querySelectorAll(layoutSel).forEach((layout) => {
+        const aside = layout.querySelector(`:scope > ${asideSel}`);
+        const main = layout.querySelector(`:scope > ${mainSel}`);
         const form = aside?.querySelector('form');
         if (!aside || !main || !form || layout.dataset.filtersReady) return;
         layout.dataset.filtersReady = '1';
         layout.classList.add('ex--collapsible');
+        aside.classList.add('ex-filters-panel');
         const en = document.documentElement.lang?.startsWith('en');
 
-        const active = [...form.elements].filter((el) => {
-            if (!el.name || el.type === 'hidden' || el.type === 'submit') return false;
-            if (el.type === 'checkbox' || el.type === 'radio') return el.checked;
-            if (el.type === 'range') return el.value !== el.defaultValue && !(el.name === 'prix_min' && el.value === '0') && !(el.name === 'prix_max' && el.value === el.max);
-            return el.value.trim() !== '';
-        }).length;
+        // Filtres actifs = paramètres de l'URL qui correspondent aux champs du
+        // formulaire (hors tri et pagination) : les valeurs par défaut des
+        // champs ne comptent pas.
+        const names = new Set([...form.elements].map((el) => el.name?.replace(/\[\]$/, '')).filter(Boolean));
+        const active = [...new URLSearchParams(window.location.search)]
+            .filter(([k, v]) => v !== '' && !['tri', 'page'].includes(k) && names.has(k.replace(/\[\]$/, ''))).length;
 
         const toggle = document.createElement('button');
         toggle.type = 'button';
         toggle.className = 'ex-filter-toggle';
         toggle.setAttribute('aria-expanded', 'false');
         toggle.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg> ${en ? 'Filters' : 'Filtres'}${active ? ` <span class="ex-filter-toggle__count">${active}</span>` : ''}`;
-        const head = main.querySelector('.ex-head');
+        // Bouton juste sous le titre de la page (bloc qui contient le h1).
+        let head = headSel ? main.querySelector(`:scope > ${headSel}`) : null;
+        if (!head) head = [...main.children].find((c) => c.matches('h1') || c.querySelector('h1')) || null;
         if (head) head.after(toggle); else main.prepend(toggle);
 
         const close = document.createElement('button');
@@ -602,19 +611,19 @@ function initCollapsibleFilters(root = document) {
         close.className = 'ex-filters__close';
         close.setAttribute('aria-label', en ? 'Close filters' : 'Fermer les filtres');
         close.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
-        aside.querySelector('.ex-filters__head')?.append(close);
+        (aside.querySelector('.ex-filters__head, .ofm-filters__head, .gc-filters__head') || form).prepend(close);
 
         const set = (open) => {
             aside.classList.toggle('is-open', open);
             document.documentElement.classList.toggle('ex-lock', open);
             toggle.setAttribute('aria-expanded', String(open));
-            if (open) aside.querySelector('input, select, button')?.focus({ preventScroll: true });
+            if (open) aside.querySelector('input, select')?.focus({ preventScroll: true });
         };
         toggle.addEventListener('click', () => set(true));
         close.addEventListener('click', () => set(false));
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && aside.classList.contains('is-open')) set(false); });
         document.addEventListener('turbo:before-visit', () => set(false), { once: true });
-    });
+    }));
 }
 
 const start = () => {

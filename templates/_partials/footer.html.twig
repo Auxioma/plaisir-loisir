@@ -17,7 +17,7 @@
     <div class="tm-footer__inner">
         <div class="tm-footer__grid">
             <div class="tm-footer__brand">
-                <img class="tm-footer__logo" loading="lazy" src="{{ asset('images/logo-trouvemoi-horizontal.webp') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="179" height="36">
+                <img class="tm-footer__logo" loading="lazy" src="{{ asset('images/logo-trouvemoi-horizontal.webp') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="169" height="36">
                 <p class="tm-footer__text">{{ 'La plateforme qui vous aide à trouver les meilleures activités et loisirs partout en France.'|trans }}</p>
                 <div class="tm-footer__socials">
                     <a href="{{ social_links.facebook }}" target="_blank" rel="noopener" aria-label="Facebook">{{ icon.facebook(12) }}</a>
@@ -73,16 +73,12 @@
                 <a href="{{ path('app_corporate_cookies') }}">{{ 'Politique de cookies'|trans }}</a>
                 <a href="{{ path('app_corporate_cookies') }}" data-cookie-open>{{ 'Gérer mes cookies'|trans }}</a>
             </div>
-            <details class="pl-dropdown tm-footer__locale">
-                <summary>
-                    {% if app.request.locale == 'en' %}{{ icon.flag_gb(18) }} English{% else %}{{ icon.flag_fr(18) }} France{% endif %}
-                    {{ icon.chevron_down(12) }}
-                </summary>
-                <div class="tm-menu tm-menu--up">
-                    <a href="{{ locale_switch_path('fr') }}" hreflang="fr" lang="fr" class="tm-menu__item{{ app.request.locale != 'en' ? ' is-active' }}"{{ app.request.locale != 'en' ? ' aria-current="true"' }}>{{ icon.flag_fr(16) }} Français</a>
-                    <a href="{{ locale_switch_path('en') }}" hreflang="en" lang="en" class="tm-menu__item{{ app.request.locale == 'en' ? ' is-active' }}"{{ app.request.locale == 'en' ? ' aria-current="true"' }}>{{ icon.flag_gb(16) }} English</a>
-                </div>
-            </details>
+            {# Langue (13/10) : deux boutons toujours visibles plutôt qu'un menu
+               déroulant, qui s'ouvrait hors de l'écran sur mobile. #}
+            <nav class="tm-footer__locale" aria-label="{{ 'Langue'|trans }}">
+                <a href="{{ locale_switch_path('fr') }}" hreflang="fr" lang="fr" class="tm-footer__lang{{ app.request.locale != 'en' ? ' is-active' }}"{{ app.request.locale != 'en' ? ' aria-current="true"' }}>{{ icon.flag_fr(16) }} Français</a>
+                <a href="{{ locale_switch_path('en') }}" hreflang="en" lang="en" class="tm-footer__lang{{ app.request.locale == 'en' ? ' is-active' }}"{{ app.request.locale == 'en' ? ' aria-current="true"' }}>{{ icon.flag_gb(16) }} English</a>
+            </nav>
         </div>
     </div>
 </footer>

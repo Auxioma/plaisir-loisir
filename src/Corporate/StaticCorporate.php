@@ -239,7 +239,7 @@ final class StaticCorporate
                     '28 rue de la Paix, 75002 Paris, France',
                     'RCS Paris 123 456 789',
                     'Numéro de TVA intracommunautaire : FR12 123 456 789',
-                    'Email : contact@trouvemoi.fr',
+                    'Email : contact@trouvemoi.com',
                     'Téléphone : 07 45 15 54 51',
                 ],
                 'paragraphs' => [],

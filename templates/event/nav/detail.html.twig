@@ -65,7 +65,7 @@
                 {% if entity.shortDescription %}<p class="evn-detail__lead">{{ entity.shortDescription }}</p>{% endif %}
                 {% if event.description %}
                     <h2 class="evn-h2">{{ 'Détails'|trans }}</h2>
-                    <div class="evn-detail__text">{{ event.description|e|replace({'**': ''})|nl2br }}</div>
+                    <div class="evn-detail__text">{{ event.description|replace({'**': ''})|nl2br }}</div>
                 {% endif %}
 
                 <h2 class="evn-h2">{{ 'Infos pratiques'|trans }}</h2>
