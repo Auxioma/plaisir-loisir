@@ -35,9 +35,15 @@ class Service
     #[ORM\JoinColumn(nullable: false)]
     private ?ProviderProfile $provider = null;
 
+    /** Vide tant qu'une catégorie proposée attend sa validation (13/10). */
     #[ORM\ManyToOne(targetEntity: Category::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Category $category = null;
+
+    /** Catégorie proposée par le professionnel, en attente de validation par l'équipe. */
+    #[ORM\ManyToOne(targetEntity: CategorySuggestion::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?CategorySuggestion $categorySuggestion = null;
 
     #[ORM\Column(length: 180)]
     private string $title;
@@ -263,6 +269,18 @@ class Service
     public function setCategory(?Category $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getCategorySuggestion(): ?CategorySuggestion
+    {
+        return $this->categorySuggestion;
+    }
+
+    public function setCategorySuggestion(?CategorySuggestion $categorySuggestion): static
+    {
+        $this->categorySuggestion = $categorySuggestion;
 
         return $this;
     }

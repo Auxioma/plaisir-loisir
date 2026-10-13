@@ -102,8 +102,6 @@
 .fa-split__item small { display: block; color: #5b6078; font-size: 13px; line-height: 1.4; }
 .fa-split__tag { margin-left: auto; padding: 4px 10px; border-radius: 999px; background: #eef2fd; color: #1f4fe0; font-size: 12px; font-weight: 800; white-space: nowrap; }
 .fa-split__item.is-free .fa-split__tag { background: #16a34a; color: #fff; }
-.ld-near { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; color: #15803d; font-size: 13px; font-weight: 600; }
-.ld-near a { color: inherit; }
 
 /* Accueil : champ participants libre (« Plus de 10 »). */
 .ld-field input[data-participants-input] { width: 100%; }
@@ -249,11 +247,22 @@
 .fa-type__ico--pro { background: #eef2fd; color: #1f4fe0; }
 .aw-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e6e8ef; }
 .fa-manage__places { max-width: 320px; margin-top: 10px; }
-.ld-near__input { width: 190px; height: 30px; padding: 0 10px; border: 1px solid #bfe6cb; border-radius: 6px; font-size: 13px; }
-.ld-near__btn { height: 30px; padding: 0 12px; background: #16a34a; border: 0; border-radius: 6px; color: #fff; font-size: 13px; font-weight: 700; }
 .ld-track .fa-card:hover { transform: none; }
 .fa-create--wide { max-width: 1240px; }
 .fa-invite__h2 { margin: 0 0 10px; font-size: 16px; font-weight: 800; }
 .fa-invite__desc { margin: 10px 0 14px; color: #5b6078; font-size: 13.5px; line-height: 1.5; }
 .fa-invite__more { margin: 12px 0 0; }
 .fa-panel .fa-card__meta { margin-bottom: 4px; }
+
+/* Album : dépôt multiple (13/10). */
+.al-drop { display: grid; gap: 14px; margin-bottom: 24px; }
+.al-drop__zone { position: relative; display: grid; justify-items: center; gap: 6px; padding: 28px 16px; border: 2px dashed #c9bdfa; border-radius: 14px; background: #faf8ff; color: var(--pl-primary, #061b56); text-align: center; cursor: pointer; transition: background .15s, border-color .15s; }
+.al-drop__zone svg { color: var(--pl-action, #5d00ff); }
+.al-drop__zone span { color: #5d6178; font-size: 13px; }
+.al-drop__zone.is-over, .al-drop__zone:hover { background: #f0eafb; border-color: var(--pl-action, #5d00ff); }
+.al-drop__zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.al-drop__list { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.al-drop__list li { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; }
+.al-drop__list img { width: 100%; height: 100%; object-fit: cover; }
+.al-drop__list button { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border: 0; border-radius: 50%; background: rgba(6, 27, 86, .8); color: #fff; font-size: 16px; line-height: 1; cursor: pointer; }
+.al-drop > button { justify-self: start; }

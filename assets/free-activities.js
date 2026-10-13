@@ -138,3 +138,52 @@ if (window.Turbo === undefined) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
     else start();
 }
+
+/* Album photo (13/10, retour client n° 25) : dépôt de plusieurs photos par
+   glisser-déposer ou sélection multiple, aperçu avant envoi, retrait possible. */
+function initAlbumDropzone(root = document) {
+    root.querySelectorAll('[data-album-drop]').forEach((form) => {
+        if (form.dataset.dropReady) return;
+        form.dataset.dropReady = '1';
+        const input = form.querySelector('[data-album-input]');
+        const zone = form.querySelector('.al-drop__zone');
+        const list = form.querySelector('[data-album-list]');
+        const submit = form.querySelector('[data-album-submit]');
+        const label = form.querySelector('[data-album-label]');
+        const max = parseInt(form.dataset.max || '20', 10);
+        const en = document.documentElement.lang?.startsWith('en');
+        let files = [];
+
+        const render = () => {
+            const dt = new DataTransfer();
+            files.forEach((f) => dt.items.add(f));
+            input.files = dt.files;
+            list.innerHTML = '';
+            files.forEach((f, i) => {
+                const li = document.createElement('li');
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(f);
+                img.alt = '';
+                const rm = document.createElement('button');
+                rm.type = 'button';
+                rm.setAttribute('aria-label', en ? 'Remove' : 'Retirer');
+                rm.textContent = '×';
+                rm.addEventListener('click', () => { files.splice(i, 1); render(); });
+                li.append(img, rm);
+                list.append(li);
+            });
+            list.hidden = submit.hidden = files.length === 0;
+            if (label) label.textContent = en ? `Add ${files.length} photo${files.length > 1 ? 's' : ''}` : `Ajouter ${files.length} photo${files.length > 1 ? 's' : ''}`;
+        };
+        const add = (incoming) => {
+            [...incoming].filter((f) => /^image\/(jpeg|png|webp)$/.test(f.type)).forEach((f) => { if (files.length < max) files.push(f); });
+            render();
+        };
+        input.addEventListener('change', () => add(input.files));
+        ['dragenter', 'dragover'].forEach((t) => zone.addEventListener(t, (e) => { e.preventDefault(); zone.classList.add('is-over'); }));
+        ['dragleave', 'drop'].forEach((t) => zone.addEventListener(t, () => zone.classList.remove('is-over')));
+        zone.addEventListener('drop', (e) => { e.preventDefault(); add(e.dataTransfer.files); });
+    });
+}
+document.addEventListener('turbo:load', () => initAlbumDropzone());
+if (document.readyState !== 'loading') initAlbumDropzone();

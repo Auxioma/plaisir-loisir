@@ -24,10 +24,17 @@
     } %}
 
     {% if photo_count < max_photos %}
-        <form method="post" action="{{ path('app_account_album_show', {id: activity.id}) }}" enctype="multipart/form-data" class="pl-album-upload">
+        {# Dépôt multiple par glisser-déposer (13/10). Script : free-activities.js (initAlbumDropzone). #}
+        <form method="post" action="{{ path('app_account_album_show', {id: activity.id}) }}" enctype="multipart/form-data" class="al-drop" data-album-drop data-max="{{ max_photos - photo_count }}">
             <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-            <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="form-control" required>
-            <button type="submit" class="btn pl-btn pl-btn--cta">{{ icon.camera(18) }} {{ 'Ajouter une photo'|trans }}</button>
+            <label class="al-drop__zone">
+                <input type="file" name="photos[]" accept="image/jpeg,image/png,image/webp" multiple required data-album-input>
+                {{ icon.camera(30) }}
+                <strong>{{ 'Glissez-déposez vos photos ici'|trans }}</strong>
+                <span>{{ 'ou cliquez pour en choisir plusieurs'|trans }} · {{ 'JPG, PNG, WebP' }} · {{ 'encore %n% possibles'|trans({'%n%': max_photos - photo_count}) }}</span>
+            </label>
+            <ul class="al-drop__list" data-album-list hidden></ul>
+            <button type="submit" class="btn pl-btn pl-btn--cta" data-album-submit hidden>{{ icon.camera(18) }} <span data-album-label>{{ 'Ajouter les photos'|trans }}</span></button>
         </form>
     {% else %}
         <p class="text-muted mb-4">{{ 'Cet album a atteint sa limite de %max% photos.'|trans({'%max%': max_photos}) }}</p>

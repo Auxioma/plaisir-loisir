@@ -134,20 +134,35 @@ final class AlbumController extends AbstractController
                 return $this->redirectToRoute('app_account_album_show', ['id' => $id]);
             }
 
-            $file = $request->files->get('photo');
+            // Plusieurs photos d'un coup (13/10, retour client n° 25 : dépôt
+            // par glisser-déposer). « photo » seul reste accepté.
+            $files = array_values(array_filter(
+                [...(array) $request->files->all('photos'), $request->files->get('photo')],
+                static fn (mixed $f): bool => $f instanceof UploadedFile,
+            ));
 
-            if (!$file instanceof UploadedFile) {
-                $this->addFlash('error', 'Veuillez choisir une photo.');
+            if ([] === $files) {
+                $this->addFlash('error', 'Veuillez choisir au moins une photo.');
 
                 return $this->redirectToRoute('app_account_album_show', ['id' => $id]);
             }
 
-            try {
-                $album = $this->albumService->getOrCreate($activity);
-                $this->albumService->addPhoto($album, $user, $file);
-                $this->addFlash('success', 'Photo ajoutée à l\'album.');
-            } catch (\InvalidArgumentException $e) {
-                $this->addFlash('error', $e->getMessage());
+            $added = 0;
+            $errors = [];
+            $album = $this->albumService->getOrCreate($activity);
+            foreach ($files as $file) {
+                try {
+                    $this->albumService->addPhoto($album, $user, $file);
+                    ++$added;
+                } catch (\InvalidArgumentException $e) {
+                    $errors[$e->getMessage()] = $e->getMessage();
+                }
+            }
+            if ($added > 0) {
+                $this->addFlash('success', 1 === $added ? 'Photo ajoutée à l\'album.' : sprintf('%d photos ajoutées à l\'album.', $added));
+            }
+            foreach ($errors as $message) {
+                $this->addFlash('error', $message);
             }
 
             return $this->redirectToRoute('app_account_album_show', ['id' => $id]);

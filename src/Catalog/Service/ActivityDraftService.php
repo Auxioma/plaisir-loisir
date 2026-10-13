@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Catalog\Service;
 
+use App\Catalog\Entity\CategorySuggestion;
 use App\Catalog\Entity\Media;
 use App\Catalog\Entity\Service;
 use App\Catalog\Entity\ServiceDetail;
@@ -16,6 +17,7 @@ use App\Catalog\Enum\OpeningPeriod;
 use App\Catalog\Enum\PricingUnit;
 use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Repository\CategoryRepository;
+use App\Catalog\Repository\CategorySuggestionRepository;
 use App\Catalog\Repository\ServiceRepository;
 use App\Catalog\StaticActivityWizard;
 use App\Provider\Entity\ProviderProfile;
@@ -25,6 +27,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * Brouillon de l'assistant « Créer une activité » de l'espace pro (05/10).
@@ -64,7 +67,26 @@ final class ActivityDraftService
         private readonly ServiceRepository $services,
         private readonly PublicImageStorage $images,
         private readonly SluggerInterface $slugger,
+        private readonly CategorySuggestionRepository $suggestions,
     ) {
+    }
+
+    /**
+     * Catégorie proposée encore en attente (13/10, retour client n° 23) :
+     * elle suffit pour avancer dans l'assistant, sans choisir une autre
+     * catégorie en plus.
+     *
+     * @param array<string, mixed> $d
+     */
+    public function pendingSuggestion(array $d): ?CategorySuggestion
+    {
+        $id = (string) ($d['category_suggestion_id'] ?? '');
+        if ('' === $id || !Ulid::isValid($id)) {
+            return null;
+        }
+        $suggestion = $this->suggestions->find(Ulid::fromString($id));
+
+        return null !== $suggestion && $suggestion->isPending() ? $suggestion : null;
     }
 
     /** @return array<string, mixed> */
@@ -151,8 +173,9 @@ final class ActivityDraftService
 
         $errors += $this->validateStep($step, $draft);
         // Une catégorie existante est choisie : la proposition en attente n'a plus à s'afficher.
-        if (1 === $step && !isset($errors['category'])) {
+        if (1 === $step && null !== $this->categories->findOneBy(['slug' => (string) ($draft['category'] ?? '')])) {
             $draft['category_suggestion'] = null;
+            $draft['category_suggestion_id'] = null;
         }
 
         $done = array_values(array_diff((array) $draft['done'], [$step]));
@@ -182,8 +205,8 @@ final class ActivityDraftService
                 } elseif ($len('title') > 120) {
                     $e['title'] = 'Le titre ne doit pas dépasser 120 caractères.';
                 }
-                if (null === $this->categories->findOneBy(['slug' => (string) ($d['category'] ?? '')])) {
-                    $e['category'] = 'Choisissez une catégorie.';
+                if (null === $this->categories->findOneBy(['slug' => (string) ($d['category'] ?? '')]) && null === $this->pendingSuggestion($d)) {
+                    $e['category'] = 'Choisissez une catégorie ou proposez-en une.';
                 }
                 if (!\array_key_exists((string) ($d['activity_type'] ?? ''), StaticActivityWizard::activityTypes())) {
                     $e['activity_type'] = "Choisissez le type d'activité.";
@@ -345,6 +368,8 @@ final class ActivityDraftService
             'id' => (string) $service->getId(),
             'title' => $service->getTitle(),
             'category' => $service->getCategory()?->getSlug() ?? '',
+            'category_suggestion' => $service->getCategorySuggestion()?->isPending() ? $service->getCategorySuggestion()->getName() : null,
+            'category_suggestion_id' => $service->getCategorySuggestion()?->isPending() ? (string) $service->getCategorySuggestion()->getId() : null,
             'activity_type' => $service->getActivityType()->value ?? 'supervised',
             'subtitle' => $service->getSubtitle() ?? $service->getShortDescription() ?? '',
             'level' => $service->getLevel()->value ?? 'all_levels',
@@ -401,7 +426,8 @@ final class ActivityDraftService
 
         $service
             ->setTitle(mb_substr((string) $d['title'], 0, 180))
-            ->setCategory($category ?? $service->getCategory())
+            ->setCategory($category ?? (null !== $this->pendingSuggestion($d) ? null : $service->getCategory()))
+            ->setCategorySuggestion(null !== $category ? null : $this->pendingSuggestion($d))
             ->setActivityType(ActivityType::tryFrom((string) ($d['activity_type'] ?? '')))
             ->setSubtitle($subtitle)
             ->setShortDescription($subtitle)
