@@ -48,7 +48,7 @@ final class InitialLegalTexts
         .'dont le siège est situé 28 rue de la Paix, 75002 Paris, immatriculée au RCS de Paris '
         .'sous le numéro 123 456 789';
 
-    public const CONTACT = 'contact@trouvemoi.fr';
+    public const CONTACT = 'contact@trouvemoi.com';
 
     public const TELEPHONE = '07 45 15 54 51';
 

@@ -12,7 +12,7 @@ use App\Corporate\Repository\CompanyContactRepository;
  */
 final class CompanyContactProvider
 {
-    public const DEFAULT_EMAIL = 'contact@trouvemoi.fr';
+    public const DEFAULT_EMAIL = 'contact@trouvemoi.com';
     public const DEFAULT_PHONE = '07 45 15 54 51';
     public const DEFAULT_HOURS = 'Lun. – Ven. 9h – 18h';
 

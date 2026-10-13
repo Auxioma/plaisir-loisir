@@ -345,7 +345,7 @@ final class InitialLegalTextsEn
                     '28 rue de la Paix, 75002 Paris, France',
                     'Paris Trade and Companies Register (RCS) 123 456 789',
                     'Intra-community VAT number: FR12 123 456 789',
-                    'Email: contact@trouvemoi.fr',
+                    'Email: contact@trouvemoi.com',
                     'Phone: +33 7 45 15 54 51',
                 ],
                 'paragraphs' => [],
