@@ -9,6 +9,8 @@ use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Presenter\DestinationPresenter;
 use App\Catalog\Repository\DestinationRepository;
 use App\Catalog\Repository\ServiceRepository;
+use App\Event\Presenter\EventPresenter;
+use App\Event\Repository\EventRepository;
 use App\Favorite\Service\CurrentUserFavorites;
 use App\PrivateActivity\Entity\PrivateActivity;
 use App\PrivateActivity\Repository\PrivateActivityRepository;
@@ -38,6 +40,8 @@ final class HomeController extends AbstractController
         private readonly PrivateActivityRepository $privateActivities,
         private readonly DestinationRepository $destinations,
         private readonly DestinationPresenter $destinationPresenter,
+        private readonly EventRepository $events,
+        private readonly EventPresenter $eventPresenter,
     ) {
     }
 
@@ -57,11 +61,13 @@ final class HomeController extends AbstractController
             static fn (PrivateActivity $a): bool => !\in_array($a, $near, true),
         );
         $free = \array_slice([...$near, ...$others], 0, 8);
+        [$publicEvents] = $this->events->searchPublic(['where' => $city['place'] ?? '', 'sort' => 'date'], 4);
 
         return $this->render('home/index.html.twig', [
             'featured' => $this->presenter->cards($featured['items'], true, $this->favorites->activitySlugs()),
             'activities_total' => $featured['total'],
             'free' => $free,
+            'public_events' => $this->eventPresenter->cards($publicEvents),
             'free_near_count' => \count($near),
             'home_city' => $city,
             'destinations' => $this->destinationPresenter->cards($this->destinations->findForListing(10), $this->favorites->destinationSlugs()),

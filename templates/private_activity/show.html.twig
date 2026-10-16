@@ -130,13 +130,21 @@
             </section>
 
             {# ---- Informations clés ---- #}
+            <section class="fd-box fd-key-info">
+            <h2>{{ icon.info(20) }} {{ 'Informations clés'|trans }}</h2>
             <ul class="fd-facts">
                 <li><span>{{ icon.trend_up(24) }}</span><small>{{ 'Niveau'|trans }}</small><strong>{{ activity.level ? activity.level.label|trans : 'Tous niveaux'|trans }}</strong></li>
                 <li><span>{{ icon.clock(24) }}</span><small>{{ 'Durée'|trans }}</small><strong>{{ duration ?? '—' }}</strong></li>
                 <li><span>{{ icon.users(24) }}</span><small>{{ 'Participants'|trans }}</small><strong>{{ taken }}{% if activity.maxParticipants %} / {{ activity.maxParticipants }}{% endif %}</strong></li>
                 <li><span>{{ icon.tag(24) }}</span><small>{{ 'Tarif'|trans }}</small><strong>{{ 'Gratuit'|trans }}</strong></li>
-                <li><span>{{ icon.briefcase(24) }}</span><small>{{ 'Matériel conseillé'|trans }}</small><strong>{{ activity.toBring ?: 'Aucun'|trans }}</strong></li>
             </ul>
+            {% if activity.toBring %}
+                <div class="fd-equipment">
+                    <span>{{ icon.briefcase(28) }}</span>
+                    <div><h3>{{ 'Matériel conseillé'|trans }}</h3><p>{{ activity.toBring|nl2br }}</p></div>
+                </div>
+            {% endif %}
+            </section>
 
             {# ---- Infos pratiques (date, lieu, rendez-vous) ---- #}
             <section class="fd-box">

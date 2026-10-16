@@ -156,6 +156,7 @@ class EventRepository extends ServiceEntityRepository
             ->andWhere('e.private = false')
             ->andWhere("(e.status = 'published' OR (e.status = 'scheduled' AND e.publishAt <= :now))")
             ->andWhere('COALESCE(e.endsAt, e.startsAt) >= :today')
+            ->andWhere("e.visibility = 'public'")
             ->setParameter('now', $now)
             ->setParameter('today', $now->setTime(0, 0));
 
