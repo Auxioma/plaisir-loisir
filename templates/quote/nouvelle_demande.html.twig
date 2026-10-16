@@ -15,9 +15,14 @@
         <div>
             <a class="pf-link" href="{{ path('app_account_requests') }}">{{ icon.arrow_left(14) }} {{ 'Mes demandes'|trans }}</a>
             <h1 class="pf-title">{{ 'Poser une demande'|trans }}</h1>
-            <p class="pf-sub">{{ 'Plus votre demande est précise, plus les devis seront justes.'|trans }}</p>
+            <p class="pf-sub">{{ 'Décrivez votre projet pour recevoir des propositions tarifaires de professionnels de la catégorie choisie.'|trans }}</p>
         </div>
     </header>
+
+    <div class="pf-card">
+        <p>{{ 'Les professionnels vérifiés concernés peuvent répondre à votre demande avec un montant et un message. Retrouvez leurs devis dans Mes demandes, ouvrez votre demande puis acceptez ou refusez chaque proposition.'|trans }}</p>
+        <p>{{ 'Professionnels : retrouvez les demandes de vos catégories et vos devis envoyés dans votre espace professionnel, rubrique Demandes reçues.'|trans }}</p>
+    </div>
 
     {% if errors is not empty %}<div class="ew-alert" role="alert">{{ icon.info(18) }} {{ (errors._token ?? 'Certaines informations sont manquantes ou incorrectes : corrigez les champs signalés pour continuer.')|trans }}</div>{% endif %}
 

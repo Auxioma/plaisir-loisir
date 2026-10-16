@@ -207,6 +207,26 @@
     </section>
 
     {# ===================== DESTINATIONS ===================== #}
+    <section class="ld-section" id="evenements">
+        <div class="ld-wrap">
+            <header class="ld-section__head">
+                <span class="ld-section__ico is-blue">{{ icon.calendar(34) }}</span>
+                <div>
+                    <h2>{{ 'Événements près de chez vous'|trans }}</h2>
+                    <p>{{ 'Découvrez les événements publics et rejoignez leurs participants.'|trans }}{% if home_city %} {{ 'Autour de'|trans }} {{ home_city.name }}{% endif %}</p>
+                </div>
+                <a class="ld-more" href="{{ path('app_events') }}">{{ 'Voir tous les événements'|trans }} {{ icon.arrow_right(16) }}</a>
+            </header>
+            <div class="ld-events">
+                {% for e in public_events %}
+                    {% include 'event/nav/_event_card.html.twig' with {e: e, avatars: []} %}
+                {% else %}
+                    <p class="ld-empty">{{ 'Aucun événement public à venir dans cette zone pour le moment.'|trans }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
     <section class="ld-section" data-pg-carousel>
         <div class="ld-wrap">
             <header class="ld-section__head">
