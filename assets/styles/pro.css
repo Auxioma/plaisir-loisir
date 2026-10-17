@@ -801,3 +801,7 @@ svg.pl-flag[viewBox="0 0 24 24"] { box-shadow: none; color: #4b4f66; }
 
 /* Visibilité des offres sur « Offres du moment » (13/10). */
 .pp-offer-note { display: block; margin-top: 4px; font-size: 12px; color: #15803d; } .pp-offer-note a { color: inherit; } .pp-offer-note.is-warn { color: #b45309; }
+
+/* Réservations : « Règlement reçu » (le client paie le professionnel directement, 17/10). */
+.pp-paid-form { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 4px 8px; border-bottom: 1px solid var(--pf-line); }
+.pp-paid-form select { width: 100%; padding: 6px 8px; border: 1px solid var(--pf-line); border-radius: 6px; font: inherit; font-size: 13px; }

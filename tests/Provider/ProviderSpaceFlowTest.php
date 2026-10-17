@@ -300,6 +300,35 @@ final class ProviderSpaceFlowTest extends WebTestCase
         self::assertSelectorTextContains('h1', $subject);
     }
 
+    /**
+     * Encaissement direct (17/10) : le professionnel indique SES moyens de
+     * paiement ; aucune commission TrouveMoi n'apparaît plus.
+     */
+    public function testTheProviderSetsHisOwnPaymentMethods(): void
+    {
+        $client = $this->loggedProvider();
+        $fixture = ['paymentIban' => 'FR76 3000 6000 0112 3456 7890 189', 'paymentIbanHolder' => 'Camille Aventures', 'paymentOnSite' => 'Carte bancaire, espèces, chèques vacances'];
+
+        $client->request('POST', '/pro/revenus/moyens-de-paiement', $this->token($client, '/pro/parametres?section=paiement') + ['paymentIban' => 'FR00 1234']);
+        $client->followRedirect();
+        self::assertSelectorTextContains('.toast-body', 'IBAN invalide');
+
+        $client->request('POST', '/pro/revenus/moyens-de-paiement', $this->token($client, '/pro/parametres?section=paiement') + $fixture + ['paymentLinkUrl' => 'buy.stripe.com/test_camille', 'paymentPaypal' => 'paypal.me/camille']);
+        $provider = $this->demoProvider();
+        $this->em()->refresh($provider);
+        self::assertSame('https://buy.stripe.com/test_camille', $provider->getPaymentLinkUrl());
+        self::assertSame('FR7630006000011234567890189', $provider->getPaymentIban());
+
+        $client->request('GET', '/pro/revenus');
+        self::assertSelectorTextContains('body', 'Moyens de paiement proposés');
+        self::assertSelectorTextNotContains('body', '12%');
+        self::assertSelectorTextNotContains('body', 'Prochain versement');
+
+        // Retour aux moyens des fixtures (d'autres tests s'en servent).
+        $client->request('POST', '/pro/revenus/moyens-de-paiement', $this->token($client, '/pro/parametres?section=paiement') + $fixture);
+        self::assertNull($this->demoProvider()->getPaymentLinkUrl());
+    }
+
     private function loggedProvider(): KernelBrowser
     {
         $client = static::createClient();

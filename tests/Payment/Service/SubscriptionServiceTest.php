@@ -54,7 +54,7 @@ final class SubscriptionServiceTest extends TestCase
         $provider = new ProviderProfile();
 
         $subscriptions = $this->createStub(SubscriptionRepository::class);
-        $subscriptions->method('findCurrentFor')->willReturn(new Subscription());
+        $subscriptions->method('findCurrentFor')->willReturn((new Subscription())->setStatus(SubscriptionStatus::Active));
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::never())->method('persist');
@@ -63,6 +63,57 @@ final class SubscriptionServiceTest extends TestCase
 
         (new SubscriptionService($em, $subscriptions, $this->createStub(SubscriptionGateway::class), new NotificationService($em, $this->createStub(NotificationRepository::class))))
             ->startCheckout($provider, new SubscriptionPlan(), 'https://example.test/succes', 'https://example.test/annule');
+    }
+
+    /** Paiement abandonné sur Stripe : la tentative en attente ne bloque pas une nouvelle souscription. */
+    public function testStartCheckoutReplacesAnAbandonedIncompleteAttempt(): void
+    {
+        $abandoned = (new Subscription())->setStatus(SubscriptionStatus::Incomplete);
+
+        $subscriptions = $this->createStub(SubscriptionRepository::class);
+        $subscriptions->method('findCurrentFor')->willReturn($abandoned);
+
+        $gateway = $this->createStub(SubscriptionGateway::class);
+        $gateway->method('startCheckout')->willReturn(new SubscriptionCheckoutResult('cus_1', 'https://checkout.stripe.test/s', false));
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::once())->method('persist')->with(self::isInstanceOf(Subscription::class));
+
+        (new SubscriptionService($em, $subscriptions, $gateway, new NotificationService($em, $this->createStub(NotificationRepository::class))))
+            ->startCheckout(new ProviderProfile(), (new SubscriptionPlan())->setBillingPeriod(BillingPeriod::Monthly), 'https://example.test/succes', 'https://example.test/annule');
+
+        self::assertSame(SubscriptionStatus::Cancelled, $abandoned->getStatus());
+    }
+
+    /** Webhook `checkout.session.completed` (mode abonnement) : la tentative est rattachée à Stripe et activée. */
+    public function testActivateFromCheckoutLinksAndActivatesThePendingAttempt(): void
+    {
+        $owner = new User();
+        $pending = (new Subscription())
+            ->setProvider((new ProviderProfile())->setUser($owner))
+            ->setPlan((new SubscriptionPlan())->setBillingPeriod(BillingPeriod::Yearly));
+
+        $subscriptions = $this->createStub(SubscriptionRepository::class);
+        $subscriptions->method('findOneByStripeSubscriptionId')->willReturn(null);
+        $subscriptions->method('findPendingForProviderId')->willReturn($pending);
+
+        $notified = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(function (object $entity) use (&$notified): void {
+            if ($entity instanceof Notification) {
+                $notified[] = $entity;
+            }
+        });
+
+        (new SubscriptionService($em, $subscriptions, $this->createStub(SubscriptionGateway::class), new NotificationService($em, $this->createStub(NotificationRepository::class))))
+            ->activateFromCheckout('01HZZZZZZZZZZZZZZZZZZZZZZZ', 'cus_42', 'sub_42');
+
+        self::assertSame(SubscriptionStatus::Active, $pending->getStatus());
+        self::assertSame('sub_42', $pending->getStripeSubscriptionId());
+        self::assertSame('cus_42', $pending->getStripeCustomerId());
+        self::assertNotNull($pending->getCurrentPeriodEnd());
+        self::assertCount(1, $notified);
+        self::assertSame('Abonnement activé', $notified[0]->getTitle());
     }
 
     public function testCancelRejectsSomeoneOtherThanTheSubscriptionOwner(): void

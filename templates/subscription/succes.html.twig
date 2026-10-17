@@ -1,8 +1,8 @@
 {#
     Retour après passage par Stripe Checkout (ou activation immédiate en
-    mode simulé). Comme pour le paiement d'une prestation
-    (PaymentController) : cet écran ne confirme jamais rien lui-même, c'est
-    le webhook qui l'a déjà fait avant que le navigateur n'arrive ici — sauf
+    mode simulé). Cet écran ne confirme jamais rien lui-même : c'est le
+    webhook Stripe qui active l'abonnement (SubscriptionService::
+    activateFromCheckout()), souvent avant que le navigateur n'arrive ici — sauf
     en mode simulé, où il n'y a pas de webhook et l'abonnement est déjà actif
     au moment de la redirection (voir MockSubscriptionGateway).
 #}

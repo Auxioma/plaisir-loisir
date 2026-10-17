@@ -38,6 +38,15 @@
         </div>
     </section>
 
+    {# 17/10, demande du client : qui encaisse quoi. #}
+    <section class="pg-wrap pg-section">
+        <h2 class="pg-h2 pg-h2--center">{{ 'Qui encaisse quoi ?'|trans }}</h2>
+        <div class="pg-features">
+            <article class="pg-card pg-feature"><span class="pg-ico is-green">{{ icon.handshake(24) }}</span><div><h3>{{ 'Les activités : vous payez l’organisateur'|trans }}</h3><p>{{ 'Le prix d’une activité se règle directement au professionnel qui l’organise, par les moyens qu’il propose (paiement en ligne sur son compte, PayPal, virement, sur place). Aucun paiement de prestation ne transite par TrouveMoi, qui ne prélève aucune commission.'|trans }}</p></div></article>
+            <article class="pg-card pg-feature"><span class="pg-ico">{{ icon.card_lock(24) }}</span><div><h3>{{ 'Abonnements et bons cadeaux : payés à TrouveMoi'|trans }}</h3><p>{{ 'Les abonnements des professionnels et les bons cadeaux sont payés à TrouveMoi, en ligne, sur la page sécurisée de notre prestataire Stripe.'|trans }}</p></div></article>
+        </div>
+    </section>
+
     <section class="pg-wrap pg-pay">
         <div class="pg-card pg-pay__methods">
             <h2 class="pg-h2 pg-h2--center">{{ 'Moyens de paiement acceptés'|trans }}</h2>
@@ -62,7 +71,7 @@
         </div>
         <aside class="pg-card pg-help">
             <h2><span class="pg-ico">{{ icon.shield_check(22) }}</span>{{ 'Besoin d’aide ?'|trans }}</h2>
-            <p>{{ 'Notre service client est à votre disposition pour toute question concernant le paiement de vos réservations.'|trans }}</p>
+            <p>{{ 'Notre service client est à votre disposition pour toute question concernant les paiements sur TrouveMoi.'|trans }}</p>
             <a class="pg-btn pg-btn--block" href="{{ path('app_corporate_contact', {sujet: 'Paiement'}) }}">{{ 'Nous contacter'|trans }} {{ icon.arrow_right(16) }}</a>
         </aside>
     </section>

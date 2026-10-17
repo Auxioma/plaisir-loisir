@@ -67,7 +67,10 @@ final class PublishLegalDocumentsCommand extends Command
             // Republier seulement certains textes (ex. après l'ajout de Google
             // Analytics, 12/10 : --type=cookie_policy --type=privacy_policy),
             // sans créer de nouvelle version des CGU.
-            ->addOption('type', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Type(s) de texte à publier (valeur de LegalDocumentType) ; tous par défaut', []);
+            ->addOption('type', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Type(s) de texte à publier (valeur de LegalDocumentType) ; tous par défaut', [])
+            // Résumé de la modification pour une nouvelle version (ex. 17/10 :
+            // prestations réglées directement aux professionnels).
+            ->addOption('resume', null, InputOption::VALUE_REQUIRED, 'Résumé des changements de cette version (remplace le résumé de la première publication)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -76,6 +79,7 @@ final class PublishLegalDocumentsCommand extends Command
         $version = (string) $input->getOption('doc-version');
         $locale = (string) $input->getOption('locale');
         $only = array_map('strval', (array) $input->getOption('type'));
+        $resume = $input->getOption('resume');
 
         $aPublier = [
             [
@@ -132,7 +136,7 @@ final class PublishLegalDocumentsCommand extends Command
                 title: (string) $doc['titre'],
                 content: (string) $doc['contenu'],
                 locale: $locale,
-                changeSummary: (string) $doc['resume'],
+                changeSummary: \is_string($resume) && '' !== $resume ? $resume : (string) $doc['resume'],
             );
 
             ++$publies;

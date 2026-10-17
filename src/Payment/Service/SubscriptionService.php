@@ -18,6 +18,9 @@ use Doctrine\ORM\EntityManagerInterface;
 /**
  * Logique métier des abonnements professionnels (§17 du CDC) : souscription,
  * changement d'offre, résiliation, synchronisation depuis les webhooks Stripe.
+ *
+ * Ce sont les seuls paiements encaissés sur le compte de TrouveMoi (17/10) ;
+ * les prestations sont réglées directement aux professionnels.
  */
 final class SubscriptionService
 {
@@ -39,7 +42,14 @@ final class SubscriptionService
      */
     public function startCheckout(ProviderProfile $provider, SubscriptionPlan $plan, string $successUrl, string $cancelUrl): SubscriptionCheckoutResult
     {
-        if (null !== $this->currentFor($provider)) {
+        $current = $this->currentFor($provider);
+        if (SubscriptionStatus::Incomplete === $current?->getStatus()) {
+            // Paiement abandonné sur la page Stripe : la tentative est close,
+            // le professionnel peut en démarrer une nouvelle.
+            $current->setStatus(SubscriptionStatus::Cancelled);
+            $current = null;
+        }
+        if (null !== $current) {
             throw new \InvalidArgumentException('Vous avez déjà un abonnement en cours. Changez d\'offre plutôt que d\'en souscrire un second.');
         }
 
@@ -93,6 +103,45 @@ final class SubscriptionService
                     ? 'Votre abonnement sera résilié à la fin de la période en cours.'
                     : 'Votre abonnement a été résilié.',
             );
+        }
+    }
+
+    /**
+     * Paiement validé sur Stripe Checkout (webhook `checkout.session.completed`
+     * en mode abonnement) : rattache l'abonnement Stripe à la tentative en
+     * attente du professionnel et l'active. Idempotent.
+     */
+    public function activateFromCheckout(string $providerId, string $stripeCustomerId, string $stripeSubscriptionId): void
+    {
+        if ('' === $stripeSubscriptionId) {
+            return;
+        }
+
+        $subscription = $this->subscriptions->findOneByStripeSubscriptionId($stripeSubscriptionId)
+            ?? $this->subscriptions->findPendingForProviderId($providerId);
+        if (null === $subscription) {
+            return;
+        }
+
+        $subscription->setStripeSubscriptionId($stripeSubscriptionId);
+        if ('' !== $stripeCustomerId) {
+            $subscription->setStripeCustomerId($stripeCustomerId);
+        }
+        if (SubscriptionStatus::Active === $subscription->getStatus()) {
+            $this->entityManager->flush();
+
+            return;
+        }
+
+        $subscription->setStatus(SubscriptionStatus::Active);
+        if (null === $subscription->getCurrentPeriodEnd() && null !== $plan = $subscription->getPlan()) {
+            $this->stampCurrentPeriod($subscription, $plan);
+        }
+        $this->entityManager->flush();
+
+        $owner = $subscription->getProvider()?->getUser();
+        if (null !== $owner) {
+            $this->notifications->notify($owner, NotificationCategory::Payment, 'Abonnement activé', 'Votre abonnement est actif. Merci !');
         }
     }
 

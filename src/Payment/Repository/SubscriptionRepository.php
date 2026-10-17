@@ -9,6 +9,7 @@ use App\Payment\Enum\SubscriptionStatus;
 use App\Provider\Entity\ProviderProfile;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * @extends ServiceEntityRepository<Subscription>
@@ -33,6 +34,24 @@ class SubscriptionRepository extends ServiceEntityRepository
             ->andWhere('s.status != :cancelled')
             ->setParameter('provider', $provider->getId(), 'ulid')
             ->setParameter('cancelled', SubscriptionStatus::Cancelled)
+            ->orderBy('s.createdAt', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /** Tentative de souscription en attente de paiement (Stripe Checkout) d'un professionnel. */
+    public function findPendingForProviderId(string $providerId): ?Subscription
+    {
+        if (!Ulid::isValid($providerId)) {
+            return null;
+        }
+
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.provider = :provider')
+            ->andWhere('s.status = :incomplete')
+            ->setParameter('provider', Ulid::fromString($providerId), 'ulid')
+            ->setParameter('incomplete', SubscriptionStatus::Incomplete)
             ->orderBy('s.createdAt', 'DESC')
             ->setMaxResults(1)
             ->getQuery()

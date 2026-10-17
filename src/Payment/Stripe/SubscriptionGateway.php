@@ -9,9 +9,8 @@ use App\Provider\Entity\ProviderProfile;
 
 /**
  * Abstraction du prestataire d'abonnement (§17.2 du CDC). On code contre
- * cette interface ; en local et dans les tests elle est résolue vers
- * {@see MockSubscriptionGateway} (voir config/services.yaml, même principe
- * que PaymentProcessor).
+ * cette interface ; elle est résolue vers {@see ConfiguredSubscriptionGateway},
+ * qui choisit Stripe ou la simulation selon la clé configurée.
  */
 interface SubscriptionGateway
 {

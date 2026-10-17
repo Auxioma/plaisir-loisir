@@ -89,7 +89,7 @@ final class ProviderSpaceFixtures extends Fixture implements DependentFixtureInt
             ->setAvailabilityLabel('Lun - Dim : 7h - 20h')
             ->setBio('Passionnée de plein air depuis toujours, j’accompagne petits et grands à la découverte de nos plus beaux paysages, en toute sécurité.')
             ->setWebsiteUrl('https://www.camille-aventures.fr')
-            ->setPayoutIban('FR7630006000011234567890189');
+            ->setPaymentIban('FR7630006000011234567890189')->setPaymentIbanHolder('Camille Aventures')->setPaymentOnSite('Carte bancaire, espèces, chèques vacances');
         $provider->getUser()?->setPhone('06 12 34 56 78');
 
         /** @var list<Service> $services */

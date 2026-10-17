@@ -12,8 +12,11 @@ use App\Shared\Doctrine\UlidIdentifierTrait;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Paiement d'une réservation. Le montant est figé (decimal) et le statut suit
- * le résultat du prestataire de paiement.
+ * Règlement d'une réservation, effectué DIRECTEMENT entre le client et le
+ * professionnel (17/10, demande du client) : aucun paiement de prestation ne
+ * transite par TrouveMoi. La ligne naît « en attente » quand le client envoie
+ * sa demande ; le professionnel la déclare « réglée » quand il a reçu
+ * l'argent, avec le moyen utilisé. Le montant est figé (decimal).
  */
 #[ORM\Entity(repositoryClass: PaymentRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -21,6 +24,17 @@ class Payment
 {
     use UlidIdentifierTrait;
     use TimestampableTrait;
+
+    /** Moyens par lesquels un client règle le professionnel. */
+    public const METHODS = [
+        'onsite' => 'Sur place',
+        'transfer' => 'Virement',
+        'paypal' => 'PayPal',
+        'link' => 'Lien de paiement',
+        'card' => 'Carte bancaire',
+        'cash' => 'Espèces',
+        'other' => 'Autre',
+    ];
 
     #[ORM\OneToOne(targetEntity: Booking::class)]
     #[ORM\JoinColumn(nullable: false, unique: true, onDelete: 'CASCADE')]
@@ -35,16 +49,17 @@ class Payment
     #[ORM\Column(enumType: PaymentStatus::class)]
     private PaymentStatus $status = PaymentStatus::Pending;
 
-    /**
-     * Référence de transaction renvoyée par le prestataire (null tant qu'aucun
-     * débit n'a réussi).
-     */
+    /** Référence libre (ancienne référence de transaction, n° de virement…). */
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $reference = null;
 
-    /** Moyen de paiement utilisé : card | paypal | transfer (02/10, « Revenus & Paiements »). */
-    #[ORM\Column(length: 20, options: ['default' => 'card'])]
-    private string $method = 'card';
+    /** Moyen par lequel le professionnel a été réglé (voir METHODS) ; null tant qu'il ne l'a pas déclaré. */
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $method = null;
+
+    /** Date à laquelle le professionnel a déclaré le règlement reçu. */
+    #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
+    private ?\DateTimeImmutable $paidAt = null;
 
     public function getBooking(): ?Booking
     {
@@ -106,14 +121,31 @@ class Payment
         return $this;
     }
 
-    public function getMethod(): string
+    public function getMethod(): ?string
     {
         return $this->method;
     }
 
-    public function setMethod(string $method): static
+    public function setMethod(?string $method): static
     {
-        $this->method = \in_array($method, ['card', 'paypal', 'transfer'], true) ? $method : 'card';
+        $this->method = null === $method || isset(self::METHODS[$method]) ? $method : 'other';
+
+        return $this;
+    }
+
+    public function getMethodLabel(): ?string
+    {
+        return null !== $this->method ? self::METHODS[$this->method] : null;
+    }
+
+    public function getPaidAt(): ?\DateTimeImmutable
+    {
+        return $this->paidAt;
+    }
+
+    public function setPaidAt(?\DateTimeImmutable $paidAt): static
+    {
+        $this->paidAt = $paidAt;
 
         return $this;
     }

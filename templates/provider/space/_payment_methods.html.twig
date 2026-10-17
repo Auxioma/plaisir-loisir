@@ -1,0 +1,43 @@
+{#
+    Moyens de paiement que le professionnel propose à ses clients (Paramètres
+    › Moyens de paiement). Encaissement direct (17/10, demande du client) :
+    le client règle le professionnel lui-même, TrouveMoi n'encaisse rien et
+    ne prélève aucune commission ; ces informations sont seulement montrées
+    au client (récapitulatif puis confirmation de sa réservation).
+    Variables : provider.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+<div class="pf-notice pp-mb">
+    {{ icon.info(18) }}
+    <p>{{ 'Vos clients vous règlent directement : aucun paiement de prestation ne transite par TrouveMoi, et aucune commission n’est prélevée. Indiquez ici comment vous souhaitez être payé ; ces informations sont communiquées au client lors de sa réservation.'|trans }}</p>
+</div>
+<form method="post" action="{{ path('app_pro_payment_methods') }}" class="pf-form-grid">
+    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+    <div class="pf-field pf-span-2">
+        <label for="pm-link">{{ 'Lien de paiement en ligne'|trans }}</label>
+        <input id="pm-link" name="paymentLinkUrl" type="url" inputmode="url" value="{{ provider.paymentLinkUrl }}" placeholder="https://buy.stripe.com/…" maxlength="255">
+        <small class="pf-muted">{{ 'Votre propre lien de paiement (Stripe, SumUp, PayPal, Lydia Pro…), sur votre compte.'|trans }}</small>
+    </div>
+    <div class="pf-field pf-span-2">
+        <label for="pm-paypal">{{ 'PayPal'|trans }}</label>
+        <input id="pm-paypal" name="paymentPaypal" value="{{ provider.paymentPaypal }}" placeholder="{{ 'adresse e-mail ou paypal.me/…'|trans }}" maxlength="180" autocomplete="off">
+    </div>
+    <div class="pf-field">
+        <label for="pm-iban">{{ 'IBAN (virement)'|trans }}</label>
+        <input id="pm-iban" name="paymentIban" value="{{ provider.paymentIban }}" placeholder="FR76 …" maxlength="60" autocomplete="off">
+    </div>
+    <div class="pf-field">
+        <label for="pm-holder">{{ 'Titulaire du compte'|trans }}</label>
+        <input id="pm-holder" name="paymentIbanHolder" value="{{ provider.paymentIbanHolder }}" maxlength="120" autocomplete="off">
+    </div>
+    <div class="pf-field pf-span-2">
+        <label for="pm-onsite">{{ 'Paiement sur place'|trans }}</label>
+        <input id="pm-onsite" name="paymentOnSite" value="{{ provider.paymentOnSite }}" placeholder="{{ 'ex. carte bancaire, espèces, chèques vacances'|trans }}" maxlength="255">
+    </div>
+    <div class="pf-field pf-span-2">
+        <label for="pm-notes">{{ 'Précisions pour vos clients'|trans }}</label>
+        <textarea id="pm-notes" name="paymentInstructions" rows="3" maxlength="2000" placeholder="{{ 'ex. acompte de 30 % à la confirmation, solde le jour de l’activité'|trans }}">{{ provider.paymentInstructions }}</textarea>
+    </div>
+    <p class="pf-muted pf-span-2">{{ 'Laissez un champ vide pour ne pas proposer ce moyen.'|trans }}</p>
+    <div class="pp-form__actions pf-span-2"><button class="pf-btn pf-btn--primary">{{ 'Enregistrer'|trans }}</button></div>
+</form>

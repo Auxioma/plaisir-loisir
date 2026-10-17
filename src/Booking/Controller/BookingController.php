@@ -15,7 +15,8 @@ use App\Catalog\Repository\ServiceRepository;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\Service\NotificationService;
 use App\Payment\Repository\PaymentRepository;
-use App\Payment\Service\BookingCheckout;
+use App\Payment\Service\PaymentService;
+use App\Provider\Service\ProviderPaymentMethods;
 use App\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,7 +28,13 @@ use Symfony\Component\Uid\Ulid;
 
 /**
  * Tunnel de réservation d'une activité (03/10) : panneau de la fiche
- * (date, heure, voyageurs) → récapitulatif → paiement → confirmation.
+ * (date, heure, voyageurs) → récapitulatif → demande envoyée au
+ * professionnel → confirmation.
+ *
+ * Aucun paiement en ligne sur TrouveMoi (17/10, demande du client) : le
+ * client règle la prestation directement au professionnel, par les moyens
+ * que celui-ci propose (ProviderPaymentMethods), et le professionnel
+ * confirme la réservation puis déclare le règlement reçu.
  *
  * Les dates et heures proposées viennent des créneaux (Availability) ouverts
  * par le professionnel ; sans créneau à venir, le client choisit librement
@@ -48,8 +55,9 @@ final class BookingController extends AbstractController
         private readonly AvailabilityRepository $availabilities,
         private readonly BookingRepository $bookings,
         private readonly BookingService $bookingService,
-        private readonly BookingCheckout $checkout,
+        private readonly PaymentService $paymentService,
         private readonly PaymentRepository $payments,
+        private readonly ProviderPaymentMethods $paymentMethods,
         private readonly NotificationService $notifications,
         private readonly EntityManagerInterface $entityManager,
     ) {
@@ -137,15 +145,11 @@ final class BookingController extends AbstractController
             return $this->redirectToRoute('app_booking_confirmation', ['id' => $id]);
         }
 
-        return $this->render('booking/summary.html.twig', [
-            'booking' => $booking,
-            'service' => $booking->getService(),
-            'stripe' => $this->checkout->usesStripe(),
-        ]);
+        return $this->render('booking/summary.html.twig', $this->bookingView($booking));
     }
 
-    #[Route(path: ['fr' => '/reservations/{id}/payer', 'en' => '/en/bookings/{id}/pay'], name: 'app_booking_pay', methods: ['POST'])]
-    public function pay(string $id, Request $request): Response
+    #[Route(path: ['fr' => '/reservations/{id}/envoyer', 'en' => '/en/bookings/{id}/send'], name: 'app_booking_request', methods: ['POST'])]
+    public function send(string $id, Request $request): Response
     {
         $booking = $this->own($id);
         if (!$this->isCsrfTokenValid('booking', (string) $request->request->get('_token'))) {
@@ -155,10 +159,10 @@ final class BookingController extends AbstractController
         }
 
         try {
-            $url = $this->checkout->start($booking);
+            $this->paymentService->request($booking);
             $this->notifyProvider($booking);
 
-            return $this->redirect($url);
+            return $this->redirectToRoute('app_booking_confirmation', ['id' => $id]);
         } catch (\InvalidArgumentException $e) {
             $this->addFlash('error', $e->getMessage());
 
@@ -177,7 +181,7 @@ final class BookingController extends AbstractController
             $slot?->release($booking->getParticipants());
             $booking->setStatus(BookingStatus::Cancelled);
             $this->entityManager->flush();
-            $this->addFlash('success', 'Réservation abandonnée : aucune somme n’a été prélevée.');
+            $this->addFlash('success', 'Réservation abandonnée.');
         }
 
         return $this->redirectToRoute('app_activity_show', ['slug' => $booking->getService()?->getSlug()]);
@@ -188,19 +192,30 @@ final class BookingController extends AbstractController
     {
         $booking = $this->own($id);
 
-        return $this->render('booking/confirmation.html.twig', [
-            'booking' => $booking,
-            'service' => $booking->getService(),
+        return $this->render('booking/confirmation.html.twig', $this->bookingView($booking) + [
             'payment' => $this->payments->findOneByBooking($booking),
         ]);
+    }
+
+    /** @return array<string, mixed> */
+    private function bookingView(Booking $booking): array
+    {
+        $provider = $booking->getService()?->getProvider();
+
+        return [
+            'booking' => $booking,
+            'service' => $booking->getService(),
+            'payment_methods' => null !== $provider ? $this->paymentMethods->configured($provider) : [],
+            'payment_instructions' => $provider?->getPaymentInstructions(),
+        ];
     }
 
     private function notifyProvider(Booking $booking): void
     {
         $owner = $booking->getService()?->getProvider()?->getUser();
         if (null !== $owner) {
-            $this->notifications->notify($owner, NotificationCategory::Booking, 'Nouvelle réservation', sprintf(
-                '%s — %s, %d pers.',
+            $this->notifications->notify($owner, NotificationCategory::Booking, 'Nouvelle demande de réservation', sprintf(
+                '%s — %s, %d pers. À confirmer depuis « Réservations » ; le client vous règle directement.',
                 $booking->getService()->getTitle(),
                 $booking->getStartsAt()?->format('d/m/Y H:i') ?? 'date à convenir',
                 $booking->getParticipants(),

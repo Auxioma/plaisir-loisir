@@ -39,15 +39,11 @@ services:
     App\:
         resource: '../src/'
 
-    # Le paiement est codé contre l'interface PaymentProcessor ; aujourd'hui
-    # elle est résolue vers l'implémentation mock (Stripe la remplacera).
-    App\Payment\Processor\PaymentProcessor: '@App\Payment\Processor\MockPaymentProcessor'
-
-    # Abonnements professionnels (§17 du CDC) : même principe que
-    # PaymentProcessor ci-dessus. Résolue vers le mock tant qu'aucune clé
-    # Stripe de test n'est configurée dans cet environnement — voir le
-    # commentaire de StripeSubscriptionGateway.
-    App\Payment\Stripe\SubscriptionGateway: '@App\Payment\Stripe\MockSubscriptionGateway'
+    # Abonnements professionnels (§17 du CDC), seuls paiements encaissés par
+    # TrouveMoi : Stripe dès qu'une clé `sk_…` est configurée, simulation
+    # sinon (voir ConfiguredSubscriptionGateway). Les prestations, elles, sont
+    # réglées directement au professionnel et ne passent jamais par ici.
+    App\Payment\Stripe\SubscriptionGateway: '@App\Payment\Stripe\ConfiguredSubscriptionGateway'
 
     # La recherche est codée contre l'interface SearchService ; aujourd'hui
     # résolue vers PostgreSQL (Elasticsearch la remplacera).
@@ -58,8 +54,8 @@ services:
         arguments:
             $config: '%env(STRIPE_SECRET_KEY)%'
 
-    # La création de sessions de paiement est codée contre l'interface
-    # CheckoutGateway ; résolue vers l'implémentation Stripe (testable via un stub).
+    # Paiement ponctuel sur la page hébergée de Stripe (achat d'un bon cadeau),
+    # codé contre l'interface CheckoutGateway (testable via un stub).
     App\Payment\Stripe\CheckoutGateway: '@App\Payment\Stripe\StripeCheckoutGateway'
 
     # Traductions administrables en base (demande CTO) : le loader « db »

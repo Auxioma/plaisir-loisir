@@ -9,18 +9,24 @@ use App\Booking\Entity\Booking;
 use App\Booking\Enum\BookingStatus;
 use App\Catalog\Entity\Service;
 use App\Catalog\Enum\ServiceStatus;
+use App\Payment\Entity\Payment;
+use App\Payment\Enum\PaymentStatus;
 use App\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
  * Tunnel de réservation depuis la fiche d'une activité (04/10) : créneau,
- * voyageurs, récapitulatif, paiement (processeur simulé), confirmation,
- * places décomptées ; un visiteur est renvoyé vers la connexion.
+ * voyageurs, récapitulatif, demande envoyée, places décomptées ; un visiteur
+ * est renvoyé vers la connexion.
+ *
+ * Encaissement direct (17/10) : rien n'est payé sur TrouveMoi. Le client voit
+ * les moyens de paiement du professionnel, qui confirme la réservation puis
+ * déclare le règlement reçu.
  */
 final class BookingFlowTest extends WebTestCase
 {
-    public function testAClientBooksASlotAndPays(): void
+    public function testAClientRequestsASlotAndPaysTheProviderDirectly(): void
     {
         $client = static::createClient();
         $em = static::getContainer()->get(EntityManagerInterface::class);
@@ -46,18 +52,48 @@ final class BookingFlowTest extends WebTestCase
         self::assertResponseRedirects();
         $summary = $client->followRedirect();
         self::assertSelectorTextContains('h1', 'Récapitulatif');
+        self::assertSelectorTextContains('.bk-pay', 'Vous réglez directement l’organisateur');
+        self::assertSelectorTextContains('.bk-pay', 'Virement bancaire');
+        self::assertSelectorNotExists('form[action$="/payer"]');
 
-        $client->submit($summary->filter('form[action$="/payer"]')->form());
+        $client->submit($summary->filter('form[action$="/envoyer"]')->form());
         self::assertResponseRedirects();
         $client->followRedirect();
-        self::assertSelectorTextContains('h1', 'confirmée');
+        self::assertSelectorTextContains('h1', 'Demande envoyée');
+        // Coordonnées du professionnel montrées au client après l'envoi.
+        self::assertSelectorTextContains('.bk-direct', 'FR76 3000 6000 0112 3456 7890 189');
 
         $em->clear();
         $booking = $em->getRepository(Booking::class)->findOneBy(['client' => $user, 'service' => $service], ['createdAt' => 'DESC']);
         self::assertNotNull($booking);
-        self::assertSame(BookingStatus::Confirmed, $booking->getStatus());
+        self::assertSame(BookingStatus::Pending, $booking->getStatus(), 'Rien n’est payé sur TrouveMoi : le professionnel confirme.');
         self::assertSame(3, $booking->getParticipants());
         self::assertSame($before + 3, $em->getRepository(Availability::class)->find($slot->getId())->getBooked());
+        $payment = $em->getRepository(Payment::class)->findOneBy(['booking' => $booking]);
+        self::assertNotNull($payment);
+        self::assertSame(PaymentStatus::Pending, $payment->getStatus());
+
+        // Le professionnel confirme, puis déclare le règlement reçu.
+        $provider = $service->getProvider()?->getUser();
+        self::assertNotNull($provider);
+        $client->loginUser($provider);
+        $crawler = $client->request('GET', '/pro/reservations?q='.$booking->getReference());
+        $client->submit($crawler->filter(sprintf('form[action$="/%s/confirm"]', $booking->getId()))->form());
+        $crawler = $client->request('GET', '/pro/reservations?q='.$booking->getReference());
+        $client->submit($crawler->filter(sprintf('form[action$="/%s/reglement"]', $booking->getId()))->form(['method' => 'transfer']));
+        self::assertResponseRedirects();
+
+        $em->clear();
+        $booking = $em->getRepository(Booking::class)->find($booking->getId());
+        self::assertSame(BookingStatus::Confirmed, $booking->getStatus());
+        $payment = $em->getRepository(Payment::class)->findOneBy(['booking' => $booking]);
+        self::assertSame(PaymentStatus::Paid, $payment->getStatus());
+        self::assertSame('transfer', $payment->getMethod());
+
+        $client->loginUser($user);
+        $client->request('GET', '/reservations/'.$booking->getId().'/confirmation');
+        self::assertSelectorTextContains('h1', 'confirmée');
+        self::assertSelectorTextContains('.bk-direct', 'Règlement reçu par l’organisateur');
     }
 
     public function testAVisitorIsSentToLoginWithHisSelectionKept(): void

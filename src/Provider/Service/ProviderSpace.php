@@ -23,19 +23,13 @@ use App\Stats\Repository\PageViewRepository;
  * Lecture des données de l'espace professionnel (maquettes
  * docs/maquettes/profil_professionnel, 02/10) : réservations, paiements,
  * avis, consultations et les calculs partagés par les écrans (séries
- * journalières, tendances, répartitions, montants nets).
+ * journalières, tendances, répartitions).
  *
  * Les requêtes sont mémorisées par professionnel le temps de la requête
  * HTTP : un même écran les sollicite plusieurs fois.
  */
 final class ProviderSpace
 {
-    /** Commission prélevée par TrouveMoi sur chaque réservation payée. */
-    public const COMMISSION_RATE = 0.12;
-
-    /** Frais de paiement (prestataire de paiement), en part du montant. */
-    public const PAYMENT_FEES_RATE = 0.018;
-
     /** Statuts qui comptent comme une réservation « réelle » (hors annulations). */
     public const ACTIVE_STATUSES = [BookingStatus::Pending, BookingStatus::Confirmed, BookingStatus::InProgress, BookingStatus::Completed];
 
@@ -117,7 +111,9 @@ final class ProviderSpace
     }
 
     /**
-     * Paiements encaissés (payés) dans [from, to].
+     * Règlements reçus par le professionnel (déclarés « réglés ») dans
+     * [from, to]. Le client paie le professionnel directement : TrouveMoi ne
+     * prélève ni commission ni frais (17/10).
      *
      * @param list<Payment> $payments
      *
@@ -125,22 +121,19 @@ final class ProviderSpace
      */
     public function paidBetween(array $payments, \DateTimeImmutable $from, \DateTimeImmutable $to): array
     {
-        return array_values(array_filter($payments, static fn (Payment $p): bool => PaymentStatus::Paid === $p->getStatus() && null !== $p->getCreatedAt() && $p->getCreatedAt() >= $from && $p->getCreatedAt() <= $to));
+        return array_values(array_filter($payments, static fn (Payment $p): bool => PaymentStatus::Paid === $p->getStatus() && null !== ($at = self::paidOn($p)) && $at >= $from && $at <= $to));
+    }
+
+    /** Date du règlement : déclarée par le professionnel, à défaut création de la ligne. */
+    public static function paidOn(Payment $payment): ?\DateTimeImmutable
+    {
+        return $payment->getPaidAt() ?? $payment->getCreatedAt();
     }
 
     /** @param list<Payment> $payments */
     public function sum(array $payments): float
     {
         return array_sum(array_map(static fn (Payment $p): float => (float) $p->getAmount(), $payments));
-    }
-
-    /** @return array{gross: float, commission: float, fees: float, net: float} */
-    public function split(float $gross): array
-    {
-        $commission = round($gross * self::COMMISSION_RATE, 2);
-        $fees = round($gross * self::PAYMENT_FEES_RATE, 2);
-
-        return ['gross' => $gross, 'commission' => $commission, 'fees' => $fees, 'net' => round($gross - $commission - $fees, 2)];
     }
 
     /**

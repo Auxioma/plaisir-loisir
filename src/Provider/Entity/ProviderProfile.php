@@ -121,19 +121,35 @@ class ProviderProfile
     #[ORM\Column(length: 120, nullable: true)]
     private ?string $availabilityLabel = null;
 
-    /** Moyen de versement par défaut : bank | paypal | card. */
-    #[ORM\Column(length: 20, options: ['default' => 'bank'])]
-    private string $payoutMethod = 'bank';
+    /*
+     * Moyens de paiement que le professionnel propose à SES clients (17/10,
+     * demande du client) : chaque prestation est réglée directement au
+     * professionnel, jamais à TrouveMoi. Ces champs ne servent qu'à indiquer
+     * au client comment payer ; la plateforme n'encaisse rien.
+     */
 
-    /** IBAN de versement (affiché masqué). */
-    #[ORM\Column(length: 34, nullable: true)]
-    private ?string $payoutIban = null;
+    /** Lien de paiement en ligne du professionnel (son Stripe, SumUp, PayPal.me…). */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $paymentLinkUrl = null;
 
+    /** Adresse PayPal du professionnel. */
     #[ORM\Column(length: 180, nullable: true)]
-    private ?string $payoutPaypalEmail = null;
+    private ?string $paymentPaypal = null;
 
-    #[ORM\Column(length: 4, nullable: true)]
-    private ?string $payoutCardLast4 = null;
+    /** IBAN du professionnel, communiqué au client pour un virement. */
+    #[ORM\Column(length: 34, nullable: true)]
+    private ?string $paymentIban = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $paymentIbanHolder = null;
+
+    /** Moyens acceptés sur place (ex. « carte bancaire, espèces, chèques vacances »). */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $paymentOnSite = null;
+
+    /** Précisions libres (acompte, délai de règlement…). */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $paymentInstructions = null;
 
     // Les informations fiscales et légales (forme juridique, SIRET, TVA, siège,
     // représentant légal, assurance) vivent dans App\Legal\Entity\CompanyIdentity,
@@ -212,50 +228,74 @@ class ProviderProfile
         return $this;
     }
 
-    public function getPayoutMethod(): string
+    public function getPaymentLinkUrl(): ?string
     {
-        return $this->payoutMethod;
+        return $this->paymentLinkUrl;
     }
 
-    public function setPayoutMethod(string $payoutMethod): static
+    public function setPaymentLinkUrl(?string $paymentLinkUrl): static
     {
-        $this->payoutMethod = $payoutMethod;
+        $this->paymentLinkUrl = $paymentLinkUrl;
 
         return $this;
     }
 
-    public function getPayoutIban(): ?string
+    public function getPaymentPaypal(): ?string
     {
-        return $this->payoutIban;
+        return $this->paymentPaypal;
     }
 
-    public function setPayoutIban(?string $payoutIban): static
+    public function setPaymentPaypal(?string $paymentPaypal): static
     {
-        $this->payoutIban = $payoutIban;
+        $this->paymentPaypal = $paymentPaypal;
 
         return $this;
     }
 
-    public function getPayoutPaypalEmail(): ?string
+    public function getPaymentIban(): ?string
     {
-        return $this->payoutPaypalEmail;
+        return $this->paymentIban;
     }
 
-    public function setPayoutPaypalEmail(?string $payoutPaypalEmail): static
+    public function setPaymentIban(?string $paymentIban): static
     {
-        $this->payoutPaypalEmail = $payoutPaypalEmail;
+        $this->paymentIban = $paymentIban;
 
         return $this;
     }
 
-    public function getPayoutCardLast4(): ?string
+    public function getPaymentIbanHolder(): ?string
     {
-        return $this->payoutCardLast4;
+        return $this->paymentIbanHolder;
     }
 
-    public function setPayoutCardLast4(?string $payoutCardLast4): static
+    public function setPaymentIbanHolder(?string $paymentIbanHolder): static
     {
-        $this->payoutCardLast4 = $payoutCardLast4;
+        $this->paymentIbanHolder = $paymentIbanHolder;
+
+        return $this;
+    }
+
+    public function getPaymentOnSite(): ?string
+    {
+        return $this->paymentOnSite;
+    }
+
+    public function setPaymentOnSite(?string $paymentOnSite): static
+    {
+        $this->paymentOnSite = $paymentOnSite;
+
+        return $this;
+    }
+
+    public function getPaymentInstructions(): ?string
+    {
+        return $this->paymentInstructions;
+    }
+
+    public function setPaymentInstructions(?string $paymentInstructions): static
+    {
+        $this->paymentInstructions = $paymentInstructions;
 
         return $this;
     }

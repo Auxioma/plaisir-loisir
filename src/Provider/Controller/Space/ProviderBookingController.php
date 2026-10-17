@@ -11,6 +11,7 @@ use App\Booking\Repository\BookingRepository;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\Service\NotificationService;
 use App\Payment\Entity\Payment;
+use App\Payment\Service\PaymentService;
 use App\Provider\Service\ProviderSpace;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -24,7 +25,8 @@ use Symfony\Component\Workflow\WorkflowInterface;
 /**
  * « Réservations » — maquette profil_reservations_professionnel.jpeg
  * (02/10) : liste filtrable, actions du workflow `booking` (confirmer,
- * démarrer, terminer, annuler) avec notification du client, export CSV et
+ * démarrer, terminer, annuler) avec notification du client, règlement
+ * reçu (le client paie le professionnel directement, 17/10), export CSV et
  * rapport imprimable.
  */
 #[IsGranted('ROLE_PROVIDER')]
@@ -52,6 +54,7 @@ final class ProviderBookingController extends AbstractProviderSpaceController
         private readonly NotificationService $notifications,
         private readonly EntityManagerInterface $entityManager,
         private readonly AvailabilityRepository $availabilities,
+        private readonly PaymentService $paymentService,
         #[Target('booking')]
         private readonly WorkflowInterface $bookingWorkflow,
     ) {
@@ -115,6 +118,10 @@ final class ProviderBookingController extends AbstractProviderSpaceController
         $payments = $this->space->payments($provider);
         $paid = $this->space->paidBetween($payments, $from, $to);
         $revenue = $this->space->sum($paid);
+        $paymentByBooking = [];
+        foreach ($payments as $p) {
+            $paymentByBooking[(string) $p->getBooking()?->getId()] = $p;
+        }
 
         $top = [];
         foreach ($current as $b) {
@@ -132,7 +139,7 @@ final class ProviderBookingController extends AbstractProviderSpaceController
         }
 
         return $this->renderSpace('provider/space/bookings.html.twig', 'Réservations', [
-            'rows' => array_map(fn (Booking $b): array => ['b' => $b, 'actions' => $this->transitionsFor($b)], \array_slice($rows, ($page - 1) * self::PER_PAGE, self::PER_PAGE)),
+            'rows' => array_map(fn (Booking $b): array => ['b' => $b, 'actions' => $this->transitionsFor($b), 'payment' => $paymentByBooking[(string) $b->getId()] ?? null], \array_slice($rows, ($page - 1) * self::PER_PAGE, self::PER_PAGE)),
             'total' => $total,
             'page' => $page,
             'pages' => $pages,
@@ -144,11 +151,12 @@ final class ProviderBookingController extends AbstractProviderSpaceController
             'sort' => $sort,
             'services' => $services,
             'statuses' => BookingStatus::cases(),
+            'payment_methods' => Payment::METHODS,
             'days' => $days,
             'summary' => $summary,
             'revenue' => $revenue,
             'revenue_trend' => $this->space->trend($revenue, $this->space->sum($this->space->paidBetween($payments, $prevFrom, $prevTo))),
-            'revenue_series' => $this->space->daily(array_map(static fn (Payment $p): array => [$p->getCreatedAt(), (float) $p->getAmount()], $paid), $from, $days),
+            'revenue_series' => $this->space->daily(array_map(static fn (Payment $p): array => [ProviderSpace::paidOn($p), (float) $p->getAmount()], $paid), $from, $days),
             'from' => $from,
             'to' => $to,
             'top' => \array_slice($top, 0, 3),
@@ -182,6 +190,29 @@ final class ProviderBookingController extends AbstractProviderSpaceController
         }
 
         $this->addFlash('success', sprintf('Réservation #%s : %s.', $booking->getReference(), mb_strtolower($booking->getStatus()->label())));
+
+        return $this->back($request, 'app_pro_bookings');
+    }
+
+    /**
+     * Le client a réglé le professionnel (en ligne sur le compte du pro, par
+     * virement, sur place…) : le professionnel le déclare ici, avec le moyen
+     * utilisé. TrouveMoi n'a rien encaissé.
+     */
+    #[Route(path: ['fr' => '/pro/reservations/{id}/reglement', 'en' => '/en/pro/bookings/{id}/payment'], name: 'app_pro_bookings_paid', methods: ['POST'])]
+    public function markPaid(string $id, Request $request): Response
+    {
+        if (!$this->csrfOk($request)) {
+            return $this->redirectToRoute('app_pro_bookings');
+        }
+
+        $booking = $this->own($id);
+        try {
+            $this->paymentService->markPaid($booking, (string) $request->request->get('method', ''));
+            $this->addFlash('success', sprintf('Réservation #%s : règlement enregistré.', $booking->getReference()));
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
 
         return $this->back($request, 'app_pro_bookings');
     }
@@ -226,7 +257,7 @@ final class ProviderBookingController extends AbstractProviderSpaceController
             'days' => $days,
             'bookings' => $bookings,
             'by_status' => $byStatus,
-            'money' => $this->space->split($this->space->sum($paid)),
+            'received' => $this->space->sum($paid),
         ]);
     }
 

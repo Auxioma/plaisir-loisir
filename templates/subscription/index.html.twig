@@ -14,6 +14,9 @@
         subtitle: 'Votre offre et sa facturation.'|trans,
     } %}
 
+    {# 17/10 (demande du client) : l'abonnement est le seul paiement encaissé par TrouveMoi. #}
+    <p class="small text-muted mb-4">{{ 'Votre abonnement est réglé à TrouveMoi par paiement sécurisé (Stripe). Les prestations que vous vendez, elles, vous sont payées directement par vos clients : TrouveMoi n’en encaisse aucune et ne prélève aucune commission.'|trans }}</p>
+
     {% if subscription %}
         <div class="card shadow-sm mb-5">
             <div class="card-body p-4">
@@ -49,7 +52,7 @@
             </div>
         </div>
     {% else %}
-        <p class="text-muted mb-4">{{ 'Vous n\'avez pas encore d\'abonnement. Choisissez une offre pour publier vos activités.'|trans }}</p>
+        <p class="text-muted mb-4">{{ 'Vous n\'avez pas encore d\'abonnement. Choisissez une offre pour gagner en visibilité.'|trans }}</p>
 
         <div class="row g-4 mb-5">
             {% for plan in plans %}
@@ -82,6 +85,8 @@
                         </div>
                     </div>
                 </div>
+            {% else %}
+                <p class="col-12 text-muted">{{ 'Aucune offre n’est proposée pour le moment. Revenez bientôt ou contactez-nous.'|trans }}</p>
             {% endfor %}
         </div>
     {% endif %}
