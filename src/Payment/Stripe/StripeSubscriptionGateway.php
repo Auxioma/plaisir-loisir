@@ -9,19 +9,15 @@ use App\Provider\Entity\ProviderProfile;
 use Stripe\StripeClient;
 
 /**
- * Implémentation réelle de {@see SubscriptionGateway} au moyen du SDK Stripe.
+ * Implémentation réelle de {@see SubscriptionGateway} au moyen du SDK Stripe,
+ * utilisée dès qu'une clé `sk_…` est configurée (ConfiguredSubscriptionGateway).
  *
  * Comme {@see StripeCheckoutGateway}, c'est le seul endroit du code qui
- * « parle » directement à Stripe pour les abonnements : tout le reste dépend
- * de l'interface, jamais de cette classe.
- *
- * NON EXERCÉE EN CONDITIONS RÉELLES À CE STADE DU PROJET : `config/services.yaml`
- * résout `SubscriptionGateway` vers {@see MockSubscriptionGateway}, faute de
- * clés Stripe de test dans cet environnement (STRIPE_SECRET_KEY vide, voir
- * .env). Le code suit fidèlement l'API Stripe Checkout (mode « subscription »)
- * et Billing documentée, dans le même style que le paiement à la prestation
- * déjà écrit et testé ; il reste à vérifier avec un vrai compte Stripe de
- * test avant toute mise en production.
+ * « parle » directement à Stripe pour les abonnements. Le paiement arrive sur
+ * le compte Stripe de TrouveMoi. Aucun `payment_method_types` n'est imposé :
+ * Stripe propose les moyens activés dans son tableau de bord (carte bancaire,
+ * PayPal…). L'activation est confirmée par le webhook
+ * (`checkout.session.completed`, puis `customer.subscription.*`).
  */
 final class StripeSubscriptionGateway implements SubscriptionGateway
 {
@@ -55,9 +51,12 @@ final class StripeSubscriptionGateway implements SubscriptionGateway
             // Retrouve le prestataire depuis le webhook, qui ne reçoit que des
             // identifiants Stripe.
             'client_reference_id' => (string) $provider->getId(),
+            // Repris par le webhook pour rattacher l'abonnement Stripe à la bonne ligne.
+            'metadata' => ['provider_id' => (string) $provider->getId(), 'plan' => $plan->getSlug()],
+            'subscription_data' => ['metadata' => ['provider_id' => (string) $provider->getId(), 'plan' => $plan->getSlug()]],
             'line_items' => [[
                 'quantity' => 1,
-                'price' => $plan->getStripePriceId(),
+                ...$this->price($plan),
             ]],
         ]);
 
@@ -66,6 +65,29 @@ final class StripeSubscriptionGateway implements SubscriptionGateway
             redirectUrl: (string) $session->url,
             alreadyActive: false,
         );
+    }
+
+    /**
+     * Prix Stripe de l'offre : celui créé dans le tableau de bord Stripe s'il
+     * est renseigné dans le back-office, sinon un prix récurrent construit à
+     * la volée depuis le tarif de l'offre.
+     *
+     * @return array<string, mixed>
+     */
+    private function price(SubscriptionPlan $plan): array
+    {
+        if (null !== $plan->getStripePriceId() && '' !== $plan->getStripePriceId()) {
+            return ['price' => $plan->getStripePriceId()];
+        }
+
+        [$whole, $fraction] = array_pad(explode('.', $plan->getPriceAmount(), 2), 2, '0');
+
+        return ['price_data' => [
+            'currency' => strtolower($plan->getCurrency()),
+            'unit_amount' => (int) $whole * 100 + (int) substr($fraction.'00', 0, 2),
+            'recurring' => ['interval' => 'yearly' === $plan->getBillingPeriod()->value ? 'year' : 'month'],
+            'product_data' => ['name' => 'TrouveMoi — '.$plan->getName()],
+        ]];
     }
 
     public function cancelSubscription(string $stripeSubscriptionId, bool $atPeriodEnd): void

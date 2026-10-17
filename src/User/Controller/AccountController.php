@@ -170,7 +170,7 @@ final class AccountController extends AbstractController
             'payments' => \array_slice($payments, 0, 5),
             'payments_count' => \count($payments),
             'month_start' => $monthStart,
-            'month_total' => $sum(array_filter($paid, static fn (Payment $p): bool => $p->getCreatedAt() >= $monthStart)),
+            'month_total' => $sum(array_filter($paid, static fn (Payment $p): bool => ($p->getPaidAt() ?? $p->getCreatedAt()) >= $monthStart)),
             'total_paid' => $sum($paid),
             'last_paid' => array_values($paid)[0] ?? null,
         ]);

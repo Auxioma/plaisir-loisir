@@ -4,8 +4,10 @@
     Données : AccountController::payments().
 
     Écarts assumés : le compte particulier est gratuit (aucun abonnement à
-    gérer ni à annuler) et aucune carte n'est enregistrée par la plateforme
-    (Stripe la demande à chaque paiement) ; pas encore de factures PDF.
+    gérer ni à annuler) et TrouveMoi n'encaisse aucune activité (17/10) : le
+    client règle chaque organisateur directement, par les moyens que celui-ci
+    propose. L'historique montre donc les règlements attendus et reçus par
+    les organisateurs ; pas de factures émises par TrouveMoi.
 #}
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -67,39 +69,39 @@
             <h2 class="pf-card__title">{{ 'Mes moyens de paiement'|trans }}</h2>
         </div>
         <div class="pf-paymethod">
-            <span class="pf-paymethod__logos">{{ icon.paycard_visa() }}{{ icon.paycard_mastercard() }}</span>
+            <span class="pf-paymethod__logos">{{ icon.handshake(28) }}</span>
             <div>
-                <strong>{{ 'Aucune carte enregistrée'|trans }}</strong>
-                <small>{{ 'Vos coordonnées bancaires sont saisies de façon sécurisée auprès de Stripe à chaque réservation : TrouveMoi ne les conserve jamais.'|trans }}</small>
+                <strong>{{ 'Vous réglez directement les organisateurs'|trans }}</strong>
+                <small>{{ 'TrouveMoi n’encaisse aucun paiement pour les activités : chaque organisateur vous indique ses moyens de paiement (lien de paiement, PayPal, virement, sur place) dans votre réservation. Aucune carte n’est enregistrée sur TrouveMoi.'|trans }}</small>
             </div>
         </div>
     </section>
 
     <section class="pf-card" id="historique">
         <div class="pf-card__head">
-            <h2 class="pf-card__title">{{ 'Dernières transactions'|trans }}</h2>
+            <h2 class="pf-card__title">{{ 'Règlements de mes réservations'|trans }}</h2>
             {% if payments_count > 5 %}<a class="pf-link" href="{{ path('app_account_history') }}">{{ 'Voir tout l’historique'|trans }}</a>{% endif %}
         </div>
         {% if payments is empty %}
             <div class="pf-empty">
-                <strong>{{ 'Aucune transaction pour le moment.'|trans }}</strong>
-                {{ 'Vos paiements de réservations apparaîtront ici.'|trans }}
+                <strong>{{ 'Aucune réservation pour le moment.'|trans }}</strong>
+                {{ 'Les règlements de vos réservations, effectués auprès des organisateurs, apparaîtront ici.'|trans }}
             </div>
         {% else %}
             <div class="pf-transactions">
                 {% for p in payments %}
                     {% set tone = {paid: 'green', pending: 'orange', failed: 'red', refunded: 'grey'}[p.status.value] %}
-                    {% set label = {paid: 'Payé', pending: 'En attente', failed: 'Échoué', refunded: 'Remboursé'}[p.status.value] %}
+                    {% set label = {paid: 'Réglé', pending: 'À régler à l’organisateur', failed: 'Échoué', refunded: 'Remboursé'}[p.status.value] %}
                     <div class="pf-transaction">
                         <div class="pf-transaction__label">
                             <strong>{{ p.booking.service ? p.booking.service.title : 'Réservation'|trans }}</strong>
-                            <small>{{ 'Référence'|trans }} {{ p.reference ?? ('' ~ p.id)|slice(-8) }}</small>
+                            <small>{{ 'Réservation'|trans }} #{{ p.booking.reference }}</small>
                         </div>
                         <span>{{ p.createdAt|pf_date('d MMM y') }}</span>
                         <span>{{ p.amount|pf_money(p.currency) }}</span>
                         {{ ui.pill(label|trans, tone) }}
                         {% if p.booking.service %}
-                            <a class="pf-iconbtn" href="{{ path('app_activity_show', {slug: p.booking.service.slug}) }}" aria-label="{{ 'Voir l’activité'|trans }}">{{ icon.eye(18) }}</a>
+                            <a class="pf-iconbtn" href="{{ path('app_booking_confirmation', {id: p.booking.id}) }}" aria-label="{{ 'Voir la réservation et comment régler'|trans }}">{{ icon.eye(18) }}</a>
                         {% else %}<span></span>{% endif %}
                     </div>
                 {% endfor %}
@@ -113,18 +115,18 @@
         <h2 class="pf-card__title">{{ 'Résumé de facturation'|trans }}</h2>
         <dl class="pf-details">
             <div class="pf-kv"><dt>{{ 'Période actuelle'|trans }}</dt><dd>{{ month_start|pf_date('MMMM y')|capitalize }}</dd></div>
-            <div class="pf-kv"><dt>{{ 'Payé ce mois-ci'|trans }}</dt><dd>{{ month_total|pf_money }}</dd></div>
-            <div class="pf-kv pf-kv--total"><dt>{{ 'Total payé'|trans }}</dt><dd>{{ total_paid|pf_money }}</dd></div>
+            <div class="pf-kv"><dt>{{ 'Réglé ce mois-ci'|trans }}</dt><dd>{{ month_total|pf_money }}</dd></div>
+            <div class="pf-kv pf-kv--total"><dt>{{ 'Total réglé aux organisateurs'|trans }}</dt><dd>{{ total_paid|pf_money }}</dd></div>
         </dl>
         <div class="pf-notice">
             {{ icon.info(18) }}
             <p>
                 {% if last_paid %}
-                    <strong>{{ 'Dernier paiement le %date%'|trans({'%date%': last_paid.createdAt|pf_date('d MMMM y')}) }}</strong>
+                    <strong>{{ 'Dernier règlement le %date%'|trans({'%date%': (last_paid.paidAt ?? last_paid.createdAt)|pf_date('d MMMM y')}) }}</strong>
                 {% else %}
-                    <strong>{{ 'Aucun prélèvement programmé'|trans }}</strong>
+                    <strong>{{ 'Aucun prélèvement par TrouveMoi'|trans }}</strong>
                 {% endif %}
-                {{ 'Vous ne payez qu’au moment de réserver, sans engagement.'|trans }}
+                {{ 'Vous réglez chaque activité directement à son organisateur, sans engagement.'|trans }}
             </p>
         </div>
     </section>

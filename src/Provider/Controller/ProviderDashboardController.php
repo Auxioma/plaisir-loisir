@@ -65,7 +65,7 @@ final class ProviderDashboardController extends AbstractProviderSpaceController
         $services = $this->space->services($provider);
 
         $bookingPoints = static fn (array $list): array => array_map(static fn (Booking $b): array => [$b->getCreatedAt(), 1], $list);
-        $paymentPoints = array_map(static fn (Payment $p): array => [$p->getCreatedAt(), (float) $p->getAmount()], $this->space->paidBetween($payments, $from, $to));
+        $paymentPoints = array_map(static fn (Payment $p): array => [ProviderSpace::paidOn($p), (float) $p->getAmount()], $this->space->paidBetween($payments, $from, $to));
 
         // Top activités : réservations de la période, tendance vs période précédente.
         $top = [];

@@ -24,15 +24,16 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Paiements des réservations (« Revenus & Paiements » côté pro, 02/10).
- * Lecture seule hors statut : les montants viennent du prestataire de
- * paiement.
+ * Règlements des réservations (17/10) : le client paie
+ * le professionnel directement, TrouveMoi n'encaisse rien. Une ligne naît à
+ * l'envoi de la demande (« à régler ») et passe « réglée » quand le
+ * professionnel déclare l'avoir reçue, depuis son espace.
  *
  * @extends AbstractCrudController<Payment>
  */
 class PaymentCrudController extends AbstractCrudController
 {
-    private const STATUSES = ['En attente' => PaymentStatus::Pending, 'Payé' => PaymentStatus::Paid, 'Échoué' => PaymentStatus::Failed, 'Remboursé' => PaymentStatus::Refunded];
+    private const STATUSES = ['À régler au pro' => PaymentStatus::Pending, 'Réglé au pro' => PaymentStatus::Paid, 'Échoué' => PaymentStatus::Failed, 'Remboursé' => PaymentStatus::Refunded];
 
     public static function getEntityFqcn(): string
     {
@@ -42,9 +43,9 @@ class PaymentCrudController extends AbstractCrudController
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
-            ->setEntityLabelInSingular('paiement')
-            ->setEntityLabelInPlural('paiements')
-            ->setPageTitle(Crud::PAGE_INDEX, 'Paiements')
+            ->setEntityLabelInSingular('règlement')
+            ->setEntityLabelInPlural('règlements')
+            ->setPageTitle(Crud::PAGE_INDEX, 'Règlements des réservations (encaissés par les pros, jamais par TrouveMoi)')
             ->setDefaultSort(['createdAt' => 'DESC'])
             ->setSearchFields(['reference']);
     }
@@ -65,21 +66,22 @@ class PaymentCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        yield DateTimeField::new('createdAt', 'Date')->hideOnForm();
+        yield DateTimeField::new('createdAt', 'Demandée le')->hideOnForm();
+        yield DateTimeField::new('paidAt', 'Réglée le')->hideOnForm();
         yield AssociationField::new('booking', 'Réservation')->hideOnForm()
             ->formatValue(static fn (mixed $v, Payment $p): string => '#'.$p->getBooking()?->getReference().' — '.$p->getBooking()?->getService()?->getTitle());
         yield MoneyField::new('amount', 'Montant')->setCurrency('EUR')->setStoredAsCents(false)->hideOnForm();
-        yield ChoiceField::new('method', 'Type')->setChoices(['Carte' => 'card', 'PayPal' => 'paypal', 'Virement' => 'transfer']);
+        yield ChoiceField::new('method', 'Moyen')->setChoices(array_flip(Payment::METHODS));
         yield ChoiceField::new('status', 'Statut')->setChoices(self::STATUSES)
             ->formatValue(static fn (mixed $v, Payment $p): string => (string) array_search($p->getStatus(), self::STATUSES, true))
             ->renderAsBadges(['pending' => 'warning', 'paid' => 'success', 'failed' => 'danger', 'refunded' => 'secondary']);
-        yield TextField::new('reference', 'Référence prestataire')->hideOnForm()->hideOnIndex();
+        yield TextField::new('reference', 'Référence')->hideOnForm()->hideOnIndex();
     }
 
-    /** Pas de création manuelle : un paiement vient du prestataire de paiement. */
+    /** Pas de création manuelle : un règlement est déclaré par le professionnel. */
     public function new(AdminContext $context): KeyValueStore|Response
     {
-        $this->addFlash('danger', 'Un paiement est enregistré par le prestataire de paiement, pas à la main.');
+        $this->addFlash('danger', 'Un règlement est déclaré par le professionnel depuis son espace, pas à la main.');
 
         return new RedirectResponse($this->container->get(AdminUrlGenerator::class)->setController(self::class)->setAction(Action::INDEX)->generateUrl());
     }

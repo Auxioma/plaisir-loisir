@@ -1087,6 +1087,14 @@ a.act-popup__title:hover { color: var(--pl-action); }
 .bk-pay h2 { margin: 0 0 10px; font-size: 18px; font-weight: 700; color: var(--pl-text); }
 .bk-pay form { margin: 14px 0 0; }
 .bk-note { margin: 10px 0 0; color: var(--pl-text-secondary); font-size: 13px; }
+.bk-paylist { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; text-align: left; }
+.bk-paylist li { display: flex; align-items: flex-start; gap: 10px; }
+.bk-paylist__ico { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: var(--pl-action-light); color: var(--pl-action); }
+.bk-paylist strong { display: block; color: var(--pl-text); font-size: 14px; }
+.bk-paylist small { display: block; color: var(--pl-text-secondary); font-size: 13px; overflow-wrap: anywhere; }
+.bk-paylist .bk-link { margin-top: 2px; overflow-wrap: anywhere; }
+.bk-direct { width: 100%; text-align: left; }
+.bk-direct h2 { margin: 0 0 4px; color: var(--pl-text); font-size: 18px; font-weight: 700; }
 .bk-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; color: var(--pl-action); font-size: 13.5px; font-weight: 600; text-decoration: none; }
 .bk-link--btn { padding: 0; background: none; border: 0; cursor: pointer; color: var(--pl-text-secondary); font-weight: 500; text-decoration: underline; }
 .bk-done { display: flex; flex-direction: column; gap: 14px; text-align: center; align-items: center; }

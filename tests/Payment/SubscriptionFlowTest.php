@@ -20,9 +20,9 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
  * Le parcours abonnement, de bout en bout (§17 du CDC) : souscrire, voir son
- * abonnement, le résilier — avec le SubscriptionGateway MOCK (celui
- * réellement en service, voir config/services.yaml, faute de clés Stripe de
- * test dans cet environnement).
+ * abonnement, le résilier — avec la simulation que
+ * ConfiguredSubscriptionGateway retient quand aucune clé Stripe `sk_…`
+ * n'est configurée (cas des tests).
  */
 final class SubscriptionFlowTest extends WebTestCase
 {

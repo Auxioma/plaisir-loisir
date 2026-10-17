@@ -102,7 +102,7 @@ final class ProviderStatsController extends AbstractProviderSpaceController
         $sViews = $this->space->daily($viewPoints($profileViews), $from, $days);
         $sClicks = $this->space->daily($viewPoints($activityViews), $from, $days);
         $sBookings = $this->space->daily(array_map(static fn (Booking $b): array => [$b->getCreatedAt(), 1], $bookings), $from, $days);
-        $sRevenue = $this->space->daily(array_map(static fn (Payment $p): array => [$p->getCreatedAt(), (float) $p->getAmount()], $paid), $from, $days);
+        $sRevenue = $this->space->daily(array_map(static fn (Payment $p): array => [ProviderSpace::paidOn($p), (float) $p->getAmount()], $paid), $from, $days);
         $sConv = array_map(static fn (float $c, float $b): float => $c > 0 ? round($b / $c * 100, 1) : 0.0, $sClicks, $sBookings);
 
         // Sources de trafic (toutes consultations confondues).

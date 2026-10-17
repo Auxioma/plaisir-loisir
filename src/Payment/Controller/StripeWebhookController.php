@@ -6,7 +6,6 @@ namespace App\Payment\Controller;
 
 use App\Catalog\Service\GiftCardService;
 use App\Payment\Enum\SubscriptionStatus;
-use App\Payment\Service\PaymentService;
 use App\Payment\Service\SubscriptionService;
 use Psr\Log\LoggerInterface;
 use Stripe\Exception\SignatureVerificationException;
@@ -19,14 +18,16 @@ use Symfony\Component\Routing\Attribute\Route;
 /**
  * Point d'entrée des notifications serveur-à-serveur de Stripe (webhook).
  *
- * C'est ICI, et seulement ici, qu'un paiement est confirmé : on vérifie d'abord
- * que l'appel est bien signé par Stripe (sinon n'importe qui pourrait se faire
- * passer pour Stripe et valider des réservations non payées).
+ * Stripe n'encaisse pour TrouveMoi que les abonnements des professionnels et
+ * les bons cadeaux : les prestations sont réglées directement aux
+ * professionnels (17/10) et n'arrivent jamais ici. C'est ICI, et seulement
+ * ici, qu'un paiement Stripe est confirmé : on vérifie d'abord que l'appel est
+ * bien signé par Stripe (sinon n'importe qui pourrait se faire passer pour
+ * Stripe et activer un abonnement non payé).
  */
 final class StripeWebhookController extends AbstractController
 {
     public function __construct(
-        private readonly PaymentService $paymentService,
         private readonly GiftCardService $giftCards,
         private readonly SubscriptionService $subscriptionService,
         private readonly LoggerInterface $logger,
@@ -54,34 +55,32 @@ final class StripeWebhookController extends AbstractController
 
         if ('checkout.session.completed' === $event->type) {
             $session = $event->data->object;
-            $reference = (string) ($session->id ?? '');
 
-            try {
-                // Bon cadeau (04/10) : sa session ne correspond à aucun Payment.
-                if (!$this->giftCards->confirmBySessionReference($reference)) {
-                    $this->paymentService->confirmBySessionReference($reference);
-                }
-            } catch (\InvalidArgumentException $e) {
-                // Paiement introuvable ou déjà traité : on journalise et on répond
-                // tout de même 200 pour que Stripe cesse de réémettre l'événement.
-                $this->logger->warning('Webhook Stripe ignoré : {message}', ['message' => $e->getMessage()]);
+            if ('subscription' === ($session->mode ?? null)) {
+                // Abonnement professionnel payé : on le rattache et l'active.
+                $this->subscriptionService->activateFromCheckout(
+                    providerId: (string) ($session->client_reference_id ?? ''),
+                    stripeCustomerId: (string) ($session->customer ?? ''),
+                    stripeSubscriptionId: (string) ($session->subscription ?? ''),
+                );
+            } elseif (!$this->giftCards->confirmBySessionReference((string) ($session->id ?? ''))) {
+                // Session inconnue : on journalise et on répond tout de même 200
+                // pour que Stripe cesse de réémettre l'événement.
+                $this->logger->warning('Webhook Stripe ignoré : session {id} inconnue.', ['id' => (string) ($session->id ?? '')]);
             }
         }
 
-        // Abonnements professionnels (§17.2 du CDC) : ces trois événements
-        // suffisent à tenir Subscription à jour — création (déjà couverte
-        // par checkout.session.completed côté paiement à la prestation, mais
-        // une souscription réelle en mode « subscription » déclenche aussi
-        // ceux-ci), changement d'état (renouvellement, échec de paiement →
-        // past_due) et résiliation.
+        // Abonnements professionnels (§17.2 du CDC) : changement d'état
+        // (renouvellement, échec de paiement → past_due) et résiliation.
         if (\in_array($event->type, ['customer.subscription.updated', 'customer.subscription.deleted'], true)) {
             $subscription = $event->data->object;
 
             $this->subscriptionService->syncFromStripeSubscription(
                 stripeSubscriptionId: (string) ($subscription->id ?? ''),
                 status: $this->mapStripeStatus((string) ($subscription->status ?? ''), 'customer.subscription.deleted' === $event->type),
-                currentPeriodStart: $this->toDateTime($subscription->current_period_start ?? null),
-                currentPeriodEnd: $this->toDateTime($subscription->current_period_end ?? null),
+                // Versions récentes de l'API Stripe : la période vit sur l'article.
+                currentPeriodStart: $this->toDateTime($subscription->current_period_start ?? $subscription->items->data[0]->current_period_start ?? null),
+                currentPeriodEnd: $this->toDateTime($subscription->current_period_end ?? $subscription->items->data[0]->current_period_end ?? null),
             );
         }
 

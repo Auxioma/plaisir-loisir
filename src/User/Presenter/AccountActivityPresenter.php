@@ -305,7 +305,7 @@ final class AccountActivityPresenter
         }
 
         [$status, $label, $note] = match ($booking->getStatus()) {
-            BookingStatus::Pending => ['pending', 'En attente', 'Paiement en cours'],
+            BookingStatus::Pending => ['pending', 'En attente', 'En attente de confirmation par l’organisateur'],
             BookingStatus::Confirmed, BookingStatus::InProgress => ['upcoming', 'À venir', 'Confirmée'],
             BookingStatus::Completed => ['past', 'Passée', 'Terminée'],
             BookingStatus::Cancelled => ['cancelled', 'Annulée', 'Réservation annulée'],

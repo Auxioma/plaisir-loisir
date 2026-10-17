@@ -6,6 +6,7 @@ namespace App\Provider\Controller\Space;
 
 use App\Payment\Entity\Payment;
 use App\Payment\Enum\PaymentStatus;
+use App\Provider\Service\ProviderPaymentMethods;
 use App\Provider\Service\ProviderSpace;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,9 +17,13 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 /**
  * « Revenus & Paiements » — maquette profil_Revenus&Paiements_professionnel.jpeg
  * (02/10) : chiffres du mois choisi comparés à un autre mois, courbe
- * journalière ou hebdomadaire, transactions, résumé financier (commission
- * TrouveMoi, frais de paiement, net), prochain versement et moyens de
- * versement du professionnel.
+ * journalière ou hebdomadaire, règlements, résumé et moyens de paiement
+ * proposés aux clients.
+ *
+ * Encaissement direct (17/10, demande du client) : le client règle le
+ * professionnel lui-même ; TrouveMoi n'encaisse rien, ne prélève aucune
+ * commission et ne fait aucun versement. Les montants affichés sont les
+ * règlements que le professionnel a déclarés reçus.
  */
 #[IsGranted('ROLE_PROVIDER')]
 final class ProviderRevenueController extends AbstractProviderSpaceController
@@ -27,6 +32,7 @@ final class ProviderRevenueController extends AbstractProviderSpaceController
 
     public function __construct(
         private readonly ProviderSpace $space,
+        private readonly ProviderPaymentMethods $paymentMethods,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -53,7 +59,7 @@ final class ProviderRevenueController extends AbstractProviderSpaceController
         $pending = array_values(array_filter($payments, static fn (Payment $p): bool => PaymentStatus::Pending === $p->getStatus()));
 
         $daysIn = (int) $month->format('t');
-        $points = static fn (array $list): array => array_map(static fn (Payment $p): array => [$p->getCreatedAt(), (float) $p->getAmount()], $list);
+        $points = static fn (array $list): array => array_map(static fn (Payment $p): array => [ProviderSpace::paidOn($p), (float) $p->getAmount()], $list);
         $series = $this->space->daily($points($paid), $from, $daysIn);
         $cSeries = $this->space->daily($points($cPaid), $cFrom, (int) $compare->format('t'));
         if ('semaine' === $granularity) {
@@ -91,97 +97,48 @@ final class ProviderRevenueController extends AbstractProviderSpaceController
             'page' => min($page, $pages),
             'pages' => $pages,
             'total_transactions' => \count($payments),
-            'split' => $this->space->split($gross),
-            'commission_rate' => ProviderSpace::COMMISSION_RATE * 100,
-            'next_payout' => [
-                'date' => new \DateTimeImmutable('first day of next month')->modify('+14 days'),
-                'amount' => $this->space->split($this->space->sum($this->space->paidBetween($payments, new \DateTimeImmutable('first day of this month 00:00'), new \DateTimeImmutable())))['net'],
-            ],
+            'gross' => $gross,
+            'payment_methods' => $this->paymentMethods->configured($provider),
         ]);
     }
 
     #[Route(path: ['fr' => '/pro/revenus/export', 'en' => '/en/pro/revenue/export'], name: 'app_pro_revenue_export')]
     public function export(): Response
     {
-        $methods = ['card' => 'Carte', 'paypal' => 'PayPal', 'transfer' => 'Virement'];
-        $statuses = ['pending' => 'En attente', 'paid' => 'Payé', 'failed' => 'Échoué', 'refunded' => 'Remboursé'];
-        $rows = array_map(function (Payment $p) use ($methods, $statuses): array {
-            $split = $this->space->split((float) $p->getAmount());
+        $statuses = ['pending' => 'À régler', 'paid' => 'Réglé', 'failed' => 'Échoué', 'refunded' => 'Remboursé'];
+        $rows = array_map(static fn (Payment $p): array => [
+            $p->getCreatedAt()?->format('d/m/Y H:i') ?? '',
+            '#'.$p->getBooking()?->getReference(),
+            $p->getBooking()?->getService()?->getTitle() ?? '',
+            trim($p->getBooking()?->getClient()?->getFirstName().' '.$p->getBooking()?->getClient()?->getLastName()),
+            number_format((float) $p->getAmount(), 2, ',', ''),
+            $statuses[$p->getStatus()->value],
+            $p->getPaidAt()?->format('d/m/Y') ?? '',
+            $p->getMethodLabel() ?? '',
+        ], $this->space->payments($this->currentProvider()));
 
-            return [
-                $p->getCreatedAt()?->format('d/m/Y H:i') ?? '',
-                '#'.$p->getBooking()?->getReference(),
-                $p->getBooking()?->getService()?->getTitle() ?? '',
-                trim($p->getBooking()?->getClient()?->getFirstName().' '.$p->getBooking()?->getClient()?->getLastName()),
-                number_format($split['gross'], 2, ',', ''),
-                number_format($split['commission'], 2, ',', ''),
-                number_format($split['fees'], 2, ',', ''),
-                number_format($split['net'], 2, ',', ''),
-                $statuses[$p->getStatus()->value],
-                $methods[$p->getMethod()] ?? $p->getMethod(),
-            ];
-        }, $this->space->payments($this->currentProvider()));
-
-        return self::csv('revenus-'.date('Y-m-d').'.csv', ['Date', 'Réservation', 'Activité', 'Client', 'Montant (€)', 'Commission (€)', 'Frais (€)', 'Net (€)', 'Statut', 'Type'], $rows);
+        return self::csv('revenus-'.date('Y-m-d').'.csv', ['Demandée le', 'Réservation', 'Activité', 'Client', 'Montant (€)', 'Statut', 'Réglée le', 'Moyen de paiement'], $rows);
     }
 
     /**
-     * Moyens de versement : ajout / modification (IBAN, PayPal, carte),
-     * choix du moyen par défaut, retrait.
+     * Moyens de paiement proposés aux clients (lien de paiement, PayPal,
+     * virement, sur place, précisions) : le client règle le professionnel
+     * directement, ces informations lui sont seulement montrées.
      */
-    #[Route(path: ['fr' => '/pro/revenus/moyens-de-paiement', 'en' => '/en/pro/revenue/payout-methods'], name: 'app_pro_revenue_payout', methods: ['POST'])]
-    public function payout(Request $request): Response
+    #[Route(path: ['fr' => '/pro/revenus/moyens-de-paiement', 'en' => '/en/pro/revenue/payment-methods'], name: 'app_pro_payment_methods', methods: ['POST'])]
+    public function paymentMethods(Request $request): Response
     {
         if (!$this->csrfOk($request)) {
             return $this->back($request, 'app_pro_revenue');
         }
 
-        $provider = $this->currentProvider();
-        $type = (string) $request->request->get('type', '');
-        $action = (string) $request->request->get('action', 'save');
-        $value = trim((string) $request->request->get('value', ''));
-
-        if ('default' === $action && \in_array($type, ['bank', 'paypal', 'card'], true)) {
-            $configured = match ($type) {
-                'bank' => null !== $provider->getPayoutIban(),
-                'paypal' => null !== $provider->getPayoutPaypalEmail(),
-                default => null !== $provider->getPayoutCardLast4(),
-            };
-            if ($configured) {
-                $provider->setPayoutMethod($type);
-                $this->addFlash('success', 'Moyen de versement par défaut mis à jour.');
-            }
-        } elseif ('remove' === $action) {
-            match ($type) {
-                'bank' => $provider->setPayoutIban(null),
-                'paypal' => $provider->setPayoutPaypalEmail(null),
-                'card' => $provider->setPayoutCardLast4(null),
-                default => null,
-            };
-            $this->addFlash('success', 'Moyen de versement retiré.');
-        } else {
-            $error = null;
-            match ($type) {
-                'bank' => 1 === preg_match('/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/', $iban = strtoupper(str_replace(' ', '', $value))) ? $provider->setPayoutIban($iban) : $error = 'IBAN invalide (ex. FR76 3000 6000 0112 3456 7890 189).',
-                'paypal' => false !== filter_var($value, \FILTER_VALIDATE_EMAIL) ? $provider->setPayoutPaypalEmail(mb_substr($value, 0, 180)) : $error = 'Adresse PayPal invalide.',
-                'card' => 1 === preg_match('/^\d{12,19}$/', $digits = preg_replace('/\D/', '', $value) ?? '') ? $provider->setPayoutCardLast4(substr($digits, -4)) : $error = 'Numéro de carte invalide.',
-                default => $error = 'Choisissez un type de moyen de paiement.',
-            };
-            if (null !== $error) {
-                $this->addFlash('error', $error);
-
-                return $this->back($request, 'app_pro_revenue');
-            }
-            $this->addFlash('success', 'Moyen de versement enregistré.');
+        try {
+            $this->paymentMethods->update($this->currentProvider(), $request->request->all());
+            $this->entityManager->flush();
+            $this->addFlash('success', 'Vos moyens de paiement ont été enregistrés.');
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
         }
-
-        // Le moyen par défaut doit rester un moyen configuré.
-        $available = array_filter(['bank' => $provider->getPayoutIban(), 'paypal' => $provider->getPayoutPaypalEmail(), 'card' => $provider->getPayoutCardLast4()]);
-        if ([] !== $available && !isset($available[$provider->getPayoutMethod()])) {
-            $provider->setPayoutMethod((string) array_key_first($available));
-        }
-
-        $this->entityManager->flush();
 
         return $this->back($request, 'app_pro_revenue');
     }

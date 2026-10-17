@@ -35,7 +35,7 @@ final class BookingNotificationSubscriber implements EventSubscriberInterface
      */
     public function onConfirmed(EnteredEvent $event): void
     {
-        $this->notifyClient($event, 'Réservation confirmée', 'Votre réservation est confirmée. À bientôt !');
+        $this->notifyClient($event, 'Réservation confirmée', 'Votre réservation est confirmée. Réglez directement l’organisateur : ses moyens de paiement figurent dans votre réservation. À bientôt !');
     }
 
     /**

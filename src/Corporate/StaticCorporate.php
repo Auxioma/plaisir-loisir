@@ -73,7 +73,7 @@ final class StaticCorporate
             ['icon' => 'user_plus', 'title' => 'Inscription', 'text' => 'Créez votre compte partenaire gratuitement.'],
             ['icon' => 'store', 'title' => 'Ajoutez vos offres', 'text' => 'Présentez vos activités, services et disponibilités.'],
             ['icon' => 'calendar_check', 'title' => 'Recevez des réservations', 'text' => 'Vos clients réservent en ligne 24/7.'],
-            ['icon' => 'card', 'title' => 'Soyez payé', 'text' => 'Nous nous occupons des paiements sécurisés.'],
+            ['icon' => 'card', 'title' => 'Encaissez directement', 'text' => 'Vos clients vous paient directement, sans commission.'],
             ['icon' => 'chart', 'title' => 'Développez votre activité', 'text' => 'Fidélisez vos clients et faites grandir votre business.'],
         ];
     }
@@ -298,7 +298,7 @@ final class StaticCorporate
             'Utilisation de la plateforme' => "Vous vous engagez à utiliser la plateforme conformément à la loi et aux présentes CGU. Il est interdit d'utiliser la plateforme à des fins illégales, frauduleuses ou portant atteinte aux droits de tiers.",
             'Comptes utilisateurs' => 'Vous êtes responsable de la confidentialité de vos identifiants et de toutes les activités effectuées depuis votre compte. Vous devez nous informer immédiatement de toute utilisation non autorisée de votre compte.',
             'Contenus et activités' => "Les informations, descriptions, photos et avis présents sur la plateforme sont fournis par les utilisateurs ou nos partenaires. TrouveMoi Plaisirs & Loisirs ne peut être tenu responsable de l'exactitude ou de l'exhaustivité de ces informations.",
-            'Réservations et paiements' => 'Les réservations effectuées via la plateforme sont soumises aux conditions des prestataires partenaires. Les paiements sont sécurisés et traités par nos partenaires de paiement agréés. Les conditions d\'annulation et de remboursement sont précisées avant chaque réservation.',
+            'Réservations et paiements' => 'Les réservations effectuées via la plateforme sont soumises aux conditions des prestataires partenaires. Le prix des prestations est réglé directement au prestataire, par les moyens qu\'il propose : aucune somme liée à une prestation ne transite par TrouveMoi. Les abonnements des professionnels et les bons cadeaux sont payés à TrouveMoi par l\'intermédiaire de son partenaire de paiement agréé. Les conditions d\'annulation et de remboursement sont précisées avant chaque réservation.',
             'Responsabilités' => "TrouveMoi Plaisirs & Loisirs met tout en œuvre pour assurer la disponibilité et la fiabilité de la plateforme, mais ne garantit pas l'absence d'erreurs ou d'interruptions. Notre responsabilité ne saurait être engagée pour tout dommage indirect lié à l'utilisation de la plateforme.",
             'Données personnelles' => 'La collecte et le traitement de vos données personnelles sont effectués conformément à notre Politique de Confidentialité, disponible sur notre site.',
             'Modification des CGU' => 'TrouveMoi se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront informés de toute modification substantielle.',

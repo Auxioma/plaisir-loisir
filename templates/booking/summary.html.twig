@@ -1,5 +1,6 @@
 {#
-    Récapitulatif avant paiement (tunnel de réservation, 03/10).
+    Récapitulatif avant l'envoi de la demande (tunnel de réservation, 03/10).
+    Aucun paiement sur TrouveMoi (17/10) : le client règle l'organisateur.
     Données : BookingController::summary().
 #}
 {% extends 'base.html.twig' %}
@@ -17,7 +18,7 @@
     <ol class="bk-steps" aria-label="{{ 'Étapes'|trans }}">
         <li class="is-done">{{ 'Sélection'|trans }}</li>
         <li class="is-current" aria-current="step">{{ 'Récapitulatif'|trans }}</li>
-        <li>{{ 'Paiement'|trans }}</li>
+        <li>{{ 'Demande envoyée'|trans }}</li>
         <li>{{ 'Confirmation'|trans }}</li>
     </ol>
     <h1 class="bk-title">{{ 'Récapitulatif de votre réservation'|trans }}</h1>
@@ -29,21 +30,19 @@
         </section>
 
         <aside class="bk-card bk-pay">
-            <h2>{{ 'Paiement sécurisé'|trans }}</h2>
-            <p>{{ 'Vous allez régler'|trans }} <strong>{{ booking.totalPrice|number_format(2, ',', ' ') }} €</strong>.</p>
-            {% if not stripe %}
-                <p class="bk-note">{{ 'Mode démonstration : le paiement est simulé, aucune carte n’est débitée.'|trans }}</p>
-            {% endif %}
-            <form method="post" action="{{ path('app_booking_pay', {id: booking.id}) }}">
+            <h2>{{ 'Réservation et règlement'|trans }}</h2>
+            <p>{{ 'Montant de la prestation'|trans }} : <strong>{{ booking.totalPrice|number_format(2, ',', ' ') }} €</strong>, {{ 'à régler directement à l’organisateur.'|trans }}</p>
+            <form method="post" action="{{ path('app_booking_request', {id: booking.id}) }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">
-                <button class="pl-btn pl-btn--primary pl-btn--block">{{ icon.card_lock(18) }} {{ 'Confirmer et payer'|trans }}</button>
+                <button class="pl-btn pl-btn--primary pl-btn--block">{{ icon.send(18) }} {{ 'Envoyer ma demande de réservation'|trans }}</button>
             </form>
-            {# Parcours de paiement expliqué (13/10, retour client n° 36). #}
+            {# Parcours expliqué (13/10, retour client n° 36 ; encaissement direct le 17/10). #}
             <ol class="bk-steps">
-                <li>{{ 'Vous payez en ligne par carte bancaire, sur la page sécurisée de notre prestataire de paiement (Stripe, 3-D Secure).'|trans }}</li>
-                <li>{{ 'Votre réservation est confirmée aussitôt : vous recevez un e-mail et le professionnel est prévenu.'|trans }}</li>
-                <li>{{ 'TrouveMoi reverse ensuite le montant au professionnel, après l’activité.'|trans }}</li>
+                <li>{{ 'Vous envoyez votre demande : rien n’est débité sur TrouveMoi.'|trans }}</li>
+                <li>{{ 'L’organisateur confirme votre réservation : vous êtes prévenu par notification et par e-mail.'|trans }}</li>
+                <li>{{ 'Vous réglez directement l’organisateur, par l’un des moyens qu’il propose :'|trans }}</li>
             </ol>
+            {% include 'booking/_direct_payment.html.twig' with {details: false} %}
             <p class="bk-note">✓ {{ 'Annulation gratuite'|trans }} {{ "Jusqu'à 7 jours avant"|trans }}</p>
             <form method="post" action="{{ path('app_booking_abandon', {id: booking.id}) }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">

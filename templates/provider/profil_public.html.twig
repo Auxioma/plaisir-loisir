@@ -66,7 +66,7 @@
         <ul class="pdp-trust">
             <li>{{ icon.shield_check(20) }}<span><b>{{ 'Identité et documents vérifiés'|trans }}</b><small>{{ 'par l’équipe TrouveMoi'|trans }}</small></span></li>
             {% if summary.response_hours is not null %}<li>{{ icon.clock(20) }}<span><b>{{ 'Répond en moins de'|trans }} {{ max(1, summary.response_hours|round(0, 'ceil')) }} h</b><small>{{ 'en général'|trans }}</small></span></li>{% endif %}
-            <li>{{ icon.card_lock(20) }}<span><b>{{ 'Paiement sécurisé'|trans }}</b><small>{{ 'à la réservation'|trans }}</small></span></li>
+            <li>{{ icon.card_lock(20) }}<span><b>{{ 'Paiement direct'|trans }}</b><small>{{ 'à l’organisateur, sans commission'|trans }}</small></span></li>
             {% if summary.positive_rate is not null %}<li>{{ icon.star(20) }}<span><b>{{ summary.positive_rate }} % {{ 'd’avis positifs'|trans }}</b><small>{{ summary.reviews_count }} {{ 'avis'|trans }}</small></span></li>{% endif %}
         </ul>
 
@@ -147,7 +147,7 @@
                 {% endif %}
                 <section class="pg-card pdp-trust">
                     <p>{{ icon.shield_check(18) }} {{ 'Identité et documents vérifiés par TrouveMoi'|trans }}</p>
-                    <p>{{ icon.card_lock(18) }} {{ 'Paiement sécurisé à la réservation'|trans }}</p>
+                    <p>{{ icon.card_lock(18) }} {{ 'Paiement direct à l’organisateur'|trans }}</p>
                     {% include '_partials/_report_form.html.twig' with { subject_type: 'profile', subject_id: provider.id, subject_label: provider.displayName } %}
                 </section>
             </aside>

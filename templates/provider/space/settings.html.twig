@@ -28,7 +28,7 @@
         {key: 'profil-pro', icon: 'briefcase', title: 'Profil professionnel', text: 'Gérez votre établissement et vos informations'},
         {key: 'preferences', icon: 'gear', title: 'Préférences', text: 'Gérez vos préférences de communication'},
         {key: 'notifications', icon: 'bell', title: 'Notifications', text: 'Choisissez vos préférences de notifications'},
-        {key: 'paiement', icon: 'card', title: 'Moyens de paiement', text: 'Gérez vos comptes et moyens de paiement'},
+        {key: 'paiement', icon: 'card', title: 'Moyens de paiement', text: 'Comment vos clients vous règlent'},
         {key: 'securite', icon: 'lock', title: 'Sécurité', text: 'Gérez votre mot de passe et la sécurité'},
         {key: 'abonnement', icon: 'doc', title: 'Abonnement', text: 'Gérez votre abonnement et vos options'},
         {key: 'integrations', icon: 'puzzle', title: 'Intégrations', text: 'Connectez vos outils et services'},
@@ -158,8 +158,7 @@
             {% if section == 'paiement' %}
                 <section class="pf-card">
                     <h2 class="pf-card__title pp-mb">{{ 'Moyens de paiement'|trans }}</h2>
-                    <p class="pf-muted">{{ 'Vos revenus sont versés chaque mois sur le moyen par défaut.'|trans }}</p>
-                    {% include 'provider/space/_payout_methods.html.twig' %}
+                    {% include 'provider/space/_payment_methods.html.twig' %}
                 </section>
             {% endif %}
 
@@ -194,7 +193,7 @@
                     <h2 class="pf-card__title pp-mb">{{ 'Intégrations'|trans }}</h2>
                     <ul class="pf-list pf-list--lined">
                         <li><span class="pf-ico pf-ico--xs pf-ico--blue">{{ icon.calendar_grid(16) }}</span><div class="pf-list__body"><strong>{{ 'Export de vos réservations'|trans }}</strong><small>{{ 'Fichier CSV compatible Excel, Google Sheets, Numbers.'|trans }}</small></div><a class="pf-btn pp-btn-sm" href="{{ path('app_pro_bookings_export') }}">{{ 'Télécharger'|trans }}</a></li>
-                        <li><span class="pf-ico pf-ico--xs pf-ico--green">{{ icon.euro(16) }}</span><div class="pf-list__body"><strong>{{ 'Export comptable'|trans }}</strong><small>{{ 'Vos transactions avec commission et net, pour votre comptabilité.'|trans }}</small></div><a class="pf-btn pp-btn-sm" href="{{ path('app_pro_revenue_export') }}">{{ 'Télécharger'|trans }}</a></li>
+                        <li><span class="pf-ico pf-ico--xs pf-ico--green">{{ icon.euro(16) }}</span><div class="pf-list__body"><strong>{{ 'Export comptable'|trans }}</strong><small>{{ 'Vos règlements reçus et attendus, pour votre comptabilité.'|trans }}</small></div><a class="pf-btn pp-btn-sm" href="{{ path('app_pro_revenue_export') }}">{{ 'Télécharger'|trans }}</a></li>
                         <li><span class="pf-ico pf-ico--xs pf-ico--orange">{{ icon.globe_simple(16) }}</span><div class="pf-list__body"><strong>{{ 'Réseaux sociaux'|trans }}</strong><small>{{ 'Affichés sur votre fiche publique.'|trans }}</small></div><a class="pf-btn pp-btn-sm" href="#pp-socials">{{ 'Configurer'|trans }}</a></li>
                     </ul>
                 </section>

@@ -162,7 +162,7 @@ final class InitialLegalTextsEn
                 'Purpose',
                 [
                     self::PREVAILS,
-                    '<p>These general terms of sale govern the booking and payment, on the trouvemoi.eu platform, of leisure activities and services offered by professional providers, as well as the sale of gift vouchers.</p>',
+                    '<p>These general terms of sale govern the booking, on the trouvemoi.eu platform, of leisure activities and services offered by professional providers, the sale of gift vouchers and the subscriptions taken out by professionals.</p>',
                     '<p>They apply to any order placed on the platform. Placing an order implies unreserved acceptance of these terms, in the version in force on the day of the order.</p>',
                 ],
             ],
@@ -170,7 +170,7 @@ final class InitialLegalTextsEn
                 'TrouveMoi’s role',
                 [
                     '<p><strong>TrouveMoi is an intermediation platform.</strong> Unless explicitly stated otherwise, the service contract is concluded between you and the provider offering the activity, who alone is responsible for its performance, safety and compliance with the published description.</p>',
-                    '<p>TrouveMoi provides the platform, collects the price on behalf of the provider and sends you the order confirmation. This determines whom to contact: a question about how the activity takes place is for the provider; a question about the order or payment is for us.</p>',
+                    '<p>TrouveMoi provides the platform and forwards your booking request to the provider. <strong>TrouveMoi does not collect the price of services</strong>: you pay it directly to the provider, who is its sole recipient, and no money relating to a service goes through TrouveMoi’s accounts. A question about how the activity takes place, its price, payment or refund is therefore for the provider; a question about how the platform works is for us.</p>',
                 ],
             ],
             [
@@ -183,15 +183,15 @@ final class InitialLegalTextsEn
             [
                 'Placing an order',
                 [
-                    '<p>An order follows these steps: choice of the activity, date and number of participants; review of the summary, which can be corrected until confirmation; acceptance of these terms; payment; confirmation.</p>',
-                    '<p>The sale is only concluded upon receipt of payment and the sending of the confirmation by email. This confirmation summarises the service, the date, the number of participants and the amount paid; it serves as proof of the order.</p>',
+                    '<p>A booking follows these steps: choice of the activity, date and number of participants; review of the summary, which can be corrected until confirmation; acceptance of these terms; sending of the request to the provider; confirmation by the provider.</p>',
+                    '<p>The service contract is formed between you and the provider when the provider confirms your booking; you are informed by notification and by email. The confirmation summarises the service, the date, the number of participants and the amount due to the provider.</p>',
                 ],
             ],
             [
                 'Payment',
                 [
-                    '<p>Payment is made online by bank card when ordering. It is processed by our provider <strong>Stripe</strong>: <strong>your bank details do not go through our servers and are never stored on them</strong>.</p>',
-                    '<p>The order is deemed paid upon actual collection. If the bank refuses payment, the order is automatically cancelled.</p>',
+                    '<p><strong>The price of a service is paid directly to the provider</strong>, using one of the means the provider offers, shown to you when booking (online payment link on the provider’s own account, PayPal, bank transfer, payment on site…), on the terms and schedule the provider sets. TrouveMoi collects no money for services, takes no commission on them and plays no part in their payment.</p>',
+                    '<p>Only gift vouchers and professionals’ subscriptions are paid to TrouveMoi, online, through our provider <strong>Stripe</strong>: <strong>your bank details do not go through our servers and are never stored on them</strong>.</p>',
                 ],
             ],
             [
@@ -211,9 +211,16 @@ final class InitialLegalTextsEn
             [
                 'Cancellation and changes',
                 [
-                    '<p>The cancellation terms specific to each activity are shown on its page and reminded to you before payment. Unless stated otherwise, a cancellation request sent more than forty-eight hours before the start of the service gives rise to a full refund; after that, the service remains payable.</p>',
+                    '<p>The cancellation terms specific to each activity are shown on its page and reminded to you before you send your request. Unless stated otherwise, a cancellation request sent more than forty-eight hours before the start of the service gives rise to a full refund of the sums paid; after that, the service remains payable. The refund is made by the provider, who received the payment.</p>',
                     '<p>Failure to show up without prior cancellation gives rise to no refund.</p>',
-                    '<p>If the provider cancels the service, for whatever reason, you are refunded in full without delay, without prejudice to any other claim you may have against the provider.</p>',
+                    '<p>If the provider cancels the service, for whatever reason, the provider refunds the sums paid in full and without delay, without prejudice to any other claim you may have against the provider.</p>',
+                ],
+            ],
+            [
+                'Professionals’ subscriptions',
+                [
+                    '<p>Professionals may subscribe to the platform’s services. The price and billing period (monthly or yearly) are shown before subscribing. The subscription is paid to TrouveMoi, online, through Stripe (bank card or any other means offered on the payment page), and renews automatically at each due date.</p>',
+                    '<p>The subscription can be cancelled at any time from the professional area; cancellation takes effect at the end of the current, already paid, period. The subscription involves no commission on services, which professionals collect directly from their clients.</p>',
                 ],
             ],
             [
@@ -313,7 +320,7 @@ final class InitialLegalTextsEn
             'Use of the platform' => 'You undertake to use the platform in accordance with the law and these terms. Using the platform for illegal or fraudulent purposes, or in a way that infringes the rights of third parties, is prohibited.',
             'User accounts' => 'You are responsible for keeping your login details confidential and for all activity carried out from your account. You must inform us immediately of any unauthorised use of your account.',
             'Content and activities' => 'The information, descriptions, photos and reviews on the platform are provided by users or by our partners. TrouveMoi Plaisirs & Loisirs cannot be held responsible for the accuracy or completeness of this information.',
-            'Bookings and payments' => 'Bookings made through the platform are subject to the conditions of the partner providers. Payments are secure and processed by our approved payment partners. Cancellation and refund conditions are specified before each booking.',
+            'Bookings and payments' => 'Bookings made through the platform are subject to the conditions of the partner providers. The price of services is paid directly to the provider, using the means the provider offers: no money relating to a service goes through TrouveMoi. Professionals’ subscriptions and gift vouchers are paid to TrouveMoi through its approved payment partner. Cancellation and refund conditions are specified before each booking.',
             'Liability' => 'TrouveMoi Plaisirs & Loisirs does its utmost to ensure the availability and reliability of the platform, but does not guarantee the absence of errors or interruptions. We cannot be held liable for any indirect damage related to the use of the platform.',
             'Personal data' => 'Your personal data is collected and processed in accordance with our Privacy Policy, available on our site.',
             'Changes to the terms' => 'TrouveMoi reserves the right to change these terms at any time. Users will be informed of any substantial change.',

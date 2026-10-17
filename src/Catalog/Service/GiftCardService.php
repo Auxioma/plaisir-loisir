@@ -21,7 +21,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  * « en attente », paiement, puis envoi du code à l'acheteur et — si l'envoi
  * par e-mail est choisi — au bénéficiaire.
  *
- * Paiement : même règle que les réservations (BookingCheckout). Avec une clé
+ * Paiement encaissé par TrouveMoi (le bon est vendu par la plateforme). Avec une clé
  * Stripe, page de paiement hébergée et confirmation par le webhook ; sans
  * clé (développement, démo), le paiement est simulé et réglé aussitôt.
  */

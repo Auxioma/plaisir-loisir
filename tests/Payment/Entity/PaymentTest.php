@@ -18,6 +18,15 @@ final class PaymentTest extends TestCase
         self::assertSame(PaymentStatus::Pending, $payment->getStatus());
         self::assertSame('EUR', $payment->getCurrency());
         self::assertNull($payment->getReference());
+        self::assertNull($payment->getMethod(), 'Aucun moyen tant que le professionnel n’a pas déclaré le règlement.');
+        self::assertNull($payment->getPaidAt());
+    }
+
+    public function testAnUnknownMethodIsStoredAsOther(): void
+    {
+        self::assertSame('transfer', (new Payment())->setMethod('transfer')->getMethod());
+        self::assertSame('other', (new Payment())->setMethod('bitcoin')->getMethod());
+        self::assertSame('Sur place', (new Payment())->setMethod('onsite')->getMethodLabel());
     }
 
     public function testFieldsAreAssignable(): void

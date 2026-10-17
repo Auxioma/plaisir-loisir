@@ -28,9 +28,8 @@
 
     <div class="kpis">
         <div><span class="muted">{{ 'Réservations'|trans }}</span><strong>{{ bookings|length }}</strong></div>
-        <div><span class="muted">{{ 'Revenus encaissés'|trans }}</span><strong>{{ money.gross|number_format(2, ',', ' ') }} €</strong></div>
-        <div><span class="muted">{{ 'Commission TrouveMoi'|trans }}</span><strong>-{{ money.commission|number_format(2, ',', ' ') }} €</strong></div>
-        <div><span class="muted">{{ 'Montant net'|trans }}</span><strong>{{ money.net|number_format(2, ',', ' ') }} €</strong></div>
+        <div><span class="muted">{{ 'Règlements reçus'|trans }}</span><strong>{{ received|number_format(2, ',', ' ') }} €</strong></div>
+        <div><span class="muted">{{ 'Commission TrouveMoi'|trans }}</span><strong>0,00 €</strong></div>
     </div>
 
     <p>{% for label, n in by_status %}{% if n > 0 %}<strong>{{ label|trans }}</strong> : {{ n }}{% if not loop.last %} · {% endif %}{% endif %}{% endfor %}</p>

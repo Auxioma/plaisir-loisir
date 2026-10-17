@@ -183,7 +183,7 @@ final class InitialLegalTexts
             [
                 'Objet',
                 [
-                    '<p>Les présentes conditions générales de vente régissent la réservation et le paiement, sur la plateforme trouvemoi.eu, des activités et prestations de loisirs proposées par des prestataires professionnels, ainsi que la vente de bons cadeaux.</p>',
+                    '<p>Les présentes conditions générales de vente régissent la réservation, sur la plateforme trouvemoi.eu, des activités et prestations de loisirs proposées par des prestataires professionnels, la vente de bons cadeaux et les abonnements souscrits par les professionnels.</p>',
                     '<p>Elles s\'appliquent à toute commande passée sur la plateforme. Toute commande vaut acceptation sans réserve des présentes conditions, dans leur version en vigueur au jour de la commande.</p>',
                 ],
             ],
@@ -191,7 +191,7 @@ final class InitialLegalTexts
                 'Rôle de TrouveMoi',
                 [
                     '<p><strong>TrouveMoi est une plateforme de mise en relation.</strong> Sauf mention contraire explicite, le contrat de prestation est conclu entre vous et le prestataire qui propose l\'activité, lequel en assure seul l\'exécution, la sécurité et la conformité à la description publiée.</p>',
-                    '<p>TrouveMoi met à disposition la plateforme, encaisse le prix pour le compte du prestataire et vous adresse la confirmation de commande. Ce point détermine à qui vous adresser : une question sur le déroulement de l\'activité relève du prestataire, une question sur la commande ou le paiement relève de nous.</p>',
+                    '<p>TrouveMoi met à disposition la plateforme et transmet votre demande de réservation au prestataire. <strong>TrouveMoi n\'encaisse pas le prix des prestations</strong> : vous le réglez directement au prestataire, qui en est seul le bénéficiaire, et aucune somme liée à une prestation ne transite par les comptes de TrouveMoi. Une question sur le déroulement de l\'activité, son prix, son règlement ou son remboursement relève donc du prestataire ; une question sur le fonctionnement de la plateforme relève de nous.</p>',
                 ],
             ],
             [
@@ -204,15 +204,15 @@ final class InitialLegalTexts
             [
                 'Passation de la commande',
                 [
-                    '<p>La commande suit les étapes suivantes : choix de l\'activité, de la date et du nombre de participants ; vérification du récapitulatif, qui peut être corrigé jusqu\'à la validation ; acceptation des présentes conditions ; paiement ; confirmation.</p>',
-                    '<p>La vente n\'est formée qu\'à la réception du paiement et à l\'envoi de la confirmation par courrier électronique. Cette confirmation récapitule la prestation, la date, le nombre de participants et le montant réglé ; elle vaut preuve de la commande.</p>',
+                    '<p>La réservation suit les étapes suivantes : choix de l\'activité, de la date et du nombre de participants ; vérification du récapitulatif, qui peut être corrigé jusqu\'à la validation ; acceptation des présentes conditions ; envoi de la demande au prestataire ; confirmation par le prestataire.</p>',
+                    '<p>Le contrat de prestation est formé entre vous et le prestataire lorsque celui-ci confirme votre réservation ; vous en êtes informé par notification et par courrier électronique. La confirmation récapitule la prestation, la date, le nombre de participants et le montant dû au prestataire.</p>',
                 ],
             ],
             [
                 'Paiement',
                 [
-                    '<p>Le paiement s\'effectue en ligne par carte bancaire, au moment de la commande. Il est traité par notre prestataire <strong>Stripe</strong> : <strong>vos coordonnées bancaires ne transitent pas par nos serveurs et n\'y sont jamais enregistrées</strong>.</p>',
-                    '<p>La commande est réputée payée à l\'encaissement effectif. En cas de refus de l\'établissement bancaire, la commande est annulée de plein droit.</p>',
+                    '<p><strong>Le prix d\'une prestation se règle directement au prestataire</strong>, par l\'un des moyens qu\'il propose et qui vous sont indiqués lors de la réservation (lien de paiement en ligne sur son propre compte, PayPal, virement, paiement sur place…), selon les modalités et le calendrier qu\'il fixe. TrouveMoi n\'encaisse aucune somme à ce titre, ne prélève aucune commission sur les prestations et n\'intervient pas dans leur règlement.</p>',
+                    '<p>Seuls les bons cadeaux et les abonnements des professionnels sont payés à TrouveMoi, en ligne, par l\'intermédiaire de notre prestataire <strong>Stripe</strong> : <strong>vos coordonnées bancaires ne transitent pas par nos serveurs et n\'y sont jamais enregistrées</strong>.</p>',
                 ],
             ],
             [
@@ -232,9 +232,16 @@ final class InitialLegalTexts
             [
                 'Annulation et modification',
                 [
-                    '<p>Les conditions d\'annulation propres à chaque activité figurent sur sa fiche et vous sont rappelées avant le paiement. À défaut d\'indication contraire, une demande d\'annulation adressée plus de quarante-huit heures avant le début de la prestation donne lieu au remboursement intégral ; passé ce délai, la prestation reste due.</p>',
+                    '<p>Les conditions d\'annulation propres à chaque activité figurent sur sa fiche et vous sont rappelées avant l\'envoi de votre demande. À défaut d\'indication contraire, une demande d\'annulation adressée plus de quarante-huit heures avant le début de la prestation donne lieu au remboursement intégral des sommes versées ; passé ce délai, la prestation reste due. Le remboursement est effectué par le prestataire, qui a reçu le paiement.</p>',
                     '<p>L\'absence au rendez-vous, sans annulation préalable, ne donne lieu à aucun remboursement.</p>',
-                    '<p>Si le prestataire annule la prestation, quelle qu\'en soit la raison, vous êtes intégralement remboursé sans délai, sans préjudice de toute autre demande que vous pourriez former contre lui.</p>',
+                    '<p>Si le prestataire annule la prestation, quelle qu\'en soit la raison, il vous rembourse intégralement et sans délai les sommes versées, sans préjudice de toute autre demande que vous pourriez former contre lui.</p>',
+                ],
+            ],
+            [
+                'Abonnements des professionnels',
+                [
+                    '<p>Les professionnels peuvent souscrire un abonnement aux services de la plateforme. Son prix et sa périodicité (mensuelle ou annuelle) sont affichés avant la souscription. Il est payé à TrouveMoi, en ligne, par l\'intermédiaire de Stripe (carte bancaire ou autre moyen proposé sur la page de paiement), et se renouvelle tacitement à chaque échéance.</p>',
+                    '<p>L\'abonnement peut être résilié à tout moment depuis l\'espace professionnel ; la résiliation prend effet à la fin de la période en cours, déjà payée. L\'abonnement ne donne lieu à aucune commission sur les prestations, que le professionnel encaisse directement auprès de ses clients.</p>',
                 ],
             ],
             [

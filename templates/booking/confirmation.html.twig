@@ -1,5 +1,6 @@
 {#
-    Confirmation de réservation (après paiement simulé ou retour Stripe).
+    Demande envoyée / réservation confirmée, avec les modalités de règlement
+    direct à l'organisateur (17/10 : TrouveMoi n'encaisse aucune prestation).
     Données : BookingController::confirmation().
 #}
 {% extends 'base.html.twig' %}
@@ -9,39 +10,52 @@
 
 {% block body %}
 {% set paid = payment and payment.status.value == 'paid' %}
-{% set failed = payment and payment.status.value == 'failed' %}
+{% set sent = payment is not null %}
 {% import '_partials/_ga.html.twig' as ga %}
 {% set ga_items = [] %}
 {% for it in booking.items %}{% set ga_items = ga_items|merge([{item_id: (service ? service.slug : 'activite'), item_name: (service ? service.title : it.label), item_variant: it.label, price: it.unitPrice + 0, quantity: it.quantity}]) %}{% endfor %}
 {% if ga_items is empty and service %}{% set ga_items = [{item_id: service.slug, item_name: service.title, price: booking.totalPrice + 0, quantity: 1}] %}{% endif %}
-{% if paid %}{{ ga.event('purchase', {transaction_id: booking.reference, currency: 'EUR', value: booking.totalPrice + 0, items: ga_items}, 'booking-' ~ booking.reference) }}{% endif %}
+{# Conversion mesurée à l'envoi de la demande : la vente se conclut ensuite entre le client et l'organisateur. #}
+{% if sent and booking.status.value != 'cancelled' %}{{ ga.event('purchase', {transaction_id: booking.reference, currency: 'EUR', value: booking.totalPrice + 0, items: ga_items}, 'booking-' ~ booking.reference) }}{% endif %}
 <main class="bk container">
     <ol class="bk-steps" aria-label="{{ 'Étapes'|trans }}">
         <li class="is-done">{{ 'Sélection'|trans }}</li>
         <li class="is-done">{{ 'Récapitulatif'|trans }}</li>
-        <li class="is-done">{{ 'Paiement'|trans }}</li>
+        <li class="is-done">{{ 'Demande envoyée'|trans }}</li>
         <li class="is-current" aria-current="step">{{ 'Confirmation'|trans }}</li>
     </ol>
 
     <section class="bk-card bk-done">
-        {% if booking.status.value == 'cancelled' %}
+        {% if booking.status.value in ['cancelled', 'refunded'] %}
             <span class="bk-done__ico is-red">{{ icon.x(30) }}</span>
             <h1 class="bk-title">{{ 'Réservation annulée'|trans }}</h1>
-        {% elseif failed %}
-            <span class="bk-done__ico is-red">{{ icon.x(30) }}</span>
-            <h1 class="bk-title">{{ 'Le paiement n’a pas abouti'|trans }}</h1>
-            <p>{{ 'Aucune somme n’a été prélevée. Vous pouvez réessayer depuis la fiche de l’activité.'|trans }}</p>
-        {% elseif paid %}
-            <span class="bk-done__ico">{{ icon.check(30) }}</span>
-            <h1 class="bk-title">{{ 'Merci, votre réservation est confirmée !'|trans }}</h1>
-            <p>{{ 'Référence'|trans }} <strong>#{{ booking.reference }}</strong> · {{ 'L’organisateur a été prévenu. Retrouvez-la à tout moment dans « Mes réservations ».'|trans }}</p>
-        {% else %}
+        {% elseif booking.status.value == 'pending' and not sent %}
             <span class="bk-done__ico is-orange">{{ icon.clock(30) }}</span>
-            <h1 class="bk-title">{{ 'Paiement en cours de confirmation'|trans }}</h1>
-            <p>{{ 'Nous attendons la confirmation de votre banque : vous recevrez une notification dans quelques instants.'|trans }}</p>
+            <h1 class="bk-title">{{ 'Demande non envoyée'|trans }}</h1>
+            <p>{{ 'Votre demande n’a pas encore été transmise à l’organisateur.'|trans }} <a href="{{ path('app_booking_summary', {id: booking.id}) }}">{{ 'Reprendre ma réservation'|trans }}</a></p>
+        {% elseif booking.status.value == 'pending' %}
+            <span class="bk-done__ico is-orange">{{ icon.send(30) }}</span>
+            <h1 class="bk-title">{{ 'Demande envoyée à l’organisateur'|trans }}</h1>
+            <p>{{ 'Référence'|trans }} <strong>#{{ booking.reference }}</strong> · {{ 'L’organisateur va confirmer votre réservation : vous serez prévenu par notification et par e-mail.'|trans }}</p>
+        {% else %}
+            <span class="bk-done__ico">{{ icon.check(30) }}</span>
+            <h1 class="bk-title">{{ 'Votre réservation est confirmée !'|trans }}</h1>
+            <p>{{ 'Référence'|trans }} <strong>#{{ booking.reference }}</strong> · {{ 'Retrouvez-la à tout moment dans « Mes réservations ».'|trans }}</p>
         {% endif %}
 
         {% include 'booking/_recap.html.twig' %}
+
+        {% if sent and booking.status.value not in ['cancelled', 'refunded'] %}
+            <section class="bk-direct">
+                <h2>{{ 'Règlement'|trans }}</h2>
+                {% if paid %}
+                    <p class="bk-note">{{ icon.check(14) }} {{ 'Règlement reçu par l’organisateur le %date%'|trans({'%date%': payment.paidAt ? payment.paidAt|pf_date('d MMMM y') : payment.updatedAt|pf_date('d MMMM y')}) }}{% if payment.methodLabel %} ({{ payment.methodLabel|trans }}){% endif %}.</p>
+                {% else %}
+                    <p class="bk-note">{{ 'Montant à régler directement à l’organisateur'|trans }} : <strong>{{ booking.totalPrice|number_format(2, ',', ' ') }} €</strong>{{ booking.status.value == 'pending' ? ', ' ~ 'une fois votre réservation confirmée'|trans : '' }}.</p>
+                    {% include 'booking/_direct_payment.html.twig' with {details: true} %}
+                {% endif %}
+            </section>
+        {% endif %}
 
         <div class="bk-actions">
             <a class="pl-btn pl-btn--primary" href="{{ path('app_account_history') }}">{{ 'Voir mes réservations'|trans }}</a>

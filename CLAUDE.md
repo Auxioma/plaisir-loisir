@@ -22,7 +22,8 @@ particuliers** (gratuites, avec album photo de groupe).
 - **Symfony UX** (Turbo + Stimulus), **Bootstrap 5 via AssetMapper** (importmap, **pas de Node**)
 - **Doctrine ORM** + Migrations, **identifiants ULID** partout
 - **Symfony Workflow** (`provider_verification`, `booking`), **Messenger** (emails/notifs async)
-- **EasyAdmin 5** (back-office), **Stripe** (clés `test-`), **Elasticsearch** prévu plus tard
+- **EasyAdmin 5** (back-office), **Stripe** (abonnements pros + bons cadeaux uniquement, voir
+  « Paiements »), **Elasticsearch** prévu plus tard
   derrière `SearchService` (impl. actuelle = PostgreSQL)
 
 ## Organisation du code — DDD léger par domaine
@@ -127,13 +128,30 @@ destinations, albums photo, « Mes favoris »), **espace professionnel complet**
 maquettes `docs/maquettes/profil_professionnel`, contrôleurs `src/Provider/Controller/Space/`,
 lecture des données dans `ProviderSpace`) : activités soumises puis validées dans le back-office,
 réservations (workflow), calendrier/créneaux, messagerie + notes clients, avis, revenus
-(commission 12 %), offres (`Promotion`), statistiques (`Stats\PageView`), paramètres, documents,
+(règlements déclarés, sans commission), offres (`Promotion`), statistiques (`Stats\PageView`), paramètres, documents,
 tickets support (`SupportTicket`, réponse depuis EasyAdmin). Démo : `ProviderSpaceFixtures`.
 
-**Tunnel de réservation** (04/10) : fiche activité → `BookingController` (créneaux `Availability`,
-sinon horaires d'ouverture) → récapitulatif → `BookingCheckout` (Stripe si `STRIPE_SECRET_KEY`
-commence par `sk_`, sinon paiement simulé) → confirmation. Fuseau applicatif forcé à
-Europe/Paris (`Kernel::TIMEZONE` + `SessionTimezoneMiddleware` côté PostgreSQL).
+**Tunnel de réservation** (04/10, refait le 17/10) : fiche activité → `BookingController` (créneaux
+`Availability`, sinon horaires d'ouverture) → récapitulatif → **demande envoyée** au pro
+(`PaymentService::request`, aucun débit) → le pro confirme (workflow) puis déclare le règlement reçu
+(`PaymentService::markPaid`). Fuseau applicatif forcé à Europe/Paris (`Kernel::TIMEZONE` +
+`SessionTimezoneMiddleware` côté PostgreSQL).
+
+**Paiements — règle du client (17/10), à ne jamais enfreindre** :
+- **Prestations des pros : AUCUN paiement ne transite par TrouveMoi.** Le client paie le pro
+  directement, par les moyens que le pro configure (`/pro/parametres?section=paiement` :
+  lien de paiement sur son propre compte, PayPal, IBAN, sur place, précisions —
+  `ProviderProfile::payment*`, `ProviderPaymentMethods`). Pas de commission, pas de versement.
+  `Payment` = règlement *déclaré* par le pro (à régler → réglé, `method`, `paidAt`).
+- **Abonnements pros : encaissés par TrouveMoi** (`/pro/abonnement`, `SubscriptionService`) via
+  Stripe Checkout (`ConfiguredSubscriptionGateway` : Stripe si clé `sk_…`, simulé sinon ; PayPal =
+  à activer dans le tableau de bord Stripe). Activation par webhook `checkout.session.completed`
+  (mode subscription) puis `customer.subscription.*`. Les offres se créent dans EasyAdmin.
+- Bons cadeaux : vendus et encaissés par TrouveMoi (Stripe). **Point ouvert** : un bon dépensé sur
+  une activité pro contredit la règle ci-dessus → à trancher avec le client.
+- Déploiement de ce changement : migration `Version20261017090000`, puis republier CGU et CGV
+  (`app:legal:publish --type=terms_of_service --type=terms_of_sale --doc-version=2.0 --locale=fr
+  --resume="…"`, idem `--locale=en`) et réimporter les traductions (`app:i18n:import`).
 
 **Maquettes du 04/10** (`docs/maquettes/`) intégrées et branchées :
 - Événements : assistant `/evenements/creer` (guide + 8 étapes validées côté serveur, brouillon
@@ -207,7 +225,7 @@ activités pro (`Service::viewsCount`) et gratuites (`PrivateActivity::viewsCoun
 **Une personne = une vue** : `Stats\UniqueView` (empreinte HMAC du compte, ou IP + navigateur pour un
 anonyme) ; les statistiques pro (`PageView`) comptent donc aussi des visiteurs uniques.
 
-**Reste** : Stripe réel (clés), sous-pages Destinations ; liens réseaux sociaux officiels à
+**Reste** : clés Stripe réelles (abonnements, bons cadeaux), sous-pages Destinations ; liens réseaux sociaux officiels à
 confirmer (variables `SOCIAL_*_URL` du `.env`, global Twig `social_links`), vérif d'email,
 utilisation d'un bon cadeau au paiement (aujourd'hui : statut « utilisé » posé dans le
 back-office). Détail : fin de `docs/cablage-back-front.md`.
