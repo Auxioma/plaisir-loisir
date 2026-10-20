@@ -47,3 +47,5 @@ temp_interactive_push.bat
 # Configuration d'éditeur personnelle : jamais dans le dépôt (vecteur d'une injection
 # de code, tâche VS Code lancée automatiquement à l'ouverture du dossier).
 ###< sécurité ###
+.vscode/
+.vscode/
