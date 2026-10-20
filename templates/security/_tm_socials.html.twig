@@ -14,7 +14,7 @@
 <div class="tm-login__socials">
     {% for button in social_buttons %}
         {% if social_login_enabled(button.service) %}
-            <a class="tm-login__social" href="{{ path('app_social_start', { service: button.service }) }}">
+            <a class="tm-login__social" href="{{ path('app_social_start', { service: button.service }) }}" data-turbo="false">
                 <img src="{{ asset('images/social-' ~ button.service ~ '.svg') }}" alt="" loading="lazy" decoding="async">{{ button.label|trans }}
             </a>
         {% else %}

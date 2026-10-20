@@ -83,7 +83,7 @@
                             <p class="pf-muted">{{ provider.stripeAccountId
                                 ? 'Votre inscription Stripe n’est pas terminée : reprenez-la pour accepter les cartes.'|trans
                                 : 'Reliez votre compte Stripe : les paiements par carte arriveront directement sur ce compte.'|trans }}</p>
-                            <button class="pf-btn" formaction="{{ path('app_pro_stripe_connect') }}">{{ icon.link(16) }} {{ provider.stripeAccountId ? 'Reprendre mon inscription Stripe'|trans : 'Relier mon compte Stripe'|trans }}</button>
+                            <button class="pf-btn" formaction="{{ path('app_pro_stripe_connect') }}" data-turbo="false">{{ icon.link(16) }} {{ provider.stripeAccountId ? 'Reprendre mon inscription Stripe'|trans : 'Relier mon compte Stripe'|trans }}</button>
                         {% endif %}
                     </div>
                 </div>

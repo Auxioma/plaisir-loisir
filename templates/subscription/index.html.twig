@@ -70,7 +70,7 @@
                         {% if plan.featured %}<li>{{ icon.check(16) }} {{ 'Mise en avant dans les résultats'|trans }}</li>{% endif %}
                         {% if plan.advancedStatistics %}<li>{{ icon.check(16) }} {{ 'Statistiques avancées'|trans }}</li>{% endif %}
                     </ul>
-                    <form method="post" action="{{ path('app_pro_subscription_subscribe', {slug: plan.slug}) }}">
+                    <form method="post" action="{{ path('app_pro_subscription_subscribe', {slug: plan.slug}) }}" data-turbo="false">
                         <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                         <button type="submit" class="pf-btn pf-btn--primary pp-plan__cta">{{ 'S’abonner'|trans }}</button>
                     </form>

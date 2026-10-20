@@ -20,7 +20,7 @@
 
         {% if errors._token is defined %}<p class="gc-alert" role="alert">{{ errors._token|trans }}</p>{% endif %}
 
-        <form id="gift-form" class="gc-buy__cols" method="post" action="{{ path('app_gifts_offer') }}" novalidate data-gc-form data-unit="{{ unit }}">
+        <form id="gift-form" class="gc-buy__cols" method="post" action="{{ path('app_gifts_offer') }}" data-turbo="false" novalidate data-gc-form data-unit="{{ unit }}">
             <input type="hidden" name="_token" value="{{ csrf_token('gift_offer') }}">
             {% if activity %}<input type="hidden" name="activite" value="{{ activity.slug }}">{% endif %}
 
