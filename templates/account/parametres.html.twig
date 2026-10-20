@@ -128,12 +128,12 @@
     <section class="pf-card pf-danger" id="zone-dangereuse">
         <h2 class="pf-card__title pf-card__title--icon"><span>{{ icon.trash(22) }}</span>{{ 'Zone dangereuse'|trans }}</h2>
         <p class="pf-card__sub">{{ 'Des actions irréversibles pour votre compte.'|trans }}</p>
-        <form method="post" action="{{ path('app_account_delete') }}" onsubmit="return confirm('{{ 'Supprimer définitivement votre compte et vos données personnelles ? Cette action est irréversible.'|trans|e('js') }}')">
+        <form method="post" action="{{ path('app_account_delete') }}" data-confirm="{{ 'Supprimer définitivement votre compte et vos données personnelles ? Cette action est irréversible.'|trans }}">
             <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
             <button type="submit" class="pf-btn pf-btn--danger pf-btn--block">{{ 'Supprimer mon compte'|trans }}</button>
         </form>
         <p class="pf-danger__or">{{ 'ou'|trans }}</p>
-        <form method="post" action="{{ path('app_account_deactivate') }}" onsubmit="return confirm('{{ 'Désactiver votre compte ? Vous devrez nous contacter pour le réactiver.'|trans|e('js') }}')">
+        <form method="post" action="{{ path('app_account_deactivate') }}" data-confirm="{{ 'Désactiver votre compte ? Vous devrez nous contacter pour le réactiver.'|trans }}">
             <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
             <button type="submit" class="pf-danger__link">{{ 'Désactiver temporairement'|trans }}</button>
         </form>

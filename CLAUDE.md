@@ -158,6 +158,8 @@ direct au pro (voir « Paiements »). Styles du tunnel et des pages de réservat
   (`ProviderSubscriptionGateSubscriber`, sauf abonnement, paramètres, profil/justificatifs, support,
   notifications, réservations existantes), ne peut plus soumettre d'activité ni être réservé.
   Coupe-circuit `PROVIDER_SUBSCRIPTION_REQUIRED=0` (coupé dans `.env.test`).
+  Offres de départ (20/10) : `app:subscription:plans` (Essentiel 19 €, Pro 39 €, Premium 69 €/mois,
+  idempotente, `--inactives` pour les créer désactivées).
 - Bons cadeaux : vendus et encaissés par TrouveMoi (Stripe). **Point ouvert** : un bon dépensé sur
   une activité pro contredit la règle ci-dessus → à trancher avec le client.
 - Déploiement de ce changement : migration `Version20261017090000`, puis republier CGU et CGV

@@ -98,6 +98,8 @@
         {% if app.user is not null %}
             {% include '_partials/_logout_modal.html.twig' %}
         {% endif %}
+        {# Confirmation des actions sensibles (data-confirm, assets/confirm.js). #}
+        {% include '_partials/_confirm_modal.html.twig' %}
 
         {# Événements Analytics mis en attente avant une redirection (12/10). #}
         {% if ga_measurement_id is not empty %}
