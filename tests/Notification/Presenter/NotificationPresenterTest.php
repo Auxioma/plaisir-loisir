@@ -13,8 +13,10 @@ final class NotificationPresenterTest extends TestCase
 {
     public function testGroupsByTodayAndYesterday(): void
     {
-        $today = $this->notificationAt(new \DateTimeImmutable('-30 minutes'), NotificationCategory::Booking, 'Réservation confirmée');
-        $yesterday = $this->notificationAt(new \DateTimeImmutable('-1 day'), NotificationCategory::Review, 'Nouvel avis');
+        // Dates calées sur le calendrier, pas sur l'heure : « il y a 30 min »
+        // tombait sur la veille quand la CI tournait entre minuit et 00:30.
+        $today = $this->notificationAt(new \DateTimeImmutable('today 00:00:01'), NotificationCategory::Booking, 'Réservation confirmée');
+        $yesterday = $this->notificationAt(new \DateTimeImmutable('yesterday 12:00'), NotificationCategory::Review, 'Nouvel avis');
 
         $groups = (new NotificationPresenter())->groups([$today, $yesterday]);
 
