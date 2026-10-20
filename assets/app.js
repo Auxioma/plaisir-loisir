@@ -44,6 +44,8 @@ import './styles/event-list.css';
 import './styles/pages.css';
 // Activités gratuites, choix de création, invitations (retours client du 07/10).
 import './styles/free-activities.css';
+// Paiement direct au professionnel : tunnel, confirmations, paramètres (20/10).
+import './styles/payment.css';
 
 // Adaptations telephone / tablette. Charge EN DERNIER : a specificite egale,
 // ses regles doivent l'emporter sur le CSS de bureau qu'elles degradent.

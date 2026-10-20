@@ -1,0 +1,119 @@
+{#
+    Facture / reçu PDF (dompdf) d'une réservation réglée — maquettes
+    reservation_confirmee_client et _prestataire (20/10). Même document pour
+    le client et le professionnel. Mise en page en tableaux (dompdf ne gère ni
+    flex ni grid), couleurs de la plateforme.
+    Données : InvoiceRenderer::html().
+#}
+{% set client = booking.client %}
+{% set service = booking.service %}
+{% set user = provider ? provider.user : null %}
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>{{ 'Facture / Reçu'|trans }} {{ payment.invoiceNumber }}</title>
+<style>
+    @page { margin: 28mm 16mm 22mm; }
+    body { font-family: "DejaVu Sans", sans-serif; font-size: 10px; color: #0f172a; }
+    h1 { margin: 0; font-size: 18px; color: #061b56; }
+    .muted { color: #64748b; }
+    .head td { vertical-align: top; }
+    .logo { display: inline-block; padding: 8px 12px; background: #061b56; border-radius: 6px; }
+    .meta { text-align: right; }
+    .meta p { margin: 2px 0; }
+    .parties { width: 100%; margin-top: 22px; }
+    .parties td { width: 50%; vertical-align: top; padding-right: 12px; }
+    .parties h2 { margin: 0 0 4px; font-size: 11px; color: #061b56; }
+    .parties p { margin: 1px 0; }
+    .lines { width: 100%; margin-top: 22px; border-collapse: collapse; }
+    .lines th { padding: 7px 8px; background: #f0eafb; color: #061b56; font-size: 9.5px; text-align: left; border: 1px solid #e5e7eb; }
+    .lines td { padding: 7px 8px; border: 1px solid #e5e7eb; }
+    .num { text-align: right; white-space: nowrap; }
+    .total td { font-weight: bold; font-size: 11.5px; background: #f8fafc; }
+    .paid { margin-top: 18px; padding: 10px 12px; background: #e4f8e8; color: #166534; border-radius: 6px; }
+    .notes { margin-top: 26px; font-size: 8.5px; color: #64748b; line-height: 1.5; }
+</style>
+</head>
+<body>
+    <table class="head" width="100%">
+        <tr>
+            <td>{% if logo %}<div class="logo"><img src="{{ logo }}" alt="TrouveMoi" height="30"></div>{% else %}<strong>TrouveMoi</strong>{% endif %}</td>
+            <td class="meta">
+                <h1>{{ 'Facture / Reçu'|trans }}</h1>
+                <p><strong>{{ 'N°'|trans }} :</strong> {{ payment.invoiceNumber }}</p>
+                <p><strong>{{ 'Date'|trans }} :</strong> {{ (payment.paidAt ?? payment.updatedAt)|date('d/m/Y') }}</p>
+                <p><strong>{{ 'Réservation'|trans }} :</strong> #{{ booking.reference }}</p>
+            </td>
+        </tr>
+    </table>
+
+    <table class="parties">
+        <tr>
+            <td>
+                <h2>{{ 'Client'|trans }}</h2>
+                <p>{{ client.firstName }} {{ client.lastName }}</p>
+                <p>{{ client.email }}</p>
+                {% if client.phone %}<p>{{ client.phone }}</p>{% endif %}
+            </td>
+            <td>
+                <h2>{{ 'Prestataire'|trans }}</h2>
+                {% if provider %}
+                    <p>{{ company and company.legalName ? company.legalName : provider.displayName }}</p>
+                    {% if company and company.legalName and company.legalName != provider.displayName %}<p>{{ provider.displayName }}</p>{% endif %}
+                    {% if company and company.registeredStreet %}
+                        <p>{{ company.registeredStreet }}{% if company.registeredComplement %}, {{ company.registeredComplement }}{% endif %}</p>
+                        <p>{{ company.registeredPostalCode }} {{ company.registeredCity }}</p>
+                    {% elseif provider.address %}
+                        <p>{{ provider.address }}</p>
+                    {% endif %}
+                    {% if user %}<p>{{ user.email }}</p>{% endif %}
+                    {% if company and company.siret %}<p class="muted">{{ 'SIRET'|trans }} {{ company.siret }}</p>{% endif %}
+                    {% if company and company.vatNumber %}<p class="muted">{{ 'TVA'|trans }} {{ company.vatNumber }}</p>{% endif %}
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+    <table class="lines">
+        <thead>
+            <tr>
+                <th>{{ 'Description'|trans }}</th>
+                <th class="num">{{ 'Quantité'|trans }}</th>
+                <th class="num">{{ 'Prix unitaire'|trans }}</th>
+                <th class="num">{{ 'Total'|trans }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in booking.items %}
+                <tr>
+                    <td>
+                        {{ service ? service.title : item.label }}{% if service and service.durationLabel %} ({{ service.durationLabel }}){% endif %}
+                        <br><span class="muted">{{ item.label }}{% if booking.startsAt %} — {{ booking.startsAt|pf_date('EEEE d MMMM y')|capitalize }} {{ booking.startsAt|date('H\\hi') }}{% endif %}</span>
+                    </td>
+                    <td class="num">{{ item.quantity }}</td>
+                    <td class="num">{{ item.unitPrice|number_format(2, ',', ' ') }} €</td>
+                    <td class="num">{{ (item.unitPrice * item.quantity)|number_format(2, ',', ' ') }} €</td>
+                </tr>
+            {% endfor %}
+            <tr class="total">
+                <td colspan="3" class="num">{{ 'Total TTC'|trans }}</td>
+                <td class="num">{{ payment.amount|number_format(2, ',', ' ') }} €</td>
+            </tr>
+        </tbody>
+    </table>
+    {% if company and company.vatExempt %}<p class="muted">{{ 'TVA non applicable, art. 293 B du CGI.'|trans }}</p>{% endif %}
+
+    <div class="paid">
+        <strong>{{ 'Payé'|trans }}</strong> — {{ (payment.paidAt ?? payment.updatedAt)|date('d/m/Y à H:i') }} ·
+        {% if payment.method == 'card' %}{{ 'Carte bancaire'|trans }}{% if payment.cardLast4 %} {{ payment.cardBrand|capitalize }} **** {{ payment.cardLast4 }}{% endif %} (Stripe)
+        {% elseif payment.method %}{{ payment.methodLabel|trans }}{% endif %}
+        {% if payment.transactionId %}<br><span class="muted">{{ 'Transaction'|trans }} : {{ payment.transactionId }}</span>{% endif %}
+    </div>
+
+    <p class="notes">
+        {{ 'Le paiement a été effectué directement auprès du prestataire, seul vendeur de la prestation. TrouveMoi (trouvemoi.eu), plateforme de mise en relation, n’encaisse aucune somme et ne prélève aucune commission sur cette réservation.'|trans }}<br>
+        {{ 'Merci pour votre réservation ! À très bientôt sur TrouveMoi.'|trans }}
+    </p>
+</body>
+</html>

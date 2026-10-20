@@ -13,26 +13,29 @@ use App\Payment\Entity\Payment;
 use App\Payment\Enum\PaymentStatus;
 use App\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
- * Tunnel de réservation depuis la fiche d'une activité (04/10) : créneau,
- * voyageurs, récapitulatif, demande envoyée, places décomptées ; un visiteur
- * est renvoyé vers la connexion.
+ * Tunnel de réservation depuis la fiche d'une activité (04/10, refait le
+ * 20/10) : créneau, voyageurs, récapitulatif, choix du moyen de paiement,
+ * validation, paiement confirmé ; places décomptées ; un visiteur est renvoyé
+ * vers la connexion.
  *
- * Encaissement direct (17/10) : rien n'est payé sur TrouveMoi. Le client voit
- * les moyens de paiement du professionnel, qui confirme la réservation puis
- * déclare le règlement reçu.
+ * Le client paie le professionnel DIRECTEMENT : par carte sur son compte
+ * Stripe (Stripe Connect) ou par PayPal — Stripe et PayPal sont simulés en
+ * test —, la réservation est alors confirmée ; ou sur place, et le
+ * professionnel confirme puis déclare le règlement. Facture et QR des deux
+ * côtés.
  */
 final class BookingFlowTest extends WebTestCase
 {
-    public function testAClientRequestsASlotAndPaysTheProviderDirectly(): void
+    public function testAClientPaysTheProviderByCardOnHisStripeAccount(): void
     {
         $client = static::createClient();
         $em = static::getContainer()->get(EntityManagerInterface::class);
         [$service, $slot] = $this->serviceWithSlot($em);
-        $user = $em->getRepository(User::class)->findOneBy(['email' => 'julie.martin@client.trouvemoi.test']);
-        self::assertNotNull($user);
+        $user = $this->client($em, 'julie.martin@client.trouvemoi.test');
         $client->loginUser($user);
 
         $crawler = $client->request('GET', '/activites/'.$service->getSlug());
@@ -50,50 +53,214 @@ final class BookingFlowTest extends WebTestCase
             'children' => 1,
         ]);
         self::assertResponseRedirects();
-        $summary = $client->followRedirect();
-        self::assertSelectorTextContains('h1', 'Récapitulatif');
-        self::assertSelectorTextContains('.bk-pay', 'Vous réglez directement l’organisateur');
-        self::assertSelectorTextContains('.bk-pay', 'Virement bancaire');
-        self::assertSelectorNotExists('form[action$="/payer"]');
-
-        $client->submit($summary->filter('form[action$="/envoyer"]')->form());
-        self::assertResponseRedirects();
         $client->followRedirect();
-        self::assertSelectorTextContains('h1', 'Demande envoyée');
-        // Coordonnées du professionnel montrées au client après l'envoi.
-        self::assertSelectorTextContains('.bk-direct', 'FR76 3000 6000 0112 3456 7890 189');
-
-        $em->clear();
-        $booking = $em->getRepository(Booking::class)->findOneBy(['client' => $user, 'service' => $service], ['createdAt' => 'DESC']);
-        self::assertNotNull($booking);
-        self::assertSame(BookingStatus::Pending, $booking->getStatus(), 'Rien n’est payé sur TrouveMoi : le professionnel confirme.');
-        self::assertSame(3, $booking->getParticipants());
+        self::assertSelectorTextContains('h1', 'Récapitulatif');
+        self::assertSelectorTextContains('.bk-pay', 'Procéder au paiement');
+        $booking = $this->lastBooking($em, $user, $service);
         self::assertSame($before + 3, $em->getRepository(Availability::class)->find($slot->getId())->getBooked());
-        $payment = $em->getRepository(Payment::class)->findOneBy(['booking' => $booking]);
-        self::assertNotNull($payment);
-        self::assertSame(PaymentStatus::Pending, $payment->getStatus());
 
-        // Le professionnel confirme, puis déclare le règlement reçu.
-        $provider = $service->getProvider()?->getUser();
-        self::assertNotNull($provider);
-        $client->loginUser($provider);
-        $crawler = $client->request('GET', '/pro/reservations?q='.$booking->getReference());
-        $client->submit($crawler->filter(sprintf('form[action$="/%s/confirm"]', $booking->getId()))->form());
-        $crawler = $client->request('GET', '/pro/reservations?q='.$booking->getReference());
-        $client->submit($crawler->filter(sprintf('form[action$="/%s/reglement"]', $booking->getId()))->form(['method' => 'transfer']));
+        // Étape 3 : les moyens acceptés par le professionnel.
+        $client->request('GET', '/reservations/'.$booking->getId().'/paiement');
+        self::assertSelectorExists('input[name="moyen"][value="stripe"]');
+        self::assertSelectorExists('input[name="moyen"][value="paypal"]');
+        self::assertSelectorExists('input[name="moyen"][value="onsite"]');
+
+        // Étape 4 : validation, puis départ vers Stripe (simulé : retour direct).
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=stripe');
+        self::assertSelectorTextContains('.bk-info', 'Stripe');
+        $client->submit($crawler->filter('form[action$="/payer"]')->form());
         self::assertResponseRedirects();
+        self::assertStringContainsString('/paiement/retour?session_id=mock_cs_', (string) $client->getResponse()->headers->get('Location'));
+        $client->followRedirect();
+        self::assertResponseRedirects('/reservations/'.$booking->getId().'/confirmation');
+        $client->followRedirect();
+        self::assertSelectorTextContains('h1', 'Paiement effectué avec succès');
+        self::assertSelectorTextContains('.rg-grid', 'Visa **** 4242');
+        self::assertSelectorTextContains('.rg-qr', '#'.$booking->getReference());
+        self::assertSelectorExists('.rg-invoice');
 
         $em->clear();
         $booking = $em->getRepository(Booking::class)->find($booking->getId());
-        self::assertSame(BookingStatus::Confirmed, $booking->getStatus());
+        self::assertSame(BookingStatus::Confirmed, $booking->getStatus(), 'Payée en ligne : la réservation est confirmée.');
         $payment = $em->getRepository(Payment::class)->findOneBy(['booking' => $booking]);
         self::assertSame(PaymentStatus::Paid, $payment->getStatus());
-        self::assertSame('transfer', $payment->getMethod());
+        self::assertSame(Payment::CHANNEL_STRIPE, $payment->getChannel());
+        self::assertSame('card', $payment->getMethod());
+        self::assertStringStartsWith('mock_acct_', (string) $payment->getExternalAccount(), 'Session créée sur le compte Stripe du professionnel.');
+        self::assertMatchesRegularExpression('/^FACT-\d{4}-\d{5}$/', (string) $payment->getInvoiceNumber());
+
+        // Revenir sur l'adresse de retour ne refait rien.
+        $client->request('GET', '/reservations/'.$booking->getId().'/paiement/retour?session_id='.$payment->getExternalId());
+        self::assertResponseRedirects('/reservations/'.$booking->getId().'/confirmation');
+
+        // Facture PDF et QR côté client.
+        $client->request('GET', '/reservations/'.$booking->getId().'/facture?telecharger=1');
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('Content-Type', 'application/pdf');
+        self::assertStringContainsString('attachment', (string) $client->getResponse()->headers->get('Content-Disposition'));
+        self::assertStringStartsWith('%PDF', (string) $client->getResponse()->getContent());
+        $client->request('GET', '/reservations/'.$booking->getId().'/qr');
+        self::assertResponseHeaderSame('Content-Type', 'image/png');
+
+        // Un autre client n'y a pas accès.
+        $client->loginUser($this->client($em, 'marc.dubois@client.trouvemoi.test'));
+        $client->request('GET', '/reservations/'.$booking->getId().'/facture');
+        self::assertResponseStatusCodeSame(404);
+
+        // Côté professionnel : réservation payée, facture, QR, contrôle de l'entrée.
+        $client->loginUser($service->getProvider()?->getUser());
+        $client->request('GET', '/pro/reservations/'.$booking->getId());
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1', 'Paiement reçu sur votre compte prestataire');
+        self::assertSelectorTextContains('.rg-received', number_format((float) $booking->getTotalPrice(), 2, ',', ' '));
+        self::assertSelectorTextNotContains('.rg', 'Frais de service');
+        self::assertSelectorTextContains('.rg-timeline', 'Paiement validé');
+        $client->request('GET', '/pro/reservations/'.$booking->getId().'/facture');
+        self::assertResponseHeaderSame('Content-Type', 'application/pdf');
+        self::assertStringContainsString('inline', (string) $client->getResponse()->headers->get('Content-Disposition'));
+
+        $crawler = $client->request('GET', '/pro/reservations/controle?code='.$booking->getReference());
+        self::assertResponseRedirects('/pro/reservations/'.$booking->getId().'/controle');
+        $crawler = $client->followRedirect();
+        self::assertSelectorTextContains('.rg-banner', 'Réservation valable');
+        $client->submit($crawler->filter('form[action$="/entree"]')->form());
+        $client->followRedirect();
+        self::assertSelectorTextContains('.rg-banner', 'Entrée déjà validée');
+        $em->clear();
+        self::assertNotNull($em->getRepository(Booking::class)->find($booking->getId())->getCheckedInAt());
+
+        $client->request('GET', '/pro/reservations/controle?code=RZZZZZZ');
+        self::assertSelectorTextContains('.rg-banner', 'QR non reconnu');
+    }
+
+    public function testAClientPaysTheProviderWithPaypal(): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        [$service, $slot] = $this->serviceWithSlot($em);
+        $user = $this->client($em, 'julie.martin@client.trouvemoi.test');
+        $client->loginUser($user);
+        $booking = $this->book($client, $em, $user, $service, $slot);
+
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=paypal');
+        $client->submit($crawler->filter('form[action$="/payer"]')->form());
+        self::assertResponseRedirects();
+        $location = (string) $client->getResponse()->headers->get('Location');
+        self::assertMatchesRegularExpression('#/paiement/retour\?token=MOCK\d+X#', $location);
+
+        // Une commande PayPal qui n'est pas celle de cette réservation est refusée.
+        $client->request('GET', '/reservations/'.$booking->getId().'/paiement/retour?token=MOCK100XABCDEF');
+        self::assertResponseRedirects('/reservations/'.$booking->getId().'/paiement');
+        $em->clear();
+        self::assertSame(PaymentStatus::Pending, $em->getRepository(Payment::class)->findOneBy(['booking' => $booking->getId()])->getStatus());
+
+        $client->request('GET', $location);
+        self::assertResponseRedirects('/reservations/'.$booking->getId().'/confirmation');
+        $client->followRedirect();
+        self::assertSelectorTextContains('h1', 'Paiement effectué avec succès');
+
+        $em->clear();
+        $payment = $em->getRepository(Payment::class)->findOneBy(['booking' => $booking->getId()]);
+        self::assertSame(PaymentStatus::Paid, $payment->getStatus());
+        self::assertSame('paypal', $payment->getMethod());
+        self::assertSame(BookingStatus::Confirmed, $payment->getBooking()?->getStatus());
+    }
+
+    public function testAClientPaysOnSiteAndTheProviderDeclaresThePayment(): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        [$service, $slot] = $this->serviceWithSlot($em);
+        $user = $this->client($em, 'julie.martin@client.trouvemoi.test');
+        $client->loginUser($user);
+        $booking = $this->book($client, $em, $user, $service, $slot);
+
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=onsite');
+        self::assertSelectorTextContains('.bk-info', 'sur place');
+        $client->submit($crawler->filter('form[action$="/payer"]')->form());
+        self::assertResponseRedirects('/reservations/'.$booking->getId().'/confirmation');
+        $client->followRedirect();
+        self::assertSelectorTextContains('h1', 'Demande envoyée');
+
+        $em->clear();
+        $payment = $em->getRepository(Payment::class)->findOneBy(['booking' => $booking->getId()]);
+        self::assertSame(PaymentStatus::Pending, $payment->getStatus());
+        self::assertSame(Payment::CHANNEL_ONSITE, $payment->getChannel());
+        self::assertSame(BookingStatus::Pending, $payment->getBooking()?->getStatus(), 'Sur place : le professionnel confirme.');
+
+        // Le tunnel est terminé : plus de paiement possible.
+        $client->request('GET', '/reservations/'.$booking->getId().'/paiement');
+        self::assertResponseRedirects('/reservations/'.$booking->getId().'/confirmation');
+
+        // Le professionnel confirme puis déclare le règlement en espèces.
+        $client->loginUser($service->getProvider()?->getUser());
+        $crawler = $client->request('GET', '/pro/reservations/'.$booking->getId());
+        self::assertSelectorTextContains('h1', 'Réservation à confirmer');
+        $client->submit($crawler->filter(sprintf('form[action$="/%s/confirm"]', $booking->getId()))->form());
+        $crawler = $client->request('GET', '/pro/reservations/'.$booking->getId());
+        $client->submit($crawler->filter(sprintf('form[action$="/%s/reglement"]', $booking->getId()))->form(['method' => 'cash']));
+        $client->request('GET', '/pro/reservations/'.$booking->getId());
+        self::assertSelectorTextContains('h1', 'Paiement reçu');
+
+        $em->clear();
+        $payment = $em->getRepository(Payment::class)->findOneBy(['booking' => $booking->getId()]);
+        self::assertSame(PaymentStatus::Paid, $payment->getStatus());
+        self::assertSame('cash', $payment->getMethod());
+        self::assertNotNull($payment->getInvoiceNumber());
+        self::assertSame(BookingStatus::Confirmed, $payment->getBooking()?->getStatus());
 
         $client->loginUser($user);
         $client->request('GET', '/reservations/'.$booking->getId().'/confirmation');
-        self::assertSelectorTextContains('h1', 'confirmée');
-        self::assertSelectorTextContains('.bk-direct', 'Règlement reçu par l’organisateur');
+        self::assertSelectorTextContains('h1', 'Règlement reçu par le prestataire');
+        $client->request('GET', '/reservations/'.$booking->getId().'/facture');
+        self::assertResponseHeaderSame('Content-Type', 'application/pdf');
+    }
+
+    public function testAClientCanAbandonAnUnfinishedOnlinePayment(): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        [$service, $slot] = $this->serviceWithSlot($em);
+        $user = $this->client($em, 'julie.martin@client.trouvemoi.test');
+        $client->loginUser($user);
+        $booking = $this->book($client, $em, $user, $service, $slot);
+
+        // Départ vers PayPal sans retour : rien n'est débité.
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=paypal');
+        $client->submit($crawler->filter('form[action$="/payer"]')->form());
+        $client->request('GET', '/reservations/'.$booking->getId().'/paiement/annule?moyen=paypal');
+        self::assertResponseRedirects('/reservations/'.$booking->getId().'/paiement?moyen=paypal');
+
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId());
+        self::assertSelectorTextContains('h1', 'Récapitulatif');
+        $client->submit($crawler->filter('form[action$="/annuler"]')->form());
+
+        $em->clear();
+        self::assertSame(BookingStatus::Cancelled, $em->getRepository(Booking::class)->find($booking->getId())->getStatus());
+        self::assertNull($em->getRepository(Payment::class)->findOneBy(['booking' => $booking->getId()]), 'Le paiement non finalisé est effacé.');
+        self::assertSame($slot->getBooked(), $em->getRepository(Availability::class)->find($slot->getId())->getBooked(), 'Places libérées.');
+    }
+
+    public function testAMethodTheProviderDoesNotAcceptIsRefused(): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        [$service, $slot] = $this->serviceWithSlot($em);
+        $user = $this->client($em, 'julie.martin@client.trouvemoi.test');
+        $client->loginUser($user);
+        $booking = $this->book($client, $em, $user, $service, $slot);
+
+        $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=bitcoin');
+        self::assertResponseRedirects('/reservations/'.$booking->getId().'/paiement');
+
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=stripe');
+        $client->request('POST', '/reservations/'.$booking->getId().'/payer', [
+            '_token' => (string) $crawler->filter('form[action$="/payer"] input[name="_token"]')->attr('value'),
+            'moyen' => 'transfer',
+        ]);
+        self::assertResponseRedirects('/reservations/'.$booking->getId().'/paiement');
+        $em->clear();
+        self::assertNull($em->getRepository(Payment::class)->findOneBy(['booking' => $booking->getId()]));
     }
 
     public function testAVisitorIsSentToLoginWithHisSelectionKept(): void
@@ -126,6 +293,37 @@ final class BookingFlowTest extends WebTestCase
         self::assertResponseRedirects();
         $client->followRedirect();
         self::assertSelectorTextContains('.toast-body', 'créneau');
+    }
+
+    private function client(EntityManagerInterface $em, string $email): User
+    {
+        $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+        self::assertNotNull($user);
+
+        return $user;
+    }
+
+    private function lastBooking(EntityManagerInterface $em, User $user, Service $service): Booking
+    {
+        $booking = $em->getRepository(Booking::class)->findOneBy(['client' => $user, 'service' => $service], ['createdAt' => 'DESC']);
+        self::assertNotNull($booking);
+
+        return $booking;
+    }
+
+    /** Réserve 2 places sur le créneau et renvoie la réservation (en attente de paiement). */
+    private function book(KernelBrowser $client, EntityManagerInterface $em, User $user, Service $service, Availability $slot): Booking
+    {
+        $crawler = $client->request('GET', '/activites/'.$service->getSlug());
+        $client->request('POST', '/activites/'.$service->getSlug().'/reserver', [
+            '_token' => (string) $crawler->filter('form#reserver input[name="_token"]')->attr('value'),
+            'date' => $slot->getStartsAt()->format('Y-m-d'),
+            'time' => $slot->getStartsAt()->format('H:i'),
+            'adults' => 2,
+        ]);
+        self::assertResponseRedirects();
+
+        return $this->lastBooking($em, $user, $service);
     }
 
     /** @return array{0: Service, 1: Availability} */

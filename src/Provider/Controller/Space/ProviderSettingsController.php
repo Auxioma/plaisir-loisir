@@ -8,7 +8,10 @@ use App\Catalog\Repository\CategoryRepository;
 use App\Legal\Repository\CompanyIdentityRepository;
 use App\Notification\Entity\NotificationPreference;
 use App\Notification\Repository\NotificationPreferenceRepository;
+use App\Payment\PayPal\PayPalGateway;
+use App\Payment\Service\StripeConnectService;
 use App\Payment\Service\SubscriptionService;
+use App\Provider\Service\ProviderPaymentMethods;
 use App\Shared\Service\PublicImageStorage;
 use App\User\Service\AvatarStorageService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,12 +20,14 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * « Paramètres » — maquette profil_parametres_professionnel.jpeg (02/10) :
  * sous-menu à gauche (informations, profil pro, préférences, notifications,
- * moyens de paiement, sécurité, abonnement, intégrations, suppression),
+ * paiement et encaissements — dont la liaison Stripe Connect, 20/10 —,
+ * sécurité, abonnement, intégrations, suppression),
  * photo de profil, couverture et réseaux sociaux à droite.
  *
  * Chaque formulaire poste vers save() avec un `form` qui dit quoi
@@ -45,6 +50,9 @@ final class ProviderSettingsController extends AbstractProviderSpaceController
         private readonly AvatarStorageService $avatars,
         private readonly PublicImageStorage $images,
         private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly ProviderPaymentMethods $paymentMethods,
+        private readonly StripeConnectService $stripeConnect,
+        private readonly PayPalGateway $paypal,
     ) {
     }
 
@@ -57,8 +65,17 @@ final class ProviderSettingsController extends AbstractProviderSpaceController
             $section = 'infos';
         }
 
+        // Inscription Stripe en cours : on relit son état chez Stripe.
+        if ('paiement' === $section && null !== $provider->getStripeAccountId() && !$provider->isStripeChargesEnabled()) {
+            $this->stripeConnect->refresh($provider);
+        }
+
         return $this->renderSpace('provider/space/settings.html.twig', 'Paramètres', [
             'section' => $section,
+            'payment_summary' => $this->paymentMethods->summary($provider),
+            'stripe_ready' => $this->paymentMethods->stripeReady($provider),
+            'stripe_available' => $this->stripeConnect->isAvailable(),
+            'paypal_available' => $this->paypal->isAvailable(),
             'editing' => $request->query->getBoolean('modifier'),
             'me' => $this->currentUser(),
             'company' => $this->companyIdentities->findOneByProvider($provider),
@@ -184,6 +201,87 @@ final class ProviderSettingsController extends AbstractProviderSpaceController
         }
 
         return $this->redirectToRoute('app_pro_settings', ['section' => $section]);
+    }
+
+    /**
+     * « Relier mon compte Stripe » (Stripe Connect) : la configuration en
+     * cours est enregistrée, Stripe CB coché, puis le professionnel part
+     * s'inscrire sur les pages de Stripe (identité, IBAN) et revient ici.
+     */
+    #[Route(path: ['fr' => '/pro/parametres/paiement/stripe', 'en' => '/en/pro/settings/payment/stripe'], name: 'app_pro_stripe_connect', methods: ['POST'])]
+    public function stripeConnect(Request $request): Response
+    {
+        if (!$this->csrfOk($request)) {
+            return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
+        }
+
+        $provider = $this->currentProvider();
+        try {
+            if ($request->request->has('onlinePaymentEnabled') || $request->request->has('acceptsCash') || $request->request->has('paymentPaypal')) {
+                $this->paymentMethods->update($provider, ['acceptsStripe' => '1'] + $request->request->all());
+            } else {
+                $provider->setAcceptsStripe(true);
+            }
+            $this->entityManager->flush();
+
+            return $this->redirect($this->stripeConnect->onboardingUrl(
+                $provider,
+                $this->generateUrl('app_pro_stripe_refresh', [], UrlGeneratorInterface::ABSOLUTE_URL),
+                $this->generateUrl('app_pro_stripe_return', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            ));
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
+
+            return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
+        }
+    }
+
+    /** Retour de l'inscription Stripe. */
+    #[Route(path: ['fr' => '/pro/parametres/paiement/stripe/retour', 'en' => '/en/pro/settings/payment/stripe/return'], name: 'app_pro_stripe_return', methods: ['GET'])]
+    public function stripeReturn(): Response
+    {
+        if ($this->stripeConnect->refresh($this->currentProvider())) {
+            $this->addFlash('success', 'Votre compte Stripe est relié : vos clients peuvent vous payer par carte.');
+
+            return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement']);
+        }
+
+        $this->addFlash('info', 'Votre inscription Stripe n’est pas encore terminée ou est en cours de vérification par Stripe. Vous pourrez la reprendre ici.');
+
+        return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
+    }
+
+    /** Lien d'inscription Stripe expiré : Stripe renvoie ici, on en recrée un. */
+    #[Route(path: ['fr' => '/pro/parametres/paiement/stripe/relancer', 'en' => '/en/pro/settings/payment/stripe/refresh'], name: 'app_pro_stripe_refresh', methods: ['GET'])]
+    public function stripeRefresh(): Response
+    {
+        $provider = $this->currentProvider();
+        if (null === $provider->getStripeAccountId()) {
+            return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
+        }
+
+        try {
+            return $this->redirect($this->stripeConnect->onboardingUrl(
+                $provider,
+                $this->generateUrl('app_pro_stripe_refresh', [], UrlGeneratorInterface::ABSOLUTE_URL),
+                $this->generateUrl('app_pro_stripe_return', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            ));
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
+
+            return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
+        }
+    }
+
+    #[Route(path: ['fr' => '/pro/parametres/paiement/stripe/delier', 'en' => '/en/pro/settings/payment/stripe/unlink'], name: 'app_pro_stripe_disconnect', methods: ['POST'])]
+    public function stripeDisconnect(Request $request): Response
+    {
+        if ($this->csrfOk($request)) {
+            $this->stripeConnect->disconnect($this->currentProvider());
+            $this->addFlash('success', 'Votre compte Stripe a été délié de TrouveMoi (il reste actif chez Stripe).');
+        }
+
+        return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
     }
 
     private function applyPreferences(Request $request): void

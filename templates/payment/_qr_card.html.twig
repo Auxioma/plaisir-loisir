@@ -1,0 +1,27 @@
+{#
+    « QR de réservation » (maquettes reservation_confirmee_*, 20/10) : le
+    client le présente le jour J, le professionnel le scanne (page de contrôle).
+    Variables : BookingPaymentPresenter::present() + side ('client' | 'pro').
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+<section class="pf-card rg-card rg-qr{{ side == 'client' ? ' is-client' }}">
+    <h2 class="rg-card__title"><span class="rg-card__ico">{{ icon.qr_code(20) }}</span>{{ side == 'pro' ? 'QR de réservation / contrôle'|trans : 'QR de réservation à présenter le jour de l’activité'|trans }}</h2>
+    <div class="rg-qr__body">
+        <img class="rg-qr__img" src="{{ qr }}" alt="{{ 'QR de la réservation'|trans }} #{{ booking.reference }}" width="150" height="150">
+        <div class="rg-qr__side">
+            <div class="rg-qr__code">
+                <small>{{ 'Code de réservation'|trans }}</small>
+                <strong>#{{ booking.reference }}</strong>
+                <button type="button" class="rg-copy" data-copy="{{ booking.reference }}" data-copy-done="✓" aria-label="{{ 'Copier le code'|trans }}"><span data-copy-label>{{ icon.copy(18) }}</span></button>
+            </div>
+            <div class="rg-info{{ side == 'client' ? ' is-success' }}">
+                {{ icon.info(18) }}
+                {% if side == 'pro' %}
+                    <p>{{ 'Ce QR code est le même que celui présenté par le client le jour de l’activité. Scannez-le avec l’appareil photo de votre téléphone, ou vérifiez ce code, pour valider l’entrée des participants.'|trans }}</p>
+                {% else %}
+                    <p><strong>{{ 'Présentez ce QR code sur place au prestataire le jour de l’activité.'|trans }}</strong> {{ 'Il permet de retrouver votre réservation rapidement.'|trans }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>

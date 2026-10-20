@@ -1,0 +1,21 @@
+{#
+    « Détails de la transaction » (maquettes reservation_confirmee_*, 20/10).
+    Variables : BookingPaymentPresenter::present() + side ('client' | 'pro').
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+{% set status = cancelled ? ['Annulé', 'red'] : (paid ? ['Payé', 'green'] : (payment and payment.online ? ['Paiement non finalisé', 'orange'] : (booking.status.value == 'pending' ? ['En attente de confirmation', 'orange'] : ['À régler sur place', 'blue']))) %}
+<section class="pf-card rg-card">
+    <h2 class="rg-card__title"><span class="rg-card__ico">{{ icon.file_text(20) }}</span>{{ 'Détails de la transaction'|trans }}</h2>
+    <dl class="rg-rows">
+        <div><dt>{{ 'Activité'|trans }}</dt><dd><strong>{{ service ? service.title : '—' }}</strong></dd></div>
+        {% if side == 'pro' %}
+            <div><dt>{{ 'Client'|trans }}</dt><dd>{{ booking.client.firstName }} {{ booking.client.lastName }}</dd></div>
+        {% else %}
+            <div><dt>{{ 'Prestataire'|trans }}</dt><dd>{{ provider ? provider.displayName : '—' }}</dd></div>
+        {% endif %}
+        <div><dt>{{ 'Date de réservation'|trans }}</dt><dd>{{ booking.startsAt ? booking.startsAt|pf_date('EEEE d MMMM y')|capitalize : 'Date à convenir'|trans }}</dd></div>
+        <div><dt>{{ 'Date du paiement'|trans }}</dt><dd>{{ paid and payment.paidAt ? payment.paidAt|date('d/m/Y') ~ ' – ' ~ payment.paidAt|date('H\\hi') : '—' }}</dd></div>
+        <div><dt>{{ 'Référence'|trans }}</dt><dd>#{{ booking.reference }}</dd></div>
+        <div><dt>{{ 'Statut'|trans }}</dt><dd><span class="rg-status is-{{ status[1] }}">{% if paid %}{{ icon.check(14) }}{% endif %}{{ status[0]|trans }}</span></dd></div>
+    </dl>
+</section>

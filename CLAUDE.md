@@ -131,18 +131,24 @@ réservations (workflow), calendrier/créneaux, messagerie + notes clients, avis
 (règlements déclarés, sans commission), offres (`Promotion`), statistiques (`Stats\PageView`), paramètres, documents,
 tickets support (`SupportTicket`, réponse depuis EasyAdmin). Démo : `ProviderSpaceFixtures`.
 
-**Tunnel de réservation** (04/10, refait le 17/10) : fiche activité → `BookingController` (créneaux
-`Availability`, sinon horaires d'ouverture) → récapitulatif → **demande envoyée** au pro
-(`PaymentService::request`, aucun débit) → le pro confirme (workflow) puis déclare le règlement reçu
-(`PaymentService::markPaid`). Fuseau applicatif forcé à Europe/Paris (`Kernel::TIMEZONE` +
+**Tunnel de réservation** (04/10, refait le 20/10) : fiche activité → `BookingController` (créneaux
+`Availability`, sinon horaires d'ouverture) → récapitulatif → choix du moyen → validation → paiement
+direct au pro (voir « Paiements »). Styles du tunnel et des pages de réservation réglée :
+`assets/styles/payment.css` (préfixes `.bk-*` et `.rg-*` — `.py-*` est pris par la page corporate
+« Paiement »). Fuseau applicatif forcé à Europe/Paris (`Kernel::TIMEZONE` +
 `SessionTimezoneMiddleware` côté PostgreSQL).
 
 **Paiements — règle du client (17/10), à ne jamais enfreindre** :
-- **Prestations des pros : AUCUN paiement ne transite par TrouveMoi.** Le client paie le pro
-  directement, par les moyens que le pro configure (`/pro/parametres?section=paiement` :
-  lien de paiement sur son propre compte, PayPal, IBAN, sur place, précisions —
-  `ProviderProfile::payment*`, `ProviderPaymentMethods`). Pas de commission, pas de versement.
-  `Payment` = règlement *déclaré* par le pro (à régler → réglé, `method`, `paidAt`).
+- **Prestations des pros : AUCUN paiement ne transite par TrouveMoi, aucune commission.**
+  Depuis le 20/10 (`docs/paiement-direct-prestataires.md`), le pro configure
+  `/pro/parametres?section=paiement` : paiement en ligne par **Stripe CB** (Stripe Connect, compte
+  Standard du pro, session créée sur SON compte) et/ou **PayPal** (Orders v2, `payee` = son e-mail),
+  et/ou **espèces sur place**. En ligne : tunnel récap → choix du moyen → validation → Stripe/PayPal →
+  réservation confirmée (`BookingCheckoutService`, `PaymentService::recordOnlinePayment`, webhook
+  Connect). Sur place : demande, le pro confirme puis déclare le règlement (`markPaid`).
+  Facture PDF (dompdf, `InvoiceRenderer`, `FACT-AAAA-NNNNN`) et QR de contrôle
+  (`/pro/reservations/{id}/controle`) des deux côtés. Sans clés : simulé en dev/test, **indisponible
+  en prod**. Lien libre / IBAN ne sont plus proposés (colonnes conservées).
 - **Abonnements pros : encaissés par TrouveMoi** (`/pro/abonnement`, `SubscriptionService`) via
   Stripe Checkout (`ConfiguredSubscriptionGateway` : Stripe si clé `sk_…`, simulé sinon ; PayPal =
   à activer dans le tableau de bord Stripe). Activation par webhook `checkout.session.completed`
@@ -225,8 +231,9 @@ activités pro (`Service::viewsCount`) et gratuites (`PrivateActivity::viewsCoun
 **Une personne = une vue** : `Stats\UniqueView` (empreinte HMAC du compte, ou IP + navigateur pour un
 anonyme) ; les statistiques pro (`PageView`) comptent donc aussi des visiteurs uniques.
 
-**Reste** : clés Stripe réelles (abonnements, bons cadeaux), sous-pages Destinations ; liens réseaux sociaux officiels à
-confirmer (variables `SOCIAL_*_URL` du `.env`, global Twig `social_links`), vérif d'email,
+**Reste** : clés Stripe réelles (abonnements, bons cadeaux, Connect) et PayPal, sous-pages Destinations ;
+réseaux sociaux : seuls Instagram et Facebook confirmés (20/10), une variable `SOCIAL_*_URL` vide
+masque l'icône ; vérif d'email,
 utilisation d'un bon cadeau au paiement (aujourd'hui : statut « utilisé » posé dans le
 back-office). Détail : fin de `docs/cablage-back-front.md`.
 

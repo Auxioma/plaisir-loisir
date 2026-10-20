@@ -6,11 +6,14 @@ namespace App\Payment\Controller;
 
 use App\Catalog\Service\GiftCardService;
 use App\Payment\Enum\SubscriptionStatus;
+use App\Payment\Service\BookingCheckoutService;
+use App\Payment\Service\StripeConnectService;
 use App\Payment\Service\SubscriptionService;
 use Psr\Log\LoggerInterface;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -19,8 +22,10 @@ use Symfony\Component\Routing\Attribute\Route;
  * Point d'entrée des notifications serveur-à-serveur de Stripe (webhook).
  *
  * Stripe n'encaisse pour TrouveMoi que les abonnements des professionnels et
- * les bons cadeaux : les prestations sont réglées directement aux
- * professionnels (17/10) et n'arrivent jamais ici. C'est ICI, et seulement
+ * les bons cadeaux. Les prestations sont payées directement sur le compte
+ * Stripe du professionnel (Stripe Connect, 20/10) : Stripe en prévient ici
+ * (événement porteur de `account`), sans que l'argent passe par TrouveMoi.
+ * C'est ICI, et seulement
  * ici, qu'un paiement Stripe est confirmé : on vérifie d'abord que l'appel est
  * bien signé par Stripe (sinon n'importe qui pourrait se faire passer pour
  * Stripe et activer un abonnement non payé).
@@ -31,7 +36,11 @@ final class StripeWebhookController extends AbstractController
         private readonly GiftCardService $giftCards,
         private readonly SubscriptionService $subscriptionService,
         private readonly LoggerInterface $logger,
+        private readonly BookingCheckoutService $checkout,
+        private readonly StripeConnectService $stripeConnect,
         private readonly string $stripeWebhookSecret,
+        #[Autowire('%env(STRIPE_CONNECT_WEBHOOK_SECRET)%')]
+        private readonly string $stripeConnectWebhookSecret,
     ) {
     }
 
@@ -43,14 +52,38 @@ final class StripeWebhookController extends AbstractController
         $payload = $request->getContent();
         $signature = $request->headers->get('Stripe-Signature', '');
 
-        try {
-            // Vérifie la signature : lève une exception si le corps a été altéré
-            // ou si l'appel ne vient pas de Stripe.
-            $event = Webhook::constructEvent($payload, $signature, $this->stripeWebhookSecret);
-        } catch (\UnexpectedValueException) {
-            return new Response('Corps de requête invalide.', Response::HTTP_BAD_REQUEST);
-        } catch (SignatureVerificationException) {
+        // Deux points d'écoute Stripe peuvent viser cette URL : celui du compte
+        // TrouveMoi et celui des comptes connectés des professionnels (Stripe
+        // Connect, 20/10), chacun avec son secret de signature.
+        $event = null;
+        foreach (array_filter([$this->stripeWebhookSecret, $this->stripeConnectWebhookSecret]) as $secret) {
+            try {
+                // Vérifie la signature : lève une exception si le corps a été
+                // altéré ou si l'appel ne vient pas de Stripe.
+                $event = Webhook::constructEvent($payload, $signature, $secret);
+                break;
+            } catch (\UnexpectedValueException) {
+                return new Response('Corps de requête invalide.', Response::HTTP_BAD_REQUEST);
+            } catch (SignatureVerificationException) {
+            }
+        }
+        if (null === $event) {
             return new Response('Signature invalide.', Response::HTTP_BAD_REQUEST);
+        }
+
+        // Événement d'un compte professionnel : paiement d'une réservation
+        // (direct sur son compte) ou changement d'état de son compte.
+        if (null !== ($event->account ?? null)) {
+            $object = $event->data->object;
+            if ('checkout.session.completed' === $event->type
+                && !$this->checkout->completeFromStripe((string) ($object->id ?? ''), (string) $event->account)) {
+                $this->logger->warning('Webhook Stripe Connect ignoré : session {id} inconnue.', ['id' => (string) ($object->id ?? '')]);
+            }
+            if ('account.updated' === $event->type) {
+                $this->stripeConnect->sync((string) $event->account, (bool) ($object->charges_enabled ?? false));
+            }
+
+            return new Response('OK', Response::HTTP_OK);
         }
 
         if ('checkout.session.completed' === $event->type) {

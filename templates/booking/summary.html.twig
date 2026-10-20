@@ -1,6 +1,7 @@
 {#
-    Récapitulatif avant l'envoi de la demande (tunnel de réservation, 03/10).
-    Aucun paiement sur TrouveMoi (17/10) : le client règle l'organisateur.
+    Étape 2 — Récapitulatif de la réservation (maquette « Parcours du client
+    — Paiement d'une réservation », 20/10) puis « Procéder au paiement ».
+    Le client paiera le professionnel directement (17/10).
     Données : BookingController::summary().
 #}
 {% extends 'base.html.twig' %}
@@ -15,12 +16,7 @@
 {% if ga_items is empty and service %}{% set ga_items = [{item_id: service.slug, item_name: service.title, price: booking.totalPrice + 0, quantity: 1}] %}{% endif %}
 {{ ga.event('begin_checkout', {currency: 'EUR', value: booking.totalPrice + 0, items: ga_items}) }}
 <main class="bk container">
-    <ol class="bk-steps" aria-label="{{ 'Étapes'|trans }}">
-        <li class="is-done">{{ 'Sélection'|trans }}</li>
-        <li class="is-current" aria-current="step">{{ 'Récapitulatif'|trans }}</li>
-        <li>{{ 'Demande envoyée'|trans }}</li>
-        <li>{{ 'Confirmation'|trans }}</li>
-    </ol>
+    {% include 'booking/_steps.html.twig' with {current: 2} %}
     <h1 class="bk-title">{{ 'Récapitulatif de votre réservation'|trans }}</h1>
 
     <div class="bk-grid">
@@ -30,19 +26,13 @@
         </section>
 
         <aside class="bk-card bk-pay">
-            <h2>{{ 'Réservation et règlement'|trans }}</h2>
-            <p>{{ 'Montant de la prestation'|trans }} : <strong>{{ booking.totalPrice|number_format(2, ',', ' ') }} €</strong>, {{ 'à régler directement à l’organisateur.'|trans }}</p>
-            <form method="post" action="{{ path('app_booking_request', {id: booking.id}) }}">
-                <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">
-                <button class="pl-btn pl-btn--primary pl-btn--block">{{ icon.send(18) }} {{ 'Envoyer ma demande de réservation'|trans }}</button>
-            </form>
-            {# Parcours expliqué (13/10, retour client n° 36 ; encaissement direct le 17/10). #}
-            <ol class="bk-steps">
-                <li>{{ 'Vous envoyez votre demande : rien n’est débité sur TrouveMoi.'|trans }}</li>
-                <li>{{ 'L’organisateur confirme votre réservation : vous êtes prévenu par notification et par e-mail.'|trans }}</li>
-                <li>{{ 'Vous réglez directement l’organisateur, par l’un des moyens qu’il propose :'|trans }}</li>
-            </ol>
-            {% include 'booking/_direct_payment.html.twig' with {details: false} %}
+            <h2>{{ 'Votre réservation'|trans }}</h2>
+            <dl class="bk-total">
+                <dt>{{ 'Total'|trans }}</dt>
+                <dd>{{ booking.totalPrice|number_format(2, ',', ' ') }} €</dd>
+            </dl>
+            <a class="pl-btn pl-btn--primary pl-btn--block" href="{{ path('app_booking_payment', {id: booking.id}) }}">{{ 'Procéder au paiement'|trans }}</a>
+            <p class="bk-note">{{ icon.padlock(14) }} {{ 'Vous payez directement l’organisateur, par les moyens qu’il accepte : TrouveMoi n’encaisse aucun paiement et ne prélève aucune commission.'|trans }}</p>
             <p class="bk-note">✓ {{ 'Annulation gratuite'|trans }} {{ "Jusqu'à 7 jours avant"|trans }}</p>
             <form method="post" action="{{ path('app_booking_abandon', {id: booking.id}) }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">

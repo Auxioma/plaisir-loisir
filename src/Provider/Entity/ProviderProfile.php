@@ -151,6 +151,37 @@ class ProviderProfile
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $paymentInstructions = null;
 
+    /*
+     * Paiement en ligne (20/10, maquette parametre_configuration_paiement_
+     * prestataire) : le client paie à la réservation, par carte sur le compte
+     * Stripe du professionnel (Stripe Connect, compte Standard relié) ou sur
+     * son compte PayPal (`paymentPaypal`). L'argent arrive directement chez
+     * le professionnel : il ne passe jamais par le compte de TrouveMoi.
+     * Les champs lien / IBAN / « sur place » ci-dessus ne sont plus proposés
+     * à l'écran (données conservées).
+     */
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $onlinePaymentEnabled = false;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $acceptsStripe = false;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $acceptsPaypal = false;
+
+    /** Paiement sur place, en espèces. */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $acceptsCash = false;
+
+    /** Compte Stripe relié (« acct_… »), créé par Stripe Connect. */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $stripeAccountId = null;
+
+    /** Stripe autorise les paiements sur ce compte (inscription terminée). */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $stripeChargesEnabled = false;
+
     // Les informations fiscales et légales (forme juridique, SIRET, TVA, siège,
     // représentant légal, assurance) vivent dans App\Legal\Entity\CompanyIdentity,
     // reliée à ce profil. Trois colonnes « fiscal* » traînaient ici, que
@@ -296,6 +327,78 @@ class ProviderProfile
     public function setPaymentInstructions(?string $paymentInstructions): static
     {
         $this->paymentInstructions = $paymentInstructions;
+
+        return $this;
+    }
+
+    public function isOnlinePaymentEnabled(): bool
+    {
+        return $this->onlinePaymentEnabled;
+    }
+
+    public function setOnlinePaymentEnabled(bool $onlinePaymentEnabled): static
+    {
+        $this->onlinePaymentEnabled = $onlinePaymentEnabled;
+
+        return $this;
+    }
+
+    public function acceptsStripe(): bool
+    {
+        return $this->acceptsStripe;
+    }
+
+    public function setAcceptsStripe(bool $acceptsStripe): static
+    {
+        $this->acceptsStripe = $acceptsStripe;
+
+        return $this;
+    }
+
+    public function acceptsPaypal(): bool
+    {
+        return $this->acceptsPaypal;
+    }
+
+    public function setAcceptsPaypal(bool $acceptsPaypal): static
+    {
+        $this->acceptsPaypal = $acceptsPaypal;
+
+        return $this;
+    }
+
+    public function acceptsCash(): bool
+    {
+        return $this->acceptsCash;
+    }
+
+    public function setAcceptsCash(bool $acceptsCash): static
+    {
+        $this->acceptsCash = $acceptsCash;
+
+        return $this;
+    }
+
+    public function getStripeAccountId(): ?string
+    {
+        return $this->stripeAccountId;
+    }
+
+    public function setStripeAccountId(?string $stripeAccountId): static
+    {
+        $this->stripeAccountId = $stripeAccountId;
+
+        return $this;
+    }
+
+    public function isStripeChargesEnabled(): bool
+    {
+        return $this->stripeChargesEnabled;
+    }
+
+    public function setStripeChargesEnabled(bool $stripeChargesEnabled): static
+    {
+        $this->stripeChargesEnabled = $stripeChargesEnabled;
 
         return $this;
     }

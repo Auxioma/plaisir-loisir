@@ -28,7 +28,7 @@
         {key: 'profil-pro', icon: 'briefcase', title: 'Profil professionnel', text: 'Gérez votre établissement et vos informations'},
         {key: 'preferences', icon: 'gear', title: 'Préférences', text: 'Gérez vos préférences de communication'},
         {key: 'notifications', icon: 'bell', title: 'Notifications', text: 'Choisissez vos préférences de notifications'},
-        {key: 'paiement', icon: 'card', title: 'Moyens de paiement', text: 'Comment vos clients vous règlent'},
+        {key: 'paiement', icon: 'card', title: 'Paiement et encaissements', text: 'Paiement en ligne et moyens acceptés'},
         {key: 'securite', icon: 'lock', title: 'Sécurité', text: 'Gérez votre mot de passe et la sécurité'},
         {key: 'abonnement', icon: 'doc', title: 'Abonnement', text: 'Gérez votre abonnement et vos options'},
         {key: 'integrations', icon: 'puzzle', title: 'Intégrations', text: 'Connectez vos outils et services'},
@@ -156,10 +156,7 @@
             {% endif %}
 
             {% if section == 'paiement' %}
-                <section class="pf-card">
-                    <h2 class="pf-card__title pp-mb">{{ 'Moyens de paiement'|trans }}</h2>
-                    {% include 'provider/space/_payment_methods.html.twig' %}
-                </section>
+                {% include 'provider/space/_payment_methods.html.twig' %}
             {% endif %}
 
             {% if section == 'securite' %}

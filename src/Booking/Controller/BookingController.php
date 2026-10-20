@@ -7,7 +7,9 @@ namespace App\Booking\Controller;
 use App\Availability\Repository\AvailabilityRepository;
 use App\Booking\Entity\Booking;
 use App\Booking\Enum\BookingStatus;
+use App\Booking\Presenter\BookingPaymentPresenter;
 use App\Booking\Repository\BookingRepository;
+use App\Booking\Service\BookingQrCode;
 use App\Booking\Service\BookingService;
 use App\Catalog\Entity\Service;
 use App\Catalog\Entity\ServicePackage;
@@ -15,26 +17,33 @@ use App\Catalog\Repository\ServiceRepository;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\Service\NotificationService;
 use App\Payment\Repository\PaymentRepository;
-use App\Payment\Service\PaymentService;
+use App\Payment\Service\BookingCheckoutService;
+use App\Payment\Service\InvoiceRenderer;
 use App\Provider\Service\ProviderPaymentMethods;
+use App\Shared\Service\AccountIdentityPresenter;
 use App\User\Entity\User;
+use App\User\StaticAccount;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Symfony\Component\Uid\Ulid;
 
 /**
- * Tunnel de réservation d'une activité (03/10) : panneau de la fiche
- * (date, heure, voyageurs) → récapitulatif → demande envoyée au
- * professionnel → confirmation.
+ * Tunnel de réservation d'une activité (03/10, refait le 20/10 selon la
+ * maquette « Parcours du client — Paiement d'une réservation ») : panneau de
+ * la fiche (date, heure, voyageurs) → récapitulatif → choix du moyen de
+ * paiement → validation → paiement confirmé.
  *
- * Aucun paiement en ligne sur TrouveMoi (17/10, demande du client) : le
- * client règle la prestation directement au professionnel, par les moyens
- * que celui-ci propose (ProviderPaymentMethods), et le professionnel
- * confirme la réservation puis déclare le règlement reçu.
+ * Le client paie DIRECTEMENT le professionnel (17/10) : par carte sur le
+ * compte Stripe du professionnel, par PayPal sur son compte PayPal (la
+ * réservation est alors confirmée dès le paiement), ou sur place en espèces
+ * (la demande part au professionnel, qui confirme puis déclare le règlement).
+ * Rien ne transite par TrouveMoi (BookingCheckoutService).
  *
  * Les dates et heures proposées viennent des créneaux (Availability) ouverts
  * par le professionnel ; sans créneau à venir, le client choisit librement
@@ -55,11 +64,15 @@ final class BookingController extends AbstractController
         private readonly AvailabilityRepository $availabilities,
         private readonly BookingRepository $bookings,
         private readonly BookingService $bookingService,
-        private readonly PaymentService $paymentService,
+        private readonly BookingCheckoutService $checkout,
         private readonly PaymentRepository $payments,
         private readonly ProviderPaymentMethods $paymentMethods,
         private readonly NotificationService $notifications,
         private readonly EntityManagerInterface $entityManager,
+        private readonly BookingPaymentPresenter $presenter,
+        private readonly InvoiceRenderer $invoices,
+        private readonly BookingQrCode $qrCode,
+        private readonly AccountIdentityPresenter $identity,
     ) {
     }
 
@@ -141,33 +154,116 @@ final class BookingController extends AbstractController
     public function summary(string $id): Response
     {
         $booking = $this->own($id);
-        if (BookingStatus::Pending !== $booking->getStatus() || null !== $this->payments->findOneByBooking($booking)) {
+        if ($this->settled($booking)) {
             return $this->redirectToRoute('app_booking_confirmation', ['id' => $id]);
         }
 
         return $this->render('booking/summary.html.twig', $this->bookingView($booking));
     }
 
-    #[Route(path: ['fr' => '/reservations/{id}/envoyer', 'en' => '/en/bookings/{id}/send'], name: 'app_booking_request', methods: ['POST'])]
-    public function send(string $id, Request $request): Response
+    /** Étape 3 de la maquette : choix du moyen de paiement. */
+    #[Route(path: ['fr' => '/reservations/{id}/paiement', 'en' => '/en/bookings/{id}/payment'], name: 'app_booking_payment', methods: ['GET'])]
+    public function payment(string $id, Request $request): Response
+    {
+        $booking = $this->own($id);
+        if ($this->settled($booking)) {
+            return $this->redirectToRoute('app_booking_confirmation', ['id' => $id]);
+        }
+
+        $view = $this->bookingView($booking);
+        $selected = $request->query->getString('moyen');
+
+        return $this->render('booking/payment.html.twig', $view + [
+            'selected' => '' !== $selected ? $selected : (string) (array_key_first($view['payment_methods']) ?? ProviderPaymentMethods::ONSITE),
+        ]);
+    }
+
+    /** Étape 4 : validation du moyen choisi, avant le départ vers Stripe / PayPal. */
+    #[Route(path: ['fr' => '/reservations/{id}/paiement/validation', 'en' => '/en/bookings/{id}/payment/review'], name: 'app_booking_payment_review', methods: ['GET'])]
+    public function review(string $id, Request $request): Response
+    {
+        $booking = $this->own($id);
+        if ($this->settled($booking)) {
+            return $this->redirectToRoute('app_booking_confirmation', ['id' => $id]);
+        }
+
+        $view = $this->bookingView($booking);
+        $method = (string) $request->query->get('moyen', '');
+        if (!$this->isOffered($view['payment_methods'], $method)) {
+            $this->addFlash('error', 'Choisissez un moyen de paiement.');
+
+            return $this->redirectToRoute('app_booking_payment', ['id' => $id]);
+        }
+
+        return $this->render('booking/review.html.twig', $view + ['method' => $method]);
+    }
+
+    #[Route(path: ['fr' => '/reservations/{id}/payer', 'en' => '/en/bookings/{id}/pay'], name: 'app_booking_pay', methods: ['POST'])]
+    public function pay(string $id, Request $request): Response
     {
         $booking = $this->own($id);
         if (!$this->isCsrfTokenValid('booking', (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Votre session a expiré, merci de réessayer.');
 
-            return $this->redirectToRoute('app_booking_summary', ['id' => $id]);
+            return $this->redirectToRoute('app_booking_payment', ['id' => $id]);
+        }
+
+        $method = (string) $request->request->get('moyen', '');
+        $offered = $this->bookingView($booking)['payment_methods'];
+        if (!$this->isOffered($offered, $method)) {
+            $this->addFlash('error', 'Ce moyen de paiement n’est pas proposé par l’organisateur.');
+
+            return $this->redirectToRoute('app_booking_payment', ['id' => $id]);
         }
 
         try {
-            $this->paymentService->request($booking);
-            $this->notifyProvider($booking);
+            if (ProviderPaymentMethods::ONSITE === $method) {
+                $this->checkout->payOnSite($booking);
+                $this->notifyProvider($booking);
 
-            return $this->redirectToRoute('app_booking_confirmation', ['id' => $id]);
+                return $this->redirectToRoute('app_booking_confirmation', ['id' => $id]);
+            }
+
+            // Vers la page sécurisée de Stripe / PayPal, puis retour ici.
+            return $this->redirect($this->checkout->start(
+                $booking,
+                $method,
+                $this->generateUrl('app_booking_payment_return', ['id' => $id], UrlGeneratorInterface::ABSOLUTE_URL),
+                $this->generateUrl('app_booking_payment_cancel', ['id' => $id, 'moyen' => $method], UrlGeneratorInterface::ABSOLUTE_URL),
+            ));
         } catch (\InvalidArgumentException $e) {
             $this->addFlash('error', $e->getMessage());
 
+            return $this->redirectToRoute($this->settled($booking) ? 'app_booking_confirmation' : 'app_booking_payment', ['id' => $id]);
+        }
+    }
+
+    /**
+     * Retour depuis Stripe / PayPal : le paiement est vérifié auprès d'eux
+     * (l'URL de retour seule ne prouve rien), puis la réservation confirmée.
+     */
+    #[Route(path: ['fr' => '/reservations/{id}/paiement/retour', 'en' => '/en/bookings/{id}/payment/return'], name: 'app_booking_payment_return', methods: ['GET'])]
+    public function paymentReturn(string $id, Request $request): Response
+    {
+        $booking = $this->own($id);
+        $token = $request->query->getString('token');
+
+        if ($this->checkout->complete($booking, '' !== $token ? $token : null)) {
             return $this->redirectToRoute('app_booking_confirmation', ['id' => $id]);
         }
+
+        $this->addFlash('error', 'Le paiement n’a pas été finalisé : aucun montant n’a été débité. Vous pouvez réessayer ou choisir un autre moyen.');
+
+        return $this->redirectToRoute($this->settled($booking) ? 'app_booking_confirmation' : 'app_booking_payment', ['id' => $id]);
+    }
+
+    #[Route(path: ['fr' => '/reservations/{id}/paiement/annule', 'en' => '/en/bookings/{id}/payment/cancelled'], name: 'app_booking_payment_cancel', methods: ['GET'])]
+    public function paymentCancelled(string $id, Request $request): Response
+    {
+        $this->own($id);
+        $this->addFlash('info', 'Paiement annulé : aucun montant n’a été débité.');
+
+        return $this->redirectToRoute('app_booking_payment', ['id' => $id, 'moyen' => (string) $request->query->get('moyen', '')]);
     }
 
     #[Route(path: ['fr' => '/reservations/{id}/annuler', 'en' => '/en/bookings/{id}/cancel'], name: 'app_booking_abandon', methods: ['POST'])]
@@ -175,25 +271,77 @@ final class BookingController extends AbstractController
     {
         $booking = $this->own($id);
         if ($this->isCsrfTokenValid('booking', (string) $request->request->get('_token'))
-            && BookingStatus::Pending === $booking->getStatus() && null === $this->payments->findOneByBooking($booking)) {
-            $slot = null !== $booking->getStartsAt() && null !== $booking->getService()
-                ? $this->availabilities->findOneByServiceAndStart($booking->getService(), $booking->getStartsAt()) : null;
-            $slot?->release($booking->getParticipants());
-            $booking->setStatus(BookingStatus::Cancelled);
-            $this->entityManager->flush();
-            $this->addFlash('success', 'Réservation abandonnée.');
+            && BookingStatus::Pending === $booking->getStatus() && !$this->settled($booking)) {
+            try {
+                $payment = $this->payments->findOneByBooking($booking);
+                if (null !== $payment) {
+                    $this->checkout->discard($payment);
+                }
+                $slot = null !== $booking->getStartsAt() && null !== $booking->getService()
+                    ? $this->availabilities->findOneByServiceAndStart($booking->getService(), $booking->getStartsAt()) : null;
+                $slot?->release($booking->getParticipants());
+                $booking->setStatus(BookingStatus::Cancelled);
+                $this->entityManager->flush();
+                $this->addFlash('success', 'Réservation abandonnée.');
+            } catch (\InvalidArgumentException $e) {
+                $this->addFlash('error', $e->getMessage());
+
+                return $this->redirectToRoute('app_booking_confirmation', ['id' => $id]);
+            }
         }
 
         return $this->redirectToRoute('app_activity_show', ['slug' => $booking->getService()?->getSlug()]);
     }
 
+    /**
+     * Étape 5 : « Paiement effectué avec succès » — maquette
+     * reservation_confirmee_client (20/10), dans l'espace compte du client.
+     */
     #[Route(path: ['fr' => '/reservations/{id}/confirmation', 'en' => '/en/bookings/{id}/confirmation'], name: 'app_booking_confirmation', methods: ['GET'])]
     public function confirmation(string $id): Response
     {
         $booking = $this->own($id);
+        $user = $this->getUser();
+        \assert($user instanceof User);
 
-        return $this->render('booking/confirmation.html.twig', $this->bookingView($booking) + [
-            'payment' => $this->payments->findOneByBooking($booking),
+        return $this->render('booking/confirmation.html.twig', $this->presenter->present($booking) + [
+            'payment_instructions' => $booking->getService()?->getProvider()?->getPaymentInstructions(),
+            'user' => $this->identity->identityFor($user),
+            'menu' => StaticAccount::menu(),
+            'active' => 'Paiements',
+        ]);
+    }
+
+    /** Facture / reçu PDF (`?telecharger=1` : téléchargement, sinon affichage). */
+    #[Route(path: ['fr' => '/reservations/{id}/facture', 'en' => '/en/bookings/{id}/invoice'], name: 'app_booking_invoice', methods: ['GET'])]
+    public function invoice(string $id, Request $request): Response
+    {
+        $booking = $this->own($id);
+        $payment = $this->payments->findOneByBooking($booking);
+
+        try {
+            if (null === $payment) {
+                throw new \InvalidArgumentException('La facture sera disponible une fois la réservation réglée.');
+            }
+
+            return $this->invoices->response($payment, $request->query->getBoolean('telecharger'));
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
+
+            return $this->redirectToRoute('app_booking_confirmation', ['id' => $id]);
+        }
+    }
+
+    /** QR de réservation à présenter le jour de l'activité (PNG). */
+    #[Route(path: ['fr' => '/reservations/{id}/qr', 'en' => '/en/bookings/{id}/qr'], name: 'app_booking_qr', methods: ['GET'])]
+    public function qr(string $id): Response
+    {
+        $booking = $this->own($id);
+
+        return new Response($this->qrCode->png($booking), Response::HTTP_OK, [
+            'Content-Type' => 'image/png',
+            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, sprintf('reservation-%s-qr.png', $booking->getReference())),
+            'Cache-Control' => 'private, no-store',
         ]);
     }
 
@@ -205,9 +353,29 @@ final class BookingController extends AbstractController
         return [
             'booking' => $booking,
             'service' => $booking->getService(),
-            'payment_methods' => null !== $provider ? $this->paymentMethods->configured($provider) : [],
+            'payment_methods' => null !== $provider ? $this->paymentMethods->offered($provider) : [],
             'payment_instructions' => $provider?->getPaymentInstructions(),
         ];
+    }
+
+    /**
+     * Moyen accepté pour cette réservation. Organisateur sans moyen
+     * configuré : la demande part « sur place », règlement à convenir.
+     *
+     * @param array<string, mixed> $offered
+     */
+    private function isOffered(array $offered, string $method): bool
+    {
+        return isset($offered[$method]) || ([] === $offered && ProviderPaymentMethods::ONSITE === $method);
+    }
+
+    /** Plus rien à payer dans le tunnel : réglée, demande sur place envoyée, ou plus en attente. */
+    private function settled(Booking $booking): bool
+    {
+        $payment = $this->payments->findOneByBooking($booking);
+
+        return BookingStatus::Pending !== $booking->getStatus()
+            || (null !== $payment && ($payment->isPaid() || !$payment->isOnline()));
     }
 
     private function notifyProvider(Booking $booking): void
@@ -215,7 +383,7 @@ final class BookingController extends AbstractController
         $owner = $booking->getService()?->getProvider()?->getUser();
         if (null !== $owner) {
             $this->notifications->notify($owner, NotificationCategory::Booking, 'Nouvelle demande de réservation', sprintf(
-                '%s — %s, %d pers. À confirmer depuis « Réservations » ; le client vous règle directement.',
+                '%s — %s, %d pers. À confirmer depuis « Réservations » ; le client vous règle sur place.',
                 $booking->getService()->getTitle(),
                 $booking->getStartsAt()?->format('d/m/Y H:i') ?? 'date à convenir',
                 $booking->getParticipants(),

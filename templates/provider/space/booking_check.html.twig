@@ -1,0 +1,65 @@
+{#
+    Contrôle du QR de réservation le jour de l'activité (20/10) : le QR du
+    client, scanné avec l'appareil photo, ouvre cette page ; le code peut
+    aussi être saisi. Le professionnel valide l'entrée des participants.
+    Données : ProviderBookingController::scan() / check().
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Contrôle des réservations'|trans }}{% endblock %}
+
+{% block space %}
+<div class="rg">
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Scanner / vérifier le QR'|trans }} <span class="pp-title-ico">{{ icon.scan(24) }}</span></h1>
+            <p class="pf-sub">{{ 'Scannez le QR du client avec l’appareil photo de votre téléphone, ou saisissez son code de réservation.'|trans }}</p>
+        </div>
+    </header>
+
+    <section class="pf-card rg-card">
+        <form method="get" action="{{ path('app_pro_booking_scan') }}" class="rg-lookup">
+            <label for="rg-code">{{ 'Code de réservation'|trans }}</label>
+            <input id="rg-code" class="rg-input" name="code" value="{{ code ? '#' ~ code : '' }}" placeholder="#R7K2QZ" autocomplete="off" autocapitalize="characters" required>
+            <button class="pf-btn pf-btn--primary">{{ icon.search(18) }} {{ 'Vérifier'|trans }}</button>
+        </form>
+    </section>
+
+    {% if not_found %}
+        <section class="rg-banner is-red">
+            <span class="rg-banner__ico">{{ icon.x(30) }}</span>
+            <div><h2>{{ 'QR non reconnu'|trans }}</h2><p>{{ 'Aucune réservation de vos activités ne correspond à ce code.'|trans }}</p></div>
+        </section>
+    {% elseif check %}
+        {% set b = check.booking %}
+        {% set valid = b.status.value in ['confirmed', 'in_progress', 'completed'] %}
+        <section class="rg-banner{{ not valid ? ' is-red' : (b.checkedInAt ? ' is-blue' : '') }}">
+            <span class="rg-banner__ico">{{ valid ? icon.check(34) : icon.x(30) }}</span>
+            <div>
+                <h2>{{ not valid ? 'Réservation non valable : %status%'|trans({'%status%': b.status.label|lower|trans}) : (b.checkedInAt ? 'Entrée déjà validée'|trans : 'Réservation valable'|trans) }}</h2>
+                <p>#{{ b.reference }} · {{ b.client.firstName }} {{ b.client.lastName }} · {{ b.participants }} {{ b.participants > 1 ? 'personnes'|trans : 'personne'|trans }}{% if b.checkedInAt %} · {{ 'validée le %date%'|trans({'%date%': b.checkedInAt|date('d/m/Y à H:i')}) }}{% endif %}</p>
+            </div>
+        </section>
+
+        {% if valid and not check.paid %}
+            <div class="rg-info is-warning">{{ icon.info(18) }}<p>{{ 'Règlement non reçu : %amount% à encaisser sur place.'|trans({'%amount%': b.totalPrice|number_format(2, ',', ' ') ~ ' €'}) }}</p></div>
+        {% endif %}
+
+        <div class="rg-grid">
+            {% include 'payment/_transaction_card.html.twig' with check|merge({side: 'pro'}) %}
+            {% include 'payment/_reservation_card.html.twig' with check|merge({side: 'pro'}) %}
+        </div>
+
+        <div class="rg-actions__list">
+            {% if valid and not b.checkedInAt %}
+                <form method="post" action="{{ path('app_pro_booking_checkin', {id: b.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                    <button class="pf-btn pf-btn--primary pf-btn--lg">{{ icon.check(18) }} {{ 'Valider l’entrée'|trans }}</button>
+                </form>
+            {% endif %}
+            <a class="pf-btn" href="{{ path('app_pro_booking_show', {id: b.id}) }}">{{ 'Voir la réservation'|trans }}</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
