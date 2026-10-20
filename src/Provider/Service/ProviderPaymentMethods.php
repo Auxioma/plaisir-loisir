@@ -4,48 +4,95 @@ declare(strict_types=1);
 
 namespace App\Provider\Service;
 
+use App\Payment\PayPal\PayPalGateway;
+use App\Payment\Stripe\ConnectGateway;
 use App\Provider\Entity\ProviderProfile;
 
 /**
- * Moyens de paiement qu'un professionnel propose à ses clients (17/10) : le
- * client règle la prestation directement au professionnel, TrouveMoi
- * n'encaisse rien. Validation de la saisie (espace pro) et liste lisible
- * (récapitulatif et confirmation de réservation, espace pro).
+ * Moyens de paiement qu'un professionnel accepte (20/10, maquette
+ * parametre_configuration_paiement_prestataire) : paiement en ligne par
+ * carte (sur SON compte Stripe, relié par Stripe Connect) ou par PayPal (sur
+ * SON compte PayPal), et paiement sur place en espèces. Le client paie
+ * toujours le professionnel directement ; TrouveMoi n'encaisse rien.
  */
 final class ProviderPaymentMethods
 {
+    public const STRIPE = 'stripe';
+    public const PAYPAL = 'paypal';
+    public const ONSITE = 'onsite';
+
+    public function __construct(
+        private readonly ConnectGateway $stripe,
+        private readonly PayPalGateway $paypal,
+    ) {
+    }
+
     /**
-     * Moyens configurés, dans l'ordre d'affichage.
+     * Récapitulatif côté professionnel (écran « Paiement configuré »), avec
+     * l'état de chaque moyen : `active`, `pending` (coché mais compte Stripe
+     * à relier, ou paiement en ligne désactivé) ou `off`.
      *
-     * @return list<array{type: string, label: string, value: string, detail: ?string}>
+     * @return list<array{type: string, label: string, state: string, detail: ?string}>
      */
-    public function configured(ProviderProfile $provider): array
+    public function summary(ProviderProfile $provider): array
+    {
+        $online = $provider->isOnlinePaymentEnabled();
+        $state = static fn (bool $accepted, bool $ready): string => !$accepted ? 'off' : ($ready ? 'active' : 'pending');
+
+        return [
+            ['type' => 'online', 'label' => 'Paiement en ligne', 'state' => $online ? 'active' : 'off', 'detail' => null],
+            ['type' => self::STRIPE, 'label' => 'Stripe CB', 'state' => $state($provider->acceptsStripe(), $online && $this->stripeReady($provider)),
+                'detail' => $provider->acceptsStripe() && !$this->stripeReady($provider) ? 'Compte Stripe à relier' : null],
+            ['type' => self::PAYPAL, 'label' => 'PayPal', 'state' => $state($provider->acceptsPaypal(), $online && $this->paypalReady($provider)),
+                'detail' => $provider->acceptsPaypal() ? $provider->getPaymentPaypal() : null],
+            ['type' => self::ONSITE, 'label' => 'Paiement sur place « Espèces »', 'state' => $provider->acceptsCash() ? 'active' : 'off', 'detail' => null],
+        ];
+    }
+
+    /** Au moins un moyen est réellement proposé aux clients. */
+    public function hasAny(ProviderProfile $provider): bool
+    {
+        return [] !== $this->offered($provider);
+    }
+
+    /**
+     * Moyens proposés au client lors de sa réservation, dans l'ordre de la
+     * maquette. Liste vide : rien n'est configuré, la réservation part en
+     * demande et le règlement se convient avec le professionnel.
+     *
+     * @return array<string, array{type: string, label: string, online: bool}>
+     */
+    public function offered(ProviderProfile $provider): array
     {
         $methods = [];
-        if (null !== $url = $provider->getPaymentLinkUrl()) {
-            $methods[] = ['type' => 'link', 'label' => 'Paiement en ligne', 'value' => $url, 'detail' => null];
+        if ($provider->isOnlinePaymentEnabled() && $provider->acceptsStripe() && $this->stripeReady($provider)) {
+            $methods[self::STRIPE] = ['type' => self::STRIPE, 'label' => 'Stripe CB', 'online' => true];
         }
-        if (null !== $paypal = $provider->getPaymentPaypal()) {
-            $methods[] = ['type' => 'paypal', 'label' => 'PayPal', 'value' => $paypal, 'detail' => null];
+        if ($provider->isOnlinePaymentEnabled() && $provider->acceptsPaypal() && $this->paypalReady($provider)) {
+            $methods[self::PAYPAL] = ['type' => self::PAYPAL, 'label' => 'PayPal', 'online' => true];
         }
-        if (null !== $iban = $provider->getPaymentIban()) {
-            $methods[] = ['type' => 'transfer', 'label' => 'Virement bancaire', 'value' => self::formatIban($iban), 'detail' => $provider->getPaymentIbanHolder()];
-        }
-        if (null !== $onSite = $provider->getPaymentOnSite()) {
-            $methods[] = ['type' => 'onsite', 'label' => 'Sur place', 'value' => $onSite, 'detail' => null];
+        if ($provider->acceptsCash()) {
+            $methods[self::ONSITE] = ['type' => self::ONSITE, 'label' => 'Paiement sur place « Espèces »', 'online' => false];
         }
 
         return $methods;
     }
 
-    public function hasAny(ProviderProfile $provider): bool
+    public function stripeReady(ProviderProfile $provider): bool
     {
-        return [] !== $this->configured($provider);
+        return null !== $provider->getStripeAccountId() && $provider->isStripeChargesEnabled() && $this->stripe->isAvailable();
+    }
+
+    public function paypalReady(ProviderProfile $provider): bool
+    {
+        return null !== $provider->getPaymentPaypal()
+            && false !== filter_var($provider->getPaymentPaypal(), \FILTER_VALIDATE_EMAIL)
+            && $this->paypal->isAvailable();
     }
 
     /**
-     * Enregistre les moyens saisis dans l'espace pro ; un champ vide retire
-     * le moyen correspondant.
+     * Enregistre la configuration saisie (étape « Configuration du
+     * paiement »).
      *
      * @param array<string, mixed> $input
      *
@@ -53,65 +100,34 @@ final class ProviderPaymentMethods
      */
     public function update(ProviderProfile $provider, array $input): void
     {
-        $text = static fn (string $key, int $max): ?string => '' !== ($v = trim((string) ($input[$key] ?? ''))) ? mb_substr($v, 0, $max) : null;
+        $flag = static fn (string $key): bool => \in_array($input[$key] ?? null, ['1', 'on', 'true', true, 1], true);
+        $online = $flag('onlinePaymentEnabled');
+        $stripe = $flag('acceptsStripe');
+        $paypal = $flag('acceptsPaypal');
+        $cash = $flag('acceptsCash');
 
-        $link = $text('paymentLinkUrl', 255);
-        if (null !== $link) {
-            if (!preg_match('#^https?://#i', $link)) {
-                $link = 'https://'.$link;
-            }
-            if (false === filter_var($link, \FILTER_VALIDATE_URL)) {
-                throw new \InvalidArgumentException('Lien de paiement invalide (ex. https://buy.stripe.com/…).');
-            }
+        $paypalEmail = trim((string) ($input['paymentPaypal'] ?? ''));
+        $paypalEmail = '' !== $paypalEmail ? mb_strtolower(mb_substr($paypalEmail, 0, 180)) : null;
+        if (null !== $paypalEmail && false === filter_var($paypalEmail, \FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException('PayPal : indiquez l’adresse e-mail de votre compte PayPal.');
+        }
+        if ($paypal && null === $paypalEmail) {
+            throw new \InvalidArgumentException('Indiquez l’adresse e-mail de votre compte PayPal pour accepter PayPal.');
+        }
+        if ($online && !$stripe && !$paypal) {
+            throw new \InvalidArgumentException('Paiement en ligne : cochez Stripe CB et/ou PayPal.');
+        }
+        if (!$stripe && !$paypal && !$cash) {
+            throw new \InvalidArgumentException('Acceptez au moins un moyen de paiement.');
         }
 
-        $paypal = $text('paymentPaypal', 180);
-        if (null !== $paypal && false === filter_var($paypal, \FILTER_VALIDATE_EMAIL) && !preg_match('#^(https?://)?(www\.)?paypal\.me/[\w.-]+/?$#i', $paypal)) {
-            throw new \InvalidArgumentException('PayPal : indiquez une adresse e-mail ou un lien paypal.me.');
-        }
+        $instructions = trim((string) ($input['paymentInstructions'] ?? ''));
 
-        $iban = $text('paymentIban', 60);
-        if (null !== $iban) {
-            $iban = strtoupper(str_replace(' ', '', $iban));
-            if (!self::isValidIban($iban)) {
-                throw new \InvalidArgumentException('IBAN invalide (ex. FR76 3000 6000 0112 3456 7890 189).');
-            }
-        }
-        $holder = $text('paymentIbanHolder', 120);
-        if (null !== $iban && null === $holder) {
-            throw new \InvalidArgumentException('Indiquez le titulaire du compte pour le virement.');
-        }
-
-        $provider->setPaymentLinkUrl($link)
-            ->setPaymentPaypal($paypal)
-            ->setPaymentIban($iban)
-            ->setPaymentIbanHolder(null !== $iban ? $holder : null)
-            ->setPaymentOnSite($text('paymentOnSite', 255))
-            ->setPaymentInstructions($text('paymentInstructions', 2000));
-    }
-
-    public static function formatIban(string $iban): string
-    {
-        return trim(chunk_split($iban, 4, ' '));
-    }
-
-    /** Contrôle ISO 13616 (clé modulo 97). */
-    public static function isValidIban(string $iban): bool
-    {
-        if (!preg_match('/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/', $iban)) {
-            return false;
-        }
-
-        $digits = '';
-        foreach (str_split(substr($iban, 4).substr($iban, 0, 4)) as $char) {
-            $digits .= ctype_alpha($char) ? (string) (\ord($char) - 55) : $char;
-        }
-
-        $remainder = 0;
-        foreach (str_split($digits, 7) as $chunk) {
-            $remainder = (int) ($remainder.$chunk) % 97;
-        }
-
-        return 1 === $remainder;
+        $provider->setOnlinePaymentEnabled($online)
+            ->setAcceptsStripe($stripe)
+            ->setAcceptsPaypal($paypal)
+            ->setAcceptsCash($cash)
+            ->setPaymentPaypal($paypalEmail)
+            ->setPaymentInstructions('' !== $instructions ? mb_substr($instructions, 0, 2000) : null);
     }
 }

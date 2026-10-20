@@ -14,12 +14,18 @@ parameters:
     # ne les définit pas (le CD a déjà échoué sur une variable manquante).
     env(PASSWORD_RESET_REQUEST_LIMIT): '5'
     env(LOCK_DSN): 'flock'
-    env(SOCIAL_FACEBOOK_URL): 'https://www.facebook.com/trouvemoi.eu'
-    env(SOCIAL_INSTAGRAM_URL): 'https://www.instagram.com/trouvemoi.eu'
-    env(SOCIAL_TIKTOK_URL): 'https://www.tiktok.com/@trouvemoi.eu'
-    env(SOCIAL_YOUTUBE_URL): 'https://www.youtube.com/@trouvemoi'
-    env(SOCIAL_LINKEDIN_URL): 'https://www.linkedin.com/company/trouvemoi'
+    # Réseaux sociaux officiels confirmés par le client le 20/10 ; une valeur
+    # vide masque l'icône correspondante.
+    env(SOCIAL_FACEBOOK_URL): 'https://www.facebook.com/profile.php?id=61592879935680'
+    env(SOCIAL_INSTAGRAM_URL): 'https://www.instagram.com/trouvemoi67/'
+    env(SOCIAL_TIKTOK_URL): ''
+    env(SOCIAL_YOUTUBE_URL): ''
+    env(SOCIAL_LINKEDIN_URL): ''
     env(STRIPE_SECRET_KEY): ''
+    env(STRIPE_CONNECT_WEBHOOK_SECRET): ''
+    env(PAYPAL_CLIENT_ID): ''
+    env(PAYPAL_CLIENT_SECRET): ''
+    env(PAYPAL_MODE): 'sandbox'
 
 services:
     # default configuration for services in *this* file
@@ -44,6 +50,12 @@ services:
     # sinon (voir ConfiguredSubscriptionGateway). Les prestations, elles, sont
     # réglées directement au professionnel et ne passent jamais par ici.
     App\Payment\Stripe\SubscriptionGateway: '@App\Payment\Stripe\ConfiguredSubscriptionGateway'
+
+    # Paiement des réservations (20/10) : par carte sur le compte Stripe du
+    # professionnel (Stripe Connect) ou sur son compte PayPal. Réels dès que
+    # les clés sont là, simulés sinon hors production, indisponibles en prod.
+    App\Payment\Stripe\ConnectGateway: '@App\Payment\Stripe\ConfiguredConnectGateway'
+    App\Payment\PayPal\PayPalGateway: '@App\Payment\PayPal\ConfiguredPayPalGateway'
 
     # La recherche est codée contre l'interface SearchService ; aujourd'hui
     # résolue vers PostgreSQL (Elasticsearch la remplacera).

@@ -1,0 +1,26 @@
+{#
+    « Détails de la réservation » (maquettes reservation_confirmee_*, 20/10).
+    Variables : BookingPaymentPresenter::present() + side ('client' | 'pro').
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+<section class="pf-card rg-card">
+    <h2 class="rg-card__title"><span class="rg-card__ico">{{ icon.image_frame(20) }}</span>{{ 'Détails de la réservation'|trans }}</h2>
+    <div class="rg-activity">
+        {% if service %}<img src="{{ asset(service|pp_cover) }}" alt="" loading="lazy" decoding="async">{% endif %}
+        <div>
+            <strong>{{ service ? service.title : '—' }}</strong>
+            {% if provider %}<span>{{ 'Par'|trans }} {{ provider.displayName }}</span>{% endif %}
+            {% if side == 'client' and provider and provider.slug and provider.status.value == 'verified' %}
+                <a class="pf-link" href="{{ path('app_provider_profile', {slug: provider.slug}) }}">{{ 'Voir le prestataire'|trans }} {{ icon.arrow_right(14) }}</a>
+            {% elseif side == 'pro' and service %}
+                <a class="pf-link" href="{{ path('app_activity_show', {slug: service.slug}) }}">{{ 'Voir la fiche'|trans }} {{ icon.arrow_right(14) }}</a>
+            {% endif %}
+        </div>
+    </div>
+    <dl class="rg-rows rg-rows--icons">
+        <div><dt>{{ icon.map_pin(18) }} {{ 'Lieu'|trans }}</dt><dd>{{ service and (service.city or service.placeLabel) ? (service.city ? service.city ~ (service.postalCode ? ' (' ~ service.postalCode|slice(0, 2) ~ ')' : '') : service.placeLabel) : '—' }}</dd></div>
+        <div><dt>{{ icon.calendar(18) }} {{ 'Date'|trans }}</dt><dd>{{ booking.startsAt ? booking.startsAt|pf_date('EEEE d MMMM y')|capitalize : 'Date à convenir'|trans }}</dd></div>
+        <div><dt>{{ icon.clock(18) }} {{ 'Horaire'|trans }}</dt><dd>{{ booking.startsAt ? booking.startsAt|date('H\\hi') ~ (ends_at ? ' – ' ~ ends_at|date('H\\hi') : '') : '—' }}</dd></div>
+        <div><dt>{{ icon.users(18) }} {{ 'Nombre de participants'|trans }}</dt><dd>{{ booking.participants }} {{ booking.participants > 1 ? 'personnes'|trans : 'personne'|trans }}</dd></div>
+    </dl>
+</section>

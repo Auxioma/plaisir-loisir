@@ -1,0 +1,135 @@
+{#
+    « Réservation payée » côté professionnel — maquette reservation_confirmee_
+    prestataire (20/10), contenu seulement (sidebar, en-tête et pied de page
+    de la plateforme). Le client a payé directement sur le compte Stripe /
+    PayPal du professionnel (ou le règlera sur place) : aucune commission
+    TrouveMoi, donc pas de ligne « frais de service » (décision du 20/10).
+    Données : ProviderBookingController::show() (BookingPaymentPresenter).
+#}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Réservation'|trans }} #{{ booking.reference }}{% endblock %}
+
+{% block space %}
+{% set side = 'pro' %}
+{% set account = payment and payment.channel == 'paypal' ? 'PayPal' : 'Stripe' %}
+<div class="rg">
+    {% if cancelled %}
+        <section class="rg-banner is-red">
+            <span class="rg-banner__ico">{{ icon.x(30) }}</span>
+            <div><h1>{{ 'Réservation annulée'|trans }}</h1><p>{{ paid and payment.online ? 'Le client avait payé en ligne : remboursez-le depuis votre compte %account%.'|trans({'%account%': account}) : 'Les places du créneau ont été libérées.'|trans }}</p></div>
+        </section>
+    {% elseif paid %}
+        <section class="rg-banner">
+            <span class="rg-banner__ico">{{ icon.check(34) }}</span>
+            <div>
+                <h1>{{ 'Paiement reçu sur votre compte prestataire !'|trans }}</h1>
+                <p>{{ payment.online
+                    ? 'La réservation est confirmée et le paiement a été versé directement sur votre compte %account%.'|trans({'%account%': account})
+                    : 'Vous avez déclaré le règlement reçu sur place.'|trans }}</p>
+            </div>
+            <span class="rg-banner__spark" aria-hidden="true"></span>
+        </section>
+    {% elseif booking.status.value == 'pending' %}
+        <section class="rg-banner is-orange">
+            <span class="rg-banner__ico">{{ icon.clock(30) }}</span>
+            <div><h1>{{ payment and payment.online ? 'Paiement en cours chez le client'|trans : 'Réservation à confirmer'|trans }}</h1><p>{{ payment and payment.online ? 'Le client n’a pas encore finalisé son paiement en ligne.'|trans : 'Le client réglera sur place : confirmez la réservation, puis déclarez le règlement une fois reçu.'|trans }}</p></div>
+        </section>
+    {% else %}
+        <section class="rg-banner is-blue">
+            <span class="rg-banner__ico">{{ icon.banknote(30) }}</span>
+            <div><h1>{{ 'Réservation confirmée, règlement sur place'|trans }}</h1><p>{{ 'Déclarez le règlement dès que le client vous a payé : la facture sera alors disponible pour vous deux.'|trans }}</p></div>
+        </section>
+    {% endif %}
+
+    <div class="rg-grid">
+        {% include 'payment/_transaction_card.html.twig' %}
+        {% include 'payment/_reservation_card.html.twig' %}
+    </div>
+
+    <div class="rg-grid rg-grid--3">
+        <section class="pf-card rg-card">
+            <h2 class="rg-card__title"><span class="rg-card__ico">{{ icon.euro(20) }}</span>{{ 'Détail du paiement'|trans }}</h2>
+            <dl class="rg-rows">
+                <div class="is-strong"><dt>{{ paid ? 'Montant payé par le client'|trans : 'Montant à encaisser'|trans }}</dt><dd>{{ booking.totalPrice|number_format(2, ',', ' ') }} €</dd></div>
+                <div><dt>{{ 'Mode de paiement'|trans }}</dt><dd>{{ method_label|trans }}</dd></div>
+                {% if card_label %}<div><dt>{{ 'Carte utilisée'|trans }}</dt><dd>{{ card_label }}</dd></div>{% endif %}
+            </dl>
+            {% if paid %}
+                <div class="rg-received">
+                    <span>{{ payment.online ? 'Montant versé sur votre compte pro'|trans : 'Montant reçu'|trans }}</span>
+                    <strong>{{ payment.amount|number_format(2, ',', ' ') }} €</strong>
+                </div>
+                <div class="rg-info">
+                    {{ icon.info(18) }}
+                    <p>{% if payment.online %}{{ 'Le montant de %amount% a été versé directement sur votre compte %account%. TrouveMoi ne prélève aucune commission ; seuls les frais de %account% s’appliquent, selon votre contrat.'|trans({'%amount%': payment.amount|number_format(2, ',', ' ') ~ ' €', '%account%': account}) }}{% else %}{{ 'Règlement déclaré reçu. TrouveMoi ne prélève aucune commission.'|trans }}{% endif %}</p>
+                </div>
+            {% elseif not cancelled %}
+                <div class="rg-manage">
+                    {% for action in actions %}
+                        <form method="post" action="{{ path('app_pro_bookings_transition', {id: booking.id, transition: action[0]}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                            <button class="pf-btn{{ action[0] == 'confirm' ? ' pf-btn--primary' : (action[0] == 'cancel' ? ' pf-btn--danger' : '') }}"{% if action[0] == 'cancel' %} data-confirm="{{ 'Annuler cette réservation ?'|trans }}"{% endif %}>{{ action[1]|trans }}</button>
+                        </form>
+                    {% endfor %}
+                    {% if booking.status.value != 'pending' or not (payment and payment.online) %}
+                        <form method="post" action="{{ path('app_pro_bookings_paid', {id: booking.id}) }}" class="rg-declare">
+                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                            <label for="rg-method">{{ 'Règlement reçu par'|trans }}</label>
+                            <select id="rg-method" name="method">
+                                {% for key, label in payment_methods %}<option value="{{ key }}"{{ key == 'cash' ? ' selected' }}>{{ label|trans }}</option>{% endfor %}
+                            </select>
+                            <button class="pf-btn">{{ icon.check(16) }} {{ 'Déclarer le règlement reçu'|trans }}</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="pf-card rg-card">
+            <h2 class="rg-card__title"><span class="rg-card__ico">{{ icon.file_text(20) }}</span>{{ 'Facture / reçu client'|trans }}</h2>
+            {% if paid %}
+                <p class="rg-card__text">{{ 'La facture est disponible pour vous et votre client. Vous pouvez la consulter et la télécharger à tout moment.'|trans }}</p>
+                <span class="rg-pdf" aria-hidden="true">PDF</span>
+                <div class="rg-stack">
+                    <a class="pf-btn pf-btn--primary pf-btn--block" href="{{ path('app_pro_booking_invoice', {id: booking.id, telecharger: 1}) }}">{{ icon.download(18) }} {{ 'Télécharger la facture / reçu'|trans }}</a>
+                    <a class="pf-btn pf-btn--block" href="{{ path('app_pro_booking_invoice', {id: booking.id}) }}" target="_blank" rel="noopener">{{ icon.eye(18) }} {{ 'Voir la facture'|trans }}</a>
+                </div>
+                <p class="pf-muted rg-small">{{ 'N°'|trans }} {{ payment.invoiceNumber }}</p>
+            {% else %}
+                <p class="rg-card__text">{{ 'La facture sera disponible pour vous et votre client dès que le règlement sera reçu.'|trans }}</p>
+            {% endif %}
+        </section>
+
+        {% if qr %}
+            {% include 'payment/_qr_card.html.twig' %}
+        {% endif %}
+    </div>
+
+    <section class="pf-card rg-card">
+        <h2 class="rg-card__title"><span class="rg-card__ico">{{ icon.clock(20) }}</span>{{ 'Suivi du paiement'|trans }}</h2>
+        <ol class="rg-timeline">
+            {% for step in timeline %}
+                <li class="{{ step.done ? 'is-done' }}{{ step.done and (loop.last or not timeline[loop.index].done) ? ' is-last' }}">
+                    <span class="rg-timeline__dot">{% if step.done %}{{ icon.check(14) }}{% endif %}</span>
+                    <strong>{{ step.label|trans }}</strong>
+                    <em>{{ step.text|trans }}</em>
+                    <time>{{ step.done and step.at ? step.at|date('d/m/Y') ~ ' – ' ~ step.at|date('H\\hi') : (step.done ? '' : 'En attente'|trans) }}</time>
+                </li>
+            {% endfor %}
+        </ol>
+    </section>
+
+    <section class="pf-card rg-actions">
+        <h2 class="rg-card__title"><span class="rg-card__ico">{{ icon.gear(20) }}</span>{{ 'Actions'|trans }}</h2>
+        <div class="rg-actions__list">
+            {% if paid %}<a class="pf-btn pf-btn--primary" href="{{ path('app_pro_booking_invoice', {id: booking.id, telecharger: 1}) }}">{{ icon.download(18) }} {{ 'Télécharger le reçu'|trans }}</a>{% endif %}
+            {% if qr %}<a class="pf-btn" href="{{ path('app_pro_booking_qr', {id: booking.id}) }}">{{ icon.qr_code(18) }} {{ 'Voir le QR'|trans }}</a>{% endif %}
+            <a class="pf-btn" href="{{ path('app_pro_booking_check', {id: booking.id}) }}">{{ icon.scan(18) }} {{ 'Scanner / vérifier le QR'|trans }}</a>
+            <a class="pf-btn" href="{{ path('app_pro_messages', {client: booking.client.id}) }}">{{ icon.chat_bubble(18) }} {{ 'Contacter le client'|trans }}</a>
+            <a class="pf-btn" href="{{ path('app_pro_bookings') }}">{{ icon.arrow_left(18) }} {{ 'Retour aux réservations'|trans }}</a>
+        </div>
+    </section>
+</div>
+{% endblock %}

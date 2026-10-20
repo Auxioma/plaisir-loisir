@@ -89,7 +89,12 @@ final class ProviderSpaceFixtures extends Fixture implements DependentFixtureInt
             ->setAvailabilityLabel('Lun - Dim : 7h - 20h')
             ->setBio('Passionnée de plein air depuis toujours, j’accompagne petits et grands à la découverte de nos plus beaux paysages, en toute sécurité.')
             ->setWebsiteUrl('https://www.camille-aventures.fr')
-            ->setPaymentIban('FR7630006000011234567890189')->setPaymentIbanHolder('Camille Aventures')->setPaymentOnSite('Carte bancaire, espèces, chèques vacances');
+            ->setPaymentIban('FR7630006000011234567890189')->setPaymentIbanHolder('Camille Aventures')->setPaymentOnSite('Carte bancaire, espèces, chèques vacances')
+            // Paiement en ligne (20/10) : compte Stripe simulé (« mock_ », jamais
+            // utilisable avec de vraies clés), PayPal et espèces sur place.
+            ->setOnlinePaymentEnabled(true)->setAcceptsStripe(true)->setAcceptsPaypal(true)->setAcceptsCash(true)
+            ->setStripeAccountId('mock_acct_demo_camille')->setStripeChargesEnabled(true)
+            ->setPaymentPaypal('camille.aventures@paypal.test');
         $provider->getUser()?->setPhone('06 12 34 56 78');
 
         /** @var list<Service> $services */
@@ -109,6 +114,7 @@ final class ProviderSpaceFixtures extends Fixture implements DependentFixtureInt
 
         $today = new \DateTimeImmutable('today');
         $bookings = [];
+        $invoice = 0;
         for ($n = 0; $n < 46; ++$n) {
             $service = $services[mt_rand(0, min(5, \count($services) - 1))];
             $client = $clients[mt_rand(0, \count($clients) - 1)];
@@ -137,9 +143,21 @@ final class ProviderSpaceFixtures extends Fixture implements DependentFixtureInt
 
             if (BookingStatus::Cancelled !== $status) {
                 $payment = (new Payment())->setBooking($booking)->setAmount($booking->getTotalPrice())->setCurrency('EUR')
-                    ->setStatus(BookingStatus::Pending === $status ? PaymentStatus::Pending : PaymentStatus::Paid)
-                    ->setMethod(['card', 'card', 'card', 'paypal', 'transfer'][mt_rand(0, 4)])
                     ->setReference(sprintf('demo_%d', $n));
+                if (BookingStatus::Pending === $status) {
+                    // Demande « sur place » en attente de confirmation.
+                    $payment->setChannel(Payment::CHANNEL_ONSITE);
+                } else {
+                    $method = ['card', 'card', 'card', 'paypal', 'cash'][mt_rand(0, 4)];
+                    $payment->setStatus(PaymentStatus::Paid)->setMethod($method)->setPaidAt($createdAt->modify('+5 minutes'))
+                        ->setChannel(['card' => Payment::CHANNEL_STRIPE, 'paypal' => Payment::CHANNEL_PAYPAL][$method] ?? Payment::CHANNEL_ONSITE)
+                        ->setInvoiceNumber(sprintf('FACT-%s-%05d', $createdAt->format('Y'), ++$invoice));
+                    if ('card' === $method) {
+                        $payment->setTransactionId(sprintf('mock_pi_demo_%d', $n))->setCardBrand('visa')->setCardLast4((string) mt_rand(1000, 9999));
+                    } elseif ('paypal' === $method) {
+                        $payment->setTransactionId(sprintf('MOCKCAPTUREDEMO%d', $n));
+                    }
+                }
                 $manager->persist($payment);
                 $this->backdate($payment, $createdAt->modify('+5 minutes'));
             }

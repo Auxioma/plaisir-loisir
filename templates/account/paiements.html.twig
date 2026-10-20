@@ -5,9 +5,9 @@
 
     Écarts assumés : le compte particulier est gratuit (aucun abonnement à
     gérer ni à annuler) et TrouveMoi n'encaisse aucune activité (17/10) : le
-    client règle chaque organisateur directement, par les moyens que celui-ci
-    propose. L'historique montre donc les règlements attendus et reçus par
-    les organisateurs ; pas de factures émises par TrouveMoi.
+    client paie chaque organisateur directement (carte sur le compte Stripe
+    de l'organisateur, PayPal, ou sur place, 20/10). L'historique montre les
+    règlements, avec la facture / le reçu de chaque réservation réglée.
 #}
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -72,7 +72,7 @@
             <span class="pf-paymethod__logos">{{ icon.handshake(28) }}</span>
             <div>
                 <strong>{{ 'Vous réglez directement les organisateurs'|trans }}</strong>
-                <small>{{ 'TrouveMoi n’encaisse aucun paiement pour les activités : chaque organisateur vous indique ses moyens de paiement (lien de paiement, PayPal, virement, sur place) dans votre réservation. Aucune carte n’est enregistrée sur TrouveMoi.'|trans }}</small>
+                <small>{{ 'TrouveMoi n’encaisse aucun paiement pour les activités : vous payez l’organisateur directement, par carte (Stripe) ou PayPal lors de la réservation, ou sur place, selon ce qu’il accepte. Aucune carte n’est enregistrée sur TrouveMoi.'|trans }}</small>
             </div>
         </div>
     </section>
@@ -91,7 +91,7 @@
             <div class="pf-transactions">
                 {% for p in payments %}
                     {% set tone = {paid: 'green', pending: 'orange', failed: 'red', refunded: 'grey'}[p.status.value] %}
-                    {% set label = {paid: 'Réglé', pending: 'À régler à l’organisateur', failed: 'Échoué', refunded: 'Remboursé'}[p.status.value] %}
+                    {% set label = {paid: 'Réglé', pending: p.online ? 'Paiement non finalisé' : 'À régler à l’organisateur', failed: 'Échoué', refunded: 'Remboursé'}[p.status.value] %}
                     <div class="pf-transaction">
                         <div class="pf-transaction__label">
                             <strong>{{ p.booking.service ? p.booking.service.title : 'Réservation'|trans }}</strong>
@@ -100,7 +100,9 @@
                         <span>{{ p.createdAt|pf_date('d MMM y') }}</span>
                         <span>{{ p.amount|pf_money(p.currency) }}</span>
                         {{ ui.pill(label|trans, tone) }}
-                        {% if p.booking.service %}
+                        {% if p.invoiceNumber %}
+                            <a class="pf-iconbtn" href="{{ path('app_booking_invoice', {id: p.booking.id, telecharger: 1}) }}" aria-label="{{ 'Télécharger la facture'|trans }}" title="{{ 'Télécharger la facture'|trans }}">{{ icon.download(18) }}</a>
+                        {% elseif p.booking.service %}
                             <a class="pf-iconbtn" href="{{ path('app_booking_confirmation', {id: p.booking.id}) }}" aria-label="{{ 'Voir la réservation et comment régler'|trans }}">{{ icon.eye(18) }}</a>
                         {% else %}<span></span>{% endif %}
                     </div>

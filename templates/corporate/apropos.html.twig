@@ -74,7 +74,7 @@
                         <img src="{{ asset(m.photo) }}" alt="{{ m.name }}" loading="lazy">
                         <strong>{{ m.name }}</strong>
                         <small>{{ m.role|trans }}</small>
-                        <a href="{{ social_links.linkedin }}" target="_blank" rel="noopener" aria-label="LinkedIn — {{ m.name }}">{{ icon.social_linkedin(18) }}</a>
+                        {% if social_links.linkedin %}<a href="{{ social_links.linkedin }}" target="_blank" rel="noopener" aria-label="LinkedIn — {{ m.name }}">{{ icon.social_linkedin(18) }}</a>{% endif %}
                     </li>
                 {% endfor %}
             </ul>

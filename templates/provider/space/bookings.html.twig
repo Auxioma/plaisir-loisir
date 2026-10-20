@@ -16,6 +16,7 @@
             <p class="pf-sub">{{ 'Gérez toutes vos réservations et suivez leur statut en temps réel.'|trans }}</p>
         </div>
         <div class="pp-head__actions">
+            <a class="pf-btn pp-btn-ghost" href="{{ path('app_pro_booking_scan') }}">{{ icon.scan(16) }} {{ 'Scanner / vérifier un QR'|trans }}</a>
             <details class="pl-dropdown pf-kebab">
                 <summary class="pf-btn pp-btn-ghost">{{ 'Exporter'|trans }} {{ icon.chevron_down(16) }}</summary>
                 <div class="tm-menu tm-menu--right">
@@ -76,7 +77,7 @@
                             <td>
                                 <div class="pp-ref">
                                     <img src="{{ asset(b.service|pp_cover) }}" alt="" loading="lazy" decoding="async">
-                                    <div><strong>#{{ b.reference }}</strong><small>{{ 'Réservé le'|trans }} {{ b.createdAt|pf_date('d MMM y')|trim('.') }}<br>{{ 'à'|trans }} {{ b.createdAt|date('H:i') }}</small></div>
+                                    <div><a class="pp-strong" href="{{ path('app_pro_booking_show', {id: b.id}) }}">#{{ b.reference }}</a><small>{{ 'Réservé le'|trans }} {{ b.createdAt|pf_date('d MMM y')|trim('.') }}<br>{{ 'à'|trans }} {{ b.createdAt|date('H:i') }}</small></div>
                                 </div>
                             </td>
                             <td>
@@ -88,11 +89,12 @@
                             <td><strong class="pp-strong">{{ b.service.title }}</strong><small>{{ b.service.city ?? b.service.placeLabel }}</small></td>
                             <td>{% if b.startsAt %}<span class="pp-date">{{ icon.calendar_grid(15) }} {{ b.startsAt|pf_date('d MMM y')|trim('.') }}<br>{{ b.startsAt|date('H:i') }}</span>{% else %}<span class="pf-muted">{{ 'À planifier'|trans }}</span>{% endif %}</td>
                             <td><span class="pf-pill pf-pill--{{ b.status.tone }} pp-pill">{{ b.status.label|trans }}</span></td>
-                            <td class="pp-amount"><strong>{{ ui.money(b.totalPrice) }}</strong><small>{{ b.participants }} {{ 'pers.'|trans }}</small>{% if row.payment and row.payment.status.value == 'paid' %}<small class="is-green">{{ 'Réglé'|trans }}</small>{% elseif row.payment and b.status.value not in ['cancelled', 'refunded'] %}<small>{{ 'À régler'|trans }}</small>{% endif %}</td>
+                            <td class="pp-amount"><strong>{{ ui.money(b.totalPrice) }}</strong><small>{{ b.participants }} {{ 'pers.'|trans }}</small>{% if row.payment and row.payment.status.value == 'paid' %}<small class="is-green">{{ row.payment.online ? 'Payé en ligne'|trans : 'Réglé'|trans }}</small>{% elseif row.payment and b.status.value not in ['cancelled', 'refunded'] %}<small>{{ row.payment.online ? 'Paiement en cours'|trans : 'À régler'|trans }}</small>{% endif %}</td>
                             <td>
                                 <details class="pl-dropdown pf-kebab">
                                     <summary aria-label="{{ 'Actions'|trans }}">{{ icon.dots(20) }}</summary>
                                     <div class="tm-menu tm-menu--right">
+                                        <a class="tm-menu__item" href="{{ path('app_pro_booking_show', {id: b.id}) }}">{{ icon.eye(16) }} {{ 'Détail, facture et QR'|trans }}</a>
                                         {% for a in row.actions %}
                                             <form method="post" action="{{ path('app_pro_bookings_transition', {id: b.id, transition: a[0]}) }}">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">

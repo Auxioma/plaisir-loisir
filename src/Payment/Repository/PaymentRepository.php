@@ -35,6 +35,25 @@ class PaymentRepository extends ServiceEntityRepository
         return $this->findOneBy(['reference' => $reference]);
     }
 
+    /** Paiement en ligne retrouvé par sa session Stripe ou sa commande PayPal. */
+    public function findOneByExternalId(string $externalId): ?Payment
+    {
+        return '' !== $externalId ? $this->findOneBy(['externalId' => $externalId]) : null;
+    }
+
+    /** Dernier numéro de facture attribué pour l'année (« FACT-2026-00042 »), ou null. */
+    public function lastInvoiceNumber(int $year): ?string
+    {
+        $number = $this->createQueryBuilder('p')
+            ->select('MAX(p.invoiceNumber)')
+            ->andWhere('p.invoiceNumber LIKE :prefix')
+            ->setParameter('prefix', sprintf('FACT-%d-%%', $year))
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return \is_string($number) ? $number : null;
+    }
+
     /**
      * Paiements des réservations d'un client, du plus récent au plus ancien
      * (écran « Paiements et abonnements » de l'espace compte).

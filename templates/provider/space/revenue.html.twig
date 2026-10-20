@@ -72,7 +72,7 @@
                         {% set b = p.booking %}
                         <tr>
                             <td>{{ p.createdAt|pf_date('d MMM y')|trim('.') }}<small>{{ p.createdAt|date('H:i') }}</small></td>
-                            <td><strong class="pp-strong">#{{ b.reference }}</strong></td>
+                            <td><a class="pp-strong" href="{{ path('app_pro_booking_show', {id: b.id}) }}">#{{ b.reference }}</a></td>
                             <td><div class="pf-table__item pp-mini-item"><img src="{{ asset(b.service|pp_cover) }}" alt="" loading="lazy" decoding="async"><span>{{ b.service.title }}</span></div></td>
                             <td><div class="pp-client">{{ ui.avatar(b.client, 28) }}<span>{{ b.client.firstName }} {{ b.client.lastName }}</span></div></td>
                             <td><strong class="pp-strong">{{ ui.money(p.amount) }}</strong></td>
@@ -82,7 +82,8 @@
                                 <details class="pl-dropdown pf-kebab">
                                     <summary aria-label="{{ 'Actions'|trans }}">{{ icon.dots(18) }}</summary>
                                     <div class="tm-menu tm-menu--right">
-                                        <a class="tm-menu__item" href="{{ path('app_pro_bookings', {q: b.reference}) }}">{{ 'Voir la réservation'|trans }}</a>
+                                        <a class="tm-menu__item" href="{{ path('app_pro_booking_show', {id: b.id}) }}">{{ 'Détail du paiement'|trans }}</a>
+                                        {% if p.invoiceNumber %}<a class="tm-menu__item" href="{{ path('app_pro_booking_invoice', {id: b.id, telecharger: 1}) }}">{{ 'Télécharger la facture'|trans }}</a>{% endif %}
                                         <a class="tm-menu__item" href="{{ path('app_pro_messages', {client: b.client.id}) }}">{{ 'Contacter le client'|trans }}</a>
                                         <a class="tm-menu__item" href="{{ path('app_pro_support', {sujet: 'Paiement #' ~ b.reference}) }}#ticket">{{ 'Signaler un problème'|trans }}</a>
                                     </div>
@@ -115,15 +116,11 @@
 
     <section class="pf-card">
         <h2 class="pf-card__title pp-mb">{{ 'Moyens de paiement proposés'|trans }}</h2>
-        {% if payment_methods is empty %}
-            <p class="pf-muted">{{ 'Aucun moyen configuré : indiquez à vos clients comment vous régler.'|trans }}</p>
-        {% else %}
-            <ul class="pf-list">
-                {% for m in payment_methods %}
-                    <li><span class="pf-ico pf-ico--xs pf-ico--blue">{{ m.type == 'paypal' ? icon.pay_paypal() : (m.type == 'transfer' ? icon.building(16) : (m.type == 'onsite' ? icon.map_pin(16) : icon.card(16))) }}</span><div class="pf-list__body"><strong>{{ m.label|trans }}</strong><small>{{ m.value }}</small></div></li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+        <ul class="pf-list">
+            {% for m in payment_methods %}
+                <li><span class="pf-ico pf-ico--xs pf-ico--blue">{{ m.type == 'paypal' ? icon.pay_paypal() : (m.type == 'onsite' ? icon.map_pin(16) : (m.type == 'online' ? icon.globe(16) : icon.card(16))) }}</span><div class="pf-list__body"><strong>{{ m.label|trans }}</strong><small class="{{ m.state == 'active' ? 'is-green' : '' }}">{{ {active: 'Activé', pending: 'À finaliser', off: 'Désactivé'}[m.state]|trans }}</small></div></li>
+            {% endfor %}
+        </ul>
         <a class="pf-btn pf-btn--block pp-soft-btn" href="{{ path('app_pro_settings', {section: 'paiement'}) }}">{{ icon.gear(16) }} {{ 'Gérer mes moyens de paiement'|trans }}</a>
     </section>
 {% endblock %}

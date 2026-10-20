@@ -7,14 +7,19 @@ namespace App\Provider\Controller\Space;
 use App\Availability\Repository\AvailabilityRepository;
 use App\Booking\Entity\Booking;
 use App\Booking\Enum\BookingStatus;
+use App\Booking\Presenter\BookingPaymentPresenter;
 use App\Booking\Repository\BookingRepository;
+use App\Booking\Service\BookingQrCode;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\Service\NotificationService;
 use App\Payment\Entity\Payment;
+use App\Payment\Repository\PaymentRepository;
+use App\Payment\Service\InvoiceRenderer;
 use App\Payment\Service\PaymentService;
 use App\Provider\Service\ProviderSpace;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -27,12 +32,15 @@ use Symfony\Component\Workflow\WorkflowInterface;
  * (02/10) : liste filtrable, actions du workflow `booking` (confirmer,
  * démarrer, terminer, annuler) avec notification du client, règlement
  * reçu (le client paie le professionnel directement, 17/10), export CSV et
- * rapport imprimable.
+ * rapport imprimable. Détail « Réservation payée », facture, QR et contrôle
+ * de l'entrée le jour J (20/10).
  */
 #[IsGranted('ROLE_PROVIDER')]
 final class ProviderBookingController extends AbstractProviderSpaceController
 {
     private const PER_PAGE = 6;
+
+    private const ULID = '[0-7][0-9A-HJKMNP-TV-Z]{25}';
 
     private const TABS = [
         'toutes' => null,
@@ -55,6 +63,10 @@ final class ProviderBookingController extends AbstractProviderSpaceController
         private readonly EntityManagerInterface $entityManager,
         private readonly AvailabilityRepository $availabilities,
         private readonly PaymentService $paymentService,
+        private readonly PaymentRepository $payments,
+        private readonly BookingPaymentPresenter $presenter,
+        private readonly InvoiceRenderer $invoices,
+        private readonly BookingQrCode $qrCode,
         #[Target('booking')]
         private readonly WorkflowInterface $bookingWorkflow,
     ) {
@@ -215,6 +227,115 @@ final class ProviderBookingController extends AbstractProviderSpaceController
         }
 
         return $this->back($request, 'app_pro_bookings');
+    }
+
+    /**
+     * « Réservation payée » — maquette reservation_confirmee_prestataire
+     * (20/10) : transaction, réservation, paiement reçu (directement sur le
+     * compte du professionnel, sans commission), facture, QR, suivi.
+     */
+    #[Route(path: ['fr' => '/pro/reservations/{id}', 'en' => '/en/pro/bookings/{id}'], name: 'app_pro_booking_show', requirements: ['id' => self::ULID], methods: ['GET'])]
+    public function show(string $id): Response
+    {
+        $booking = $this->own($id);
+
+        return $this->renderSpace('provider/space/booking_show.html.twig', 'Revenus & Paiements', $this->presenter->present($booking) + [
+            'actions' => $this->transitionsFor($booking),
+            'payment_methods' => Payment::METHODS,
+        ]);
+    }
+
+    #[Route(path: ['fr' => '/pro/reservations/{id}/facture', 'en' => '/en/pro/bookings/{id}/invoice'], name: 'app_pro_booking_invoice', requirements: ['id' => self::ULID], methods: ['GET'])]
+    public function invoice(string $id, Request $request): Response
+    {
+        $booking = $this->own($id);
+        $payment = $this->payments->findOneByBooking($booking);
+
+        try {
+            if (null === $payment) {
+                throw new \InvalidArgumentException('La facture sera disponible une fois la réservation réglée.');
+            }
+
+            return $this->invoices->response($payment, $request->query->getBoolean('telecharger'));
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
+
+            return $this->redirectToRoute('app_pro_booking_show', ['id' => $id]);
+        }
+    }
+
+    #[Route(path: ['fr' => '/pro/reservations/{id}/qr', 'en' => '/en/pro/bookings/{id}/qr'], name: 'app_pro_booking_qr', requirements: ['id' => self::ULID], methods: ['GET'])]
+    public function qr(string $id): Response
+    {
+        $booking = $this->own($id);
+
+        return new Response($this->qrCode->png($booking), Response::HTTP_OK, [
+            'Content-Type' => 'image/png',
+            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, sprintf('reservation-%s-qr.png', $booking->getReference())),
+            'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
+    /**
+     * Contrôle le jour J : le QR du client, scanné avec l'appareil photo,
+     * ouvre cette page ; le code peut aussi être saisi à la main
+     * (« Scanner / vérifier le QR »).
+     */
+    #[Route(path: ['fr' => '/pro/reservations/controle', 'en' => '/en/pro/bookings/check'], name: 'app_pro_booking_scan', methods: ['GET'], priority: 10)]
+    public function scan(Request $request): Response
+    {
+        $code = strtoupper(ltrim(trim((string) $request->query->get('code', '')), '#'));
+        if ('' !== $code) {
+            foreach ($this->space->bookings($this->currentProvider()) as $booking) {
+                if ($booking->getReference() === $code) {
+                    return $this->redirectToRoute('app_pro_booking_check', ['id' => (string) $booking->getId()]);
+                }
+            }
+        }
+
+        return $this->renderSpace('provider/space/booking_check.html.twig', 'Réservations', [
+            'code' => $code,
+            'not_found' => '' !== $code,
+            'check' => null,
+        ]);
+    }
+
+    #[Route(path: ['fr' => '/pro/reservations/{id}/controle', 'en' => '/en/pro/bookings/{id}/check'], name: 'app_pro_booking_check', requirements: ['id' => self::ULID], methods: ['GET'])]
+    public function check(string $id): Response
+    {
+        $booking = Ulid::isValid($id) ? $this->bookingRepository->find(Ulid::fromString($id)) : null;
+        // QR d'une autre activité que les siennes : simplement « non reconnu ».
+        if (null === $booking || $booking->getService()?->getProvider() !== $this->currentProvider()) {
+            return $this->renderSpace('provider/space/booking_check.html.twig', 'Réservations', ['code' => '', 'not_found' => true, 'check' => null]);
+        }
+
+        return $this->renderSpace('provider/space/booking_check.html.twig', 'Réservations', [
+            'code' => $booking->getReference(),
+            'not_found' => false,
+            'check' => $this->presenter->present($booking),
+        ]);
+    }
+
+    /** Entrée validée : le client s'est présenté avec son QR. */
+    #[Route(path: ['fr' => '/pro/reservations/{id}/entree', 'en' => '/en/pro/bookings/{id}/check-in'], name: 'app_pro_booking_checkin', requirements: ['id' => self::ULID], methods: ['POST'])]
+    public function checkIn(string $id, Request $request): Response
+    {
+        $booking = $this->own($id);
+        if (!$this->csrfOk($request)) {
+            return $this->redirectToRoute('app_pro_booking_check', ['id' => $id]);
+        }
+
+        if (!\in_array($booking->getStatus(), [BookingStatus::Confirmed, BookingStatus::InProgress, BookingStatus::Completed], true)) {
+            $this->addFlash('error', 'Entrée refusée : réservation « '.$booking->getStatus()->label().' ».');
+        } elseif (null !== $booking->getCheckedInAt()) {
+            $this->addFlash('info', sprintf('Entrée déjà validée le %s.', $booking->getCheckedInAt()->format('d/m/Y à H:i')));
+        } else {
+            $booking->setCheckedInAt(new \DateTimeImmutable());
+            $this->entityManager->flush();
+            $this->addFlash('success', sprintf('Réservation #%s : entrée validée (%d pers.).', $booking->getReference(), $booking->getParticipants()));
+        }
+
+        return $this->redirectToRoute('app_pro_booking_check', ['id' => $id]);
     }
 
     #[Route(path: ['fr' => '/pro/reservations/export', 'en' => '/en/pro/bookings/export'], name: 'app_pro_bookings_export', priority: 10)]

@@ -288,6 +288,7 @@ final class ProviderSpaceFlowTest extends WebTestCase
         $client->request('POST', '/pro/parametres/enregistrer', $this->token($client, '/pro/parametres?section=preferences') + ['form' => 'preferences', 'section' => 'preferences', 'locale' => 'fr', 'timezone' => 'Europe/Paris', 'availabilityLabel' => 'Lun - Ven : 9h - 18h']);
         self::assertResponseRedirects('/pro/parametres?section=preferences');
         $provider = static::getContainer()->get(ProviderProfileRepository::class)->findOneBy(['displayName' => 'Camille Aventures']);
+        $provider = $this->demoProvider();
         $this->em()->refresh($provider);
         self::assertSame('Lun - Ven : 9h - 18h', $provider->getAvailabilityLabel());
 
@@ -301,32 +302,76 @@ final class ProviderSpaceFlowTest extends WebTestCase
     }
 
     /**
-     * Encaissement direct (17/10) : le professionnel indique SES moyens de
-     * paiement ; aucune commission TrouveMoi n'apparaît plus.
+     * « Paiement et encaissements » (20/10, maquette parametre_configuration_
+     * paiement_prestataire) : paiement en ligne, moyens acceptés, récapitulatif
+     * « Paiement configuré » ; aucune commission TrouveMoi.
      */
-    public function testTheProviderSetsHisOwnPaymentMethods(): void
+    public function testTheProviderConfiguresHowHeIsPaid(): void
     {
         $client = $this->loggedProvider();
-        $fixture = ['paymentIban' => 'FR76 3000 6000 0112 3456 7890 189', 'paymentIbanHolder' => 'Camille Aventures', 'paymentOnSite' => 'Carte bancaire, espèces, chèques vacances'];
+        $form = '/pro/parametres?section=paiement&modifier=1';
 
-        $client->request('POST', '/pro/revenus/moyens-de-paiement', $this->token($client, '/pro/parametres?section=paiement') + ['paymentIban' => 'FR00 1234']);
+        // Récapitulatif (étape 3) avec la configuration des fixtures.
+        $client->request('GET', '/pro/parametres?section=paiement');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('.rg-done', 'Paiement en ligne activé');
+        self::assertSelectorTextContains('.rg-recap', 'Stripe CB');
+        self::assertSelectorExists('a[href*="modifier=1"]');
+
+        // Formulaire (étape 2).
+        $client->request('GET', $form);
+        self::assertSelectorExists('input[name="onlinePaymentEnabled"]');
+        self::assertSelectorExists('input[name="acceptsStripe"][checked]');
+        self::assertSelectorTextContains('.rg-config', 'Compte Stripe relié');
+
+        // PayPal coché sans adresse, ou paiement en ligne sans Stripe ni PayPal : refusé.
+        $client->request('POST', '/pro/revenus/moyens-de-paiement', $this->token($client, $form) + ['acceptsPaypal' => '1', 'paymentPaypal' => '']);
         $client->followRedirect();
-        self::assertSelectorTextContains('.toast-body', 'IBAN invalide');
+        self::assertSelectorTextContains('.toast-body', 'PayPal');
+        $client->request('POST', '/pro/revenus/moyens-de-paiement', $this->token($client, $form) + ['onlinePaymentEnabled' => '1', 'acceptsCash' => '1']);
+        $client->followRedirect();
+        self::assertSelectorTextContains('.toast-body', 'Stripe CB et/ou PayPal');
 
-        $client->request('POST', '/pro/revenus/moyens-de-paiement', $this->token($client, '/pro/parametres?section=paiement') + $fixture + ['paymentLinkUrl' => 'buy.stripe.com/test_camille', 'paymentPaypal' => 'paypal.me/camille']);
+        // Espèces seulement : paiement en ligne coupé, Stripe et PayPal non proposés.
+        $client->request('POST', '/pro/revenus/moyens-de-paiement', $this->token($client, $form) + ['acceptsCash' => '1', 'paymentInstructions' => 'Monnaie appréciée']);
+        self::assertResponseRedirects('/pro/parametres?section=paiement');
+        $provider = $this->demoProvider();
         $provider = $this->demoProvider();
         $this->em()->refresh($provider);
-        self::assertSame('https://buy.stripe.com/test_camille', $provider->getPaymentLinkUrl());
-        self::assertSame('FR7630006000011234567890189', $provider->getPaymentIban());
+        self::assertFalse($provider->isOnlinePaymentEnabled());
+        self::assertFalse($provider->acceptsStripe());
+        self::assertTrue($provider->acceptsCash());
+        self::assertSame('Monnaie appréciée', $provider->getPaymentInstructions());
+        $client->request('GET', '/pro/parametres?section=paiement');
+        self::assertSelectorTextContains('.rg-done', 'Paiement configuré');
+
+        // Délier puis relier le compte Stripe (Stripe Connect simulé en test).
+        $client->request('POST', '/pro/parametres/paiement/stripe/delier', $this->token($client, $form));
+        $provider = $this->demoProvider();
+        $this->em()->refresh($provider);
+        self::assertNull($provider->getStripeAccountId());
+        $client->request('POST', '/pro/parametres/paiement/stripe', $this->token($client, $form) + ['onlinePaymentEnabled' => '1', 'acceptsCash' => '1', 'acceptsPaypal' => '1', 'paymentPaypal' => 'Camille.Aventures@paypal.test']);
+        self::assertResponseRedirects();
+        self::assertStringContainsString('/pro/parametres/paiement/stripe/retour', (string) $client->getResponse()->headers->get('Location'));
+        $client->followRedirect();
+        self::assertResponseRedirects('/pro/parametres?section=paiement');
+        $client->followRedirect();
+        self::assertSelectorTextContains('.toast-body', 'compte Stripe est relié');
+        self::assertSelectorTextContains('.rg-done', 'Paiement en ligne activé');
+
+        $provider = $this->demoProvider();
+        $this->em()->refresh($provider);
+        self::assertTrue($provider->isOnlinePaymentEnabled());
+        self::assertTrue($provider->acceptsStripe());
+        self::assertTrue($provider->acceptsPaypal());
+        self::assertSame('camille.aventures@paypal.test', $provider->getPaymentPaypal());
+        self::assertStringStartsWith('mock_acct_', (string) $provider->getStripeAccountId());
+        self::assertTrue($provider->isStripeChargesEnabled());
 
         $client->request('GET', '/pro/revenus');
         self::assertSelectorTextContains('body', 'Moyens de paiement proposés');
-        self::assertSelectorTextNotContains('body', '12%');
+        self::assertSelectorTextContains('.pp-kvs', 'Commission TrouveMoi0,00');
         self::assertSelectorTextNotContains('body', 'Prochain versement');
-
-        // Retour aux moyens des fixtures (d'autres tests s'en servent).
-        $client->request('POST', '/pro/revenus/moyens-de-paiement', $this->token($client, '/pro/parametres?section=paiement') + $fixture);
-        self::assertNull($this->demoProvider()->getPaymentLinkUrl());
     }
 
     private function loggedProvider(): KernelBrowser

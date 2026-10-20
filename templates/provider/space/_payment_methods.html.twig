@@ -1,43 +1,140 @@
 {#
-    Moyens de paiement que le professionnel propose à ses clients (Paramètres
-    › Moyens de paiement). Encaissement direct (17/10, demande du client) :
-    le client règle le professionnel lui-même, TrouveMoi n'encaisse rien et
-    ne prélève aucune commission ; ces informations sont seulement montrées
-    au client (récapitulatif puis confirmation de sa réservation).
-    Variables : provider.
+    Paramètres › Paiement et encaissements — maquette parametre_configuration_
+    paiement_prestataire (20/10), image du haut : étape 2 « Configuration du
+    paiement » (formulaire) puis étape 3 « Paiement configuré » (récapitulatif
+    + « Modifier mes paramètres »). Le sous-menu de gauche (étape 1) est celui
+    des Paramètres.
+
+    Le client paie le professionnel DIRECTEMENT : par carte sur son compte
+    Stripe (relié par Stripe Connect), par PayPal sur son compte PayPal, ou
+    en espèces sur place. Rien ne transite par TrouveMoi, aucune commission.
+    Variables : provider, editing, payment_summary, stripe_ready,
+    stripe_available, paypal_available.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
-<div class="pf-notice pp-mb">
-    {{ icon.info(18) }}
-    <p>{{ 'Vos clients vous règlent directement : aucun paiement de prestation ne transite par TrouveMoi, et aucune commission n’est prélevée. Indiquez ici comment vous souhaitez être payé ; ces informations sont communiquées au client lors de sa réservation.'|trans }}</p>
-</div>
-<form method="post" action="{{ path('app_pro_payment_methods') }}" class="pf-form-grid">
-    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-    <div class="pf-field pf-span-2">
-        <label for="pm-link">{{ 'Lien de paiement en ligne'|trans }}</label>
-        <input id="pm-link" name="paymentLinkUrl" type="url" inputmode="url" value="{{ provider.paymentLinkUrl }}" placeholder="https://buy.stripe.com/…" maxlength="255">
-        <small class="pf-muted">{{ 'Votre propre lien de paiement (Stripe, SumUp, PayPal, Lydia Pro…), sur votre compte.'|trans }}</small>
-    </div>
-    <div class="pf-field pf-span-2">
-        <label for="pm-paypal">{{ 'PayPal'|trans }}</label>
-        <input id="pm-paypal" name="paymentPaypal" value="{{ provider.paymentPaypal }}" placeholder="{{ 'adresse e-mail ou paypal.me/…'|trans }}" maxlength="180" autocomplete="off">
-    </div>
-    <div class="pf-field">
-        <label for="pm-iban">{{ 'IBAN (virement)'|trans }}</label>
-        <input id="pm-iban" name="paymentIban" value="{{ provider.paymentIban }}" placeholder="FR76 …" maxlength="60" autocomplete="off">
-    </div>
-    <div class="pf-field">
-        <label for="pm-holder">{{ 'Titulaire du compte'|trans }}</label>
-        <input id="pm-holder" name="paymentIbanHolder" value="{{ provider.paymentIbanHolder }}" maxlength="120" autocomplete="off">
-    </div>
-    <div class="pf-field pf-span-2">
-        <label for="pm-onsite">{{ 'Paiement sur place'|trans }}</label>
-        <input id="pm-onsite" name="paymentOnSite" value="{{ provider.paymentOnSite }}" placeholder="{{ 'ex. carte bancaire, espèces, chèques vacances'|trans }}" maxlength="255">
-    </div>
-    <div class="pf-field pf-span-2">
-        <label for="pm-notes">{{ 'Précisions pour vos clients'|trans }}</label>
-        <textarea id="pm-notes" name="paymentInstructions" rows="3" maxlength="2000" placeholder="{{ 'ex. acompte de 30 % à la confirmation, solde le jour de l’activité'|trans }}">{{ provider.paymentInstructions }}</textarea>
-    </div>
-    <p class="pf-muted pf-span-2">{{ 'Laissez un champ vide pour ne pas proposer ce moyen.'|trans }}</p>
-    <div class="pp-form__actions pf-span-2"><button class="pf-btn pf-btn--primary">{{ 'Enregistrer'|trans }}</button></div>
-</form>
+{% set configured = provider.acceptsStripe or provider.acceptsPaypal or provider.acceptsCash %}
+{% set states = {active: ['Activé', 'is-on'], pending: ['À finaliser', 'is-pending'], off: ['Désactivé', 'is-off']} %}
+
+{% if configured and not editing %}
+    {# Étape 3 — Paiement configuré #}
+    <section class="pf-card rg-done">
+        <span class="rg-done__ico">{{ icon.check(34) }}</span>
+        <h2 class="rg-done__title">{{ provider.onlinePaymentEnabled ? 'Paiement en ligne activé !'|trans : 'Paiement configuré !'|trans }}</h2>
+        <p class="rg-done__text">{{ provider.onlinePaymentEnabled
+            ? 'Vous pouvez désormais recevoir les paiements de vos clients sur TrouveMoi, directement sur vos comptes.'|trans
+            : 'Vos clients vous règlent sur place. Activez le paiement en ligne pour être payé dès la réservation.'|trans }}</p>
+
+        <div class="rg-recap">
+            <h3 class="rg-recap__title">{{ 'Récapitulatif de vos paramètres'|trans }}</h3>
+            <ul class="rg-recap__list">
+                {% for m in payment_summary %}
+                    <li>
+                        <span class="rg-recap__ico">{{ m.type == 'online' ? icon.globe_simple(20) : (m.type == 'paypal' ? icon.pay_paypal() : (m.type == 'onsite' ? icon.banknote(20) : icon.card(20))) }}</span>
+                        <span class="rg-recap__label">{{ m.label|trans }}{% if m.detail %}<small>{{ m.detail|trans }}</small>{% endif %}</span>
+                        <span class="rg-state {{ states[m.state][1] }}">{{ states[m.state][0]|trans }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {% if provider.acceptsStripe and not stripe_ready %}
+            <div class="rg-info is-warning">
+                {{ icon.info(18) }}
+                <p>{{ 'Stripe CB est coché mais votre compte Stripe n’est pas encore relié ou validé : vos clients ne peuvent pas encore payer par carte.'|trans }}</p>
+            </div>
+        {% endif %}
+
+        <a class="pf-btn pf-btn--lg pf-btn--block rg-done__edit" href="{{ path('app_pro_settings', {section: 'paiement', modifier: 1}) }}">{{ icon.edit_square(18) }} {{ 'Modifier mes paramètres'|trans }}</a>
+    </section>
+{% else %}
+    {# Étape 2 — Configuration du paiement #}
+    <section class="pf-card rg-config">
+        <h2 class="rg-config__title">{{ 'Paiement et encaissements'|trans }}</h2>
+        <p class="pf-card__sub">{{ 'Paramétrez comment vous souhaitez être payé sur TrouveMoi.'|trans }}</p>
+
+        <form method="post" action="{{ path('app_pro_payment_methods') }}" class="rg-form">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+
+            <label class="rg-toggle">
+                <span>
+                    <strong>{{ 'Activer les paiements en ligne'|trans }}</strong>
+                    <small>{{ 'Permettre aux clients de payer directement lors de la réservation.'|trans }}</small>
+                </span>
+                <input type="checkbox" name="onlinePaymentEnabled" value="1" role="switch"{{ provider.onlinePaymentEnabled ? ' checked' }}>
+                <span class="rg-toggle__track" aria-hidden="true"></span>
+            </label>
+
+            <fieldset class="rg-methods">
+                <legend>{{ 'Moyens de paiement acceptés'|trans }}</legend>
+
+                <div class="rg-method">
+                    <label class="rg-check">
+                        <input type="checkbox" name="acceptsStripe" value="1"{{ provider.acceptsStripe ? ' checked' }}{{ not stripe_available ? ' disabled' }}>
+                        <span>{{ 'Stripe CB'|trans }}</span>
+                        <span class="rg-check__logos">{{ icon.pay_visa() }}{{ icon.pay_mastercard() }}</span>
+                    </label>
+                    <div class="rg-method__detail">
+                        {% if not stripe_available %}
+                            <p class="pf-muted">{{ 'Le paiement par carte n’est pas encore disponible sur TrouveMoi.'|trans }}</p>
+                        {% elseif stripe_ready %}
+                            <p class="rg-linked">{{ icon.check(14) }} {{ 'Compte Stripe relié'|trans }} <small>{{ provider.stripeAccountId }}</small></p>
+                            <a class="pf-link" href="https://dashboard.stripe.com/" target="_blank" rel="noopener">{{ 'Ouvrir mon tableau de bord Stripe'|trans }} {{ icon.arrow_up_right(14) }}</a>
+                        {% else %}
+                            <p class="pf-muted">{{ provider.stripeAccountId
+                                ? 'Votre inscription Stripe n’est pas terminée : reprenez-la pour accepter les cartes.'|trans
+                                : 'Reliez votre compte Stripe : les paiements par carte arriveront directement sur ce compte.'|trans }}</p>
+                            <button class="pf-btn" formaction="{{ path('app_pro_stripe_connect') }}">{{ icon.link(16) }} {{ provider.stripeAccountId ? 'Reprendre mon inscription Stripe'|trans : 'Relier mon compte Stripe'|trans }}</button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="rg-method">
+                    <label class="rg-check">
+                        <input type="checkbox" name="acceptsPaypal" value="1"{{ provider.acceptsPaypal ? ' checked' }}{{ not paypal_available ? ' disabled' }}>
+                        <span>{{ 'PayPal'|trans }}</span>
+                        <span class="rg-check__logos">{{ icon.pay_paypal() }}</span>
+                    </label>
+                    <div class="rg-method__detail">
+                        {% if paypal_available %}
+                            <label class="rg-field" for="pm-paypal">{{ 'Adresse e-mail de votre compte PayPal'|trans }}</label>
+                            <input id="pm-paypal" class="rg-input" name="paymentPaypal" type="email" value="{{ provider.paymentPaypal }}" placeholder="{{ 'vous@exemple.fr'|trans }}" maxlength="180" autocomplete="off">
+                            <small class="pf-muted">{{ 'Les paiements PayPal sont versés directement sur ce compte (compte PayPal Business conseillé).'|trans }}</small>
+                        {% else %}
+                            <p class="pf-muted">{{ 'Le paiement PayPal n’est pas encore disponible sur TrouveMoi.'|trans }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="rg-method">
+                    <label class="rg-check">
+                        <input type="checkbox" name="acceptsCash" value="1"{{ provider.acceptsCash ? ' checked' }}>
+                        <span>{{ 'Paiement sur place « Espèces »'|trans }}</span>
+                        <span class="rg-check__logos">{{ icon.banknote(20) }}</span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <div class="rg-field-block">
+                <label class="rg-field" for="pm-notes">{{ 'Précisions pour vos clients'|trans }} <small class="pf-muted">({{ 'facultatif'|trans }})</small></label>
+                <textarea id="pm-notes" class="rg-input" name="paymentInstructions" rows="3" maxlength="2000" placeholder="{{ 'ex. espèces uniquement, monnaie appréciée'|trans }}">{{ provider.paymentInstructions }}</textarea>
+            </div>
+
+            <div class="rg-info">
+                {{ icon.info(18) }}
+                <p>{{ 'La configuration de vos comptes Stripe et PayPal se fait directement sur leurs plateformes respectives. Vos clients vous paient directement : aucun paiement ne transite par TrouveMoi et aucune commission n’est prélevée.'|trans }}</p>
+            </div>
+
+            <div class="rg-form__actions">
+                {% if configured %}<a class="pf-btn" href="{{ path('app_pro_settings', {section: 'paiement'}) }}">{{ 'Annuler'|trans }}</a>{% endif %}
+                <button class="pf-btn pf-btn--primary">{{ 'Enregistrer'|trans }}</button>
+            </div>
+        </form>
+
+        {% if provider.stripeAccountId %}
+            <form method="post" action="{{ path('app_pro_stripe_disconnect') }}" class="rg-unlink">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                <button class="bk-link bk-link--btn" data-confirm="{{ 'Délier votre compte Stripe ? Vos clients ne pourront plus payer par carte.'|trans }}">{{ 'Délier mon compte Stripe'|trans }}</button>
+            </form>
+        {% endif %}
+    </section>
+{% endif %}

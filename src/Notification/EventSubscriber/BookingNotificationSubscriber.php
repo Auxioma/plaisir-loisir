@@ -35,7 +35,14 @@ final class BookingNotificationSubscriber implements EventSubscriberInterface
      */
     public function onConfirmed(EnteredEvent $event): void
     {
-        $this->notifyClient($event, 'Réservation confirmée', 'Votre réservation est confirmée. Réglez directement l’organisateur : ses moyens de paiement figurent dans votre réservation. À bientôt !');
+        // Paiement en ligne (20/10) : la confirmation suit le paiement.
+        if (true === ($event->getContext()['paid_online'] ?? false)) {
+            $this->notifyClient($event, 'Paiement effectué, réservation confirmée', 'Votre paiement a bien été reçu par l’organisateur et votre réservation est confirmée. Facture et QR de réservation à présenter le jour J : rubrique « Mes réservations ».');
+
+            return;
+        }
+
+        $this->notifyClient($event, 'Réservation confirmée', 'Votre réservation est confirmée. Réglez l’organisateur sur place, selon les modalités indiquées dans votre réservation. À bientôt !');
     }
 
     /**

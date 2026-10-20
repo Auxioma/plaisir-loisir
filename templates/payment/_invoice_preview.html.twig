@@ -1,0 +1,60 @@
+{#
+    Aperçu de la facture / du reçu dans la page (maquette
+    reservation_confirmee_client, 20/10) ; le PDF est payment/invoice_pdf.
+    Variables : payment, booking, service, provider, company, download_url.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+{% set client = booking.client %}
+<div class="rg-invoice">
+    <div class="rg-invoice__head">
+        <img src="{{ asset('images/logo-trouvemoi-horizontal.webp') }}" alt="TrouveMoi" width="150" height="32" loading="lazy">
+        <div class="rg-invoice__meta">
+            <strong>{{ 'Facture / Reçu'|trans }}</strong>
+            <small>{{ 'N°'|trans }} : {{ payment.invoiceNumber }}</small>
+            <small>{{ 'Date'|trans }} : {{ (payment.paidAt ?? payment.updatedAt)|date('d/m/Y') }}</small>
+        </div>
+    </div>
+    <div class="rg-invoice__parties">
+        <div>
+            <strong>{{ 'Client'|trans }}</strong>
+            <span>{{ client.firstName }} {{ client.lastName }}</span>
+            <small>{{ client.email }}</small>
+            {% if client.phone %}<small>{{ client.phone }}</small>{% endif %}
+        </div>
+        <div>
+            <strong>{{ 'Prestataire'|trans }}</strong>
+            {% if provider %}
+                <span>{{ company and company.legalName ? company.legalName : provider.displayName }}</span>
+                {% if company and company.registeredStreet %}
+                    <small>{{ company.registeredStreet }}</small>
+                    <small>{{ company.registeredPostalCode }} {{ company.registeredCity }}</small>
+                {% elseif provider.address %}<small>{{ provider.address }}</small>{% endif %}
+                {% if provider.user %}<small>{{ provider.user.email }}</small>{% endif %}
+            {% endif %}
+        </div>
+    </div>
+    <div class="rg-invoice__table" role="table">
+        <div class="rg-invoice__row is-head" role="row">
+            <span role="columnheader">{{ 'Description'|trans }}</span>
+            <span role="columnheader">{{ 'Quantité'|trans }}</span>
+            <span role="columnheader">{{ 'Prix unitaire'|trans }}</span>
+            <span role="columnheader">{{ 'Total'|trans }}</span>
+        </div>
+        {% for item in booking.items %}
+            <div class="rg-invoice__row" role="row">
+                <span role="cell">{{ service ? service.title : item.label }}{% if service and service.durationLabel %} ({{ service.durationLabel }}){% endif %}</span>
+                <span role="cell">{{ item.quantity }}</span>
+                <span role="cell">{{ item.unitPrice|number_format(2, ',', ' ') }} €</span>
+                <span role="cell">{{ (item.unitPrice * item.quantity)|number_format(2, ',', ' ') }} €</span>
+            </div>
+        {% endfor %}
+        <div class="rg-invoice__row is-total" role="row">
+            <span role="cell">{{ 'Total TTC'|trans }}</span>
+            <span role="cell">{{ payment.amount|number_format(2, ',', ' ') }} €</span>
+        </div>
+    </div>
+    <div class="rg-invoice__foot">
+        <p>{{ 'Merci pour votre réservation !'|trans }}<br>{{ 'À très bientôt sur TrouveMoi.'|trans }}</p>
+        <a class="pf-btn" href="{{ download_url }}">{{ icon.download(18) }} {{ 'Télécharger la facture (PDF)'|trans }}</a>
+    </div>
+</div>

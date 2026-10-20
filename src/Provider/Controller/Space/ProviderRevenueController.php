@@ -98,7 +98,7 @@ final class ProviderRevenueController extends AbstractProviderSpaceController
             'pages' => $pages,
             'total_transactions' => \count($payments),
             'gross' => $gross,
-            'payment_methods' => $this->paymentMethods->configured($provider),
+            'payment_methods' => $this->paymentMethods->summary($provider),
         ]);
     }
 
@@ -121,26 +121,28 @@ final class ProviderRevenueController extends AbstractProviderSpaceController
     }
 
     /**
-     * Moyens de paiement proposés aux clients (lien de paiement, PayPal,
-     * virement, sur place, précisions) : le client règle le professionnel
-     * directement, ces informations lui sont seulement montrées.
+     * « Paiement et encaissements » (20/10) : paiement en ligne, moyens
+     * acceptés (Stripe CB, PayPal, espèces sur place) et précisions. Le
+     * client paie toujours le professionnel directement.
      */
     #[Route(path: ['fr' => '/pro/revenus/moyens-de-paiement', 'en' => '/en/pro/revenue/payment-methods'], name: 'app_pro_payment_methods', methods: ['POST'])]
     public function paymentMethods(Request $request): Response
     {
         if (!$this->csrfOk($request)) {
-            return $this->back($request, 'app_pro_revenue');
+            return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
         }
 
         try {
             $this->paymentMethods->update($this->currentProvider(), $request->request->all());
             $this->entityManager->flush();
-            $this->addFlash('success', 'Vos moyens de paiement ont été enregistrés.');
+            $this->addFlash('success', 'Vos paramètres de paiement ont été enregistrés.');
+
+            return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement']);
         } catch (\InvalidArgumentException $e) {
             $this->addFlash('error', $e->getMessage());
-        }
 
-        return $this->back($request, 'app_pro_revenue');
+            return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
+        }
     }
 
     private function month(string $value, \DateTimeImmutable $default): \DateTimeImmutable

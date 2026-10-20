@@ -58,6 +58,10 @@ class Booking
     #[ORM\Column(options: ['default' => 1])]
     private int $participants = 1;
 
+    /** Entrée validée par le professionnel (QR de réservation présenté le jour J). */
+    #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
+    private ?\DateTimeImmutable $checkedInAt = null;
+
     /**
      * @var Collection<int, BookingItem>
      */
@@ -194,6 +198,18 @@ class Booking
     public function setParticipants(int $participants): static
     {
         $this->participants = max(1, $participants);
+
+        return $this;
+    }
+
+    public function getCheckedInAt(): ?\DateTimeImmutable
+    {
+        return $this->checkedInAt;
+    }
+
+    public function setCheckedInAt(?\DateTimeImmutable $checkedInAt): static
+    {
+        $this->checkedInAt = $checkedInAt;
 
         return $this;
     }

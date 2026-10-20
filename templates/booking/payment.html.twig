@@ -1,0 +1,60 @@
+{#
+    Étape 3 — Choix du moyen de paiement (maquette « Parcours du client —
+    Paiement d'une réservation », 20/10) : uniquement les moyens acceptés par
+    l'organisateur (Stripe CB, PayPal, espèces sur place).
+    Données : BookingController::payment().
+#}
+{% extends 'base.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Choix du moyen de paiement'|trans }}{% endblock %}
+
+{% block body %}
+<main class="bk container">
+    {% include 'booking/_steps.html.twig' with {current: 3} %}
+    <h1 class="bk-title">{{ 'Choix du moyen de paiement'|trans }}</h1>
+
+    <div class="bk-grid">
+        <section class="bk-card">
+            {% include 'booking/_recap.html.twig' %}
+            <a class="bk-link" href="{{ path('app_booking_summary', {id: booking.id}) }}">{{ icon.arrow_left(14) }} {{ 'Retour au récapitulatif'|trans }}</a>
+        </section>
+
+        <aside class="bk-card bk-pay">
+            <div class="bk-secure">
+                <span class="bk-secure__ico">{{ icon.padlock(20) }}</span>
+                <div><strong>{{ 'Paiement sécurisé'|trans }}</strong><small>{{ 'Vos informations sont protégées.'|trans }}</small></div>
+            </div>
+
+            <form method="get" action="{{ path('app_booking_payment_review', {id: booking.id}) }}" class="bk-methods">
+                {% if payment_methods is empty %}
+                    <label class="bk-method">
+                        <input type="radio" name="moyen" value="onsite" checked>
+                        <span class="bk-method__label">{{ 'Règlement à convenir avec l’organisateur'|trans }}</span>
+                        <span class="bk-method__logos">{{ icon.handshake(22) }}</span>
+                    </label>
+                {% endif %}
+                {% for m in payment_methods %}
+                    <label class="bk-method">
+                        <input type="radio" name="moyen" value="{{ m.type }}"{{ m.type == selected or (loop.first and selected not in payment_methods|keys) ? ' checked' }}>
+                        {% if m.type == 'paypal' %}
+                            <span class="bk-method__label bk-method__label--paypal"><b>Pay</b><b>Pal</b></span>
+                        {% else %}
+                            <span class="bk-method__label">{{ m.label|trans }}</span>
+                        {% endif %}
+                        <span class="bk-method__logos">
+                            {%- if m.type == 'stripe' %}{{ icon.pay_visa() }}{{ icon.pay_mastercard() }}
+                            {%- elseif m.type == 'paypal' %}{{ icon.pay_paypal() }}
+                            {%- else %}{{ icon.banknote(22) }}{% endif -%}
+                        </span>
+                    </label>
+                {% endfor %}
+                <button class="pl-btn pl-btn--primary pl-btn--block">{{ 'Continuer'|trans }}</button>
+            </form>
+
+            {% if payment_instructions %}<p class="bk-note">{{ icon.info(14) }} {{ payment_instructions|nl2br }}</p>{% endif %}
+            <p class="bk-note">{{ 'Le paiement est versé directement à l’organisateur, sans passer par TrouveMoi.'|trans }}</p>
+        </aside>
+    </div>
+</main>
+{% endblock %}
