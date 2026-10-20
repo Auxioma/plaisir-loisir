@@ -71,6 +71,23 @@ foreach ($files as $file) {
         }
     }
 
+    // Code caché en bout de ligne derrière des centaines d'espaces (invisible
+    // dans l'éditeur, 20/10), et chargeurs Node exécutés hors navigateur.
+    if (in_array($ext, ['js', 'mjs', 'cjs', 'php', 'twig', 'json', 'css'], true) && !str_starts_with($file, 'assets/vendor/')) {
+        $content = (string) file_get_contents($path);
+        if (preg_match('/[ \t]{150,}\S/', $content)) {
+            $problems[] = sprintf('%s : code dissimulé derrière une longue suite d\'espaces', $file);
+        }
+        if ('js' === $ext && preg_match('/\bcreateRequire\b|\bchild_process\b/', $content)) {
+            $problems[] = sprintf('%s : chargeur Node (createRequire / child_process) dans un script front', $file);
+        }
+    }
+
+    // Dossiers de leurres déjà utilisés pour cacher la charge utile.
+    if (preg_match('#(^|/)public/fonts/|^dist/|^assets/lib/leaflet/images/public/#', $file)) {
+        $problems[] = sprintf('%s : emplacement utilisé par le code malveillant (fausses polices / dist)', $file);
+    }
+
     if (str_starts_with($file, '.vscode/') || str_starts_with($file, '.idea/')) {
         $content = (string) file_get_contents($path);
         if (preg_match('/folderOpen|allowAutomaticTasks/i', $content)) {

@@ -321,9 +321,15 @@ final class BookingFlowTest extends WebTestCase
             'time' => $slot->getStartsAt()->format('H:i'),
             'adults' => 2,
         ]);
-        self::assertResponseRedirects();
+        // L'identifiant vient de la redirection : « la dernière réservation »
+        // du client peut être celle d'un autre test (fixtures aléatoires).
+        $location = (string) $client->getResponse()->headers->get('Location');
+        self::assertMatchesRegularExpression('#^/reservations/([0-9A-HJKMNP-TV-Z]{26})$#', $location, 'Réservation refusée : '.implode(' ', $client->getRequest()->getSession()->getFlashBag()->peek('error')));
+        $booking = $em->getRepository(Booking::class)->find(substr($location, \strlen('/reservations/')));
+        self::assertNotNull($booking);
+        self::assertSame($user->getId()?->toString(), $booking->getClient()?->getId()?->toString());
 
-        return $this->lastBooking($em, $user, $service);
+        return $booking;
     }
 
     /** @return array{0: Service, 1: Availability} */
@@ -331,8 +337,9 @@ final class BookingFlowTest extends WebTestCase
     {
         $service = $em->getRepository(Service::class)->findOneBy(['slug' => 'descente-en-canoe', 'status' => ServiceStatus::Published]);
         self::assertNotNull($service);
-        // Heure unique par appel : plusieurs tests créent un créneau sur la même activité.
-        $start = (new \DateTimeImmutable('+6 days'))->setTime(random_int(6, 20), random_int(0, 59));
+        // Jour unique par appel : plusieurs tests créent un créneau sur la même activité.
+        static $n = 0;
+        $start = (new \DateTimeImmutable(sprintf('+%d days', 6 + ++$n)))->setTime(10, random_int(0, 59));
         $slot = (new Availability())->setService($service)
             ->setStartsAt($start)->setEndsAt($start->modify('+2 hours'))->setCapacity(20);
         $em->persist($slot);
