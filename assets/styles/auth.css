@@ -374,3 +374,8 @@
 /* Maquette : tous les boutons pleine largeur des ecrans d'authentification
    font 40px de haut. Sans hauteur explicite, une ancre `.pl-btn` sort a 48. */
 .auth-card .pl-btn--block { min-height: 40px; height: 40px; padding-block: 0; }
+
+/* Conseil sous l'en-tête (vérification e-mail : penser aux spams, 20/10). */
+.auth-tip { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 var(--pl-sp-16, 16px); padding: 12px 14px; background: #eef3fe; border: 1px solid #d3e0fa; border-radius: var(--pl-radius-sm); color: #1d3fb8; font-size: 13.5px; line-height: 1.45; }
+.auth-tip svg { flex: none; margin-top: 1px; }
+.auth-tip span { color: #0f172a; }

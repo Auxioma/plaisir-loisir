@@ -99,7 +99,7 @@
         <h2 class="rg-card__title"><span class="rg-card__ico">{{ icon.gear(20) }}</span>{{ 'Actions'|trans }}</h2>
         <div class="rg-actions__list">
             {% if paid %}<a class="pf-btn pf-btn--primary" href="{{ path('app_booking_invoice', {id: booking.id, telecharger: 1}) }}">{{ icon.download(18) }} {{ 'Télécharger la facture'|trans }}</a>{% endif %}
-            {% if qr %}<a class="pf-btn" href="{{ path('app_booking_qr', {id: booking.id}) }}">{{ icon.qr_code(18) }} {{ 'Télécharger le QR'|trans }}</a>{% endif %}
+            {% if qr %}<a class="pf-btn" href="{{ path('app_booking_qr', {id: booking.id}) }}" data-turbo="false">{{ icon.qr_code(18) }} {{ 'Télécharger mon billet'|trans }}</a>{% endif %}
             <a class="pf-btn{{ not paid ? ' pf-btn--primary' }}" href="{{ path('app_account_history') }}">{{ icon.list_view(18) }} {{ 'Voir mes réservations'|trans }}</a>
             {% if provider and provider.slug and provider.status.value == 'verified' %}
                 <form method="post" action="{{ path('app_account_messages_start', {slug: provider.slug}) }}">

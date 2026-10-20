@@ -41,7 +41,7 @@ final class ProviderPaymentMethods
 
         return [
             ['type' => 'online', 'label' => 'Paiement en ligne', 'state' => $online ? 'active' : 'off', 'detail' => null],
-            ['type' => self::STRIPE, 'label' => 'Stripe CB', 'state' => $state($provider->acceptsStripe(), $online && $this->stripeReady($provider)),
+            ['type' => self::STRIPE, 'label' => 'Carte Bancaire', 'state' => $state($provider->acceptsStripe(), $online && $this->stripeReady($provider)),
                 'detail' => $provider->acceptsStripe() && !$this->stripeReady($provider) ? 'Compte Stripe à relier' : null],
             ['type' => self::PAYPAL, 'label' => 'PayPal', 'state' => $state($provider->acceptsPaypal(), $online && $this->paypalReady($provider)),
                 'detail' => $provider->acceptsPaypal() ? $provider->getPaymentPaypal() : null],
@@ -66,7 +66,7 @@ final class ProviderPaymentMethods
     {
         $methods = [];
         if ($provider->isOnlinePaymentEnabled() && $provider->acceptsStripe() && $this->stripeReady($provider)) {
-            $methods[self::STRIPE] = ['type' => self::STRIPE, 'label' => 'Stripe CB', 'online' => true];
+            $methods[self::STRIPE] = ['type' => self::STRIPE, 'label' => 'Carte Bancaire', 'online' => true];
         }
         if ($provider->isOnlinePaymentEnabled() && $provider->acceptsPaypal() && $this->paypalReady($provider)) {
             $methods[self::PAYPAL] = ['type' => self::PAYPAL, 'label' => 'PayPal', 'online' => true];
@@ -115,7 +115,7 @@ final class ProviderPaymentMethods
             throw new \InvalidArgumentException('Indiquez l’adresse e-mail de votre compte PayPal pour accepter PayPal.');
         }
         if ($online && !$stripe && !$paypal) {
-            throw new \InvalidArgumentException('Paiement en ligne : cochez Stripe CB et/ou PayPal.');
+            throw new \InvalidArgumentException('Paiement en ligne : cochez Carte Bancaire et/ou PayPal.');
         }
         if (!$stripe && !$paypal && !$cash) {
             throw new \InvalidArgumentException('Acceptez au moins un moyen de paiement.');
