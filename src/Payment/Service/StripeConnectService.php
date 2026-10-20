@@ -44,8 +44,12 @@ final class StripeConnectService
         }
 
         try {
-            if (null === $provider->getStripeAccountId()) {
-                $provider->setStripeAccountId($this->gateway->createAccount((string) $provider->getUser()?->getEmail(), (string) $provider->getId()));
+            // Un compte simulé (créé sans clé Stripe, ou par les fixtures)
+            // n'existe pas chez Stripe : on en crée un vrai à sa place.
+            $accountId = $provider->getStripeAccountId();
+            if (null === $accountId || str_starts_with($accountId, 'mock_')) {
+                $provider->setStripeChargesEnabled(false)
+                    ->setStripeAccountId($this->gateway->createAccount((string) $provider->getUser()?->getEmail(), (string) $provider->getId()));
                 $this->entityManager->flush();
             }
 
