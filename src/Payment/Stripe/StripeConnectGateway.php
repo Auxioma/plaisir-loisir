@@ -24,12 +24,27 @@ final class StripeConnectGateway implements ConnectGateway
         return true;
     }
 
+    /**
+     * Compte connecté créé par l'API Accounts v2 (20/10) : Stripe refuse
+     * désormais `POST /v1/accounts` aux nouvelles plateformes Connect.
+     * Tableau de bord complet, frais et litiges portés par Stripe =
+     * l'équivalent d'un compte Standard ; configuration « merchant » pour
+     * encaisser les cartes sur le compte du professionnel.
+     */
     public function createAccount(string $email, string $providerId): string
     {
-        $account = $this->stripe->accounts->create([
-            'type' => 'standard',
-            'country' => 'FR',
-            'email' => $email,
+        $account = $this->stripe->v2->core->accounts->create([
+            'contact_email' => $email,
+            'identity' => ['country' => 'FR'],
+            'dashboard' => 'full',
+            'defaults' => [
+                'currency' => 'eur',
+                'locales' => ['fr-FR'],
+                'responsibilities' => ['fees_collector' => 'stripe', 'losses_collector' => 'stripe'],
+            ],
+            'configuration' => [
+                'merchant' => ['capabilities' => ['card_payments' => ['requested' => true]]],
+            ],
             'metadata' => ['provider_id' => $providerId],
         ]);
 
@@ -38,19 +53,27 @@ final class StripeConnectGateway implements ConnectGateway
 
     public function onboardingUrl(string $accountId, string $refreshUrl, string $returnUrl): string
     {
-        $link = $this->stripe->accountLinks->create([
+        $link = $this->stripe->v2->core->accountLinks->create([
             'account' => $accountId,
-            'refresh_url' => $refreshUrl,
-            'return_url' => $returnUrl,
-            'type' => 'account_onboarding',
+            'use_case' => [
+                'type' => 'account_onboarding',
+                'account_onboarding' => [
+                    'configurations' => ['merchant'],
+                    'refresh_url' => $refreshUrl,
+                    'return_url' => $returnUrl,
+                ],
+            ],
         ]);
 
         return (string) $link->url;
     }
 
+    /** Paiement par carte actif sur le compte (configuration « merchant »). */
     public function chargesEnabled(string $accountId): bool
     {
-        return (bool) $this->stripe->accounts->retrieve($accountId)->charges_enabled;
+        $account = $this->stripe->v2->core->accounts->retrieve($accountId, ['include' => ['configuration.merchant']]);
+
+        return 'active' === ($account->toArray()['configuration']['merchant']['capabilities']['card_payments']['status'] ?? null);
     }
 
     public function createCheckout(
