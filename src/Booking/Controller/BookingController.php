@@ -25,7 +25,6 @@ use App\User\Entity\User;
 use App\User\StaticAccount;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -332,17 +331,17 @@ final class BookingController extends AbstractController
         }
     }
 
-    /** QR de réservation à présenter le jour de l'activité (PNG). */
+    /**
+     * Billet à présenter le jour de l'activité (PDF, 20/10) : infos clés de
+     * l'activité, facture ou récapitulatif, et QR de vérification — plutôt
+     * qu'une image de QR seule.
+     */
     #[Route(path: ['fr' => '/reservations/{id}/qr', 'en' => '/en/bookings/{id}/qr'], name: 'app_booking_qr', methods: ['GET'])]
     public function qr(string $id): Response
     {
         $booking = $this->own($id);
 
-        return new Response($this->qrCode->png($booking), Response::HTTP_OK, [
-            'Content-Type' => 'image/png',
-            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, sprintf('reservation-%s-qr.png', $booking->getReference())),
-            'Cache-Control' => 'private, no-store',
-        ]);
+        return $this->invoices->ticketResponse($booking, $this->payments->findOneByBooking($booking), $this->qrCode->png($booking));
     }
 
     /** @return array<string, mixed> */

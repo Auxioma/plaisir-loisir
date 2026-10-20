@@ -315,7 +315,7 @@ final class ProviderSpaceFlowTest extends WebTestCase
         $client->request('GET', '/pro/parametres?section=paiement');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('.rg-done', 'Paiement en ligne activé');
-        self::assertSelectorTextContains('.rg-recap', 'Stripe CB');
+        self::assertSelectorTextContains('.rg-recap', 'Carte Bancaire');
         self::assertSelectorExists('a[href*="modifier=1"]');
 
         // Formulaire (étape 2).
@@ -330,7 +330,7 @@ final class ProviderSpaceFlowTest extends WebTestCase
         self::assertSelectorTextContains('.toast-body', 'PayPal');
         $client->request('POST', '/pro/revenus/moyens-de-paiement', $this->token($client, $form) + ['onlinePaymentEnabled' => '1', 'acceptsCash' => '1']);
         $client->followRedirect();
-        self::assertSelectorTextContains('.toast-body', 'Stripe CB et/ou PayPal');
+        self::assertSelectorTextContains('.toast-body', 'Carte Bancaire et/ou PayPal');
 
         // Espèces seulement : paiement en ligne coupé, Stripe et PayPal non proposés.
         $client->request('POST', '/pro/revenus/moyens-de-paiement', $this->token($client, $form) + ['acceptsCash' => '1', 'paymentInstructions' => 'Monnaie appréciée']);

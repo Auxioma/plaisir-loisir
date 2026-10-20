@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Payment\Service;
 
+use App\Booking\Entity\Booking;
 use App\Legal\Repository\CompanyIdentityRepository;
 use App\Payment\Entity\Payment;
 use Dompdf\Dompdf;
@@ -66,6 +67,43 @@ final class InvoiceRenderer
             'booking' => $payment->getBooking(),
             'provider' => $provider,
             'company' => null !== $provider ? $this->companies->findOneByProvider($provider) : null,
+            'logo' => is_file($logo) ? 'data:image/png;base64,'.base64_encode((string) file_get_contents($logo)) : null,
+        ]);
+    }
+
+    /**
+     * Billet de réservation PDF (20/10) : infos clés de l'activité, facture
+     * (ou récapitulatif à régler sur place) et QR à présenter.
+     *
+     * @param string $qrPng image PNG du QR (BookingQrCode::png())
+     */
+    public function ticketResponse(Booking $booking, ?Payment $payment, string $qrPng): Response
+    {
+        $options = new Options();
+        $options->setIsRemoteEnabled(false);
+        $options->setDefaultFont('DejaVu Sans');
+        $options->setChroot($this->projectDir.'/assets/images');
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($this->ticketHtml($booking, $payment, $qrPng));
+        $dompdf->setPaper('A4');
+        $dompdf->render();
+
+        return new Response((string) $dompdf->output(), Response::HTTP_OK, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, sprintf('billet-%s.pdf', $booking->getReference())),
+            'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
+    public function ticketHtml(Booking $booking, ?Payment $payment, string $qrPng): string
+    {
+        $logo = $this->projectDir.'/assets/images/logo-trouvemoi-horizontal.png';
+
+        return $this->twig->render('payment/ticket_pdf.html.twig', [
+            'booking' => $booking,
+            'payment' => $payment,
+            'provider' => $booking->getService()?->getProvider(),
+            'qr' => 'data:image/png;base64,'.base64_encode($qrPng),
             'logo' => is_file($logo) ? 'data:image/png;base64,'.base64_encode((string) file_get_contents($logo)) : null,
         ]);
     }

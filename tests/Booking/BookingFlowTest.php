@@ -99,8 +99,10 @@ final class BookingFlowTest extends WebTestCase
         self::assertResponseHeaderSame('Content-Type', 'application/pdf');
         self::assertStringContainsString('attachment', (string) $client->getResponse()->headers->get('Content-Disposition'));
         self::assertStringStartsWith('%PDF', (string) $client->getResponse()->getContent());
+        // Billet PDF : infos de l'activité, facture et QR à présenter.
         $client->request('GET', '/reservations/'.$booking->getId().'/qr');
-        self::assertResponseHeaderSame('Content-Type', 'image/png');
+        self::assertResponseHeaderSame('Content-Type', 'application/pdf');
+        self::assertStringStartsWith('%PDF', (string) $client->getResponse()->getContent());
 
         // Un autre client n'y a pas accès.
         $client->loginUser($this->client($em, 'marc.dubois@client.trouvemoi.test'));

@@ -40,7 +40,7 @@
         {% if provider.acceptsStripe and not stripe_ready %}
             <div class="rg-info is-warning">
                 {{ icon.info(18) }}
-                <p>{{ 'Stripe CB est coché mais votre compte Stripe n’est pas encore relié ou validé : vos clients ne peuvent pas encore payer par carte.'|trans }}</p>
+                <p>{{ 'Carte Bancaire est coché mais votre compte Stripe n’est pas encore relié ou validé : vos clients ne peuvent pas encore payer par carte.'|trans }}</p>
             </div>
         {% endif %}
 
@@ -70,7 +70,7 @@
                 <div class="rg-method">
                     <label class="rg-check">
                         <input type="checkbox" name="acceptsStripe" value="1"{{ provider.acceptsStripe ? ' checked' }}{{ not stripe_available ? ' disabled' }}>
-                        <span>{{ 'Stripe CB'|trans }}</span>
+                        <span>{{ 'Carte Bancaire'|trans }}</span>
                         <span class="rg-check__logos">{{ icon.pay_visa() }}{{ icon.pay_mastercard() }}</span>
                     </label>
                     <div class="rg-method__detail">
