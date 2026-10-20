@@ -73,7 +73,13 @@
                     {{ ui.avatar(client, 48) }}
                     <div>
                         <strong>{{ client.firstName }} {{ client.lastName }}</strong>
-                        <small>{% if details.last %}{{ 'Réservation'|trans }} #{{ details.last.reference }} • {{ details.last.service.title }}{% else %}{{ selected.service ? selected.service.title : 'Client'|trans }}{% endif %}</small>
+                        <span class="pp-thread-head__meta">
+                            {%- if details.last -%}
+                                <b>{{ 'Réservation'|trans }} #{{ details.last.reference }}</b><span>{{ details.last.service.title }}</span>
+                            {%- elseif selected.service -%}
+                                <span>{{ selected.service.title }}</span>
+                            {%- endif -%}
+                        </span>
                     </div>
                     {% if details.last %}
                         <a class="pf-btn pp-btn-ghost" href="{{ path('app_pro_bookings', {q: details.last.reference}) }}">{{ 'Voir la réservation'|trans }}</a>

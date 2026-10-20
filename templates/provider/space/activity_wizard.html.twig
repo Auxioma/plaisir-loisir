@@ -53,6 +53,16 @@
     {% if errors is not empty %}
         <div class="ew-alert" role="alert">{{ icon.info(18) }} {{ 'Certaines informations sont manquantes ou incorrectes : corrigez les champs signalés pour continuer.'|trans }}</div>
     {% endif %}
+    {% if not payments_ready %}
+        <div class="aw-payment-tip">
+            {{ icon.card(20) }}
+            <div>
+                <strong>{{ 'Vos clients ne peuvent pas encore vous payer'|trans }}</strong>
+                <span>{{ 'Choisissez comment vous serez réglé : carte bancaire (Stripe), PayPal ou espèces sur place. Votre activité en cours est conservée, vous la reprendrez ensuite.'|trans }}</span>
+            </div>
+            <a class="pf-btn pf-btn--primary" href="{{ path('app_pro_settings', {section: 'paiement'}) }}">{{ 'Configurer mes moyens de paiement'|trans }}</a>
+        </div>
+    {% endif %}
     {% if not verified %}
         <p class="ew-tip">{{ icon.info(16) }} <span>{{ 'Votre compte professionnel est en cours de vérification : vous pouvez préparer vos activités, elles pourront être envoyées en validation dès la vérification terminée.'|trans }}</span></p>
     {% endif %}

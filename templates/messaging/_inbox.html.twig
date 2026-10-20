@@ -1,0 +1,84 @@
+{#
+    Boîte de réception du compte (20/10) : liste des conversations à gauche,
+    fil ouvert à droite — même mise en page que la messagerie de l'espace pro
+    (classes .pp-inbox de pro.css), aux couleurs du compte particulier.
+    Variables : rows, conversation (ou null), other, current_user.
+#}
+{% import '_partials/_icons.html.twig' as icon %}
+<div class="pp-inbox acc-inbox{{ conversation ? ' has-thread' }}">
+    <section class="pf-card pp-inbox__list">
+        {% if rows is empty %}
+            <p class="pf-empty">{{ 'Aucune conversation.'|trans }}<br><small>{{ 'Contactez un professionnel depuis une activité ou sa fiche, ou un membre depuis son profil.'|trans }}</small></p>
+        {% else %}
+            <ul class="pp-threads">
+                {% for row in rows %}
+                    {% set c = row.conversation %}
+                    {% set at = row.last_message ? row.last_message.createdAt : c.createdAt %}
+                    <li>
+                        <a class="pp-thread{{ conversation and conversation.id == c.id ? ' is-active' }}" href="{{ path('app_account_messages_show', {id: c.id}) }}">
+                            <span class="pp-avatar pp-avatar--initials" style="width: 40px; height: 40px; font-size: 15px" aria-hidden="true">{{ row.other|slice(0, 1)|upper }}</span>
+                            <span class="pp-thread__body">
+                                <strong>{{ row.other }}</strong>
+                                <span>{{ row.last_message ? row.last_message.body : 'Nouvelle conversation'|trans }}</span>
+                            </span>
+                            <span class="pp-thread__end">
+                                <small>{{ at|date('Y-m-d') == 'now'|date('Y-m-d') ? at|date('H:i') : at|pf_date('d MMM')|trim('.') }}</small>
+                                {% if row.unread %}<b class="pp-thread__count" aria-label="{{ 'Non lu'|trans }}">•</b>{% endif %}
+                            </span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </section>
+
+    <section class="pf-card pp-inbox__thread">
+        {% if conversation is null %}
+            <div class="pf-empty acc-inbox__placeholder">
+                {{ icon.chat_bubble(32) }}
+                <strong>{{ rows is empty ? 'Vos conversations apparaîtront ici.'|trans : 'Sélectionnez une conversation.'|trans }}</strong>
+            </div>
+        {% else %}
+            <header class="pp-thread-head">
+                <span class="pp-avatar pp-avatar--initials" style="width: 48px; height: 48px; font-size: 18px" aria-hidden="true">{{ other|slice(0, 1)|upper }}</span>
+                <div>
+                    <strong>{{ other }}</strong>
+                    {% if conversation.service %}<span class="pp-thread-head__meta"><span>{{ conversation.service.title }}</span></span>{% endif %}
+                </div>
+                <a class="pf-btn pp-btn-ghost acc-inbox__back" href="{{ path('app_account_messages') }}">{{ icon.arrow_left(16) }} {{ 'Conversations'|trans }}</a>
+            </header>
+
+            <div class="pp-chat" data-pp-chat>
+                {% set lastDay = '' %}
+                {% for m in conversation.messages %}
+                    {% set day = m.createdAt|date('Y-m-d') %}
+                    {% if day != lastDay %}
+                        <p class="pp-chat__day">{{ day == 'now'|date('Y-m-d') ? 'Aujourd’hui'|trans : m.createdAt|pf_date('d MMMM y') }}</p>
+                        {% set lastDay = day %}
+                    {% endif %}
+                    {% set mine = m.author == current_user %}
+                    <div class="pp-msg{{ mine ? ' is-mine' }}">
+                        <div class="pp-msg__bubble">
+                            <p>{{ m.body|nl2br }}</p>
+                            <small>{{ m.createdAt|date('H:i') }}</small>
+                        </div>
+                        {% if not mine %}
+                            <div class="acc-chat__report">
+                                {% include '_partials/_report_form.html.twig' with {subject_type: 'message', subject_id: m.id, subject_label: 'Message de ' ~ other} %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="pf-empty">{{ 'Aucun message pour le moment : écrivez le premier.'|trans }}</p>
+                {% endfor %}
+            </div>
+
+            <form method="post" action="{{ path('app_account_messages_show', {id: conversation.id}) }}" class="pp-composer">
+                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                <label class="visually-hidden" for="acc-body">{{ 'Votre message'|trans }}</label>
+                <textarea id="acc-body" name="message" rows="1" maxlength="4000" placeholder="{{ 'Écrire un message…'|trans }}" required></textarea>
+                <button class="pp-composer__send" aria-label="{{ 'Envoyer'|trans }}">{{ icon.send(20) }}</button>
+            </form>
+        {% endif %}
+    </section>
+</div>

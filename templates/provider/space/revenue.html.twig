@@ -71,13 +71,13 @@
                     {% for p in transactions %}
                         {% set b = p.booking %}
                         <tr>
-                            <td>{{ p.createdAt|pf_date('d MMM y')|trim('.') }}<small>{{ p.createdAt|date('H:i') }}</small></td>
+                            <td class="pp-when">{{ p.createdAt|pf_date('d MMM y') }}<small>{{ p.createdAt|date('H:i') }}</small></td>
                             <td><a class="pp-strong" href="{{ path('app_pro_booking_show', {id: b.id}) }}">#{{ b.reference }}</a></td>
                             <td><div class="pf-table__item pp-mini-item"><img src="{{ asset(b.service|pp_cover) }}" alt="" loading="lazy" decoding="async"><span>{{ b.service.title }}</span></div></td>
                             <td><div class="pp-client">{{ ui.avatar(b.client, 28) }}<span>{{ b.client.firstName }} {{ b.client.lastName }}</span></div></td>
                             <td><strong class="pp-strong">{{ ui.money(p.amount) }}</strong></td>
                             <td>{% set st = {pending: ['À régler', 'orange'], paid: ['Réglé', 'green'], failed: ['Échoué', 'red'], refunded: ['Remboursé', 'grey']}[p.status.value] %}<span class="pf-pill pf-pill--{{ st[1] }} pp-pill">{{ st[0]|trans }}</span></td>
-                            <td class="pp-paytype">{% if p.method == 'paypal' %}{{ icon.pay_paypal() }} PayPal{% elseif p.method == 'transfer' %}{{ icon.building(16) }} {{ 'Virement'|trans }}{% elseif p.method %}{{ icon.card(16) }} {{ p.methodLabel|trans }}{% else %}<span class="pf-muted">—</span>{% endif %}</td>
+                            <td>{% if p.method == 'paypal' %}<span class="pp-paytype">{{ icon.pay_paypal() }} PayPal</span>{% elseif p.method == 'transfer' %}<span class="pp-paytype">{{ icon.building(16) }} {{ 'Virement'|trans }}</span>{% elseif p.method %}<span class="pp-paytype">{{ icon.card(16) }} {{ p.methodLabel|trans }}</span>{% else %}<span class="pf-muted">—</span>{% endif %}</td>
                             <td>
                                 <details class="pl-dropdown pf-kebab">
                                     <summary aria-label="{{ 'Actions'|trans }}">{{ icon.dots(18) }}</summary>

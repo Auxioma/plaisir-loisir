@@ -3,6 +3,7 @@
     gabarit de l'espace compte (en-tête, sidebar).
     Variables : rows (list de {conversation, other, last_message, unread}).
 
+    Boîte à deux volets depuis le 20/10 (messaging/_inbox.html.twig).
     Repris en cartes `.acc-conv` (18/09) à la place d'un `.list-group`
     Bootstrap brut : même langage visuel que les notifications (`.acc-notif`)
     — avatar en initiale (aucune photo à afficher, l'autre partie peut être
@@ -32,30 +33,5 @@
         </ul>
     </details>
 
-    {% if rows is empty %}
-        {% include 'account/_empty.html.twig' with { message: "Vous n'avez encore aucune conversation."|trans } %}
-    {% else %}
-        <div class="acc-conv-list">
-            {% for row in rows %}
-                <a href="{{ path('app_account_messages_show', {id: row.conversation.id}) }}"
-                   class="acc-conv{{ not row.unread ? ' acc-conv--muted' }}">
-                    <span class="acc-conv__avatar" aria-hidden="true">{{ row.other|slice(0, 1)|upper }}</span>
-                    <div class="acc-conv__body">
-                        <strong>{{ row.other }}</strong>
-                        {% if row.last_message %}
-                            <span class="acc-conv__preview">{{ row.last_message.body }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="acc-conv__meta">
-                        {% if row.last_message %}
-                            <span class="acc-conv__time">{{ row.last_message.createdAt|date('d/m/Y H:i') }}</span>
-                        {% endif %}
-                        {% if row.unread %}
-                            <span class="acc-conv__badge" aria-label="{{ 'Non lu'|trans }}"></span>
-                        {% endif %}
-                    </div>
-                </a>
-            {% endfor %}
-        </div>
-    {% endif %}
+    {% include 'messaging/_inbox.html.twig' with {conversation: null, other: null, current_user: null} %}
 {% endblock %}

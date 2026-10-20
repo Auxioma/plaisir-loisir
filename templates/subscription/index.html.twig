@@ -1,105 +1,96 @@
 {#
-    Abonnement professionnel (§17 du CDC, route indicative /pro/abonnement du
-    §33.1). Aucune maquette Figma pour cet écran. Rejoint la coquille
-    account/_layout.html.twig le 14/09 (voir provider/space/dashboard.html.twig).
+    Abonnement professionnel (§17 du CDC, /pro/abonnement). Dans l'espace pro
+    depuis le 20/10 (gabarit provider/space/_layout, on y arrive par
+    Paramètres > Abonnement). Sans abonnement en cours, c'est la seule page
+    utile de l'espace (ProviderSubscriptionGateSubscriber).
+    Données : SubscriptionController::index().
 #}
-{% extends 'account/_layout.html.twig' %}
+{% extends 'provider/space/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
 
 {% block title %}{{ 'Abonnement'|trans }}{% endblock %}
 
-{% block account %}
-    {% include 'account/_page_head.html.twig' with {
-        crumbs: [{ label: 'Abonnement'|trans }],
-        title: 'Abonnement professionnel'|trans,
-        subtitle: 'Votre offre et sa facturation.'|trans,
-    } %}
+{% set status_labels = {active: ['Actif', 'green'], past_due: ['Paiement en retard', 'orange'], incomplete: ['En attente de confirmation', 'blue'], cancelled: ['Résilié', 'grey']} %}
+{% set period = {monthly: 'mois', yearly: 'an'} %}
 
-    {# 17/10 (demande du client) : l'abonnement est le seul paiement encaissé par TrouveMoi. #}
-    <p class="small text-muted mb-4">{{ 'Votre abonnement est réglé à TrouveMoi par paiement sécurisé (Stripe). Les prestations que vous vendez, elles, vous sont payées directement par vos clients : TrouveMoi n’en encaisse aucune et ne prélève aucune commission.'|trans }}</p>
+{% block space %}
+    <header class="pf-head pp-head">
+        <div>
+            <h1 class="pf-title">{{ 'Abonnement professionnel'|trans }} <span class="pp-title-ico">{{ icon.crown(24) }}</span></h1>
+            <p class="pf-sub">{{ 'Votre offre et sa facturation.'|trans }}</p>
+        </div>
+        <a class="pf-btn" href="{{ path('app_pro_settings', {section: 'abonnement'}) }}">{{ icon.arrow_left(16) }} {{ 'Paramètres'|trans }}</a>
+    </header>
+
+    {% if not has_access %}
+        <div class="pp-plan-alert">
+            {{ icon.info(18) }}
+            <p>{{ 'Un abonnement en cours est nécessaire pour utiliser votre espace professionnel : publier vos activités, recevoir des réservations, suivre vos revenus et vos statistiques. Vos réservations déjà prises restent accessibles.'|trans }}</p>
+        </div>
+    {% endif %}
 
     {% if subscription %}
-        <div class="card shadow-sm mb-5">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-                    <div>
-                        <h2 class="h4 mb-1">{{ subscription.plan.name }}</h2>
-                        <p class="text-muted mb-0">
-                            {{ subscription.plan.priceAmount|number_format(2, ',', ' ') }} {{ subscription.plan.currency }}
-                            / {{ subscription.plan.billingPeriod.value == 'yearly' ? 'an'|trans : 'mois'|trans }}
-                        </p>
-                    </div>
-                    <span class="badge rounded-pill {{ subscription.status.value == 'active' ? 'text-bg-success' : (subscription.status.value == 'past_due' ? 'text-bg-warning' : 'text-bg-secondary') }}">
-                        {{ subscription.status.value == 'active' ? 'Actif'|trans : (subscription.status.value == 'past_due' ? 'Paiement en retard'|trans : (subscription.status.value == 'incomplete' ? 'En attente de confirmation'|trans : 'Résilié'|trans)) }}
-                    </span>
+        {% set s = status_labels[subscription.status.value] ?? ['Résilié', 'grey'] %}
+        <section class="pf-card pp-plan-current">
+            <div class="pp-plan-current__head">
+                <div>
+                    <p class="pf-muted">{{ 'Offre actuelle'|trans }}</p>
+                    <h2 class="pf-card__title">{{ subscription.plan.name }}</h2>
+                    <p class="pp-plan__price">{{ subscription.plan.priceAmount|number_format(2, ',', ' ') }} {{ subscription.plan.currency }} <small>/ {{ (period[subscription.plan.billingPeriod.value] ?? 'mois')|trans }}</small></p>
                 </div>
-
-                {% if subscription.currentPeriodEnd %}
-                    <p class="text-muted small mt-3 mb-0">
-                        {% if subscription.cancelAtPeriodEnd %}
-                            {{ 'Résiliation programmée pour le'|trans }} {{ subscription.currentPeriodEnd|date('d/m/Y') }}.
-                        {% else %}
-                            {{ 'Prochain renouvellement le'|trans }} {{ subscription.currentPeriodEnd|date('d/m/Y') }}.
-                        {% endif %}
-                    </p>
-                {% endif %}
-
-                {% if subscription.status.value == 'active' and not subscription.cancelAtPeriodEnd %}
-                    <form method="post" action="{{ path('app_pro_subscription_cancel') }}" class="mt-3">
-                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                        <button type="submit" class="btn btn-sm pl-btn pl-btn--outline-dark">{{ 'Résilier'|trans }}</button>
-                    </form>
-                {% endif %}
+                <span class="pf-pill pf-pill--{{ s[1] }}">{{ s[0]|trans }}</span>
             </div>
-        </div>
+            {% if subscription.currentPeriodEnd %}
+                <p class="pf-muted">
+                    {% if subscription.cancelAtPeriodEnd %}
+                        {{ 'Résiliation programmée pour le'|trans }} {{ subscription.currentPeriodEnd|date('d/m/Y') }}.
+                    {% else %}
+                        {{ 'Prochain renouvellement le'|trans }} {{ subscription.currentPeriodEnd|date('d/m/Y') }}.
+                    {% endif %}
+                </p>
+            {% endif %}
+            {% if subscription.status.value == 'active' and not subscription.cancelAtPeriodEnd %}
+                <form method="post" action="{{ path('app_pro_subscription_cancel') }}" onsubmit="return confirm('{{ 'Résilier votre abonnement à la fin de la période en cours ?'|trans|e('js') }}')">
+                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                    <button type="submit" class="pf-btn">{{ 'Résilier'|trans }}</button>
+                </form>
+            {% endif %}
+        </section>
     {% else %}
-        <p class="text-muted mb-4">{{ 'Vous n\'avez pas encore d\'abonnement. Choisissez une offre pour gagner en visibilité.'|trans }}</p>
-
-        <div class="row g-4 mb-5">
+        <div class="pp-plans">
             {% for plan in plans %}
-                <div class="col-sm-6 col-lg-4">
-                    <div class="card h-100 shadow-sm {{ plan.featured ? 'border-2' }}" style="{{ plan.featured ? 'border-color: var(--pl-action);' }}">
-                        <div class="card-body d-flex flex-column">
-                            {% if plan.featured %}
-                                <span class="badge rounded-pill align-self-start mb-2" style="background: var(--pl-action-light); color: var(--pl-action);">{{ 'Recommandée'|trans }}</span>
-                            {% endif %}
-                            <h2 class="h5">{{ plan.name }}</h2>
-                            <p class="fs-3 fw-bold mb-1">
-                                {{ plan.priceAmount|number_format(2, ',', ' ') }} {{ plan.currency }}
-                            </p>
-                            <p class="text-muted small mb-3">
-                                / {{ plan.billingPeriod.value == 'yearly' ? 'an'|trans : 'mois'|trans }}
-                            </p>
-                            {% if plan.description %}
-                                <p class="small mb-3">{{ plan.description }}</p>
-                            {% endif %}
-                            <ul class="small text-muted mb-4">
-                                <li>{{ plan.maxRequestsPerMonth ? plan.maxRequestsPerMonth ~ ' ' ~ 'demandes par mois'|trans : 'Demandes illimitées'|trans }}</li>
-                                <li>{{ plan.maxResponsesPerMonth ? plan.maxResponsesPerMonth ~ ' ' ~ 'devis par mois'|trans : 'Devis illimités'|trans }}</li>
-                                {% if plan.featured %}<li>{{ 'Mise en avant dans les résultats'|trans }}</li>{% endif %}
-                                {% if plan.advancedStatistics %}<li>{{ 'Statistiques avancées'|trans }}</li>{% endif %}
-                            </ul>
-                            <form method="post" action="{{ path('app_pro_subscription_subscribe', {slug: plan.slug}) }}" class="mt-auto">
-                                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                                <button type="submit" class="btn pl-btn pl-btn--cta w-100">{{ 'S\'abonner'|trans }}</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+                <section class="pf-card pp-plan{{ plan.featured ? ' is-featured' }}">
+                    {% if plan.featured %}<span class="pf-pill pf-pill--blue pp-plan__flag">{{ 'Recommandée'|trans }}</span>{% endif %}
+                    <h2 class="pf-card__title">{{ plan.name }}</h2>
+                    <p class="pp-plan__price">{{ plan.priceAmount|number_format(2, ',', ' ') }} {{ plan.currency }} <small>/ {{ (period[plan.billingPeriod.value] ?? 'mois')|trans }}</small></p>
+                    {% if plan.description %}<p class="pf-muted">{{ plan.description }}</p>{% endif %}
+                    <ul class="pp-plan__features">
+                        <li>{{ icon.check(16) }} {{ plan.maxRequestsPerMonth ? plan.maxRequestsPerMonth ~ ' ' ~ 'demandes par mois'|trans : 'Demandes illimitées'|trans }}</li>
+                        <li>{{ icon.check(16) }} {{ plan.maxResponsesPerMonth ? plan.maxResponsesPerMonth ~ ' ' ~ 'devis par mois'|trans : 'Devis illimités'|trans }}</li>
+                        {% if plan.featured %}<li>{{ icon.check(16) }} {{ 'Mise en avant dans les résultats'|trans }}</li>{% endif %}
+                        {% if plan.advancedStatistics %}<li>{{ icon.check(16) }} {{ 'Statistiques avancées'|trans }}</li>{% endif %}
+                    </ul>
+                    <form method="post" action="{{ path('app_pro_subscription_subscribe', {slug: plan.slug}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+                        <button type="submit" class="pf-btn pf-btn--primary pp-plan__cta">{{ 'S’abonner'|trans }}</button>
+                    </form>
+                </section>
             {% else %}
-                <p class="col-12 text-muted">{{ 'Aucune offre n’est proposée pour le moment. Revenez bientôt ou contactez-nous.'|trans }}</p>
+                <div class="pf-card pf-empty"><strong>{{ 'Aucune offre pour le moment.'|trans }}</strong>{{ 'Revenez bientôt ou contactez-nous depuis le support.'|trans }}</div>
             {% endfor %}
         </div>
     {% endif %}
 
+    <p class="pf-muted pp-plan-note">{{ 'Votre abonnement est réglé à TrouveMoi par paiement sécurisé (Stripe). Les prestations que vous vendez, elles, vous sont payées directement par vos clients : TrouveMoi n’en encaisse aucune et ne prélève aucune commission.'|trans }}</p>
+
     {% if history is not empty %}
-        <h2 class="h5 mb-3">{{ 'Historique'|trans }}</h2>
-        <div class="list-group">
-            {% for past in history %}
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>{{ past.plan.name }} — {{ past.createdAt|date('d/m/Y') }}</span>
-                    <span class="badge text-bg-secondary">{{ 'Résilié'|trans }}</span>
-                </div>
-            {% endfor %}
-        </div>
+        <section class="pf-card">
+            <h2 class="pf-card__title pp-mb">{{ 'Historique'|trans }}</h2>
+            <ul class="pf-list pf-list--lined">
+                {% for past in history %}
+                    <li><div class="pf-list__body"><strong>{{ past.plan.name }}</strong><small>{{ past.createdAt|date('d/m/Y') }}</small></div><span class="pf-pill pf-pill--grey">{{ 'Résilié'|trans }}</span></li>
+                {% endfor %}
+            </ul>
+        </section>
     {% endif %}
 {% endblock %}

@@ -13,6 +13,7 @@ use App\Catalog\Service\ActivityPublishingService;
 use App\Catalog\Service\CategorySuggestionService;
 use App\Catalog\StaticActivityWizard;
 use App\Provider\Enum\ProviderStatus;
+use App\Provider\Service\ProviderPaymentMethods;
 use App\User\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -37,6 +38,7 @@ final class ProviderActivityWizardController extends AbstractProviderSpaceContro
         private readonly ActivityPublishingService $publishing,
         private readonly CategoryRepository $categories,
         private readonly ServiceRepository $services,
+        private readonly ProviderPaymentMethods $paymentMethods,
     ) {
     }
 
@@ -153,6 +155,9 @@ final class ProviderActivityWizardController extends AbstractProviderSpaceContro
             'max_gallery' => ActivityDraftService::MAX_GALLERY,
             'max_packages' => ActivityDraftService::MAX_PACKAGES,
             'verified' => 'verified' === $this->currentProvider()->getStatus()->value,
+            // Aucun moyen de paiement configuré (20/10) : on invite à le faire
+            // avant la première vente, le brouillon reste en session.
+            'payments_ready' => $this->paymentMethods->hasAny($this->currentProvider()),
         ], new Response(null, [] === $errors ? 200 : 422));
     }
 
@@ -162,6 +167,9 @@ final class ProviderActivityWizardController extends AbstractProviderSpaceContro
             try {
                 $this->publishing->submit($service);
                 $this->addFlash('success', sprintf('« %s » est envoyée en validation : notre équipe la publie sous 24 h.', $service->getTitle()));
+                if (!$this->paymentMethods->hasAny($this->currentProvider())) {
+                    $this->addFlash('info', 'Pensez à configurer vos moyens de paiement (Paramètres › Paiement et encaissements) pour que vos clients puissent vous régler.');
+                }
             } catch (\InvalidArgumentException $e) {
                 // Compte pas encore validé (12/10) : on dit où en est le dossier et la suite.
                 $this->addFlash('error', sprintf('« %s » est enregistrée en brouillon. %s', $service->getTitle(), match ($this->currentProvider()->getStatus()) {
