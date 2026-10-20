@@ -9,6 +9,9 @@ use App\Provider\Entity\ProviderProfile;
 use App\Provider\Repository\ProviderProfileRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Stripe\Exception\ApiConnectionException;
+use Stripe\Exception\ApiErrorException;
+use Stripe\Exception\RateLimitException;
 
 /**
  * Liaison du compte Stripe d'un professionnel (Stripe Connect, compte
@@ -56,6 +59,12 @@ final class StripeConnectService
             return $this->gateway->onboardingUrl((string) $provider->getStripeAccountId(), $refreshUrl, $returnUrl);
         } catch (\Throwable $e) {
             $this->logger->error('Stripe Connect : inscription impossible pour {id} : {error}', ['id' => (string) $provider->getId(), 'error' => $e->getMessage()]);
+
+            // Refus de Stripe (Connect non activé, clé invalide…) : on dit
+            // pourquoi au lieu d'un « injoignable » trompeur (20/10).
+            if ($e instanceof ApiErrorException && !$e instanceof ApiConnectionException && !$e instanceof RateLimitException) {
+                throw new \InvalidArgumentException(sprintf('Stripe a refusé la liaison : %s', $e->getMessage()), 0, $e);
+            }
 
             throw new \InvalidArgumentException('Stripe est momentanément injoignable. Réessayez dans un instant.', 0, $e);
         }
