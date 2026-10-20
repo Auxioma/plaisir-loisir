@@ -156,6 +156,16 @@
             {% endif %}
 
             {% if section == 'paiement' %}
+                {% if wizard_step %}
+                    <div class="aw-payment-tip">
+                        {{ icon.edit_square(20) }}
+                        <div>
+                            <strong>{{ 'Une activité est en cours de création'|trans }}</strong>
+                            <span>{{ 'Une fois vos moyens de paiement enregistrés, reprenez-la là où vous l’avez laissée.'|trans }}</span>
+                        </div>
+                        <a class="pf-btn" href="{{ path('app_pro_activity_wizard', {etape: wizard_step}) }}">{{ 'Reprendre mon activité'|trans }}</a>
+                    </div>
+                {% endif %}
                 {% include 'provider/space/_payment_methods.html.twig' %}
             {% endif %}
 

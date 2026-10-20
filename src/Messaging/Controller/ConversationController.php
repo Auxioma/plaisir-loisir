@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Messaging\Controller;
 
 use App\Messaging\Entity\Conversation;
+use App\Messaging\Entity\Message;
 use App\Messaging\Repository\ConversationRepository;
 use App\Messaging\Security\ConversationVoter;
 use App\Messaging\Service\MessagingService;
@@ -48,25 +49,12 @@ final class ConversationController extends AbstractController
     public function index(): Response
     {
         $user = $this->currentUser();
-        $conversations = $this->conversations->findForUser($user);
-
-        usort(
-            $conversations,
-            fn (Conversation $a, Conversation $b): int => $this->lastActivity($b) <=> $this->lastActivity($a),
-        );
-
-        $rows = array_map(fn (Conversation $conversation): array => [
-            'conversation' => $conversation,
-            'other' => $this->otherPartyLabel($conversation, $user),
-            'last_message' => $conversation->getMessages()->last() ?: null,
-            'unread' => $this->hasUnreadFor($conversation, $user),
-        ], $conversations);
 
         return $this->render('messaging/liste.html.twig', [
             'user' => $this->identity->identityFor($user),
             'menu' => $this->menuFor($user),
             'active' => 'Messages',
-            'rows' => $rows,
+            'rows' => $this->rowsFor($user),
         ]);
     }
 
@@ -97,10 +85,12 @@ final class ConversationController extends AbstractController
 
         $this->messagingService->markRead($conversation, $user);
 
+        // Boîte de réception à deux volets (20/10) : la liste reste à gauche.
         return $this->render('messaging/conversation.html.twig', [
             'user' => $this->identity->identityFor($user),
             'menu' => $this->menuFor($user),
             'active' => 'Messages',
+            'rows' => $this->rowsFor($user),
             'conversation' => $conversation,
             'other' => $this->otherPartyLabel($conversation, $user),
             'current_user' => $user,
@@ -225,5 +215,22 @@ final class ConversationController extends AbstractController
         }
 
         return $conversation;
+    }
+
+    /** @return list<array{conversation: Conversation, other: string, last_message: Message|null, unread: bool}> */
+    private function rowsFor(User $user): array
+    {
+        $conversations = $this->conversations->findForUser($user);
+        usort(
+            $conversations,
+            fn (Conversation $a, Conversation $b): int => $this->lastActivity($b) <=> $this->lastActivity($a),
+        );
+
+        return array_map(fn (Conversation $conversation): array => [
+            'conversation' => $conversation,
+            'other' => $this->otherPartyLabel($conversation, $user),
+            'last_message' => $conversation->getMessages()->last() ?: null,
+            'unread' => $this->hasUnreadFor($conversation, $user),
+        ], $conversations);
     }
 }

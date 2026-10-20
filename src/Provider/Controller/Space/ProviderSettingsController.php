@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Provider\Controller\Space;
 
 use App\Catalog\Repository\CategoryRepository;
+use App\Catalog\Service\ActivityDraftService;
 use App\Legal\Repository\CompanyIdentityRepository;
 use App\Notification\Entity\NotificationPreference;
 use App\Notification\Repository\NotificationPreferenceRepository;
@@ -53,6 +54,7 @@ final class ProviderSettingsController extends AbstractProviderSpaceController
         private readonly ProviderPaymentMethods $paymentMethods,
         private readonly StripeConnectService $stripeConnect,
         private readonly PayPalGateway $paypal,
+        private readonly ActivityDraftService $activityDrafts,
     ) {
     }
 
@@ -82,6 +84,8 @@ final class ProviderSettingsController extends AbstractProviderSpaceController
             'categories' => $this->categories->findRoots(),
             'preference' => $this->notificationPreferences->findOneByUser($this->currentUser()),
             'subscription' => $this->subscriptions->currentFor($provider),
+            // Venu de l'assistant de création (20/10) : lien pour y revenir.
+            'wizard_step' => $this->resumableWizardStep($request),
             'timezones' => self::TIMEZONES,
             'promo' => ['title' => 'Boostez votre visibilité', 'text' => 'Mettez en avant vos activités et attirez plus de clients.', 'cta' => 'Découvrir nos offres', 'href' => $this->generateUrl('app_pro_subscription')],
         ]);
@@ -294,5 +298,13 @@ final class ProviderSettingsController extends AbstractProviderSpaceController
         if (\array_key_exists($timezone, self::TIMEZONES)) {
             $this->currentProvider()->setTimezone($timezone);
         }
+    }
+
+    /** Étape où reprendre une nouvelle activité en cours de création, sinon null. */
+    private function resumableWizardStep(Request $request): ?int
+    {
+        $draft = $this->activityDrafts->current($request->getSession());
+
+        return null === $draft['id'] && [] !== (array) $draft['done'] ? $this->activityDrafts->maxReachable($request->getSession()) : null;
     }
 }

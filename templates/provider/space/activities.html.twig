@@ -91,9 +91,11 @@
                             <span class="pp-activity__meta">{{ icon.calendar_grid(14) }} {{ s.createdAt|pf_date('d MMMM y') }}{% if s.durationLabel %} <span class="pp-gap">{{ icon.clock(14) }} {{ s.durationLabel }}</span>{% endif %}</span>
                         </div>
                         <span class="pf-pill pf-pill--{{ s.status.tone }} pp-pill">{{ s.status.label|trans }}</span>
-                        <div class="pp-metric">{{ icon.eye(18) }}<strong>{{ r.views }}</strong><small>{{ 'vues'|trans }}</small></div>
-                        <div class="pp-metric">{{ icon.calendar_grid(18) }}<strong>{{ r.bookings }}</strong><small>{{ 'réservations'|trans }}</small></div>
-                        <div class="pp-metric">{{ icon.star(18) }}<strong>{{ r.rating is not null ? r.rating|number_format(1, ',') : '–' }}</strong><small>{{ 'avis'|trans }}</small></div>
+                        <div class="pp-activity__metrics">
+                            <div class="pp-metric">{{ icon.eye(18) }}<strong>{{ r.views }}</strong><small>{{ 'vues'|trans }}</small></div>
+                            <div class="pp-metric">{{ icon.calendar_grid(18) }}<strong>{{ r.bookings }}</strong><small>{{ 'réservations'|trans }}</small></div>
+                            <div class="pp-metric">{{ icon.star(18) }}<strong>{{ r.rating is not null ? r.rating|number_format(1, ',') : '–' }}</strong><small>{{ 'avis'|trans }}</small></div>
+                        </div>
                         <details class="pl-dropdown pf-kebab">
                             <summary aria-label="{{ 'Actions'|trans }}">{{ icon.dots(20) }}</summary>
                             <div class="tm-menu tm-menu--right">

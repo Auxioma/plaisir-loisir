@@ -21,25 +21,27 @@
     <div class="pp-profile-top">
         <section class="pf-card pp-idcard pp-idcard--big">
             <div class="pp-idcard__photo">
-                {{ ui.avatar(me, 150) }}
+                {{ ui.avatar(me, 112) }}
                 <a class="pp-idcard__cam" href="{{ path('app_pro_settings') }}#photo" aria-label="{{ 'Changer la photo'|trans }}">{{ icon.camera(16) }}</a>
             </div>
             <div class="pp-idcard__body">
                 <h2>{{ me.firstName }} {{ me.lastName }} {% if verified %}<span class="pf-pill pf-pill--green">{{ icon.check_badge(12) }} {{ 'Vérifié'|trans }}</span>{% endif %}</h2>
-                <p>{{ 'Professionnel depuis'|trans }} {{ provider.createdAt|pf_date('MMMM y') }}</p>
-                <span class="pf-pill pf-pill--blue">{{ 'Membre Pro'|trans }}</span>
+                <div class="pp-idcard__tags">
+                    <span class="pf-pill pf-pill--blue">{{ 'Membre Pro'|trans }}</span>
+                    <span>{{ 'Professionnel depuis'|trans }} {{ provider.createdAt|pf_date('MMMM y') }}</span>
+                </div>
                 <p class="pp-idcard__rating">{% if average is not null %}{{ ui.stars(average, 18) }} <strong>{{ average|number_format(1, ',') }}</strong> ({{ reviews_count }} {{ 'avis'|trans }}){% else %}<span class="pf-muted">{{ 'Pas encore d’avis'|trans }}</span>{% endif %}</p>
                 <ul class="pp-contact">
                     {% if provider.city %}<li>{{ icon.map_pin(16) }} {{ provider.city }}</li>{% endif %}
                     <li>{{ icon.mail(16) }} {{ me.email }}</li>
                     {% if me.phone %}<li>{{ icon.phone(16) }} {{ me.phone }}</li>{% endif %}
                 </ul>
+                <a class="pf-btn pp-btn-ghost pp-idcard__edit" href="{{ path('app_pro_settings', {section: 'infos', modifier: 1}) }}">{{ icon.edit_square(16) }} {{ 'Modifier le profil'|trans }}</a>
             </div>
-            <a class="pf-btn pp-btn-ghost pp-idcard__edit" href="{{ path('app_pro_settings', {section: 'infos', modifier: 1}) }}">{{ icon.edit_square(16) }} {{ 'Modifier le profil'|trans }}</a>
         </section>
 
         <section class="pf-card pp-highlights">
-            <div class="pp-highlight is-blue">{{ icon.calendar_grid(26) }}<small>{{ 'Depuis'|trans }}</small><strong>{{ provider.createdAt|pf_date('MMMM y')|capitalize }}</strong><span>{{ 'Membre depuis'|trans }}</span></div>
+            <div class="pp-highlight is-blue">{{ icon.calendar_grid(26) }}<strong>{{ provider.createdAt|pf_date('MMMM y')|capitalize }}</strong><span>{{ 'Membre depuis'|trans }}</span><small>{{ 'sur TrouveMoi'|trans }}</small></div>
             <div class="pp-highlight is-green">{{ icon.badge_check(26) }}<strong>{{ reviews_count }}</strong><span>{{ 'Avis reçus'|trans }}</span><small>{{ 'Note moyenne'|trans }} {{ average is not null ? average|number_format(1, ',') : '—' }}</small></div>
             <div class="pp-highlight is-violet">{{ ico.svg('trophy', 26) }}<strong>{{ rank ? 'Top ' ~ rank ~ '%' : '—' }}</strong><span>{{ 'Professionnels'|trans }}</span><small>{{ 'les mieux notés'|trans }}</small></div>
             <div class="pp-highlight is-orange">{{ icon.rocket(26) }}<strong>{{ response_rate is not null ? response_rate ~ '%' : '—' }}</strong><span>{{ 'Taux de réponse'|trans }}</span><small>{{ 'aux messages'|trans }}</small></div>
