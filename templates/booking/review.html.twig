@@ -51,7 +51,8 @@
                 </p>
             </div>
 
-            <form method="post" action="{{ path('app_booking_pay', {id: booking.id}) }}">
+            {# Pas de Turbo : la réponse redirige vers Stripe / PayPal (autre domaine, CORS). #}
+            <form method="post" action="{{ path('app_booking_pay', {id: booking.id}) }}" data-turbo="false">
                 <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">
                 <input type="hidden" name="moyen" value="{{ method }}">
                 <button class="pl-btn pl-btn--primary pl-btn--block">{{ method == 'onsite' ? 'Envoyer ma demande de réservation'|trans : 'Confirmer la réservation'|trans }}</button>
