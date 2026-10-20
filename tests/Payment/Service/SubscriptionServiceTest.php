@@ -256,4 +256,29 @@ final class SubscriptionServiceTest extends TestCase
 
         self::assertCount(0, $notified);
     }
+
+    public function testReconcileActivatesAPaidSubscriptionWhoseWebhookNeverArrived(): void
+    {
+        $provider = new ProviderProfile();
+        $pending = (new Subscription())->setProvider($provider)
+            ->setPlan((new SubscriptionPlan())->setBillingPeriod(BillingPeriod::Monthly))
+            ->setStatus(SubscriptionStatus::Incomplete)->setStripeCustomerId('cus_1');
+
+        $subscriptions = $this->createStub(SubscriptionRepository::class);
+        $subscriptions->method('findCurrentFor')->willReturn($pending);
+        $subscriptions->method('findPendingForProviderId')->willReturn($pending);
+        $subscriptions->method('findOneByStripeSubscriptionId')->willReturnCallback(
+            static fn (string $id): ?Subscription => $id === $pending->getStripeSubscriptionId() ? $pending : null,
+        );
+        $gateway = $this->createStub(SubscriptionGateway::class);
+        $gateway->method('findPaidSubscription')->willReturn(['id' => 'sub_paid', 'status' => 'active', 'start' => 1_790_000_000, 'end' => 1_792_600_000]);
+        $em = $this->createStub(EntityManagerInterface::class);
+
+        (new SubscriptionService($em, $subscriptions, $gateway, new NotificationService($em, $this->createStub(NotificationRepository::class))))
+            ->reconcile($provider);
+
+        self::assertSame(SubscriptionStatus::Active, $pending->getStatus());
+        self::assertSame('sub_paid', $pending->getStripeSubscriptionId());
+        self::assertSame(1_792_600_000, $pending->getCurrentPeriodEnd()?->getTimestamp());
+    }
 }
