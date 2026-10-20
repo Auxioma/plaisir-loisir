@@ -32,4 +32,13 @@ interface SubscriptionGateway
      *                          false : résiliation immédiate
      */
     public function cancelSubscription(string $stripeSubscriptionId, bool $atPeriodEnd): void;
+
+    /**
+     * Abonnement Stripe payé de ce client pour ce professionnel (le plus
+     * récent), lu directement chez Stripe : permet d'activer l'abonnement
+     * même si le webhook n'est pas arrivé (20/10). Null si aucun.
+     *
+     * @return array{id: string, status: string, start: ?int, end: ?int}|null
+     */
+    public function findPaidSubscription(string $stripeCustomerId, string $providerId): ?array;
 }

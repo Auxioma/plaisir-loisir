@@ -14,6 +14,7 @@ use App\Payment\Stripe\SubscriptionCheckoutResult;
 use App\Payment\Stripe\SubscriptionGateway;
 use App\Provider\Entity\ProviderProfile;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Logique métier des abonnements professionnels (§17 du CDC) : souscription,
@@ -29,6 +30,7 @@ final class SubscriptionService
         private readonly SubscriptionRepository $subscriptions,
         private readonly SubscriptionGateway $gateway,
         private readonly NotificationService $notifications,
+        private readonly ?LoggerInterface $logger = null,
     ) {
     }
 
@@ -104,6 +106,40 @@ final class SubscriptionService
                     : 'Votre abonnement a été résilié.',
             );
         }
+    }
+
+    /**
+     * Rattrapage sans webhook (20/10) : une souscription restée « en attente »
+     * est vérifiée directement chez Stripe ; payée, elle est activée avec sa
+     * période. Appelé au retour de Stripe et à l'ouverture de la page
+     * abonnement. Une erreur Stripe laisse simplement l'état inchangé.
+     */
+    public function reconcile(ProviderProfile $provider): void
+    {
+        $current = $this->currentFor($provider);
+        $customerId = $current?->getStripeCustomerId();
+        if (null === $current || SubscriptionStatus::Incomplete !== $current->getStatus() || null === $customerId || '' === $customerId) {
+            return;
+        }
+
+        try {
+            $paid = $this->gateway->findPaidSubscription($customerId, (string) $provider->getId());
+        } catch (\Throwable $e) {
+            $this->logger?->error('Abonnement : vérification Stripe impossible pour {id} : {error}', ['id' => (string) $provider->getId(), 'error' => $e->getMessage()]);
+
+            return;
+        }
+        if (null === $paid) {
+            return;
+        }
+
+        $this->activateFromCheckout((string) $provider->getId(), $customerId, $paid['id']);
+        $this->syncFromStripeSubscription(
+            $paid['id'],
+            'past_due' === $paid['status'] ? SubscriptionStatus::PastDue : SubscriptionStatus::Active,
+            null !== $paid['start'] ? (new \DateTimeImmutable())->setTimestamp((int) $paid['start']) : null,
+            null !== $paid['end'] ? (new \DateTimeImmutable())->setTimestamp((int) $paid['end']) : null,
+        );
     }
 
     /**

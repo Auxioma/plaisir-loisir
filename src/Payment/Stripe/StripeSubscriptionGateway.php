@@ -90,6 +90,29 @@ final class StripeSubscriptionGateway implements SubscriptionGateway
         ]];
     }
 
+    public function findPaidSubscription(string $stripeCustomerId, string $providerId): ?array
+    {
+        $list = $this->stripe->subscriptions->all(['customer' => $stripeCustomerId, 'status' => 'all', 'limit' => 10]);
+        foreach ($list->data as $subscription) {
+            $s = $subscription->toArray();
+            if (($s['metadata']['provider_id'] ?? null) !== $providerId || !\in_array($s['status'] ?? '', ['active', 'trialing', 'past_due'], true)) {
+                continue;
+            }
+
+            // Versions récentes de l'API : la période vit sur l'article.
+            $item = $s['items']['data'][0] ?? [];
+
+            return [
+                'id' => (string) $s['id'],
+                'status' => (string) $s['status'],
+                'start' => $s['current_period_start'] ?? $item['current_period_start'] ?? null,
+                'end' => $s['current_period_end'] ?? $item['current_period_end'] ?? null,
+            ];
+        }
+
+        return null;
+    }
+
     public function cancelSubscription(string $stripeSubscriptionId, bool $atPeriodEnd): void
     {
         if ($atPeriodEnd) {

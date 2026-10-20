@@ -29,6 +29,12 @@ final class MockSubscriptionGateway implements SubscriptionGateway
         );
     }
 
+    public function findPaidSubscription(string $stripeCustomerId, string $providerId): ?array
+    {
+        // Simulé : l'abonnement est déjà actif dès la souscription.
+        return null;
+    }
+
     public function cancelSubscription(string $stripeSubscriptionId, bool $atPeriodEnd): void
     {
         // Rien à faire : aucun état distant à synchroniser.

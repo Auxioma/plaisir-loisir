@@ -53,6 +53,15 @@ final class ConfiguredSubscriptionGateway implements SubscriptionGateway
         $this->gateway()->cancelSubscription($stripeSubscriptionId, $atPeriodEnd);
     }
 
+    public function findPaidSubscription(string $stripeCustomerId, string $providerId): ?array
+    {
+        if (!$this->usesStripe() || str_starts_with($stripeCustomerId, 'mock_')) {
+            return null;
+        }
+
+        return $this->gateway()->findPaidSubscription($stripeCustomerId, $providerId);
+    }
+
     private function gateway(): SubscriptionGateway
     {
         return $this->usesStripe() ? ($this->stripe)() : $this->mock;

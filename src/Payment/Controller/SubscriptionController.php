@@ -38,6 +38,8 @@ final class SubscriptionController extends AbstractProviderSpaceController
     public function index(): Response
     {
         $provider = $this->currentProvider();
+        // Payé mais webhook pas (encore) reçu : on demande à Stripe.
+        $this->service->reconcile($provider);
         $current = $this->service->currentFor($provider);
 
         if (null !== $current) {
@@ -95,6 +97,8 @@ final class SubscriptionController extends AbstractProviderSpaceController
     #[Route(path: ['fr' => '/pro/abonnement/succes', 'en' => '/en/pro/subscription/success'], name: 'app_pro_subscription_success')]
     public function success(): Response
     {
+        $this->service->reconcile($this->currentProvider());
+
         return $this->renderSpace('subscription/succes.html.twig', 'Paramètres', [
             'subscription' => $this->service->currentFor($this->currentProvider()),
         ]);
