@@ -1,6 +1,6 @@
 /*
  * Espace professionnel (maquettes profil_professionnel, 02/10) :
- *  - confirmations (`data-confirm` sur un bouton de formulaire) ;
+ *  - (confirmations `data-confirm` : modale commune, voir confirm.js) ;
  *  - dialogues (`data-pp-open="id"` ouvre <dialog id>, `data-pp-close` ferme,
  *    `data-pp-autoopen` ouvre au chargement) ;
  *  - actions groupées de « Mes activités » (cases à cocher) ;
@@ -10,13 +10,6 @@
  */
 
 document.addEventListener('click', (event) => {
-    const confirmBtn = event.target.closest('[data-confirm]');
-    if (confirmBtn && !window.confirm(confirmBtn.dataset.confirm)) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        return;
-    }
-
     const opener = event.target.closest('[data-pp-open]');
     if (opener) {
         const dialog = document.getElementById(opener.dataset.ppOpen);

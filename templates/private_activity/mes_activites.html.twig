@@ -107,7 +107,7 @@
                                         <div class="tm-menu tm-menu--right">
                                             <a class="tm-menu__item" href="{{ path('app_account_album_show', {id: row.id}) }}">{{ 'Voir l’album'|trans }}</a>
                                             {% if row.status in ['online', 'full'] %}
-                                                <form method="post" action="{{ path('app_account_private_activity_cancel', {id: row.id}) }}" onsubmit="return confirm('{{ 'Annuler cette activité ? Les participants seront prévenus.'|trans|e('js') }}')">
+                                                <form method="post" action="{{ path('app_account_private_activity_cancel', {id: row.id}) }}" data-confirm="{{ 'Annuler cette activité ? Les participants seront prévenus.'|trans }}">
                                                     <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                                                     <button type="submit" class="tm-menu__item tm-menu__item--danger">{{ 'Annuler l’activité'|trans }}</button>
                                                 </form>

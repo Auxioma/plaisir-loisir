@@ -74,6 +74,8 @@ import './account.js';
 
 // Coeur « Ajouter aux favoris » des cartes (cablage du 21/08).
 import './favorites.js';
+// Confirmations des actions sensibles dans une modale (data-confirm).
+import './confirm.js';
 // Espace professionnel : dialogues, actions groupées, messagerie.
 import './pro.js';
 import './event-wizard.js';

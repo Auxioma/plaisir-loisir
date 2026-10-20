@@ -36,7 +36,7 @@
             <p class="bk-note">✓ {{ 'Annulation gratuite'|trans }} {{ "Jusqu'à 7 jours avant"|trans }}</p>
             <form method="post" action="{{ path('app_booking_abandon', {id: booking.id}) }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">
-                <button class="bk-link bk-link--btn">{{ 'Abandonner cette réservation'|trans }}</button>
+                <button class="bk-link bk-link--btn" data-confirm="{{ 'Abandonner cette réservation ? Les places retenues seront libérées.'|trans }}" data-confirm-title="{{ 'Abandonner la réservation'|trans }}" data-confirm-ok="{{ 'Oui, abandonner'|trans }}">{{ 'Abandonner cette réservation'|trans }}</button>
             </form>
         </aside>
     </div>

@@ -257,7 +257,7 @@
                         <a class="fa-btn fa-btn--sm" href="{{ path('app_account_private_activity_participants', {id: activity.id}) }}">{{ icon.users(14) }} {{ 'Gérer les participants'|trans }}{% if pending is not empty %} ({{ pending|length }}){% endif %}</a>
                         {% if editable %}<a class="fa-btn fa-btn--sm fa-btn--ghost" href="{{ path('app_account_private_activity_resume', {id: activity.id}) }}">{{ icon.edit_square(14) }} {{ 'Modifier l\'annonce'|trans }}</a>{% endif %}
                         {% if activity.status.value != 'cancelled' %}
-                            <form method="post" action="{{ path('app_account_private_activity_cancel', {id: activity.id}) }}" onsubmit="return confirm('{{ 'Annuler cette activité ? Les participants seront prévenus.'|trans|e('js') }}')">
+                            <form method="post" action="{{ path('app_account_private_activity_cancel', {id: activity.id}) }}" data-confirm="{{ 'Annuler cette activité ? Les participants seront prévenus.'|trans }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                                 <button type="submit" class="fa-btn fa-btn--sm fa-btn--ghost">{{ 'Annuler l\'activité'|trans }}</button>
                             </form>

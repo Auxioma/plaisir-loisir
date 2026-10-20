@@ -1,0 +1,24 @@
+{#
+    Confirmation des actions sensibles (20/10) : même modale Bootstrap que la
+    déconnexion (_logout_modal), à la place de la boîte native du navigateur
+    (window.confirm). Pilotée par assets/confirm.js : tout bouton, lien ou
+    formulaire portant `data-confirm="Question ?"` l'ouvre ; options
+    `data-confirm-title` et `data-confirm-ok` (libellé du bouton de validation).
+#}
+<div class="modal fade" id="confirm-action" tabindex="-1" aria-labelledby="confirm-action-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="confirm-action-title" data-confirm-title>{{ 'Confirmation'|trans }}</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'Fermer'|trans }}"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" data-confirm-message></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ 'Annuler'|trans }}</button>
+                <button type="button" class="btn btn-danger" data-confirm-accept data-default-label="{{ 'Confirmer'|trans }}">{{ 'Confirmer'|trans }}</button>
+            </div>
+        </div>
+    </div>
+</div>

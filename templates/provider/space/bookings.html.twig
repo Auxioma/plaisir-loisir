@@ -98,7 +98,7 @@
                                         {% for a in row.actions %}
                                             <form method="post" action="{{ path('app_pro_bookings_transition', {id: b.id, transition: a[0]}) }}">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                                                <button class="tm-menu__item{{ a[0] == 'cancel' ? ' is-danger' }}"{% if a[0] == 'cancel' %} data-confirm="{{ 'Annuler cette réservation ? Le client sera prévenu.'|trans }}"{% endif %}>{{ a[1]|trans }}</button>
+                                                <button class="tm-menu__item{{ a[0] == 'cancel' ? ' is-danger' }}"{% if a[0] == 'cancel' %} data-confirm="{{ 'Annuler cette réservation ? Le client sera prévenu.'|trans }}" data-confirm-title="{{ 'Annuler la réservation'|trans }}" data-confirm-ok="{{ 'Oui, annuler'|trans }}"{% endif %}>{{ a[1]|trans }}</button>
                                             </form>
                                         {% endfor %}
                                         {% if b.status.value not in ['cancelled', 'refunded'] and not (row.payment and row.payment.status.value == 'paid') %}

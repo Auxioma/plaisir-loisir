@@ -25,7 +25,7 @@
             </p>
         </div>
         {% if demande.open %}
-            <form method="post" action="{{ path('app_account_requests_close', {id: demande.id}) }}" onsubmit="return confirm('{{ 'Clôturer cette demande ? Les devis en attente seront refusés.'|trans|e('js') }}')">
+            <form method="post" action="{{ path('app_account_requests_close', {id: demande.id}) }}" data-confirm="{{ 'Clôturer cette demande ? Les devis en attente seront refusés.'|trans }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                 <button class="pf-btn">{{ icon.x(14) }} {{ 'Clôturer la demande'|trans }}</button>
             </form>
@@ -82,7 +82,7 @@
                                     <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                                     <button type="submit" class="pf-btn">{{ 'Refuser'|trans }}</button>
                                 </form>
-                                <form method="post" action="{{ path('app_account_requests_quote_accept', {id: demande.id, quoteId: devis.id}) }}" onsubmit="return confirm('{{ 'Accepter ce devis ? Les autres seront automatiquement refusés.'|trans|e('js') }}')">
+                                <form method="post" action="{{ path('app_account_requests_quote_accept', {id: demande.id, quoteId: devis.id}) }}" data-confirm="{{ 'Accepter ce devis ? Les autres seront automatiquement refusés.'|trans }}">
                                     <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                                     <button type="submit" class="pf-btn pf-btn--primary">{{ icon.check(14) }} {{ 'Accepter'|trans }}</button>
                                 </form>

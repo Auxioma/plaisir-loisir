@@ -76,7 +76,7 @@
                                         <button class="fa-btn fa-btn--sm fa-btn--ghost">{{ 'Refuser'|trans }}</button>
                                     </form>
                                 {% elseif participation.status.value in ['accepted', 'waiting_list'] %}
-                                    <form method="post" action="{{ path('app_account_private_activity_remove', {id: activity.id, participationId: participation.id}) }}" onsubmit="return confirm('{{ 'Retirer cette personne de l’activité ? Elle sera prévenue.'|trans|e('js') }}')">
+                                    <form method="post" action="{{ path('app_account_private_activity_remove', {id: activity.id, participationId: participation.id}) }}" data-confirm="{{ 'Retirer cette personne de l’activité ? Elle sera prévenue.'|trans }}">
                                         <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                                         <button class="fa-btn fa-btn--sm fa-btn--ghost">{{ icon.x(14) }} {{ 'Retirer'|trans }}</button>
                                     </form>

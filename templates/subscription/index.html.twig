@@ -50,7 +50,7 @@
                 </p>
             {% endif %}
             {% if subscription.status.value == 'active' and not subscription.cancelAtPeriodEnd %}
-                <form method="post" action="{{ path('app_pro_subscription_cancel') }}" onsubmit="return confirm('{{ 'Résilier votre abonnement à la fin de la période en cours ?'|trans|e('js') }}')">
+                <form method="post" action="{{ path('app_pro_subscription_cancel') }}" data-confirm="{{ 'Résilier votre abonnement à la fin de la période en cours ?'|trans }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                     <button type="submit" class="pf-btn">{{ 'Résilier'|trans }}</button>
                 </form>

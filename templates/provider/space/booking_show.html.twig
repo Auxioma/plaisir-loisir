@@ -70,7 +70,7 @@
                     {% for action in actions %}
                         <form method="post" action="{{ path('app_pro_bookings_transition', {id: booking.id, transition: action[0]}) }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                            <button class="pf-btn{{ action[0] == 'confirm' ? ' pf-btn--primary' : (action[0] == 'cancel' ? ' pf-btn--danger' : '') }}"{% if action[0] == 'cancel' %} data-confirm="{{ 'Annuler cette réservation ?'|trans }}"{% endif %}>{{ action[1]|trans }}</button>
+                            <button class="pf-btn{{ action[0] == 'confirm' ? ' pf-btn--primary' : (action[0] == 'cancel' ? ' pf-btn--danger' : '') }}"{% if action[0] == 'cancel' %} data-confirm="{{ 'Annuler cette réservation ? Le client sera prévenu.'|trans }}" data-confirm-title="{{ 'Annuler la réservation'|trans }}" data-confirm-ok="{{ 'Oui, annuler'|trans }}"{% endif %}>{{ action[1]|trans }}</button>
                         </form>
                     {% endfor %}
                     {% if booking.status.value != 'pending' or not (payment and payment.online) %}
