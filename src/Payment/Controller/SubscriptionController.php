@@ -7,13 +7,9 @@ namespace App\Payment\Controller;
 use App\Payment\Repository\SubscriptionPlanRepository;
 use App\Payment\Repository\SubscriptionRepository;
 use App\Payment\Security\SubscriptionVoter;
+use App\Payment\Service\SubscriptionAccess;
 use App\Payment\Service\SubscriptionService;
-use App\Provider\Entity\ProviderProfile;
-use App\Provider\Repository\ProviderProfileRepository;
-use App\Shared\Service\AccountIdentityPresenter;
-use App\User\Entity\User;
-use App\User\StaticAccount;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Provider\Controller\Space\AbstractProviderSpaceController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -28,14 +24,13 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * les activités privées ne sont jamais encaissées par la plateforme.
  */
 #[IsGranted('ROLE_PROVIDER')]
-final class SubscriptionController extends AbstractController
+final class SubscriptionController extends AbstractProviderSpaceController
 {
     public function __construct(
-        private readonly ProviderProfileRepository $providerProfiles,
         private readonly SubscriptionPlanRepository $plans,
         private readonly SubscriptionRepository $subscriptions,
         private readonly SubscriptionService $service,
-        private readonly AccountIdentityPresenter $identity,
+        private readonly SubscriptionAccess $access,
     ) {
     }
 
@@ -49,11 +44,11 @@ final class SubscriptionController extends AbstractController
             $this->denyAccessUnlessGranted(SubscriptionVoter::VIEW, $current);
         }
 
-        return $this->render('subscription/index.html.twig', [
-            'user' => $this->identity->identityFor($this->currentUser()),
-            'menu' => StaticAccount::providerMenu(),
-            'active' => 'Abonnement',
+        // Espace pro (20/10) : même gabarit que les autres écrans, entrée
+        // « Paramètres » active (on y arrive par Paramètres > Abonnement).
+        return $this->renderSpace('subscription/index.html.twig', 'Paramètres', [
             'subscription' => $current,
+            'has_access' => $this->access->hasAccess($provider),
             'plans' => $this->plans->findActive(),
             // Historique (§17.2 du CDC) : les précédentes lignes, résiliées ou
             // remplacées — voir le commentaire de l'entité Subscription.
@@ -100,7 +95,7 @@ final class SubscriptionController extends AbstractController
     #[Route(path: ['fr' => '/pro/abonnement/succes', 'en' => '/en/pro/subscription/success'], name: 'app_pro_subscription_success')]
     public function success(): Response
     {
-        return $this->render('subscription/succes.html.twig', [
+        return $this->renderSpace('subscription/succes.html.twig', 'Paramètres', [
             'subscription' => $this->service->currentFor($this->currentProvider()),
         ]);
     }
@@ -108,7 +103,7 @@ final class SubscriptionController extends AbstractController
     #[Route(path: ['fr' => '/pro/abonnement/annule', 'en' => '/en/pro/subscription/cancelled'], name: 'app_pro_subscription_cancelled')]
     public function cancelled(): Response
     {
-        return $this->render('subscription/annule.html.twig');
+        return $this->renderSpace('subscription/annule.html.twig', 'Paramètres');
     }
 
     #[Route(path: ['fr' => '/pro/abonnement/resilier', 'en' => '/en/pro/subscription/cancel'], name: 'app_pro_subscription_cancel', methods: ['POST'])]
@@ -133,29 +128,5 @@ final class SubscriptionController extends AbstractController
         $this->addFlash('success', 'Votre abonnement sera résilié à la fin de la période en cours.');
 
         return $this->redirectToRoute('app_pro_subscription');
-    }
-
-    private function currentUser(): User
-    {
-        $user = $this->getUser();
-
-        if (!$user instanceof User) {
-            throw $this->createAccessDeniedException();
-        }
-
-        return $user;
-    }
-
-    private function currentProvider(): ProviderProfile
-    {
-        $user = $this->currentUser();
-
-        $provider = $this->providerProfiles->findOneByUser($user);
-
-        if (null === $provider) {
-            throw $this->createAccessDeniedException('Aucun dossier prestataire rattaché à ce compte.');
-        }
-
-        return $provider;
     }
 }

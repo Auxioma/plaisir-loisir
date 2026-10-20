@@ -153,6 +153,11 @@ direct au pro (voir « Paiements »). Styles du tunnel et des pages de réservat
   Stripe Checkout (`ConfiguredSubscriptionGateway` : Stripe si clé `sk_…`, simulé sinon ; PayPal =
   à activer dans le tableau de bord Stripe). Activation par webhook `checkout.session.completed`
   (mode subscription) puis `customer.subscription.*`. Les offres se créent dans EasyAdmin.
+  **Verrou (20/10)** : dès qu'une offre active existe, un pro sans abonnement actif / en retard
+  (`SubscriptionAccess`) est renvoyé de tout `/pro/*` vers `/pro/abonnement`
+  (`ProviderSubscriptionGateSubscriber`, sauf abonnement, paramètres, profil/justificatifs, support,
+  notifications, réservations existantes), ne peut plus soumettre d'activité ni être réservé.
+  Coupe-circuit `PROVIDER_SUBSCRIPTION_REQUIRED=0` (coupé dans `.env.test`).
 - Bons cadeaux : vendus et encaissés par TrouveMoi (Stripe). **Point ouvert** : un bon dépensé sur
   une activité pro contredit la règle ci-dessus → à trancher avec le client.
 - Déploiement de ce changement : migration `Version20261017090000`, puis republier CGU et CGV

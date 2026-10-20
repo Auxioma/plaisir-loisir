@@ -13,6 +13,7 @@ use App\Catalog\Enum\PricingUnit;
 use App\Catalog\Enum\PromotionKind;
 use App\Catalog\Enum\ServiceStatus;
 use App\Catalog\Repository\PromotionRepository;
+use App\Payment\Service\SubscriptionAccess;
 use App\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -24,6 +25,7 @@ final class BookingService
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly ?PromotionRepository $promotions = null,
+        private readonly ?SubscriptionAccess $subscriptionAccess = null,
     ) {
     }
 
@@ -46,6 +48,12 @@ final class BookingService
 
         if (ServiceStatus::Published !== $service->getStatus()) {
             throw new \InvalidArgumentException('Seule une activité publiée peut être réservée.');
+        }
+
+        // Organisateur sans abonnement en cours (20/10) : plus de nouvelle réservation.
+        $provider = $service->getProvider();
+        if (null !== $provider && null !== $this->subscriptionAccess && !$this->subscriptionAccess->hasAccess($provider)) {
+            throw new \InvalidArgumentException('Cette activité n’est momentanément plus réservable.');
         }
 
         // Offre du moment (04/10) : une réduction en % en cours sur l'activité

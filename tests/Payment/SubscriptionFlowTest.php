@@ -88,7 +88,7 @@ final class SubscriptionFlowTest extends WebTestCase
 
         $client->loginUser($providerUser);
         $crawler = $client->request('GET', '/pro/abonnement');
-        $token = (string) $crawler->filter('input[name="_token"]')->attr('value');
+        $token = (string) $crawler->filter(sprintf('form[action*="%s"] input[name="_token"]', $plan->getSlug()))->attr('value');
         $client->request('POST', '/pro/abonnement/'.$plan->getSlug().'/souscrire', ['_token' => $token]);
         self::assertResponseRedirects();
 
@@ -118,7 +118,7 @@ final class SubscriptionFlowTest extends WebTestCase
 
         $client->loginUser($providerUser);
         $crawler = $client->request('GET', '/pro/abonnement');
-        $token = (string) $crawler->filter('input[name="_token"]')->attr('value');
+        $token = (string) $crawler->filter(sprintf('form[action*="%s"] input[name="_token"]', $plan->getSlug()))->attr('value');
         $client->request('POST', '/pro/abonnement/'.$plan->getSlug().'/souscrire', ['_token' => $token]);
 
         $crawler = $client->request('GET', '/pro/abonnement');

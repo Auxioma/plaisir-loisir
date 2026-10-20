@@ -6,6 +6,7 @@ namespace App\Catalog\Service;
 
 use App\Catalog\Entity\Service;
 use App\Catalog\Enum\ServiceStatus;
+use App\Payment\Service\SubscriptionAccess;
 use App\Provider\Enum\ProviderStatus;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -16,6 +17,7 @@ final class ActivityPublishingService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly ?SubscriptionAccess $subscriptionAccess = null,
     ) {
     }
 
@@ -57,6 +59,10 @@ final class ActivityPublishingService
         $provider = $service->getProvider();
         if (null === $provider || ProviderStatus::Verified !== $provider->getStatus()) {
             throw new \InvalidArgumentException('Votre compte professionnel doit être vérifié avant de publier une activité.');
+        }
+
+        if (null !== $this->subscriptionAccess && !$this->subscriptionAccess->hasAccess($provider)) {
+            throw new \InvalidArgumentException('Un abonnement en cours est nécessaire pour soumettre une activité.');
         }
 
         if (!\in_array($service->getStatus(), [ServiceStatus::Draft, ServiceStatus::Archived], true)) {
