@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Event\Controller;
 
-use App\Event\Service\EventDocumentRenderer;
 use App\Event\Entity\Event;
 use App\Event\Entity\EventRegistration;
 use App\Event\Entity\Group;
@@ -18,6 +17,7 @@ use App\Event\Repository\EventRegistrationRepository;
 use App\Event\Repository\EventRepository;
 use App\Event\Repository\GroupAlbumRepository;
 use App\Event\Repository\GroupRepository;
+use App\Event\Service\EventDocumentRenderer;
 use App\Event\StaticEvents;
 use App\I18n\Routing\LocaleUrlGenerator;
 use App\Notification\Enum\NotificationCategory;
@@ -431,6 +431,7 @@ final class EventsController extends AbstractController
         if (!$this->getUser() instanceof User || $event->getOrganizer() !== $this->getUser()) {
             throw $this->createAccessDeniedException();
         }
+
         return $documents->response($event, $this->documentLink($event), true);
     }
 
@@ -440,6 +441,7 @@ final class EventsController extends AbstractController
         $event = $this->viewableOrFail($slug);
         $organizer = $this->getUser() instanceof User && $event->getOrganizer() === $this->getUser();
         $registration = $this->getUser() instanceof User ? $registrations->findOneBy(['event' => $event, 'user' => $this->getUser()]) : null;
+
         return $documents->response($event, $this->documentLink($event), false, [
             'event' => $this->presenter->card($event),
             'going' => $event->isShowParticipants() || $organizer ? $registrations->findGoing($event) : [],
@@ -455,6 +457,7 @@ final class EventsController extends AbstractController
         if ($event->isPrivate()) {
             $parameters['cle'] = $this->inviteLink->key('event', (string) $event->getId());
         }
+
         return $this->generateUrl('app_events_detail', $parameters, UrlGeneratorInterface::ABSOLUTE_URL);
     }
 
