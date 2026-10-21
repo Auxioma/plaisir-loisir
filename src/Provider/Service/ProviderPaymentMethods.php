@@ -87,7 +87,7 @@ final class ProviderPaymentMethods
 
     public function paypalReady(ProviderProfile $provider): bool
     {
-        return (!$this->httpPaypal->isAvailable() || ($provider->getPaypalMerchantId() !== null && $provider->isPaypalPaymentsEnabled()))
+        return (!$this->httpPaypal->isAvailable() || (null !== $provider->getPaypalMerchantId() && $provider->isPaypalPaymentsEnabled()))
             && null !== $provider->getPaymentPaypal()
             && false !== filter_var($provider->getPaymentPaypal(), \FILTER_VALIDATE_EMAIL)
             && $this->paypal->isAvailable();

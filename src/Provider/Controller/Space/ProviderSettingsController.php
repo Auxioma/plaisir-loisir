@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Provider\Controller\Space;
 
-use App\Payment\Service\PayPalConnectService;
 use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Service\ActivityDraftService;
 use App\Legal\Repository\CompanyIdentityRepository;
 use App\Notification\Entity\NotificationPreference;
 use App\Notification\Repository\NotificationPreferenceRepository;
 use App\Payment\PayPal\PayPalGateway;
+use App\Payment\Service\PayPalConnectService;
 use App\Payment\Service\StripeConnectService;
 use App\Payment\Service\SubscriptionService;
 use App\Provider\Service\ProviderPaymentMethods;
@@ -307,12 +307,14 @@ final class ProviderSettingsController extends AbstractProviderSpaceController
                 $input['acceptsPaypal'] = '1';
                 $this->paymentMethods->update($provider, $input);
                 $this->entityManager->flush();
+
                 return $this->redirect($this->paypalConnect->onboardingUrl($provider,
                     $this->generateUrl('app_pro_paypal_return', [], UrlGeneratorInterface::ABSOLUTE_URL)));
             } catch (\InvalidArgumentException $e) {
                 $this->addFlash('error', $e->getMessage());
             }
         }
+
         return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
     }
 
@@ -321,9 +323,11 @@ final class ProviderSettingsController extends AbstractProviderSpaceController
     {
         if ($this->paypalConnect->refresh($this->currentProvider())) {
             $this->addFlash('success', 'Votre compte PayPal est relié : vos clients peuvent vous payer par PayPal.');
+
             return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement']);
         }
         $this->addFlash('info', 'La liaison PayPal n’est pas terminée ou vérifiée. Reprenez-la depuis vos paramètres.');
+
         return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
     }
 
@@ -334,6 +338,7 @@ final class ProviderSettingsController extends AbstractProviderSpaceController
             $this->paypalConnect->disconnect($this->currentProvider());
             $this->addFlash('success', 'Votre compte PayPal a été délié de TrouveMoi (il reste actif chez PayPal).');
         }
+
         return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
     }
 
