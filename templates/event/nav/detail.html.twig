@@ -127,6 +127,8 @@
                « C'est pour offrir ? », agenda.
                ======================================================== #}
             <aside class="evn-detail__side">
+                <p>{% include '_partials/_event_fav.html.twig' with {type: 'evenement', key: event.slug, class: 'pa-fav'} %} {{ 'Favoris'|trans }}</p>
+                <a class="pl-btn pl-btn--outline-dark pl-btn--block" href="{{ path('app_events_pdf', {slug: event.slug, cle: app.request.query.get('cle')}) }}" data-turbo="false">{{ icon.download(16) }} {{ 'Télécharger le PDF'|trans }}</a>
                 <div class="evn-cover">
                     <img src="{{ asset(event.image ?? 'images/events/ev-raft-clean.jpg') }}" alt="" loading="lazy" decoding="async">
                     <button type="button" class="evn-cover__flyer" data-share-url="{{ url('app_events_detail', {slug: event.slug}) }}" data-share-title="{{ event.title }}" data-share-done="{{ 'Lien copié !'|trans }}">{{ icon.share(16) }} {{ 'Partager l’événement'|trans }}</button>

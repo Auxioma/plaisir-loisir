@@ -63,8 +63,8 @@
 /* Cartes. */
 .evl-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
 .evl-card { position: relative; display: flex; flex-direction: column; overflow: hidden; background: #fff; border: 1px solid var(--evl-line); border-radius: 12px; box-shadow: 0 2px 10px rgba(11, 20, 55, .05); }
-.evl-card__media { position: relative; display: block; aspect-ratio: 4 / 3; }
-.evl-card__media img { width: 100%; height: 100%; object-fit: cover; }
+.evl-card__media { position: relative; display: block; aspect-ratio: 4 / 3; flex: none; overflow: hidden; }
+.evl-card__media > img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
 .evl-badge { position: absolute; top: 10px; left: 10px; padding: 3px 9px; border-radius: 999px; color: #fff; font-size: 11px; font-weight: 700; }
 .evl-badge--green { background: #16a34a; } .evl-badge--orange { background: #f08a00; } .evl-badge--blue { background: #2f5be7; }
 .evl-badge--violet { background: #7c3aed; } .evl-badge--navy { background: #1e2a5a; } .evl-badge--red { background: #e5324b; }

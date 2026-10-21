@@ -120,3 +120,6 @@
 .ld-entry__pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .ld-entry__pair .ld-btn { min-width: 0; height: auto; min-height: 32px; padding: 4px 6px; white-space: normal; line-height: 1.15; text-align: center; }
 .ld-entry__pair .ld-btn .pl-icon { flex: none; }
+
+.ld-dest__fav { position: absolute; top: 9px; right: 9px; z-index: 2; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 50%; background: #fff; color: #1f2433; cursor: pointer; }
+.ld-dest__fav.is-active { color: #e11d48; }

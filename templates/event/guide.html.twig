@@ -66,6 +66,10 @@
                 <div class="is-yellow"><span>{{ icon.bell(22) }}</span><strong>{{ 'Vérifiez avant de publier'|trans }}</strong><small>{{ 'Relisez bien toutes les informations avant de publier votre événement.'|trans }}</small></div>
             </div>
 
+            <div class="ew-head__actions ew-guide__start">
+                <a class="ew-btn ew-btn--primary" href="{{ path('app_event_create', {etape: 1}) }}">{{ 'Commencer'|trans }} {{ icon.arrow_right(16) }}</a>
+            </div>
+
             <div class="ew-faqband">
                 {{ icon.bulb(22) }}
                 <div><strong>{{ 'Besoin d’aide ?'|trans }}</strong><small>{{ 'Notre équipe est là pour vous accompagner. Consultez notre FAQ ou'|trans }} <a href="{{ path('app_corporate_contact') }}">{{ 'contactez-nous'|trans }}</a>.</small></div>

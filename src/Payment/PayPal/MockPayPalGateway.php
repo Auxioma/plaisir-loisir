@@ -25,7 +25,7 @@ final class MockPayPalGateway implements PayPalGateway
         return new CheckoutSessionResult($id, $returnUrl.(str_contains($returnUrl, '?') ? '&' : '?').'token='.$id);
     }
 
-    public function capture(string $orderId): CheckoutState
+    public function capture(string $orderId, ?string $merchantId = null): CheckoutState
     {
         if (!preg_match('/^MOCK(\d+)X/', $orderId, $m)) {
             return new CheckoutState(false);

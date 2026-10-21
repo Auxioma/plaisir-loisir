@@ -11,19 +11,7 @@
 {% block title %}{{ 'Invitation'|trans }} — {{ entity.title }}{% endblock %}
 
 {% macro card(entity, qr) %}
-    <div class="fa-invite__card">
-        <p class="fa-invite__brand">TrouveMoi · {{ 'Plaisirs & Loisirs'|trans }}</p>
-        <h2 class="fa-invite__title">{{ 'Tu es invité(e) !'|trans }}</h2>
-        <p class="fa-invite__sub">{{ entity.title }}</p>
-        <p class="fa-invite__when">{{ entity.startsAt|pf_date('EEEE d MMMM y')|capitalize }}</p>
-        {# L'heure sur le carton (retour client du 21/10, docs/maquettes/carte_invitation.jpeg). #}
-        <p class="fa-invite__hour">{% if entity.allDay %}{{ 'Toute la journée'|trans }}{% else %}{{ 'à'|trans|capitalize }} {{ entity.startsAt|date('H\\hi') }}{% if entity.endsAt %} – {{ entity.endsAt|date('H\\hi') }}{% endif %}{% endif %}</p>
-        {% set where = entity.address ?: (entity.location ?: entity.city) %}
-        {% if where %}<p class="fa-invite__where">{{ where }}</p>{% endif %}
-        {% if entity.shortDescription %}<p class="fa-invite__text">{{ entity.shortDescription }}</p>{% endif %}
-        <span class="fa-invite__qr"><img src="{{ qr }}" alt="{{ 'QR code de l’invitation'|trans }}" loading="lazy" decoding="async">{{ 'Scanne pour confirmer ta présence'|trans }}</span>
-        <p class="fa-invite__foot">{{ 'Invitation créée gratuitement sur TrouveMoi'|trans }}</p>
-    </div>
+    {% include 'event/_invitation_card.html.twig' %}
 {% endmacro %}
 
 {% block body %}
@@ -76,7 +64,8 @@
                 <a class="fa-share__btn fa-share__btn--wa" href="https://wa.me/?text={{ message|url_encode }}" target="_blank" rel="noopener">{{ icon.chat_bubble(16) }} WhatsApp</a>
                 <button type="button" class="fa-share__btn" data-copy="{{ link }}" data-copy-done="{{ 'Lien copié !'|trans }}">{{ icon.link(16) }} <span data-copy-label>{{ 'Copier le lien'|trans }}</span></button>
                 <a class="fa-share__btn" href="mailto:?subject={{ entity.title|url_encode }}&amp;body={{ message|url_encode }}">{{ icon.mail(16) }} {{ 'Par e-mail'|trans }}</a>
-                <a class="fa-share__btn" href="{{ qr }}" download="invitation-{{ entity.slug }}.svg">{{ icon.download(16) }} {{ 'Télécharger le QR code'|trans }}</a>
+                <a class="fa-share__btn" href="{{ path('app_events_invitation_pdf', {slug: entity.slug}) }}" data-turbo="false">{{ icon.download(16) }} {{ 'Télécharger la carte d’invitation'|trans }}</a>
+                <a class="fa-share__btn" href="{{ path('app_events_pdf', {slug: entity.slug}) }}" data-turbo="false">{{ icon.download(16) }} {{ 'Télécharger le PDF de l’événement'|trans }}</a>
                 <a class="fa-share__btn" href="{{ path('app_events_detail', {slug: entity.slug}) }}">{{ icon.eye(16) }} {{ 'Voir la page'|trans }}</a>
             </div>
             <small>{{ entity.private ? 'Événement privé : seules les personnes qui ont ce lien ou ce QR code peuvent le voir et répondre.'|trans : 'Le lien mène à la page publique de l’événement.'|trans }}</small>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale|default('fr') }}">
+<head>
+<meta charset="UTF-8">
+<title>{{ entity.title }}</title>
+<style>
+@page { margin: 35px; }
+body { font-family: 'DejaVu Sans', sans-serif; color: #25283e; font-size: 12px; line-height: 1.6; }
+h1 { color: #061b56; font-size: 26px; line-height: 1.3; }
+h2 { color: #061b56; font-size: 17px; margin-top: 24px; }
+.brand { color: #5d00ff; font-size: 12px; letter-spacing: 2px; }
+.lead { font-size: 15px; color: #666; }
+.facts { background: #f5f3ff; padding: 16px 20px; border-radius: 10px; }
+.facts p { margin: 5px 0; }
+.photo { width: 100%; margin: 8px 0; }
+.qr { text-align: center; margin-top: 25px; page-break-inside: avoid; }
+.qr img { width: 140px; height: 140px; }
+a { color: #5d00ff; word-wrap: break-word; }
+.fa-invite__card { padding: 40px 30px; background: #fffaf6; border: 2px solid #f3dfd2; border-radius: 18px; text-align: center; }
+.fa-invite__brand { color: #9a6b5b; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+.fa-invite__title { color: #b4235a; font-family: 'DejaVu Serif', serif; font-size: 36px; font-style: italic; }
+.fa-invite__sub { font-size: 24px; font-weight: bold; }
+.fa-invite__when { font-size: 19px; color: #9a6b5b; }
+.fa-invite__hour { font-size: 22px; font-weight: bold; color: #b4235a; }
+.fa-invite__where { font-size: 16px; }
+.fa-invite__text { color: #666; }
+.fa-invite__qr { display: block; padding: 15px; background: #fff; border-radius: 12px; font-size: 12px; }
+.fa-invite__qr img { display: block; width: 160px; height: 160px; margin: 0 auto 8px; }
+.fa-invite__foot { color: #9a6b5b; font-size: 10px; margin-top: 20px; }
+</style>
+</head>
+<body>
+{% if invitation %}
+    {% include 'event/_invitation_card.html.twig' %}
+{% else %}
+    <p class="brand">TROUVEMOI · PLAISIRS &amp; LOISIRS</p>
+    <h1>{{ entity.title }}</h1>
+    <p>{{ 'Organisé par'|trans }} <strong>{{ event.organizer }}</strong>{% if entity.category %} · {{ entity.category.name|trans }}{% endif %}</p>
+    {% if entity.shortDescription %}<p class="lead">{{ entity.shortDescription }}</p>{% endif %}
+    {% if photos|length %}<img class="photo" src="{{ photos|first }}" alt="">{% endif %}
+    {% if entity.description %}<h2>{{ 'Détails'|trans }}</h2><div>{{ entity.description|replace({'**': ''})|nl2br }}</div>{% endif %}
+    <h2>{{ 'Infos pratiques'|trans }}</h2>
+    <div class="facts">
+        <p><strong>{{ 'Date'|trans }} :</strong> {{ entity.startsAt|pf_date('EEEE d MMMM y')|capitalize }} · {{ event.hours }}</p>
+        {% if entity.endsAt %}<p>{{ 'Fin'|trans }} : {{ entity.endsAt|pf_date('EEEE d MMMM y') }} · {{ entity.endsAt|date('H:i') }}</p>{% endif %}
+        {% if entity.allDay %}<p>{{ 'Toute la journée'|trans }}</p>{% endif %}
+        {% if entity.recurrence %}<p>{{ entity.recurrence == 'weekly' ? 'toutes les semaines'|trans : 'tous les mois'|trans }}</p>{% endif %}
+        {% if entity.arrivalTime %}<p>{{ 'Arrivée conseillée à'|trans }} {{ entity.arrivalTime }}</p>{% endif %}
+        <p><strong>{{ 'Lieu'|trans }} :</strong>
+        {% if entity.locationType == 'online' %}{{ 'En ligne'|trans }}{% if online_visible %} · <a href="{{ entity.onlineUrl }}">{{ entity.onlineUrl }}</a>{% else %} · {{ 'le lien est visible une fois inscrit'|trans }}{% endif %}
+        {% elseif entity.locationType == 'tbd' %}{{ 'Lieu à définir'|trans }}
+        {% else %}{{ entity.address ?: entity.location ?: entity.city }}{% if entity.postalCode %} · {{ entity.postalCode }}{% endif %}{% if entity.city %} · {{ entity.city }}{% endif %}{% if entity.locationType == 'approx' %} ({{ 'zone approximative'|trans }}){% endif %}{% endif %}</p>
+        {% if entity.meetingPoint %}<p>{{ 'Rendez-vous :'|trans }} {{ entity.meetingPoint }}</p>{% endif %}
+        {% if entity.accessInstructions %}<p>{{ entity.accessInstructions|nl2br }}</p>{% endif %}
+        {% if entity.latitude and entity.longitude %}<p><a href="https://www.google.com/maps/search/?api=1&amp;query={{ entity.latitude }},{{ entity.longitude }}">{{ 'Itinéraire Google Maps'|trans }}</a></p>{% endif %}
+        <p>{{ 'Participants'|trans }} : {{ entity.participantsCount }}{% if entity.capacity %} / {{ entity.capacity }}{% endif %}{% if waiting > 0 %} · {{ waiting }} {{ 'en liste d’attente'|trans }}{% endif %}</p>
+        <p>{{ 'Gratuit'|trans }} · {{ entity.registrationRequired ? 'Inscription obligatoire'|trans : 'Inscription facultative : vous pouvez aussi venir directement.'|trans }}</p>
+        <p>{{ {private: 'Privé — sur invitation', public: 'Public', members: 'Membres connectés', group: 'Groupe / Club'}[entity.visibility]|default('Public')|trans }}</p>
+    </div>
+    <h2>{{ 'Participants'|trans }}</h2>
+    {% if participants_visible %}
+        {% for registration in going %}<p>{{ registration.user.firstName }} {{ registration.user.lastName|first }}.{% if registration.user == entity.organizer %} · {{ 'Organisateur'|trans }}{% endif %}</p>{% else %}<p>{{ 'Soyez le premier à participer !'|trans }}</p>{% endfor %}
+    {% else %}<p>{{ 'L’organisateur a choisi de ne pas afficher la liste des participants.'|trans }}</p>{% endif %}
+    {% if photos|length > 1 %}<h2>{{ 'Photos'|trans }}</h2>{% for photo in photos|slice(1) %}<img class="photo" src="{{ photo }}" alt="">{% endfor %}{% endif %}
+    <div class="qr"><img src="{{ qr }}" alt="QR"><p>{{ 'Scanne pour confirmer ta présence'|trans }}</p><a href="{{ link }}">{{ 'Voir la page'|trans }}</a></div>
+{% endif %}
+</body>
+</html>

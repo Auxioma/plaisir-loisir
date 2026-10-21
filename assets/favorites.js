@@ -64,7 +64,12 @@ async function basculer(bouton) {
             return;
         }
 
-        appliquerEtat(bouton, donnees.favori === true);
+        document.querySelectorAll(SELECTEUR).forEach((autre) => {
+            if (autre.dataset.favoriteSlug === bouton.dataset.favoriteSlug
+                && autre.dataset.favoriteType === bouton.dataset.favoriteType) {
+                appliquerEtat(autre, donnees.favori === true);
+            }
+        });
         repercuterDansLaListe(bouton, donnees.favori === true);
     } catch (erreur) {
         // Réseau coupé : on ne change pas l'affichage, pour ne pas faire croire
@@ -77,6 +82,12 @@ async function basculer(bouton) {
 
 function appliquerEtat(bouton, actif) {
     bouton.classList.toggle('is-active', actif);
+    const coeur = bouton.querySelector('svg');
+    if (coeur) {
+        coeur.setAttribute('fill', actif ? 'currentColor' : 'none');
+        coeur.setAttribute('stroke', 'currentColor');
+        coeur.setAttribute('stroke-width', '2');
+    }
     bouton.setAttribute('aria-pressed', actif ? 'true' : 'false');
     bouton.setAttribute(
         'aria-label',
@@ -117,7 +128,7 @@ function repercuterDansLaListe(bouton, actif) {
 }
 
 function aucuneCarteVisible(liste) {
-    return [...liste.querySelectorAll('.pl-card')].every((carte) => carte.hidden);
+    return [...liste.querySelectorAll('.pl-card, .pf-fav, [data-favorite-card]')].every((carte) => carte.hidden);
 }
 
 function retirerLeBandeau(liste) {
