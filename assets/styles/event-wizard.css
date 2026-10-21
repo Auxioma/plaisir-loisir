@@ -76,6 +76,7 @@ a.ew-step:hover { background: #f7f7fb; }
 
 .ew-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 22px; }
 .ew-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.ew-field[hidden] { display: none; }
 .ew-field--half { max-width: 420px; }
 .ew-field > label, .ew-field__label { font-size: 13.5px; font-weight: 700; }
 .ew-field em { color: var(--ew-red); font-style: normal; }
