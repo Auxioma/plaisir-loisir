@@ -552,8 +552,8 @@
     border: 1px solid var(--pl-line, #e5e7eb); border-radius: 14px;
     overflow: hidden; text-decoration: none; color: inherit;
 }
-.evn-card__media { position: relative; aspect-ratio: 295 / 217; }
-.evn-card__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.evn-card__media { position: relative; aspect-ratio: 295 / 217; flex: none; overflow: hidden; }
+.evn-card__media > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .evn-badge {
     position: absolute; top: 12px; left: 12px; color: #fff;
     font-size: 12px; font-weight: 600; border-radius: 999px; padding: 5px 12px;

@@ -28,6 +28,7 @@
                 <span aria-current="page">{{ city }}</span>
             </nav>
 
+            <p>{% include '_partials/_event_fav.html.twig' with {type: 'destination', key: citySlug|default('lille'), class: 'pa-fav'} %} {{ 'Ajouter cette destination aux favoris'|trans }}</p>
             <h1 class="act-head__title dest-title">{{ 'Activités à %ville%'|trans({'%ville%': city}) }}</h1>
             <p class="act-head__subtitle">{{ "Découvrez les meilleures activités à faire à %ville%. Choisissez parmi un choix varié d'expériences pour créer des souvenirs inoubliables, en famille ou entre amis. Meilleur prix garanti - Annulation gratuite"|trans({'%ville%': city}) }}</p>
 

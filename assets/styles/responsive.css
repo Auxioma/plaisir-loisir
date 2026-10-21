@@ -1347,3 +1347,9 @@ html, body { overflow-x: clip; }
     .evn-photos > a, .fd-photos > a { flex: 0 0 82%; scroll-snap-align: start; }
     .evn-photos img, .fd-photos img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; }
 }
+
+/* Les SVG des favoris gardent leur taille dans les cartes flexibles. */
+[data-favorite-slug] > svg { display: block; flex: none; width: 20px; height: 20px; min-width: 20px; }
+[data-favorite-slug][aria-pressed="true"] > svg { fill: currentColor; }
+[data-favorite-slug]:focus-visible { outline: 3px solid #5d00ff; outline-offset: 3px; }
+.ew-guide__start { justify-content: flex-end; margin: 24px 0; }

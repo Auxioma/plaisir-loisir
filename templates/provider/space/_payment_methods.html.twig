@@ -95,7 +95,15 @@
                         <span class="rg-check__logos">{{ icon.pay_paypal() }}</span>
                     </label>
                     <div class="rg-method__detail">
-                        {% if paypal_available %}
+                        {% if paypal_connect_available %}
+                            {% if provider.paypalMerchantId and provider.paypalPaymentsEnabled %}
+                                <p class="rg-linked">{{ icon.check(14) }} {{ 'Compte PayPal relié'|trans }} <small>{{ provider.paymentPaypal }}</small></p>
+                                <a class="pf-link" href="https://www.paypal.com/businessmanage/" target="_blank" rel="noopener">{{ 'Ouvrir mon compte PayPal'|trans }}</a>
+                            {% else %}
+                                <p class="pf-muted">{{ 'Autorisez la liaison sur PayPal pour recevoir directement les paiements de vos clients.'|trans }}</p>
+                                <button class="pf-btn" formaction="{{ path('app_pro_paypal_connect') }}" data-turbo="false">{{ icon.link(16) }} {{ (provider.paypalTrackingId ? 'Reprendre la liaison PayPal' : 'Relier mon compte PayPal')|trans }}</button>
+                            {% endif %}
+                        {% elseif paypal_available %}
                             <label class="rg-field" for="pm-paypal">{{ 'Adresse e-mail de votre compte PayPal'|trans }}</label>
                             <input id="pm-paypal" class="rg-input" name="paymentPaypal" type="email" value="{{ provider.paymentPaypal }}" placeholder="{{ 'vous@exemple.fr'|trans }}" maxlength="180" autocomplete="off">
                             <small class="pf-muted">{{ 'Les paiements PayPal sont versés directement sur ce compte (compte PayPal Business conseillé).'|trans }}</small>
@@ -130,11 +138,25 @@
             </div>
         </form>
 
+    </section>
+{% endif %}
+
+{% if provider.stripeAccountId or provider.paymentPaypal or provider.paypalTrackingId %}
+<section class="pf-card rg-account-links">
+    <h2>{{ 'Comptes de paiement reliés'|trans }}</h2>
         {% if provider.stripeAccountId %}
             <form method="post" action="{{ path('app_pro_stripe_disconnect') }}" class="rg-unlink">
                 <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                 <button class="bk-link bk-link--btn" data-confirm="{{ 'Délier votre compte Stripe ? Vos clients ne pourront plus payer par carte.'|trans }}">{{ 'Délier mon compte Stripe'|trans }}</button>
             </form>
         {% endif %}
-    </section>
+
+    {% if provider.paymentPaypal or provider.paypalTrackingId %}
+    <form method="post" action="{{ path('app_pro_paypal_disconnect') }}" class="rg-unlink">
+        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+        <p>PayPal · {{ provider.paymentPaypal }}</p>
+        <button class="bk-link bk-link--btn" data-confirm="{{ 'Délier votre compte PayPal ? Vos clients ne pourront plus payer par PayPal.'|trans }}">{{ 'Délier mon compte PayPal'|trans }}</button>
+    </form>
+    {% endif %}
+</section>
 {% endif %}

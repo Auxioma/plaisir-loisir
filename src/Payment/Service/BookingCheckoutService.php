@@ -90,7 +90,7 @@ final class BookingCheckoutService
                 $payment->setExternalAccount($account);
             } else {
                 $session = $this->paypal->createOrder(
-                    (string) $provider->getPaymentPaypal(),
+                    (string) ($provider->getPaypalMerchantId() ?? $provider->getPaymentPaypal()),
                     $label,
                     number_format((float) $booking->getTotalPrice(), 2, '.', ''),
                     $booking->getCurrency(),
@@ -98,7 +98,7 @@ final class BookingCheckoutService
                     $returnUrl,
                     $cancelUrl,
                 );
-                $payment->setExternalAccount(null);
+                $payment->setExternalAccount($provider->getPaypalMerchantId() ?? $provider->getPaymentPaypal());
             }
         } catch (\Throwable $e) {
             $this->logger->error('Paiement {channel} impossible pour la réservation {id} : {error}', ['channel' => $channel, 'id' => $reference, 'error' => $e->getMessage()]);
@@ -153,7 +153,7 @@ final class BookingCheckoutService
                 if ($token !== $payment->getExternalId() || BookingStatus::Pending !== $booking->getStatus()) {
                     return false;
                 }
-                $state = $this->paypal->capture($payment->getExternalId());
+                $state = $this->paypal->capture($payment->getExternalId(), $payment->getExternalAccount());
             }
         } catch (\Throwable $e) {
             $this->logger->error('Vérification du paiement {id} impossible : {error}', ['id' => (string) $payment->getId(), 'error' => $e->getMessage()]);

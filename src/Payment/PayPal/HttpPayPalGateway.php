@@ -23,12 +23,98 @@ final class HttpPayPalGateway implements PayPalGateway
         private readonly string $clientSecret,
         #[Autowire('%env(PAYPAL_MODE)%')]
         private readonly string $mode,
+        #[Autowire('%env(PAYPAL_PARTNER_ID)%')]
+        private readonly string $partnerId,
+        #[Autowire('%env(PAYPAL_WEBHOOK_ID)%')]
+        private readonly string $webhookId = '',
+        #[Autowire('%env(PAYPAL_PARTNER_ATTRIBUTION_ID)%')]
+        private readonly string $attributionId = '',
     ) {
     }
 
     public function isAvailable(): bool
     {
         return '' !== $this->clientId && '' !== $this->clientSecret;
+    }
+
+    public function onboardingAvailable(): bool
+    {
+        return $this->isAvailable() && '' !== $this->partnerId;
+    }
+
+    public function onboardingUrl(string $trackingId, string $returnUrl): string
+    {
+        $data = $this->request('POST', '/v2/customer/partner-referrals', [
+            'tracking_id' => $trackingId,
+            'partner_config_override' => ['return_url' => $returnUrl],
+            'operations' => [['operation' => 'API_INTEGRATION', 'api_integration_preference' => [
+                'rest_api_integration' => ['integration_method' => 'PAYPAL', 'integration_type' => 'THIRD_PARTY',
+                    'third_party_details' => ['features' => ['PAYMENT', 'REFUND']]],
+            ]]],
+            'products' => ['EXPRESS_CHECKOUT'],
+            'legal_consents' => [['type' => 'SHARE_DATA_CONSENT', 'granted' => true]],
+        ]);
+        foreach ($data['links'] ?? [] as $link) {
+            if ('action_url' === ($link['rel'] ?? null)) {
+                return (string) $link['href'];
+            }
+        }
+        throw new \RuntimeException('PayPal n’a pas renvoyé de lien de liaison.');
+    }
+
+    /**
+     * Résolution côté serveur : aucun identifiant marchand du navigateur n'est accepté.
+     *
+     * @return array<string, mixed>
+     */
+    public function merchantForTracking(string $trackingId): array
+    {
+        $base = '/v1/customer/partners/'.rawurlencode($this->partnerId).'/merchant-integrations';
+        $data = $this->request('GET', $base.'?tracking_id='.rawurlencode($trackingId));
+        $merchantId = (string) ($data['merchant_id'] ?? '');
+        if ('' === $merchantId) {
+            throw new \RuntimeException('La liaison PayPal n’est pas terminée.');
+        }
+
+        return $this->request('GET', $base.'/'.rawurlencode($merchantId));
+    }
+
+    /** @param array<string, mixed> $merchant */
+    public function paymentsAuthorized(array $merchant): bool
+    {
+        foreach ($merchant['oauth_integrations'] ?? [] as $integration) {
+            foreach ($integration['oauth_third_party'] ?? [] as $authorization) {
+                if (($authorization['partner_client_id'] ?? null) === $this->clientId
+                    && array_intersect($authorization['scopes'] ?? [], [
+                        'https://uri.paypal.com/services/payments/payment/authcapture',
+                        'https://uri.paypal.com/services/payments/realtimepayment',
+                    ])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /** @param array<string, mixed> $event
+     * @param array<string, string> $headers
+     */
+    public function verifyWebhook(array $event, array $headers): bool
+    {
+        if ('' === $this->webhookId || !$this->isAvailable()) {
+            return false;
+        }
+        foreach (['auth_algo', 'cert_url', 'transmission_id', 'transmission_sig', 'transmission_time'] as $key) {
+            if (empty($headers[$key])) {
+                return false;
+            }
+        }
+        $result = $this->request('POST', '/v1/notifications/verify-webhook-signature', $headers + [
+            'webhook_id' => $this->webhookId, 'webhook_event' => $event,
+        ]);
+
+        return 'SUCCESS' === ($result['verification_status'] ?? null);
     }
 
     public function createOrder(string $payeeEmail, string $label, string $amount, string $currency, string $reference, string $returnUrl, string $cancelUrl): CheckoutSessionResult
@@ -40,7 +126,7 @@ final class HttpPayPalGateway implements PayPalGateway
                 'custom_id' => $reference,
                 'description' => mb_substr($label, 0, 127),
                 'amount' => ['currency_code' => strtoupper($currency), 'value' => $amount],
-                'payee' => ['email_address' => $payeeEmail],
+                'payee' => str_contains($payeeEmail, '@') ? ['email_address' => $payeeEmail] : ['merchant_id' => $payeeEmail],
             ]],
             'payment_source' => ['paypal' => ['experience_context' => [
                 'brand_name' => 'TrouveMoi',
@@ -50,7 +136,7 @@ final class HttpPayPalGateway implements PayPalGateway
                 'return_url' => $returnUrl,
                 'cancel_url' => $cancelUrl,
             ]]],
-        ], ['PayPal-Request-Id' => 'order-'.$reference.'-'.bin2hex(random_bytes(4))]);
+        ], ['PayPal-Request-Id' => 'order-'.$reference.'-'.bin2hex(random_bytes(4))] + $this->merchantHeaders($payeeEmail));
 
         foreach ($order['links'] ?? [] as $link) {
             if (\in_array($link['rel'] ?? '', ['payer-action', 'approve'], true)) {
@@ -61,11 +147,11 @@ final class HttpPayPalGateway implements PayPalGateway
         throw new \RuntimeException('PayPal n’a pas renvoyé de lien de paiement.');
     }
 
-    public function capture(string $orderId): CheckoutState
+    public function capture(string $orderId, ?string $merchantId = null): CheckoutState
     {
-        $order = $this->request('GET', '/v2/checkout/orders/'.rawurlencode($orderId));
+        $order = $this->request('GET', '/v2/checkout/orders/'.rawurlencode($orderId), null, $this->merchantHeaders($merchantId));
         if ('APPROVED' === ($order['status'] ?? null)) {
-            $order = $this->request('POST', '/v2/checkout/orders/'.rawurlencode($orderId).'/capture', null, ['PayPal-Request-Id' => 'capture-'.$orderId]);
+            $order = $this->request('POST', '/v2/checkout/orders/'.rawurlencode($orderId).'/capture', null, ['PayPal-Request-Id' => 'capture-'.$orderId] + $this->merchantHeaders($merchantId));
         }
 
         $capture = $order['purchase_units'][0]['payments']['captures'][0] ?? null;
@@ -88,6 +174,9 @@ final class HttpPayPalGateway implements PayPalGateway
      */
     private function request(string $method, string $path, ?array $json = null, array $headers = []): array
     {
+        if ('' !== $this->attributionId) {
+            $headers['PayPal-Partner-Attribution-Id'] = $this->attributionId;
+        }
         $options = ['auth_bearer' => $this->accessToken(), 'headers' => $headers + ['Content-Type' => 'application/json']];
         if ('POST' === $method) {
             $options['body'] = null !== $json ? json_encode($json, \JSON_THROW_ON_ERROR) : '{}';
@@ -100,6 +189,18 @@ final class HttpPayPalGateway implements PayPalGateway
         }
 
         return $data;
+    }
+
+    /** @return array<string, string> */
+    private function merchantHeaders(?string $merchant): array
+    {
+        if (null === $merchant || '' === $merchant) {
+            return [];
+        }
+        $encode = static fn (array $data): string => rtrim(strtr(base64_encode(json_encode($data, \JSON_THROW_ON_ERROR)), '+/', '-_'), '=');
+        $payload = ['iss' => $this->clientId] + (str_contains($merchant, '@') ? ['email' => $merchant] : ['payer_id' => $merchant]);
+
+        return ['PayPal-Auth-Assertion' => $encode(['alg' => 'none']).'.'.$encode($payload).'.'];
     }
 
     private function accessToken(): string

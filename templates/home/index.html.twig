@@ -240,6 +240,7 @@
                     {% for d in destinations %}
                         <a class="ld-dest" href="{{ path('app_destination_city', {ville: d.slug}) }}">
                             <img src="{{ asset(d.image) }}" alt="" loading="lazy">
+                            {% include '_partials/_event_fav.html.twig' with {type: 'destination', key: d.slug, class: 'ld-dest__fav'} %}
                             <span><strong>{{ d.name|split(',')|first }}</strong><small>{{ d.count }} {{ d.count > 1 ? 'activités'|trans : 'activité'|trans }}</small></span>
                         </a>
                     {% endfor %}

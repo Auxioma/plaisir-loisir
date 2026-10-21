@@ -182,6 +182,51 @@ class ProviderProfile
     #[ORM\Column(options: ['default' => false])]
     private bool $stripeChargesEnabled = false;
 
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $paypalMerchantId = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $paypalTrackingId = null;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $paypalPaymentsEnabled = false;
+
+    public function getPaypalMerchantId(): ?string
+    {
+        return $this->paypalMerchantId;
+    }
+
+    public function setPaypalMerchantId(?string $id): static
+    {
+        $this->paypalMerchantId = $id;
+
+        return $this;
+    }
+
+    public function getPaypalTrackingId(): ?string
+    {
+        return $this->paypalTrackingId;
+    }
+
+    public function setPaypalTrackingId(?string $id): static
+    {
+        $this->paypalTrackingId = $id;
+
+        return $this;
+    }
+
+    public function isPaypalPaymentsEnabled(): bool
+    {
+        return $this->paypalPaymentsEnabled;
+    }
+
+    public function setPaypalPaymentsEnabled(bool $enabled): static
+    {
+        $this->paypalPaymentsEnabled = $enabled;
+
+        return $this;
+    }
+
     // Les informations fiscales et légales (forme juridique, SIRET, TVA, siège,
     // représentant légal, assurance) vivent dans App\Legal\Entity\CompanyIdentity,
     // reliée à ce profil. Trois colonnes « fiscal* » traînaient ici, que

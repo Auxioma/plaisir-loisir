@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Event\Controller;
 
+use App\Event\Service\EventDocumentRenderer;
 use App\Event\Entity\Event;
 use App\Event\Entity\EventRegistration;
 use App\Event\Entity\Group;
@@ -421,6 +422,40 @@ final class EventsController extends AbstractController
                 'waiting' => $waiting,
             ],
         ]);
+    }
+
+    #[Route(path: ['fr' => '/evenements/detail/{slug}/invitation.pdf', 'en' => '/en/events/detail/{slug}/invitation.pdf'], name: 'app_events_invitation_pdf', methods: ['GET'])]
+    public function invitationPdf(string $slug, EventDocumentRenderer $documents): Response
+    {
+        $event = $this->findEventOrFail($slug);
+        if (!$this->getUser() instanceof User || $event->getOrganizer() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
+        }
+        return $documents->response($event, $this->documentLink($event), true);
+    }
+
+    #[Route(path: ['fr' => '/evenements/detail/{slug}/evenement.pdf', 'en' => '/en/events/detail/{slug}/event.pdf'], name: 'app_events_pdf', methods: ['GET'])]
+    public function eventPdf(string $slug, EventDocumentRenderer $documents, EventRegistrationRepository $registrations): Response
+    {
+        $event = $this->viewableOrFail($slug);
+        $organizer = $this->getUser() instanceof User && $event->getOrganizer() === $this->getUser();
+        $registration = $this->getUser() instanceof User ? $registrations->findOneBy(['event' => $event, 'user' => $this->getUser()]) : null;
+        return $documents->response($event, $this->documentLink($event), false, [
+            'event' => $this->presenter->card($event),
+            'going' => $event->isShowParticipants() || $organizer ? $registrations->findGoing($event) : [],
+            'participants_visible' => $event->isShowParticipants() || $organizer,
+            'online_visible' => $organizer || ($registration && EventRegistration::GOING === $registration->getStatus()),
+            'waiting' => $registrations->count(['event' => $event, 'status' => EventRegistration::WAITLIST]),
+        ]);
+    }
+
+    private function documentLink(Event $event): string
+    {
+        $parameters = ['slug' => $event->getSlug()];
+        if ($event->isPrivate()) {
+            $parameters['cle'] = $this->inviteLink->key('event', (string) $event->getId());
+        }
+        return $this->generateUrl('app_events_detail', $parameters, UrlGeneratorInterface::ABSOLUTE_URL);
     }
 
     /**

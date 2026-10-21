@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Provider\Service;
 
+use App\Payment\PayPal\HttpPayPalGateway;
 use App\Payment\PayPal\PayPalGateway;
 use App\Payment\Stripe\ConnectGateway;
 use App\Provider\Entity\ProviderProfile;
@@ -24,6 +25,7 @@ final class ProviderPaymentMethods
     public function __construct(
         private readonly ConnectGateway $stripe,
         private readonly PayPalGateway $paypal,
+        private readonly HttpPayPalGateway $httpPaypal,
     ) {
     }
 
@@ -44,7 +46,7 @@ final class ProviderPaymentMethods
             ['type' => self::STRIPE, 'label' => 'Carte Bancaire', 'state' => $state($provider->acceptsStripe(), $online && $this->stripeReady($provider)),
                 'detail' => $provider->acceptsStripe() && !$this->stripeReady($provider) ? 'Compte Stripe à relier' : null],
             ['type' => self::PAYPAL, 'label' => 'PayPal', 'state' => $state($provider->acceptsPaypal(), $online && $this->paypalReady($provider)),
-                'detail' => $provider->acceptsPaypal() ? $provider->getPaymentPaypal() : null],
+                'detail' => $provider->acceptsPaypal() ? ($this->paypalReady($provider) ? $provider->getPaymentPaypal() : 'Compte PayPal à relier') : null],
             ['type' => self::ONSITE, 'label' => 'Paiement sur place « Espèces »', 'state' => $provider->acceptsCash() ? 'active' : 'off', 'detail' => null],
         ];
     }
@@ -85,7 +87,8 @@ final class ProviderPaymentMethods
 
     public function paypalReady(ProviderProfile $provider): bool
     {
-        return null !== $provider->getPaymentPaypal()
+        return (!$this->httpPaypal->isAvailable() || ($provider->getPaypalMerchantId() !== null && $provider->isPaypalPaymentsEnabled()))
+            && null !== $provider->getPaymentPaypal()
             && false !== filter_var($provider->getPaymentPaypal(), \FILTER_VALIDATE_EMAIL)
             && $this->paypal->isAvailable();
     }
@@ -106,12 +109,16 @@ final class ProviderPaymentMethods
         $paypal = $flag('acceptsPaypal');
         $cash = $flag('acceptsCash');
 
-        $paypalEmail = trim((string) ($input['paymentPaypal'] ?? ''));
+        $paypalEmail = trim((string) ($input['paymentPaypal'] ?? $provider->getPaymentPaypal() ?? ''));
+        if ($this->httpPaypal->isAvailable()) {
+            // Le bénéficiaire vérifié ne peut pas être remplacé par un champ libre.
+            $paypalEmail = (string) $provider->getPaymentPaypal();
+        }
         $paypalEmail = '' !== $paypalEmail ? mb_strtolower(mb_substr($paypalEmail, 0, 180)) : null;
         if (null !== $paypalEmail && false === filter_var($paypalEmail, \FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('PayPal : indiquez l’adresse e-mail de votre compte PayPal.');
         }
-        if ($paypal && null === $paypalEmail) {
+        if ($paypal && null === $paypalEmail && !$this->httpPaypal->isAvailable()) {
             throw new \InvalidArgumentException('Indiquez l’adresse e-mail de votre compte PayPal pour accepter PayPal.');
         }
         if ($online && !$stripe && !$paypal) {

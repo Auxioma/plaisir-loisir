@@ -32,6 +32,7 @@ final class ProviderSubscriptionGateSubscriber implements EventSubscriberInterfa
         'app_pro_subscription',
         'app_pro_settings',
         'app_pro_stripe_',
+        'app_pro_paypal_',
         'app_pro_my_profile',
         'app_pro_profile_edit',
         'app_pro_documents_',

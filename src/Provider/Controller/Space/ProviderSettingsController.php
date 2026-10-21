@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Provider\Controller\Space;
 
+use App\Payment\Service\PayPalConnectService;
 use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Service\ActivityDraftService;
 use App\Legal\Repository\CompanyIdentityRepository;
@@ -53,6 +54,7 @@ final class ProviderSettingsController extends AbstractProviderSpaceController
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly ProviderPaymentMethods $paymentMethods,
         private readonly StripeConnectService $stripeConnect,
+        private readonly PayPalConnectService $paypalConnect,
         private readonly PayPalGateway $paypal,
         private readonly ActivityDraftService $activityDrafts,
     ) {
@@ -72,12 +74,18 @@ final class ProviderSettingsController extends AbstractProviderSpaceController
             $this->stripeConnect->refresh($provider);
         }
 
+        if ('paiement' === $section && null !== $provider->getPaypalTrackingId()) {
+            $this->paypalConnect->refresh($provider);
+        }
+
         return $this->renderSpace('provider/space/settings.html.twig', 'Paramètres', [
             'section' => $section,
             'payment_summary' => $this->paymentMethods->summary($provider),
             'stripe_ready' => $this->paymentMethods->stripeReady($provider),
             'stripe_available' => $this->stripeConnect->isAvailable(),
-            'paypal_available' => $this->paypal->isAvailable(),
+            'paypal_available' => $this->paypalConnect->isAvailable() || (!$this->paypalConnect->hasCredentials() && $this->paypal->isAvailable()),
+            'paypal_connect_available' => $this->paypalConnect->isAvailable(),
+            'paypal_ready' => $this->paymentMethods->paypalReady($provider),
             'editing' => $request->query->getBoolean('modifier'),
             'me' => $this->currentUser(),
             'company' => $this->companyIdentities->findOneByProvider($provider),
@@ -285,6 +293,47 @@ final class ProviderSettingsController extends AbstractProviderSpaceController
             $this->addFlash('success', 'Votre compte Stripe a été délié de TrouveMoi (il reste actif chez Stripe).');
         }
 
+        return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
+    }
+
+    #[Route(path: ['fr' => '/pro/parametres/paiement/paypal', 'en' => '/en/pro/settings/payment/paypal'], name: 'app_pro_paypal_connect', methods: ['POST'])]
+    public function paypalConnect(Request $request): Response
+    {
+        if ($this->csrfOk($request)) {
+            try {
+                $provider = $this->currentProvider();
+                // Enregistrer les autres choix sans prétendre que PayPal est déjà relié.
+                $input = $request->request->all();
+                $input['acceptsPaypal'] = '1';
+                $this->paymentMethods->update($provider, $input);
+                $this->entityManager->flush();
+                return $this->redirect($this->paypalConnect->onboardingUrl($provider,
+                    $this->generateUrl('app_pro_paypal_return', [], UrlGeneratorInterface::ABSOLUTE_URL)));
+            } catch (\InvalidArgumentException $e) {
+                $this->addFlash('error', $e->getMessage());
+            }
+        }
+        return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
+    }
+
+    #[Route(path: ['fr' => '/pro/parametres/paiement/paypal/retour', 'en' => '/en/pro/settings/payment/paypal/return'], name: 'app_pro_paypal_return', methods: ['GET'])]
+    public function paypalReturn(): Response
+    {
+        if ($this->paypalConnect->refresh($this->currentProvider())) {
+            $this->addFlash('success', 'Votre compte PayPal est relié : vos clients peuvent vous payer par PayPal.');
+            return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement']);
+        }
+        $this->addFlash('info', 'La liaison PayPal n’est pas terminée ou vérifiée. Reprenez-la depuis vos paramètres.');
+        return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
+    }
+
+    #[Route(path: ['fr' => '/pro/parametres/paiement/paypal/delier', 'en' => '/en/pro/settings/payment/paypal/unlink'], name: 'app_pro_paypal_disconnect', methods: ['POST'])]
+    public function paypalDisconnect(Request $request): Response
+    {
+        if ($this->csrfOk($request)) {
+            $this->paypalConnect->disconnect($this->currentProvider());
+            $this->addFlash('success', 'Votre compte PayPal a été délié de TrouveMoi (il reste actif chez PayPal).');
+        }
         return $this->redirectToRoute('app_pro_settings', ['section' => 'paiement', 'modifier' => 1]);
     }
 

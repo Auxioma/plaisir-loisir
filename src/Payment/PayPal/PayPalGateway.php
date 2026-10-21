@@ -35,5 +35,5 @@ interface PayPalGateway
     ): CheckoutSessionResult;
 
     /** Encaisse la commande approuvée par le client (sans effet si c'est déjà fait). */
-    public function capture(string $orderId): CheckoutState;
+    public function capture(string $orderId, ?string $merchantId = null): CheckoutState;
 }

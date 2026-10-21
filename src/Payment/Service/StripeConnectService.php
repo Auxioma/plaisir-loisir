@@ -91,6 +91,9 @@ final class StripeConnectService
     public function disconnect(ProviderProfile $provider): void
     {
         $provider->setStripeAccountId(null)->setStripeChargesEnabled(false)->setAcceptsStripe(false);
+        if (!$provider->acceptsPaypal()) {
+            $provider->setOnlinePaymentEnabled(false);
+        }
         $this->entityManager->flush();
     }
 

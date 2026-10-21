@@ -33,9 +33,9 @@ final class ConfiguredPayPalGateway implements PayPalGateway
         return $this->gateway()->createOrder($payeeEmail, $label, $amount, $currency, $reference, $returnUrl, $cancelUrl);
     }
 
-    public function capture(string $orderId): CheckoutState
+    public function capture(string $orderId, ?string $merchantId = null): CheckoutState
     {
-        return (str_starts_with($orderId, 'MOCK') && 'prod' !== $this->environment ? $this->mock : $this->gateway())->capture($orderId);
+        return (str_starts_with($orderId, 'MOCK') && 'prod' !== $this->environment ? $this->mock : $this->gateway())->capture($orderId, $merchantId);
     }
 
     private function gateway(): PayPalGateway

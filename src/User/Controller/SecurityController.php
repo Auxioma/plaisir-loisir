@@ -34,9 +34,9 @@ final class SecurityController extends AbstractController
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        // Si l'utilisateur est déjà connecté, on le redirige vers l'accueil.
+        // Un compte déjà connecté rejoint son espace.
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_home');
+            return $this->redirectToRoute($this->isGranted('ROLE_ADMIN') ? 'admin' : ($this->isGranted('ROLE_PROVIDER') ? 'app_pro_dashboard' : 'app_account_dashboard'));
         }
 
         return $this->render('security/login.html.twig', [
@@ -246,9 +246,9 @@ final class SecurityController extends AbstractController
     #[Route(path: ['fr' => '/inscription', 'en' => '/en/signup'], name: 'app_register')]
     public function register(Request $request, RegistrationService $registrationService, AnalyticsEventQueue $analytics): Response
     {
-        // Si l'utilisateur est déjà connecté, on le redirige vers l'accueil.
+        // Un compte déjà connecté rejoint son espace.
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_home');
+            return $this->redirectToRoute($this->isGranted('ROLE_ADMIN') ? 'admin' : ($this->isGranted('ROLE_PROVIDER') ? 'app_pro_dashboard' : 'app_account_dashboard'));
         }
 
         // Ce formulaire n'ouvre QUE des comptes particuliers (11/10). Un

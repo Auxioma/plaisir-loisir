@@ -28,6 +28,10 @@
             {# 07/10 : carton d'invitation avec QR code, lien privé et suivi des réponses. #}
             <a href="{{ path('app_events_invitation', {slug: event.slug}) }}" class="pl-btn pl-btn--primary">{{ 'Créer le carton d’invitation'|trans }} {{ icon.share(16) }}</a>
         {% endif %}
+        {% if event.status != 'draft' %}
+            <a href="{{ path('app_events_invitation_pdf', {slug: event.slug}) }}" class="pl-btn ev-btn-ghost" data-turbo="false">{{ 'Télécharger la carte d’invitation'|trans }}</a>
+            <a href="{{ path('app_events_pdf', {slug: event.slug}) }}" class="pl-btn ev-btn-ghost" data-turbo="false">{{ 'Télécharger le PDF'|trans }}</a>
+        {% endif %}
         <a href="{{ path('app_account_events') }}" class="pl-btn ev-btn-ghost">{{ 'Mes événements'|trans }}</a>
     </div>
 </div>

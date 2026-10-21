@@ -56,7 +56,7 @@ final class SocialAuthController extends AbstractController
     public function start(Request $request, string $service): Response
     {
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_home');
+            return $this->redirectToRoute($this->isGranted('ROLE_ADMIN') ? 'admin' : ($this->isGranted('ROLE_PROVIDER') ? 'app_pro_dashboard' : 'app_account_dashboard'));
         }
 
         $provider = SocialProvider::from($service);
@@ -155,6 +155,6 @@ final class SocialAuthController extends AbstractController
 
         $this->addFlash('success', sprintf('Vous êtes connecté avec %s.', $provider->label()));
 
-        return $this->redirectToRoute('app_home');
+        return $this->redirectToRoute($this->isGranted('ROLE_ADMIN') ? 'admin' : ($this->isGranted('ROLE_PROVIDER') ? 'app_pro_dashboard' : 'app_account_dashboard'));
     }
 }
