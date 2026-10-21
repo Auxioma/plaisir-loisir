@@ -15,7 +15,9 @@
         <p class="fa-invite__brand">TrouveMoi · {{ 'Plaisirs & Loisirs'|trans }}</p>
         <h2 class="fa-invite__title">{{ 'Tu es invité(e) !'|trans }}</h2>
         <p class="fa-invite__sub">{{ entity.title }}</p>
-        <p class="fa-invite__when">{{ entity.startsAt|pf_date('EEEE d MMMM y')|capitalize }}{% if not entity.allDay %} {{ 'à'|trans }} {{ entity.startsAt|date('H\\hi') }}{% endif %}</p>
+        <p class="fa-invite__when">{{ entity.startsAt|pf_date('EEEE d MMMM y')|capitalize }}</p>
+        {# L'heure sur le carton (retour client du 21/10, docs/maquettes/carte_invitation.jpeg). #}
+        <p class="fa-invite__hour">{% if entity.allDay %}{{ 'Toute la journée'|trans }}{% else %}{{ 'à'|trans|capitalize }} {{ entity.startsAt|date('H\\hi') }}{% if entity.endsAt %} – {{ entity.endsAt|date('H\\hi') }}{% endif %}{% endif %}</p>
         {% set where = entity.address ?: (entity.location ?: entity.city) %}
         {% if where %}<p class="fa-invite__where">{{ where }}</p>{% endif %}
         {% if entity.shortDescription %}<p class="fa-invite__text">{{ entity.shortDescription }}</p>{% endif %}

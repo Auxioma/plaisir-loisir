@@ -219,6 +219,7 @@
 .fa-invite__title { margin: 0 0 6px; color: #b4235a; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; font-style: italic; font-weight: 700; line-height: 1.2; }
 .fa-invite__sub { margin: 0 0 16px; font-size: 16px; font-weight: 700; }
 .fa-invite__when { margin: 0 0 4px; font-size: 16px; font-weight: 800; }
+.fa-invite__hour { margin: 0 0 6px; color: #b4235a; font-size: 18px; font-weight: 800; }
 .fa-invite__where { margin: 0 0 12px; color: var(--fa-muted); font-size: 14px; }
 .fa-invite__text { margin: 0 auto 16px; max-width: 420px; font-size: 14px; line-height: 1.5; white-space: pre-line; }
 .fa-invite__qr { display: inline-flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(11, 20, 55, .08); font-size: 12px; font-weight: 700; }
