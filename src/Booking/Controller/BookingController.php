@@ -92,12 +92,12 @@ final class BookingController extends AbstractController
             'package' => (string) $request->request->get('formule', ''),
         ];
 
-        // Visiteur : on garde sa sélection, il se connecte, puis retrouve la
-        // fiche pré-remplie pour valider.
+        // Visiteur : on garde sa sélection, il se connecte, puis retrouve le
+        // récapitulatif après une nouvelle validation de la sélection.
         $user = $this->getUser();
         if (!$user instanceof User) {
             $request->getSession()->set(self::SESSION_KEY, $draft + ['slug' => $slug]);
-            $this->saveTargetPath($request->getSession(), 'main', $back.'#reserver');
+            $this->saveTargetPath($request->getSession(), 'main', $this->generateUrl('app_booking_resume'));
             $this->addFlash('info', 'Connectez-vous ou créez un compte pour finaliser votre réservation : votre sélection est conservée.');
 
             return $this->redirectToRoute('app_login');
@@ -147,6 +147,39 @@ final class BookingController extends AbstractController
         $this->addFlash('error', $error);
 
         return $this->redirect($back.'#reserver');
+    }
+
+    /** Rejoue la sélection par POST avec le jeton de la session authentifiée. */
+    #[Route(path: ['fr' => '/reservations/reprendre', 'en' => '/en/bookings/resume'], name: 'app_booking_resume', methods: ['GET', 'POST'], priority: 10)]
+    public function resume(Request $request): Response
+    {
+        if ($this->isGranted('ROLE_PROVIDER')) {
+            return $this->redirectToRoute('app_pro_dashboard');
+        }
+        $draft = $request->getSession()->get(self::SESSION_KEY);
+        if (!\is_array($draft) || !isset($draft['slug'])) {
+            $this->addFlash('info', 'Aucune réservation à reprendre. Choisissez une activité pour réserver.');
+
+            return $this->redirectToRoute('app_activities');
+        }
+        if (null === $this->services->findPublishedBySlug($draft['slug'])) {
+            $request->getSession()->remove(self::SESSION_KEY);
+            $this->addFlash('error', 'Cette activité n’est plus disponible. Choisissez une autre activité.');
+
+            return $this->redirectToRoute('app_activities');
+        }
+
+        if ($request->isMethod('POST')) {
+            $request->request->add([
+                'date' => $draft['date'], 'time' => $draft['time'],
+                'adults' => $draft['adults'], 'children' => $draft['children'],
+                'formule' => $draft['package'],
+            ]);
+
+            return $this->create($draft['slug'], $request);
+        }
+
+        return $this->render('booking/resume.html.twig');
     }
 
     #[Route(path: ['fr' => '/reservations/{id}', 'en' => '/en/bookings/{id}'], name: 'app_booking_summary', methods: ['GET'])]

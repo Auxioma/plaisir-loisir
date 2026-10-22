@@ -148,13 +148,13 @@ final class SocialAuthController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        $security->login($user);
+        $response = $security->login($user);
 
         // Le choix de cookies fait avant la connexion est rattaché au compte.
         $this->cookieConsent->linkToUser($request, $user);
 
         $this->addFlash('success', sprintf('Vous êtes connecté avec %s.', $provider->label()));
 
-        return $this->redirectToRoute($this->isGranted('ROLE_ADMIN') ? 'admin' : ($this->isGranted('ROLE_PROVIDER') ? 'app_pro_dashboard' : 'app_account_dashboard'));
+        return $response ?? $this->redirectToRoute($this->isGranted('ROLE_ADMIN') ? 'admin' : ($this->isGranted('ROLE_PROVIDER') ? 'app_pro_dashboard' : 'app_account_dashboard'));
     }
 }

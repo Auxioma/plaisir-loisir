@@ -33,10 +33,29 @@ final class LoginSuccessHandler extends DefaultAuthenticationSuccessHandler
             // s'était connecté le laissait croire à un compte client.
             $targetUrl = $this->urlGenerator->generate('app_pro_dashboard');
         } elseif (!\in_array('ROLE_ADMIN', $token->getRoleNames(), true) && !\in_array('ROLE_PROVIDER', $token->getRoleNames(), true)) {
-            $targetUrl = $this->urlGenerator->generate('app_account_dashboard');
+            if (!self::isBookingTarget($request, $targetUrl)) {
+                $targetUrl = $this->urlGenerator->generate('app_account_dashboard');
+            }
         }
 
         return $this->httpUtils->createRedirectResponse($request, $targetUrl);
+    }
+
+    /** Seul le tunnel local de réservation prime sur le tableau de bord client. */
+    private static function isBookingTarget(Request $request, string $url): bool
+    {
+        if (str_starts_with($url, '//') || str_contains($url, '\\')) {
+            return false;
+        }
+        $parts = parse_url($url);
+        if (false === $parts || isset($parts['user']) || isset($parts['pass'])) {
+            return false;
+        }
+        if (isset($parts['host']) && (!str_starts_with($url, $request->getSchemeAndHttpHost().'/'))) {
+            return false;
+        }
+
+        return 1 === preg_match('#^/(?:reservations|en/bookings)/#', $parts['path'] ?? '');
     }
 
     private static function isProSpace(string $url): bool

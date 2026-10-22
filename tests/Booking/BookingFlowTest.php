@@ -280,6 +280,84 @@ final class BookingFlowTest extends WebTestCase
         self::assertSame('3', $crawler->filter('input[name="adults"]')->attr('value'));
     }
 
+    #[\PHPUnit\Framework\Attributes\DataProvider('authenticationPaths')]
+    public function testVisitorResumesAfterRealLoginAndCannotReplayTheDraft(bool $register): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        [$service, $slot] = $this->serviceWithSlot($em);
+        $initialCount = $em->getRepository(Booking::class)->count(['service' => $service->getId()]);
+        $user = $this->client($em, 'marc.dubois@client.trouvemoi.test');
+        $hasher = static::getContainer()->get(\Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface::class);
+        $user->setPassword($hasher->hashPassword($user, 'ResumePassword123'));
+        $em->flush();
+        $client->request('POST', '/activites/'.$service->getSlug().'/reserver', [
+            'date' => $slot->getStartsAt()->format('Y-m-d'), 'time' => $slot->getStartsAt()->format('H:i'), 'adults' => 3,
+        ]);
+        if ($register) {
+            $email = sprintf('booking-signup-%s@example.com', uniqid());
+            $crawler = $client->request('GET', '/inscription');
+            $client->submit($crawler->selectButton('Créer un compte')->form([
+                'registration_form[fullName]' => 'Alice Réservation',
+                'registration_form[email]' => $email,
+                'registration_form[password]' => 'ResumePassword123',
+                'registration_form[agreeTerms]' => '1',
+            ]));
+            self::assertResponseRedirects('/verification-email');
+            $message = self::getMailerMessage();
+            self::assertNotNull($message);
+            self::assertSame(1, preg_match('/code de vérification est : ([A-Z0-9]{8})/', $message->getTextBody(), $matches));
+            $crawler = $client->followRedirect();
+            $client->request('POST', '/verification-email', [
+                'code' => $matches[1],
+                '_token' => $crawler->filter('input[name="_token"]')->first()->attr('value'),
+            ]);
+            self::assertResponseRedirects('/login');
+        } else {
+            $email = $user->getEmail();
+        }
+        $crawler = $client->followRedirect();
+        $form = $crawler->filterXPath('//form[.//input[@name="_email"]]')->form();
+        $form['_email'] = $email;
+        $form['_password'] = 'ResumePassword123';
+        $client->submit($form);
+        self::assertResponseRedirects('/reservations/reprendre');
+        $crawler = $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        $client->submit($crawler->filter('form[data-controller="booking-resume"]')->form());
+        self::assertResponseRedirects();
+        self::assertMatchesRegularExpression('#/reservations/[0-9A-Z]+$#', $client->getResponse()->headers->get('Location'));
+        $bookingId = basename($client->getResponse()->headers->get('Location'));
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $booking = $em->getRepository(Booking::class)->find($bookingId);
+        self::assertNotNull($booking);
+        self::assertSame(3, $booking->getParticipants());
+        $client->request('POST', '/reservations/reprendre');
+        self::assertResponseRedirects('/activites');
+        self::assertSame($initialCount + 1, $em->getRepository(Booking::class)->count(['service' => $service->getId()]));
+
+        $paymentUrl = '/reservations/'.$booking->getId().'/paiement';
+        $client->getCookieJar()->clear();
+        $client->request('GET', $paymentUrl);
+        self::assertResponseRedirects('http://localhost/login');
+        $crawler = $client->followRedirect();
+        $form = $crawler->filterXPath('//form[.//input[@name="_email"]]')->form();
+        $form['_email'] = $email;
+        $form['_password'] = 'ResumePassword123';
+        $client->submit($form);
+        self::assertResponseRedirects('http://localhost'.$paymentUrl);
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+    }
+
+    public static function authenticationPaths(): iterable
+    {
+        yield 'existing account' => [false];
+        yield 'registration and email verification' => [true];
+    }
+
     public function testAnUnknownTimeIsRefused(): void
     {
         $client = static::createClient();
