@@ -55,6 +55,9 @@ final class ProviderSpaceFlowTest extends WebTestCase
         foreach (self::PAGES as $url) {
             $client->request('GET', $url);
             self::assertResponseIsSuccessful($url);
+            if (\in_array($url, ['/pro/tableau-de-bord', '/en/pro/dashboard'], true)) {
+                self::assertSelectorExists('.tm-header__logo[href="'.(str_starts_with($url, '/en/') ? '/en/pro/dashboard' : '/pro/tableau-de-bord').'"]', $url);
+            }
         }
 
         foreach (['/pro/activites/export', '/pro/reservations/export', '/pro/avis/export', '/pro/revenus/export', '/pro/statistiques/export'] as $url) {
