@@ -1,7 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ['submit'];
+    static targets = ['submit', 'giftDetails', 'giftCode', 'giftMethod'];
     static values = { onlineLabel: String, onsiteLabel: String, giftLabel: String };
 
     connect() {
@@ -10,6 +10,10 @@ export default class extends Controller {
 
     update() {
         const method = this.element.querySelector('input[name="moyen"]:checked')?.value;
+        const usingGift = method === 'gift';
+        this.giftDetailsTarget.hidden = !usingGift;
+        this.giftCodeTarget.required = usingGift;
+        this.giftMethodTarget.setAttribute('aria-expanded', String(usingGift));
         this.submitTarget.textContent = method === 'onsite' ? this.onsiteLabelValue : (method === 'gift' ? this.giftLabelValue : this.onlineLabelValue);
     }
 

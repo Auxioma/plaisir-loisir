@@ -65,12 +65,23 @@
                             <span class="bk-method__logos">{% if m.type == 'stripe' %}{{ icon.pay_visa() }}{{ icon.pay_mastercard() }}{% elseif m.type == 'paypal' %}{{ icon.pay_paypal() }}{% else %}{{ icon.banknote(22) }}{% endif %}</span>
                         </label>
                     {% endfor %}
+                    <label class="bk-method bk-method--gift">
+                        <input type="radio" name="moyen" value="gift" required aria-controls="bk-gift-code-panel" aria-expanded="false" data-booking-checkout-target="giftMethod">
+                        <span class="bk-method__body">
+                            <strong>{{ 'Bon cadeau'|trans }}</strong>
+                            <small>{{ 'Utilisez un bon acheté pour cette activité.'|trans }}</small>
+                        </span>
+                        <span class="bk-method__logos bk-method__gift-icon">{{ icon.gift(22) }}</span>
+                    </label>
                 </fieldset>
-                <label class="bk-gift-code">J’ai un bon cadeau valable pour cette activité
-                    <input type="radio" name="moyen" value="gift">
-                    <input type="text" name="gift_code" maxlength="20" autocomplete="off" placeholder="Code du bon cadeau">
-                    <small>Le bon doit couvrir exactement le montant de la réservation et être encore valide.</small>
-                </label>
+                <div class="bk-gift-entry" id="bk-gift-code-panel" hidden data-booking-checkout-target="giftDetails">
+                    <label class="bk-gift-entry__label" for="gift_code">{{ 'Code du bon cadeau'|trans }}</label>
+                    <div class="bk-gift-entry__field">
+                        <span class="bk-gift-entry__icon" aria-hidden="true">{{ icon.gift(18) }}</span>
+                        <input id="gift_code" type="text" name="gift_code" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="{{ 'Ex. : TM-AB12CD'|trans }}" data-booking-checkout-target="giftCode">
+                    </div>
+                    <p class="bk-gift-entry__help">{{ 'Le bon doit être valide, non utilisé, prévu pour cette activité et couvrir le total de %amount%.'|trans({'%amount%': amount}) }}</p>
+                </div>
                 <dl class="bk-total"><dt>{{ 'Total'|trans }}</dt><dd>{{ amount }}</dd></dl>
                 <button type="submit" class="pf-btn pf-btn--primary pf-btn--block bk-checkout__submit" data-booking-checkout-target="submit">{{ 'Valider ma réservation'|trans }}</button>
             </form>
