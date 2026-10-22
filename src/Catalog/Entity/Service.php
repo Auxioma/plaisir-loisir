@@ -191,7 +191,7 @@ class Service
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $programme = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $meetingPoint = null;
 
     #[ORM\Column(enumType: OpeningPeriod::class, nullable: true)]
