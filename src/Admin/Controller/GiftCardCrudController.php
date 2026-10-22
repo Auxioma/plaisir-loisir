@@ -54,7 +54,7 @@ class GiftCardCrudController extends AbstractCrudController
         yield TextField::new('code', 'Code')->setFormTypeOption('disabled', true);
         yield TextField::new('label', 'Bon')->setFormTypeOption('disabled', true);
         yield MoneyField::new('amount', 'Montant')->setCurrency('EUR')->setStoredAsCents(false)->setFormTypeOption('disabled', true);
-        yield ChoiceField::new('status', 'Statut')->setChoices(['En attente de paiement' => GiftCard::STATUS_PENDING, 'Payé' => GiftCard::STATUS_PAID, 'Utilisé' => GiftCard::STATUS_REDEEMED, 'Annulé' => GiftCard::STATUS_CANCELLED]);
+        yield ChoiceField::new('status', 'Statut')->setChoices(['En attente de paiement' => GiftCard::STATUS_PENDING, 'Payé' => GiftCard::STATUS_PAID, 'Utilisé' => GiftCard::STATUS_REDEEMED, 'Annulé' => GiftCard::STATUS_CANCELLED])->setFormTypeOption('disabled', true);
         yield ChoiceField::new('delivery', 'Envoi')->setChoices(['E-mail' => GiftCard::DELIVERY_EMAIL, 'À imprimer' => GiftCard::DELIVERY_PRINT, 'Postal' => GiftCard::DELIVERY_POSTAL])->setFormTypeOption('disabled', true);
         yield TextField::new('buyerName', 'Acheteur')->setFormTypeOption('disabled', true);
         yield EmailField::new('buyerEmail', 'E-mail acheteur')->hideOnIndex()->setFormTypeOption('disabled', true);

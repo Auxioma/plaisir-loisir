@@ -10,6 +10,7 @@ use App\Catalog\Repository\GiftCardRepository;
 use App\Notification\Message\SendNotificationEmail;
 use App\Payment\Stripe\CheckoutGateway;
 use App\User\Entity\User;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutowireServiceClosure;
@@ -22,8 +23,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  * par e-mail est choisi — au bénéficiaire.
  *
  * Paiement encaissé par TrouveMoi (le bon est vendu par la plateforme). Avec une clé
- * Stripe, page de paiement hébergée et confirmation par le webhook ; sans
+ * Stripe, page de paiement hébergée et confirmation par le webhook ou au retour ; sans
  * clé (développement, démo), le paiement est simulé et réglé aussitôt.
+ * Sans clé en production, l’achat est refusé.
  */
 final class GiftCardService
 {
@@ -44,6 +46,8 @@ final class GiftCardService
         private readonly \Closure $gateway,
         #[Autowire('%env(STRIPE_SECRET_KEY)%')]
         private readonly string $stripeSecretKey,
+        #[Autowire('%kernel.environment%')]
+        private readonly string $environment = 'dev',
     ) {
     }
 
@@ -151,6 +155,9 @@ final class GiftCardService
         $confirmation = $this->urls->generate('app_gifts_confirmation', ['id' => (string) $card->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         if (!str_starts_with($this->stripeSecretKey, 'sk_')) {
+            if ('prod' === $this->environment) {
+                throw new \RuntimeException('Le paiement des bons cadeaux n’est pas configuré.');
+            }
             $this->markPaid($card);
 
             return $confirmation;
@@ -177,35 +184,81 @@ final class GiftCardService
         if (null === $card) {
             return false;
         }
-        if (!$card->isPaid()) {
-            $this->markPaid($card);
-        }
+        $this->synchronize($card);
 
         return true;
     }
 
+    /** Même vérification au retour navigateur et au webhook, sans faire confiance à l'URL. */
+    public function synchronize(GiftCard $card): void
+    {
+        if (GiftCard::STATUS_CANCELLED === $card->getStatus()) {
+            return;
+        }
+        if (!$card->isPaid() || null === $card->getPaidAt()) {
+            if (null === $card->getCheckoutReference() || !($this->gateway)()->isCheckoutPaid(
+                $card->getCheckoutReference(),
+                (int) round((float) $card->getAmount() * 100),
+                $card->getCurrency(),
+                'gift-'.$card->getId(),
+            )) {
+                return;
+            }
+            $this->markPaid($card);
+
+            return;
+        }
+        $this->sendEmails($card);
+    }
+
     private function markPaid(GiftCard $card): void
     {
-        $card->markPaid(new \DateTimeImmutable());
-        $this->entityManager->flush();
+        $this->entityManager->wrapInTransaction(function () use ($card): void {
+            $this->entityManager->refresh($card, LockMode::PESSIMISTIC_WRITE);
+            if (GiftCard::STATUS_CANCELLED === $card->getStatus()) {
+                return;
+            }
+            if (!$card->isPaid() || null === $card->getPaidAt()) {
+                $card->markPaid(new \DateTimeImmutable());
+            }
+        });
+        if ($card->isPaid()) {
+            $this->sendEmails($card);
+        }
+    }
 
+    private function sendEmails(GiftCard $card): void
+    {
         $amount = number_format((float) $card->getAmount(), 2, ',', ' ').' €';
         $until = $card->getExpiresAt()?->format('d/m/Y') ?? '';
         $link = $this->urls->generate('app_gifts_confirmation', ['id' => (string) $card->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $this->bus->dispatch(new SendNotificationEmail(
+        $this->sendOnce($card, false, new SendNotificationEmail(
             $card->getBuyerEmail(),
             sprintf('Votre bon cadeau %s est prêt', $card->getCode()),
             sprintf("Bonjour %s,\n\nMerci pour votre achat ! Votre bon cadeau « %s » d'une valeur de %s pour %s est prêt.\n\nCode : %s\nValable jusqu'au %s\n\nRetrouvez-le (et imprimez-le) ici : %s\n\nL'équipe TrouveMoi", $card->getBuyerName(), $card->getLabel(), $amount, $card->getRecipientName(), $card->getCode(), $until, $link),
         ));
 
         if (GiftCard::DELIVERY_EMAIL === $card->getDelivery() && null !== $card->getRecipientEmail()) {
-            $this->bus->dispatch(new SendNotificationEmail(
+            $this->sendOnce($card, true, new SendNotificationEmail(
                 $card->getRecipientEmail(),
                 sprintf('%s vous offre un bon cadeau TrouveMoi', $card->getBuyerName()),
-                sprintf("Bonjour %s,\n\n%s vous offre un bon cadeau « %s » d'une valeur de %s.%s\n\nVotre code : %s\nValable jusqu'au %s, partout en France.\n\nChoisissez votre activité sur %s\n\nL'équipe TrouveMoi", $card->getRecipientName(), $card->getBuyerName(), $card->getLabel(), $amount, null !== $card->getMessage() ? "\n\nSon message : « ".$card->getMessage().' »' : '', $card->getCode(), $until, $this->urls->generate('app_activities', [], UrlGeneratorInterface::ABSOLUTE_URL)),
+                sprintf("Bonjour %s,\n\n%s vous offre un bon cadeau « %s » d'une valeur de %s.%s\n\nVotre code : %s\nValable jusqu'au %s.\n\nRetrouvez votre bon et téléchargez-le en PDF ici : %s\n\nL'équipe TrouveMoi", $card->getRecipientName(), $card->getBuyerName(), $card->getLabel(), $amount, null !== $card->getMessage() ? "\n\nSon message : « ".$card->getMessage().' »' : '', $card->getCode(), $until, $link),
             ));
         }
+    }
+
+    /** Une panne d'envoi reste réessayable, sans renvoyer l'autre e-mail déjà transmis. */
+    private function sendOnce(GiftCard $card, bool $recipient, SendNotificationEmail $message): void
+    {
+        $this->entityManager->wrapInTransaction(function () use ($card, $recipient, $message): void {
+            $this->entityManager->refresh($card, LockMode::PESSIMISTIC_WRITE);
+            if (null !== ($recipient ? $card->getRecipientEmailSentAt() : $card->getBuyerEmailSentAt())) {
+                return;
+            }
+            $this->bus->dispatch($message);
+            $card->recordEmailSent($recipient);
+        });
     }
 
     private function newCode(): string
