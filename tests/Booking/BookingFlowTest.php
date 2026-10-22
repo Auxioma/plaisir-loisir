@@ -54,20 +54,20 @@ final class BookingFlowTest extends WebTestCase
         ]);
         self::assertResponseRedirects();
         $client->followRedirect();
-        self::assertSelectorTextContains('h1', 'Récapitulatif');
-        self::assertSelectorTextContains('.bk-pay', 'Procéder au paiement');
+        self::assertSelectorTextContains('h1', 'Finaliser ma réservation');
+        self::assertSelectorExists('.bk-pay form[method="post"][action$="/payer"]');
+        self::assertSelectorNotExists('.bk-progress');
         $booking = $this->lastBooking($em, $user, $service);
         self::assertSame($before + 3, $em->getRepository(Availability::class)->find($slot->getId())->getBooked());
 
-        // Étape 3 : les moyens acceptés par le professionnel.
-        $client->request('GET', '/reservations/'.$booking->getId().'/paiement');
+        // La page affichée après « Réserver » contient directement les moyens acceptés.
         self::assertSelectorExists('input[name="moyen"][value="stripe"]');
         self::assertSelectorExists('input[name="moyen"][value="paypal"]');
         self::assertSelectorExists('input[name="moyen"][value="onsite"]');
 
-        // Étape 4 : validation, puis départ vers Stripe (simulé : retour direct).
-        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=stripe');
-        self::assertSelectorTextContains('.bk-info', 'Stripe');
+        // Un seul formulaire après « Réserver », puis départ direct vers Stripe.
+        $crawler = $client->getCrawler();
+        self::assertSelectorTextContains('.bk-methods', 'Stripe');
         $client->submit($crawler->filter('form[action$="/payer"]')->form());
         self::assertResponseRedirects();
         self::assertStringContainsString('/paiement/retour?session_id=mock_cs_', (string) $client->getResponse()->headers->get('Location'));
@@ -144,7 +144,7 @@ final class BookingFlowTest extends WebTestCase
         $client->loginUser($user);
         $booking = $this->book($client, $em, $user, $service, $slot);
 
-        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=paypal');
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement?moyen=paypal');
         $client->submit($crawler->filter('form[action$="/payer"]')->form());
         self::assertResponseRedirects();
         $location = (string) $client->getResponse()->headers->get('Location');
@@ -177,8 +177,8 @@ final class BookingFlowTest extends WebTestCase
         $client->loginUser($user);
         $booking = $this->book($client, $em, $user, $service, $slot);
 
-        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=onsite');
-        self::assertSelectorTextContains('.bk-info', 'sur place');
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement?moyen=onsite');
+        self::assertSelectorTextContains('.bk-methods', 'sur place');
         $client->submit($crawler->filter('form[action$="/payer"]')->form());
         self::assertResponseRedirects('/reservations/'.$booking->getId().'/confirmation');
         $client->followRedirect();
@@ -228,13 +228,13 @@ final class BookingFlowTest extends WebTestCase
         $booking = $this->book($client, $em, $user, $service, $slot);
 
         // Départ vers PayPal sans retour : rien n'est débité.
-        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=paypal');
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement?moyen=paypal');
         $client->submit($crawler->filter('form[action$="/payer"]')->form());
         $client->request('GET', '/reservations/'.$booking->getId().'/paiement/annule?moyen=paypal');
         self::assertResponseRedirects('/reservations/'.$booking->getId().'/paiement?moyen=paypal');
 
         $crawler = $client->request('GET', '/reservations/'.$booking->getId());
-        self::assertSelectorTextContains('h1', 'Récapitulatif');
+        self::assertSelectorTextContains('h1', 'Finaliser ma réservation');
         $client->submit($crawler->filter('form[action$="/annuler"]')->form());
 
         $em->clear();
@@ -255,7 +255,7 @@ final class BookingFlowTest extends WebTestCase
         $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=bitcoin');
         self::assertResponseRedirects('/reservations/'.$booking->getId().'/paiement');
 
-        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=stripe');
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement?moyen=stripe');
         $client->request('POST', '/reservations/'.$booking->getId().'/payer', [
             '_token' => (string) $crawler->filter('form[action$="/payer"] input[name="_token"]')->attr('value'),
             'moyen' => 'transfer',
@@ -263,6 +263,50 @@ final class BookingFlowTest extends WebTestCase
         self::assertResponseRedirects('/reservations/'.$booking->getId().'/paiement');
         $em->clear();
         self::assertNull($em->getRepository(Payment::class)->findOneBy(['booking' => $booking->getId()]));
+    }
+
+    public function testCheckoutOnlyDisplaysMethodsStillAcceptedByTheProvider(): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        [$service, $slot] = $this->serviceWithSlot($em);
+        $user = $this->client($em, 'julie.martin@client.trouvemoi.test');
+        $client->loginUser($user);
+        $booking = $this->book($client, $em, $user, $service, $slot);
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $providerId = $service->getProvider()->getId();
+        $provider = $em->find(\App\Provider\Entity\ProviderProfile::class, $providerId);
+        $paypal = $provider->acceptsPaypal();
+        $cash = $provider->acceptsCash();
+        $provider->setAcceptsPaypal(false)->setAcceptsCash(false);
+        $em->flush();
+        try {
+            $client->request('GET', '/reservations/'.$booking->getId().'?moyen=paypal');
+            self::assertResponseIsSuccessful();
+            self::assertSelectorExists('input[name="moyen"][value="stripe"]:checked');
+            self::assertSelectorNotExists('input[name="moyen"][value="paypal"]');
+            self::assertSelectorNotExists('input[name="moyen"][value="onsite"]');
+        } finally {
+            $em = static::getContainer()->get(EntityManagerInterface::class);
+            $provider = $em->find(\App\Provider\Entity\ProviderProfile::class, $providerId);
+            $provider->setAcceptsPaypal($paypal)->setAcceptsCash($cash);
+            $em->flush();
+        }
+    }
+
+    public function testOldReviewLinksReturnToTheSingleCheckoutWithTheSelectedMethod(): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        [$service, $slot] = $this->serviceWithSlot($em);
+        $user = $this->client($em, 'julie.martin@client.trouvemoi.test');
+        $client->loginUser($user);
+        $booking = $this->book($client, $em, $user, $service, $slot);
+        $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=paypal');
+        self::assertResponseRedirects('/reservations/'.$booking->getId().'/paiement?moyen=paypal');
+        $client->followRedirect();
+        self::assertSelectorExists('form[action$="/payer"] input[value="paypal"]:checked');
+        self::assertSelectorNotExists('form[action*="/validation"]');
     }
 
     public function testAVisitorIsSentToLoginWithHisSelectionKept(): void

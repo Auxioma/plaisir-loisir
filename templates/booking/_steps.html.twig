@@ -1,13 +1,1 @@
-{#
-    Étapes du tunnel (maquette « Parcours du client — Paiement d'une
-    réservation », 20/10). Variable : current (1 à 5).
-#}
-{% set steps = ['Choix de l’activité', 'Récapitulatif de la réservation', 'Choix du moyen de paiement', 'Validation du paiement', 'Paiement confirmé'] %}
-<ol class="bk-progress" aria-label="{{ 'Étapes'|trans }}">
-    {% for label in steps %}
-        <li class="{{ loop.index < current ? 'is-done' : (loop.index == current ? 'is-current' : '') }}"{% if loop.index == current %} aria-current="step"{% endif %}>
-            <span class="bk-progress__num">{{ loop.index }}</span>
-            <span class="bk-progress__label">{{ label|trans }}</span>
-        </li>
-    {% endfor %}
-</ol>
+{# Le récapitulatif et le paiement sont réunis : aucune étape intermédiaire. #}
