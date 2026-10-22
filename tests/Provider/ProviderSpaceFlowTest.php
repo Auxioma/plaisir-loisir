@@ -101,7 +101,7 @@ final class ProviderSpaceFlowTest extends WebTestCase
         self::assertSelectorExists('.ew-error');
 
         $this->step($client, 1, ['title' => $title, 'category' => $category->getSlug(), 'activity_type' => 'supervised', 'level' => 'beginner', 'languages' => ['Français', 'Anglais'], 'subtitle' => 'Une accroche de test assez longue.']);
-        $meetingPoint = str_repeat('Instructions détaillées pour rejoindre le point de rendez-vous. ', 8);
+        $meetingPoint = str_repeat('Instructions détaillées pour rejoindre le point de rendez-vous. ', 5);
         $this->step($client, 2, ['address' => '12 rue de la République, Lyon', 'city' => 'Lyon', 'postal_code' => '69002', 'lat' => '45.76', 'lng' => '4.83', 'meeting_point' => $meetingPoint, 'opening_period' => 'all_year']);
 
         // Étape 3 : la photo principale est obligatoire.

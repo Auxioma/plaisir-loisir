@@ -8,7 +8,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * Le point de rendez-vous accepte jusqu'à 2 000 caractères dans l'assistant.
+ * Le point de rendez-vous accepte jusqu'à 500 caractères dans l'assistant.
  */
 final class Version20261022200000 extends AbstractMigration
 {
