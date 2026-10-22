@@ -36,7 +36,7 @@
         </nav>
 
         <h1 class="pf-title">{{ "C'est le moment de se lancer !"|trans }}</h1>
-        <p class="pf-lead">{{ "Commencez par nous parler un peu de vous. Après avoir envoyé ce formulaire, vous serez recontacté par un membre de l'équipe TrouveMoi Plaisirs & Loisirs"|trans }}</p>
+        <p class="pf-lead">{{ "Cette demande concerne un partenariat de visibilité pour un site ou une entreprise. Pour proposer vos activités à la réservation, créez plutôt un compte professionnel."|trans }} <a href="{{ path('app_auth_choice') }}">{{ 'Créer un compte'|trans }}</a></p>
 
         {# data-turbo="false" : réponse 200 (pas de redirection) sur erreur, pour
            réafficher le formulaire avec ses erreurs — voir security/register.html.twig
@@ -78,6 +78,7 @@
                     <span class="pf-input pf-input--select">
                         <select class="pf-input__control" id="pf-secteur" name="secteur" required>
                             <option value="" selected>{{ "Sélectionnez un secteur d'activité"|trans }}</option>
+                            {% for sector in sectors %}<option value="{{ sector }}"{{ app.request.request.get('secteur') == sector ? ' selected' }}>{{ sector|trans }}</option>{% endfor %}
                         </select>
                         <span class="pf-input__chevron">{{ icon.chevron_down(16) }}</span>
                     </span>
@@ -88,6 +89,7 @@
                     <span class="pf-input pf-input--select">
                         <select class="pf-input__control" id="pf-trafic" name="trafic" required>
                             <option value="" selected>{{ 'Sélectionnez une valeur'|trans }}</option>
+                            {% for traffic in traffic_ranges %}<option value="{{ traffic }}"{{ app.request.request.get('trafic') == traffic ? ' selected' }}>{{ traffic|trans }}</option>{% endfor %}
                         </select>
                         <span class="pf-input__chevron">{{ icon.chevron_down(16) }}</span>
                     </span>

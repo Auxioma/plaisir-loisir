@@ -37,7 +37,7 @@ final class SupportChatController extends AbstractController
     ) {
     }
 
-    #[Route(path: ['fr' => '/aide/chat', 'en' => '/en/help/chat'], name: 'app_support_chat', methods: ['GET', 'POST'])]
+    #[Route(path: ['fr' => '/aide/chat', 'en' => '/en/help/chat'], name: 'app_support_chat', methods: ['POST'])]
     public function start(Request $request): Response
     {
         $user = $this->getUser();
@@ -75,8 +75,8 @@ final class SupportChatController extends AbstractController
 
         return $this->render('account/support.html.twig', [
             'user' => $this->identity->identityFor($user),
-            'menu' => StaticAccount::menu(),
-            'active' => '',
+            'menu' => $this->menu($user),
+            'active' => 'Support',
             'tickets' => $this->tickets->findForAuthor($user),
         ]);
     }
@@ -106,8 +106,8 @@ final class SupportChatController extends AbstractController
 
         return $this->render('account/support_ticket.html.twig', [
             'user' => $this->identity->identityFor($user),
-            'menu' => StaticAccount::menu(),
-            'active' => '',
+            'menu' => $this->menu($user),
+            'active' => 'Support',
             'ticket' => $ticket,
         ]);
     }
@@ -120,5 +120,11 @@ final class SupportChatController extends AbstractController
         }
 
         return $user;
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function menu(User $user): array
+    {
+        return in_array('ROLE_PROVIDER', $user->getRoles(), true) ? StaticAccount::providerMenu() : StaticAccount::menu();
     }
 }

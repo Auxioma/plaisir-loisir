@@ -76,6 +76,7 @@ final class StaticAccount
             ['icon' => 'person', 'title' => 'Informations personnelles', 'subtitle' => 'Identité et profil public', 'route' => 'app_account_profile', 'badge' => false, 'section' => 'Mon compte'],
             ['icon' => 'wallet', 'title' => 'Paiements', 'subtitle' => 'Moyens de paiement et factures', 'route' => 'app_account_payments', 'badge' => false],
             ['icon' => 'users', 'title' => 'Parrainage', 'subtitle' => 'Invitez vos amis', 'route' => 'app_account_referral', 'badge' => false],
+            ['icon' => 'hand_heart', 'title' => 'Support', 'subtitle' => 'Mes demandes et échanges', 'route' => 'app_account_support', 'badge' => false],
             ['icon' => 'gear', 'title' => 'Paramètres du compte', 'subtitle' => 'Mot de passe, suppression', 'route' => 'app_account_settings', 'badge' => false],
             ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Se déconnecter', 'route' => 'app_account_logout_confirm', 'badge' => false, 'section' => ''],
         ];
