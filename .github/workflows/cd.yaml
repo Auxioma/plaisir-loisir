@@ -106,6 +106,7 @@ jobs:
               php bin/console doctrine:migrations:version --add --all --no-interaction
             fi
             $PHP bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+            $PHP bin/console app:i18n:import --no-interaction
             $PHP bin/console importmap:install --no-interaction
             $PHP bin/console asset-map:compile
             $PHP bin/console cache:clear --no-interaction
