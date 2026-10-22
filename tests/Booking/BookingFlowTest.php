@@ -103,6 +103,8 @@ final class BookingFlowTest extends WebTestCase
         self::assertSelectorExists('input[name="moyen"][value="stripe"]');
         self::assertSelectorExists('input[name="moyen"][value="paypal"]');
         self::assertSelectorExists('input[name="moyen"][value="onsite"]');
+        self::assertSelectorExists('label.bk-method--gift input[name="moyen"][value="gift"]');
+        self::assertSelectorExists('.bk-gift-entry[hidden] input[name="gift_code"]');
 
         // Un seul formulaire après « Réserver », puis départ direct vers Stripe.
         $crawler = $client->getCrawler();

@@ -292,6 +292,16 @@ textarea.rg-input { resize: vertical; }
 .bk-method__body strong { color: var(--tm-ink); font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
 .bk-method__body small { color: var(--tm-ink-3); font-size: 12px; line-height: 1.5; }
 .bk-checkout .bk-method__logos { flex: none; flex-wrap: wrap; justify-content: flex-end; max-width: 80px; }
+.bk-checkout .bk-method--gift { margin-top: 2px; }
+.bk-checkout .bk-method--gift:has(input:checked) .bk-method__gift-icon { color: var(--tm-pro); }
+.bk-gift-entry { margin-top: -2px; padding: 18px; border: 1px solid var(--pf-line); border-radius: 12px; background: var(--tm-pro-panel); }
+.bk-gift-entry__label { display: block; margin-bottom: 9px; color: var(--tm-ink); font-size: 13px; font-weight: 700; }
+.bk-gift-entry__field { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; border: 1px solid var(--pf-line); border-radius: 9px; background: var(--pl-white); transition: border-color .15s ease, box-shadow .15s ease; }
+.bk-gift-entry__field:focus-within { border-color: var(--tm-pro); box-shadow: 0 0 0 3px var(--tm-pro-panel); }
+.bk-gift-entry__icon { display: inline-flex; flex: none; color: var(--tm-pro); }
+.bk-gift-entry__field input { flex: 1; width: 100%; min-width: 0; min-height: 44px; padding: 8px 0; border: 0; outline: 0; background: transparent; color: var(--tm-ink); font: inherit; font-size: 14px; letter-spacing: .035em; }
+.bk-gift-entry__field input::placeholder { color: var(--tm-ink-3); opacity: .8; letter-spacing: 0; }
+.bk-gift-entry__help { display: flex; align-items: flex-start; gap: 7px; margin: 10px 0 0; color: var(--tm-ink-3); font-size: 12px; line-height: 1.55; }
 .bk-checkout .bk-total { gap: 16px; margin: 14px 0 8px; padding-block: 20px; border-color: var(--pf-line); }
 .bk-checkout .bk-total dd { font-size: 28px; white-space: nowrap; }
 .bk-checkout__submit { height: auto; min-height: 52px; padding: 14px 18px; white-space: normal; text-align: center; }
@@ -306,5 +316,6 @@ textarea.rg-input { resize: vertical; }
     .bk-checkout .pf-card { padding: 20px 16px; }
     .bk-checkout .bk-method { padding: 12px; gap: 10px; }
     .bk-checkout .bk-method__logos { max-width: 44px; }
+    .bk-gift-entry { padding: 14px; }
     .bk-checkout .bk-recap h2 { font-size: 20px; }
 }
