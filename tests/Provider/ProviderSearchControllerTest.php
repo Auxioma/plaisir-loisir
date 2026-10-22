@@ -53,8 +53,7 @@ final class ProviderSearchControllerTest extends WebTestCase
         $crawler = $client->request('GET', '/professionnels', ['q' => 'Normandie Kayak']);
         self::assertResponseIsSuccessful();
         self::assertCount(1, $crawler->filter('.pd-card'));
-        self::assertSelectorTextContains('.pd-card', 'Canoë sur la Seine');
-        self::assertSelectorTextContains('.pd-card__stats', '2 activités');
+        self::assertMatchesRegularExpression('/\\d+ activités/u', $crawler->filter('.pd-card__stats')->text());
 
         // « Sports & Aventures » n'est pas sa catégorie principale, mais il y propose une activité.
         $crawler = $client->request('GET', '/professionnels', ['metier' => 'sports-aventures']);

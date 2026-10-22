@@ -56,7 +56,7 @@ final class LocalizedRoutingTest extends WebTestCase
             '/en/events/groups/create/1',
             '/en/events/groups/create/success',
             '/en/gift-cards',
-            '/en/gift-cards/buy',
+            '/en/gift-cards/buy?activite=descente-en-canoe',
             '/en/deals',
             '/en/explore',
             '/en/about-us',
