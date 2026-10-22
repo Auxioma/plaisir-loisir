@@ -11,8 +11,10 @@ use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Repository\GiftCardRepository;
 use App\Catalog\Repository\ServiceRepository;
+use App\Catalog\Service\GiftCardPdfRenderer;
 use App\Catalog\Service\GiftCardService;
 use App\User\Entity\User;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -171,16 +173,36 @@ final class GiftController extends AbstractController
 
     /** Le lien (ULID, non devinable) est celui envoyé par e-mail à l'acheteur. */
     #[Route(path: ['fr' => '/cadeaux/bon/{id}', 'en' => '/en/gift-cards/card/{id}'], name: 'app_gifts_confirmation', requirements: ['id' => '[0-9A-HJKMNP-TV-Z]{26}'])]
-    public function confirmation(string $id, GiftCardRepository $cards): Response
+    public function confirmation(string $id, GiftCardRepository $cards, LoggerInterface $logger): Response
     {
         $card = $cards->find($id);
         if (null === $card) {
             throw $this->createNotFoundException();
         }
 
+        $verificationError = false;
+        try {
+            $this->giftCards->synchronize($card);
+        } catch (\Throwable $e) {
+            $verificationError = true;
+            $logger->error('Vérification ou envoi du bon cadeau impossible.', ['gift_id' => $id, 'exception' => $e]);
+        }
+
         return $this->render('gift/confirmation.html.twig', [
             'card' => $card,
+            'verification_error' => $verificationError,
             'activity' => null !== $card->getService() ? $this->presenter->card($card->getService()) : null,
         ]);
+    }
+
+    #[Route(path: ['fr' => '/cadeaux/bon/{id}/pdf', 'en' => '/en/gift-cards/card/{id}/pdf'], name: 'app_gifts_pdf', requirements: ['id' => '[0-9A-HJKMNP-TV-Z]{26}'], methods: ['GET'])]
+    public function pdf(string $id, GiftCardRepository $cards, GiftCardPdfRenderer $pdf): Response
+    {
+        $card = $cards->find($id);
+        if (null === $card || !$card->isPaid() || null === $card->getPaidAt()) {
+            throw $this->createNotFoundException('Bon cadeau indisponible.');
+        }
+
+        return $pdf->response($card);
     }
 }
