@@ -29,7 +29,8 @@
                     <h2 class="pg-h3">1. {{ 'Le bon cadeau'|trans }}</h2>
                     {% if activity %}
                         <label class="gc-field{{ errors.people is defined ? ' is-invalid' }}">{{ 'Nombre de personnes'|trans }} *
-                            <select name="people" required data-gc-people>{% for n in 1..limits.people %}<option value="{{ n }}"{{ data.people == n ? ' selected' }}>{{ n }}</option>{% endfor %}</select>
+                            <input type="number" name="people" value="{{ data.people }}" min="1" max="{{ limits.people }}" step="1" inputmode="numeric" required data-gc-people aria-describedby="gc-people-help">
+                            <small id="gc-people-help">{{ 'Saisissez le nombre souhaité, jusqu’à'|trans }} {{ limits.people }} {{ 'personnes.'|trans }}</small>
                             {{ _self.err(errors, 'people') }}</label>
                     {% endif %}
                 </section>

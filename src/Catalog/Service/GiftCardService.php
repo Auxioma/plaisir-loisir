@@ -39,7 +39,7 @@ final class GiftCardService
 {
     public const MIN_AMOUNT = 10;
     public const MAX_AMOUNT = 1000;
-    public const MAX_PEOPLE = 10;
+    public const MAX_PEOPLE = 1000;
     public const DELIVERIES = [GiftCard::DELIVERY_EMAIL => 'Envoi instantané (email)', GiftCard::DELIVERY_PRINT => 'À imprimer', GiftCard::DELIVERY_POSTAL => 'Envoi postal'];
 
     /**
@@ -96,7 +96,7 @@ final class GiftCardService
         } else {
             $people = $data['people'] ?? '';
             if (!ctype_digit($people) || (int) $people < 1 || (int) $people > self::MAX_PEOPLE) {
-                $errors['people'] = sprintf('Choisissez entre 1 et %d personnes.', self::MAX_PEOPLE);
+                $errors['people'] = sprintf('Saisissez un nombre de personnes compris entre 1 et %d.', self::MAX_PEOPLE);
             }
         }
         if (mb_strlen(trim($data['recipient_name'] ?? '')) < 2) {
