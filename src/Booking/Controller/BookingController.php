@@ -35,8 +35,8 @@ use Symfony\Component\Uid\Ulid;
 /**
  * Tunnel de réservation d'une activité (03/10, refait le 20/10 selon la
  * maquette « Parcours du client — Paiement d'une réservation ») : panneau de
- * la fiche (date, heure, voyageurs) → récapitulatif → choix du moyen de
- * paiement → validation → paiement confirmé.
+ * la fiche (date, heure, voyageurs) → récapitulatif et paiement sur une
+ * page unique → Stripe / PayPal ou demande sur place → confirmation.
  *
  * Le client paie DIRECTEMENT le professionnel (17/10) : par carte sur le
  * compte Stripe du professionnel, par PayPal sur son compte PayPal (la
@@ -92,12 +92,12 @@ final class BookingController extends AbstractController
             'package' => (string) $request->request->get('formule', ''),
         ];
 
-        // Visiteur : on garde sa sélection, il se connecte, puis retrouve la
-        // fiche pré-remplie pour valider.
+        // Visiteur : on garde sa sélection, il se connecte, puis retrouve le
+        // récapitulatif après une nouvelle validation de la sélection.
         $user = $this->getUser();
         if (!$user instanceof User) {
             $request->getSession()->set(self::SESSION_KEY, $draft + ['slug' => $slug]);
-            $this->saveTargetPath($request->getSession(), 'main', $back.'#reserver');
+            $this->saveTargetPath($request->getSession(), 'main', $this->generateUrl('app_booking_resume'));
             $this->addFlash('info', 'Connectez-vous ou créez un compte pour finaliser votre réservation : votre sélection est conservée.');
 
             return $this->redirectToRoute('app_login');
@@ -149,18 +149,51 @@ final class BookingController extends AbstractController
         return $this->redirect($back.'#reserver');
     }
 
+    /** Rejoue la sélection par POST avec le jeton de la session authentifiée. */
+    #[Route(path: ['fr' => '/reservations/reprendre', 'en' => '/en/bookings/resume'], name: 'app_booking_resume', methods: ['GET', 'POST'], priority: 10)]
+    public function resume(Request $request): Response
+    {
+        if ($this->isGranted('ROLE_PROVIDER')) {
+            return $this->redirectToRoute('app_pro_dashboard');
+        }
+        $draft = $request->getSession()->get(self::SESSION_KEY);
+        if (!\is_array($draft) || !isset($draft['slug'])) {
+            $this->addFlash('info', 'Aucune réservation à reprendre. Choisissez une activité pour réserver.');
+
+            return $this->redirectToRoute('app_activities');
+        }
+        if (null === $this->services->findPublishedBySlug($draft['slug'])) {
+            $request->getSession()->remove(self::SESSION_KEY);
+            $this->addFlash('error', 'Cette activité n’est plus disponible. Choisissez une autre activité.');
+
+            return $this->redirectToRoute('app_activities');
+        }
+
+        if ($request->isMethod('POST')) {
+            $request->request->add([
+                'date' => $draft['date'], 'time' => $draft['time'],
+                'adults' => $draft['adults'], 'children' => $draft['children'],
+                'formule' => $draft['package'],
+            ]);
+
+            return $this->create($draft['slug'], $request);
+        }
+
+        return $this->render('booking/resume.html.twig');
+    }
+
     #[Route(path: ['fr' => '/reservations/{id}', 'en' => '/en/bookings/{id}'], name: 'app_booking_summary', methods: ['GET'])]
-    public function summary(string $id): Response
+    public function summary(string $id, Request $request): Response
     {
         $booking = $this->own($id);
         if ($this->settled($booking)) {
             return $this->redirectToRoute('app_booking_confirmation', ['id' => $id]);
         }
 
-        return $this->render('booking/summary.html.twig', $this->bookingView($booking));
+        return $this->checkoutPage($booking, $request);
     }
 
-    /** Étape 3 de la maquette : choix du moyen de paiement. */
+    /** Accès direct à la page unique de réservation et paiement. */
     #[Route(path: ['fr' => '/reservations/{id}/paiement', 'en' => '/en/bookings/{id}/payment'], name: 'app_booking_payment', methods: ['GET'])]
     public function payment(string $id, Request $request): Response
     {
@@ -169,15 +202,10 @@ final class BookingController extends AbstractController
             return $this->redirectToRoute('app_booking_confirmation', ['id' => $id]);
         }
 
-        $view = $this->bookingView($booking);
-        $selected = $request->query->getString('moyen');
-
-        return $this->render('booking/payment.html.twig', $view + [
-            'selected' => '' !== $selected ? $selected : (string) (array_key_first($view['payment_methods']) ?? ProviderPaymentMethods::ONSITE),
-        ]);
+        return $this->checkoutPage($booking, $request);
     }
 
-    /** Étape 4 : validation du moyen choisi, avant le départ vers Stripe / PayPal. */
+    /** Ancien écran de validation : rejoint la page unique sans étape supplémentaire. */
     #[Route(path: ['fr' => '/reservations/{id}/paiement/validation', 'en' => '/en/bookings/{id}/payment/review'], name: 'app_booking_payment_review', methods: ['GET'])]
     public function review(string $id, Request $request): Response
     {
@@ -194,7 +222,7 @@ final class BookingController extends AbstractController
             return $this->redirectToRoute('app_booking_payment', ['id' => $id]);
         }
 
-        return $this->render('booking/review.html.twig', $view + ['method' => $method]);
+        return $this->redirectToRoute('app_booking_payment', ['id' => $id, 'moyen' => $method]);
     }
 
     #[Route(path: ['fr' => '/reservations/{id}/payer', 'en' => '/en/bookings/{id}/pay'], name: 'app_booking_pay', methods: ['POST'])]
@@ -293,7 +321,7 @@ final class BookingController extends AbstractController
     }
 
     /**
-     * Étape 5 : « Paiement effectué avec succès » — maquette
+     * Après paiement : « Paiement effectué avec succès » — maquette
      * reservation_confirmee_client (20/10), dans l'espace compte du client.
      */
     #[Route(path: ['fr' => '/reservations/{id}/confirmation', 'en' => '/en/bookings/{id}/confirmation'], name: 'app_booking_confirmation', methods: ['GET'])]
@@ -342,6 +370,24 @@ final class BookingController extends AbstractController
         $booking = $this->own($id);
 
         return $this->invoices->ticketResponse($booking, $this->payments->findOneByBooking($booking), $this->qrCode->png($booking));
+    }
+
+    private function checkoutPage(Booking $booking, Request $request): Response
+    {
+        $view = $this->bookingView($booking);
+        $selected = $request->query->getString('moyen');
+        if (!$this->isOffered($view['payment_methods'], $selected)) {
+            $selected = (string) (array_key_first($view['payment_methods']) ?? ProviderPaymentMethods::ONSITE);
+        }
+        $user = $this->getUser();
+        \assert($user instanceof User);
+
+        return $this->render('booking/payment.html.twig', $view + [
+            'selected' => $selected,
+            'user' => $this->identity->identityFor($user),
+            'menu' => StaticAccount::menu(),
+            'active' => 'Paiements',
+        ]);
     }
 
     /** @return array<string, mixed> */

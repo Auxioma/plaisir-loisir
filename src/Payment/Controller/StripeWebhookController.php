@@ -25,8 +25,9 @@ use Symfony\Component\Routing\Attribute\Route;
  * les bons cadeaux. Les prestations sont payées directement sur le compte
  * Stripe du professionnel (Stripe Connect, 20/10) : Stripe en prévient ici
  * (événement porteur de `account`), sans que l'argent passe par TrouveMoi.
- * C'est ICI, et seulement
- * ici, qu'un paiement Stripe est confirmé : on vérifie d'abord que l'appel est
+ * Le webhook confirme les paiements même sans retour du navigateur. Les bons
+ * cadeaux sont aussi vérifiés par l’API Stripe au retour de l’acheteur.
+ * On vérifie d'abord que l'appel est
  * bien signé par Stripe (sinon n'importe qui pourrait se faire passer pour
  * Stripe et activer un abonnement non payé).
  */
@@ -86,7 +87,7 @@ final class StripeWebhookController extends AbstractController
             return new Response('OK', Response::HTTP_OK);
         }
 
-        if ('checkout.session.completed' === $event->type) {
+        if (\in_array($event->type, ['checkout.session.completed', 'checkout.session.async_payment_succeeded'], true)) {
             $session = $event->data->object;
 
             if ('subscription' === ($session->mode ?? null)) {

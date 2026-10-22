@@ -27,6 +27,30 @@ final class LoginSuccessHandlerTest extends TestCase
         self::assertSame('https://example.com'.$destination, $response->headers->get('Location'));
     }
 
+    #[DataProvider('bookingTargets')]
+    public function testOnlyLocalBookingTargetsResume(string $target, bool $resume): void
+    {
+        $urls = $this->createStub(UrlGeneratorInterface::class);
+        $urls->method('generate')->willReturn('/compte/tableau-de-bord');
+        $handler = new LoginSuccessHandler(new HttpUtils(), $urls);
+        $token = $this->createStub(TokenInterface::class);
+        $token->method('getRoleNames')->willReturn(['ROLE_USER']);
+        $request = Request::create('https://example.com/login', 'POST', ['_target_path' => $target]);
+        $response = $handler->onAuthenticationSuccess($request, $token);
+        $expected = $resume ? (str_starts_with($target, 'https:') ? $target : 'https://example.com'.$target) : 'https://example.com/compte/tableau-de-bord';
+        self::assertSame($expected, $response->headers->get('Location'));
+    }
+
+    public static function bookingTargets(): iterable
+    {
+        yield ['/reservations/reprendre', true];
+        yield ['/en/bookings/resume', true];
+        yield ['https://example.com/reservations/123/paiement?moyen=stripe', true];
+        yield ['https://evil.test/reservations/123', false];
+        yield ['//evil.test/reservations/123', false];
+        yield ['/activites/sortie#reserver', false];
+    }
+
     public static function redirects(): iterable
     {
         yield 'client' => [['ROLE_USER'], null, 'app_account_dashboard', '/compte/tableau-de-bord'];

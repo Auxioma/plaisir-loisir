@@ -29,6 +29,7 @@ final class StripeCheckoutGateway implements CheckoutGateway
     ): CheckoutSessionResult {
         $session = $this->stripe->checkout->sessions->create([
             'mode' => 'payment',
+            'payment_method_types' => ['card'],
             'success_url' => $successUrl,
             'cancel_url' => $cancelUrl,
             // Permet de relier la session à notre réservation côté Stripe.
@@ -44,5 +45,16 @@ final class StripeCheckoutGateway implements CheckoutGateway
         ]);
 
         return new CheckoutSessionResult((string) $session->id, (string) $session->url);
+    }
+
+    public function isCheckoutPaid(string $sessionId, int $amountCents, string $currency, string $reference): bool
+    {
+        $session = $this->stripe->checkout->sessions->retrieve($sessionId);
+
+        return 'payment' === $session->mode
+            && 'paid' === $session->payment_status
+            && $amountCents === $session->amount_total
+            && strtolower($currency) === $session->currency
+            && $reference === $session->client_reference_id;
     }
 }

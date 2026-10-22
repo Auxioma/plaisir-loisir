@@ -97,7 +97,7 @@ final class StripeConnectWebhookTest extends WebTestCase
         self::assertNotNull($booking);
 
         // Départ vers Stripe, sans revenir sur le site.
-        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=stripe');
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement?moyen=stripe');
         $client->submit($crawler->filter('form[action$="/payer"]')->form());
         self::assertResponseRedirects();
 

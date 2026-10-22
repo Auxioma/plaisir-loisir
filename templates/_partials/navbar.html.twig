@@ -44,7 +44,7 @@
 
 <header class="tm-header{{ is_provider ? ' tm-header--pro' }}">
     <div class="tm-header__inner">
-        <a href="{{ path('app_home') }}" class="tm-header__logo" aria-label="{{ 'Accueil TrouveMoi'|trans }}">
+        <a href="{{ path(is_provider ? 'app_pro_dashboard' : 'app_home') }}" class="tm-header__logo" aria-label="{{ (is_provider ? 'Espace professionnel' : 'Accueil TrouveMoi')|trans }}">
             <img src="{{ asset('images/logo-trouvemoi-horizontal.webp') }}" alt="TrouveMoi Plaisirs &amp; Loisirs" width="225" height="48" fetchpriority="high">
         </a>
 

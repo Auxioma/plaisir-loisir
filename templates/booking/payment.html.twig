@@ -1,60 +1,76 @@
-{#
-    Étape 3 — Choix du moyen de paiement (maquette « Parcours du client —
-    Paiement d'une réservation », 20/10) : uniquement les moyens acceptés par
-    l'organisateur (Stripe CB, PayPal, espèces sur place).
-    Données : BookingController::payment().
-#}
-{% extends 'base.html.twig' %}
+{# Une seule page avant Stripe / PayPal ou l’envoi d’une demande sur place. #}
+{% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}{{ 'Choix du moyen de paiement'|trans }}{% endblock %}
+{% block title %}{{ 'Finaliser ma réservation'|trans }}{% endblock %}
+{% block account_class %}pf-checkout{% endblock %}
 
-{% block body %}
-<main class="bk container">
-    {% include 'booking/_steps.html.twig' with {current: 3} %}
-    <h1 class="bk-title">{{ 'Choix du moyen de paiement'|trans }}</h1>
+{% block account %}
+{% set amount = booking.totalPrice|number_format(2, ',', ' ') ~ ' €' %}
+{% import '_partials/_ga.html.twig' as ga %}
+{% set ga_items = [] %}
+{% for it in booking.items %}{% set ga_items = ga_items|merge([{item_id: (service ? service.slug : 'activite'), item_name: (service ? service.title : it.label), item_variant: it.label, price: it.unitPrice + 0, quantity: it.quantity}]) %}{% endfor %}
+{{ ga.event('begin_checkout', {currency: 'EUR', value: booking.totalPrice + 0, items: ga_items}) }}
+<div class="bk-checkout">
+    <header class="pf-head">
+        <div>
+            <a class="pf-link bk-back" href="{{ path('app_activity_show', {slug: service.slug}) }}#reserver">{{ icon.arrow_left(16) }} {{ 'Retour à l’activité'|trans }}</a>
+            <h1 class="pf-title">{{ 'Finaliser ma réservation'|trans }}</h1>
+            <p class="pf-sub">{{ 'Vérifiez votre sélection, choisissez votre moyen de paiement et profitez de votre activité.'|trans }}</p>
+        </div>
+        <span class="bk-security-badge">{{ icon.padlock(16) }} {{ 'Paiement sécurisé'|trans }}</span>
+    </header>
 
-    <div class="bk-grid">
-        <section class="bk-card">
+    <div class="bk-checkout__grid">
+        <section class="pf-card bk-checkout__recap" aria-labelledby="booking-recap-title">
+            <div class="rg-card__head">
+                <h2 class="rg-card__title" id="booking-recap-title">{{ icon.ticket(22) }} {{ 'Votre réservation'|trans }}</h2>
+                <span class="bk-reference">#{{ booking.reference }}</span>
+            </div>
             {% include 'booking/_recap.html.twig' %}
-            <a class="bk-link" href="{{ path('app_booking_summary', {id: booking.id}) }}">{{ icon.arrow_left(14) }} {{ 'Retour au récapitulatif'|trans }}</a>
+            <div class="bk-checkout__edit">
+                <a class="pf-link" href="{{ path('app_activity_show', {slug: service.slug}) }}#reserver">{{ icon.edit_square(16) }} {{ 'Modifier ma sélection'|trans }}</a>
+                <form method="post" action="{{ path('app_booking_abandon', {id: booking.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">
+                    <button class="bk-link bk-link--btn" data-confirm="{{ 'Abandonner cette réservation ? Les places retenues seront libérées.'|trans }}" data-confirm-title="{{ 'Abandonner la réservation'|trans }}" data-confirm-ok="{{ 'Oui, abandonner'|trans }}">{{ 'Abandonner la réservation'|trans }}</button>
+                </form>
+            </div>
         </section>
 
-        <aside class="bk-card bk-pay">
-            <div class="bk-secure">
-                <span class="bk-secure__ico">{{ icon.padlock(20) }}</span>
-                <div><strong>{{ 'Paiement sécurisé'|trans }}</strong><small>{{ 'Vos informations sont protégées.'|trans }}</small></div>
-            </div>
-
-            <form method="get" action="{{ path('app_booking_payment_review', {id: booking.id}) }}" class="bk-methods">
-                {% if payment_methods is empty %}
-                    <label class="bk-method">
-                        <input type="radio" name="moyen" value="onsite" checked>
-                        <span class="bk-method__label">{{ 'Règlement à convenir avec l’organisateur'|trans }}</span>
-                        <span class="bk-method__logos">{{ icon.handshake(22) }}</span>
-                    </label>
-                {% endif %}
-                {% for m in payment_methods %}
-                    <label class="bk-method">
-                        <input type="radio" name="moyen" value="{{ m.type }}"{{ m.type == selected or (loop.first and selected not in payment_methods|keys) ? ' checked' }}>
-                        {% if m.type == 'paypal' %}
-                            <span class="bk-method__label bk-method__label--paypal"><b>Pay</b><b>Pal</b></span>
-                        {% else %}
-                            <span class="bk-method__label">{{ m.label|trans }}</span>
-                        {% endif %}
-                        <span class="bk-method__logos">
-                            {%- if m.type == 'stripe' %}{{ icon.pay_visa() }}{{ icon.pay_mastercard() }}
-                            {%- elseif m.type == 'paypal' %}{{ icon.pay_paypal() }}
-                            {%- else %}{{ icon.banknote(22) }}{% endif -%}
-                        </span>
-                    </label>
-                {% endfor %}
-                <button class="pl-btn pl-btn--primary pl-btn--block">{{ 'Continuer'|trans }}</button>
+        <section class="pf-card bk-pay" aria-labelledby="booking-pay-title">
+            <h2 class="rg-card__title" id="booking-pay-title">{{ icon.card(22) }} {{ 'Moyen de paiement'|trans }}</h2>
+            <p class="bk-pay__lead">{{ 'Choisissez parmi les moyens acceptés par l’organisateur.'|trans }}</p>
+            <form method="post" action="{{ path('app_booking_pay', {id: booking.id}) }}" class="bk-methods" data-turbo="false"
+                  data-controller="booking-checkout" data-action="change->booking-checkout#update submit->booking-checkout#submit pageshow@window->booking-checkout#reset"
+                  data-booking-checkout-online-label-value="{{ 'Payer %amount%'|trans({'%amount%': amount}) }}"
+                  data-booking-checkout-onsite-label-value="{{ 'Envoyer ma demande de réservation'|trans }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">
+                <fieldset class="bk-methods__choices">
+                    <legend class="visually-hidden">{{ 'Moyen de paiement'|trans }}</legend>
+                    {% if payment_methods is empty %}
+                        <label class="bk-method">
+                            <input type="radio" name="moyen" value="onsite" checked required>
+                            <span class="bk-method__body"><strong>{{ 'Règlement à convenir avec l’organisateur'|trans }}</strong><small>{{ 'Votre demande est envoyée à l’organisateur, qui confirmera la réservation.'|trans }}</small></span>
+                            <span class="bk-method__logos">{{ icon.handshake(22) }}</span>
+                        </label>
+                    {% endif %}
+                    {% for m in payment_methods %}
+                        <label class="bk-method">
+                            <input type="radio" name="moyen" value="{{ m.type }}"{{ m.type == selected ? ' checked' }} required>
+                            <span class="bk-method__body">
+                                <strong>{{ m.label|trans }}</strong>
+                                <small>{% if m.type == 'stripe' %}{{ 'Paiement sécurisé par carte sur Stripe.'|trans }}{% elseif m.type == 'paypal' %}{{ 'Réglez avec votre compte PayPal.'|trans }}{% else %}{{ 'Réglez en espèces sur place, après confirmation de l’organisateur.'|trans }}{% endif %}</small>
+                            </span>
+                            <span class="bk-method__logos">{% if m.type == 'stripe' %}{{ icon.pay_visa() }}{{ icon.pay_mastercard() }}{% elseif m.type == 'paypal' %}{{ icon.pay_paypal() }}{% else %}{{ icon.banknote(22) }}{% endif %}</span>
+                        </label>
+                    {% endfor %}
+                </fieldset>
+                <dl class="bk-total"><dt>{{ 'Total'|trans }}</dt><dd>{{ amount }}</dd></dl>
+                <button type="submit" class="pf-btn pf-btn--primary pf-btn--block bk-checkout__submit" data-booking-checkout-target="submit">{{ 'Valider ma réservation'|trans }}</button>
             </form>
-
-            {% if payment_instructions %}<p class="bk-note">{{ icon.info(14) }} {{ payment_instructions|nl2br }}</p>{% endif %}
-            <p class="bk-note">{{ 'Le paiement est versé directement à l’organisateur, sans passer par TrouveMoi.'|trans }}</p>
-        </aside>
+            <p class="bk-checkout__secure">{{ icon.padlock(14) }} {{ 'Le paiement en ligne est versé directement à l’organisateur.'|trans }}</p>
+            {% if payment_instructions %}<div class="bk-info">{{ icon.info(18) }}<p>{{ payment_instructions|nl2br }}</p></div>{% endif %}
+        </section>
     </div>
-</main>
+</div>
 {% endblock %}

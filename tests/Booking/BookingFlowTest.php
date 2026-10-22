@@ -54,20 +54,20 @@ final class BookingFlowTest extends WebTestCase
         ]);
         self::assertResponseRedirects();
         $client->followRedirect();
-        self::assertSelectorTextContains('h1', 'Récapitulatif');
-        self::assertSelectorTextContains('.bk-pay', 'Procéder au paiement');
+        self::assertSelectorTextContains('h1', 'Finaliser ma réservation');
+        self::assertSelectorExists('.bk-pay form[method="post"][action$="/payer"]');
+        self::assertSelectorNotExists('.bk-progress');
         $booking = $this->lastBooking($em, $user, $service);
         self::assertSame($before + 3, $em->getRepository(Availability::class)->find($slot->getId())->getBooked());
 
-        // Étape 3 : les moyens acceptés par le professionnel.
-        $client->request('GET', '/reservations/'.$booking->getId().'/paiement');
+        // La page affichée après « Réserver » contient directement les moyens acceptés.
         self::assertSelectorExists('input[name="moyen"][value="stripe"]');
         self::assertSelectorExists('input[name="moyen"][value="paypal"]');
         self::assertSelectorExists('input[name="moyen"][value="onsite"]');
 
-        // Étape 4 : validation, puis départ vers Stripe (simulé : retour direct).
-        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=stripe');
-        self::assertSelectorTextContains('.bk-info', 'Stripe');
+        // Un seul formulaire après « Réserver », puis départ direct vers Stripe.
+        $crawler = $client->getCrawler();
+        self::assertSelectorTextContains('.bk-methods', 'Stripe');
         $client->submit($crawler->filter('form[action$="/payer"]')->form());
         self::assertResponseRedirects();
         self::assertStringContainsString('/paiement/retour?session_id=mock_cs_', (string) $client->getResponse()->headers->get('Location'));
@@ -144,7 +144,7 @@ final class BookingFlowTest extends WebTestCase
         $client->loginUser($user);
         $booking = $this->book($client, $em, $user, $service, $slot);
 
-        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=paypal');
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement?moyen=paypal');
         $client->submit($crawler->filter('form[action$="/payer"]')->form());
         self::assertResponseRedirects();
         $location = (string) $client->getResponse()->headers->get('Location');
@@ -177,8 +177,8 @@ final class BookingFlowTest extends WebTestCase
         $client->loginUser($user);
         $booking = $this->book($client, $em, $user, $service, $slot);
 
-        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=onsite');
-        self::assertSelectorTextContains('.bk-info', 'sur place');
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement?moyen=onsite');
+        self::assertSelectorTextContains('.bk-methods', 'sur place');
         $client->submit($crawler->filter('form[action$="/payer"]')->form());
         self::assertResponseRedirects('/reservations/'.$booking->getId().'/confirmation');
         $client->followRedirect();
@@ -228,13 +228,13 @@ final class BookingFlowTest extends WebTestCase
         $booking = $this->book($client, $em, $user, $service, $slot);
 
         // Départ vers PayPal sans retour : rien n'est débité.
-        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=paypal');
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement?moyen=paypal');
         $client->submit($crawler->filter('form[action$="/payer"]')->form());
         $client->request('GET', '/reservations/'.$booking->getId().'/paiement/annule?moyen=paypal');
         self::assertResponseRedirects('/reservations/'.$booking->getId().'/paiement?moyen=paypal');
 
         $crawler = $client->request('GET', '/reservations/'.$booking->getId());
-        self::assertSelectorTextContains('h1', 'Récapitulatif');
+        self::assertSelectorTextContains('h1', 'Finaliser ma réservation');
         $client->submit($crawler->filter('form[action$="/annuler"]')->form());
 
         $em->clear();
@@ -255,7 +255,7 @@ final class BookingFlowTest extends WebTestCase
         $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=bitcoin');
         self::assertResponseRedirects('/reservations/'.$booking->getId().'/paiement');
 
-        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=stripe');
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement?moyen=stripe');
         $client->request('POST', '/reservations/'.$booking->getId().'/payer', [
             '_token' => (string) $crawler->filter('form[action$="/payer"] input[name="_token"]')->attr('value'),
             'moyen' => 'transfer',
@@ -263,6 +263,50 @@ final class BookingFlowTest extends WebTestCase
         self::assertResponseRedirects('/reservations/'.$booking->getId().'/paiement');
         $em->clear();
         self::assertNull($em->getRepository(Payment::class)->findOneBy(['booking' => $booking->getId()]));
+    }
+
+    public function testCheckoutOnlyDisplaysMethodsStillAcceptedByTheProvider(): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        [$service, $slot] = $this->serviceWithSlot($em);
+        $user = $this->client($em, 'julie.martin@client.trouvemoi.test');
+        $client->loginUser($user);
+        $booking = $this->book($client, $em, $user, $service, $slot);
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $providerId = $service->getProvider()->getId();
+        $provider = $em->find(\App\Provider\Entity\ProviderProfile::class, $providerId);
+        $paypal = $provider->acceptsPaypal();
+        $cash = $provider->acceptsCash();
+        $provider->setAcceptsPaypal(false)->setAcceptsCash(false);
+        $em->flush();
+        try {
+            $client->request('GET', '/reservations/'.$booking->getId().'?moyen=paypal');
+            self::assertResponseIsSuccessful();
+            self::assertSelectorExists('input[name="moyen"][value="stripe"]:checked');
+            self::assertSelectorNotExists('input[name="moyen"][value="paypal"]');
+            self::assertSelectorNotExists('input[name="moyen"][value="onsite"]');
+        } finally {
+            $em = static::getContainer()->get(EntityManagerInterface::class);
+            $provider = $em->find(\App\Provider\Entity\ProviderProfile::class, $providerId);
+            $provider->setAcceptsPaypal($paypal)->setAcceptsCash($cash);
+            $em->flush();
+        }
+    }
+
+    public function testOldReviewLinksReturnToTheSingleCheckoutWithTheSelectedMethod(): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        [$service, $slot] = $this->serviceWithSlot($em);
+        $user = $this->client($em, 'julie.martin@client.trouvemoi.test');
+        $client->loginUser($user);
+        $booking = $this->book($client, $em, $user, $service, $slot);
+        $client->request('GET', '/reservations/'.$booking->getId().'/paiement/validation?moyen=paypal');
+        self::assertResponseRedirects('/reservations/'.$booking->getId().'/paiement?moyen=paypal');
+        $client->followRedirect();
+        self::assertSelectorExists('form[action$="/payer"] input[value="paypal"]:checked');
+        self::assertSelectorNotExists('form[action*="/validation"]');
     }
 
     public function testAVisitorIsSentToLoginWithHisSelectionKept(): void
@@ -278,6 +322,84 @@ final class BookingFlowTest extends WebTestCase
 
         $crawler = $client->request('GET', '/activites/'.$service->getSlug());
         self::assertSame('3', $crawler->filter('input[name="adults"]')->attr('value'));
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('authenticationPaths')]
+    public function testVisitorResumesAfterRealLoginAndCannotReplayTheDraft(bool $register): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        [$service, $slot] = $this->serviceWithSlot($em);
+        $initialCount = $em->getRepository(Booking::class)->count(['service' => $service->getId()]);
+        $user = $this->client($em, 'marc.dubois@client.trouvemoi.test');
+        $hasher = static::getContainer()->get(\Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface::class);
+        $user->setPassword($hasher->hashPassword($user, 'ResumePassword123'));
+        $em->flush();
+        $client->request('POST', '/activites/'.$service->getSlug().'/reserver', [
+            'date' => $slot->getStartsAt()->format('Y-m-d'), 'time' => $slot->getStartsAt()->format('H:i'), 'adults' => 3,
+        ]);
+        if ($register) {
+            $email = sprintf('booking-signup-%s@example.com', uniqid());
+            $crawler = $client->request('GET', '/inscription');
+            $client->submit($crawler->selectButton('Créer un compte')->form([
+                'registration_form[fullName]' => 'Alice Réservation',
+                'registration_form[email]' => $email,
+                'registration_form[password]' => 'ResumePassword123',
+                'registration_form[agreeTerms]' => '1',
+            ]));
+            self::assertResponseRedirects('/verification-email');
+            $message = self::getMailerMessage();
+            self::assertNotNull($message);
+            self::assertSame(1, preg_match('/code de vérification est : ([A-Z0-9]{8})/', $message->getTextBody(), $matches));
+            $crawler = $client->followRedirect();
+            $client->request('POST', '/verification-email', [
+                'code' => $matches[1],
+                '_token' => $crawler->filter('input[name="_token"]')->first()->attr('value'),
+            ]);
+            self::assertResponseRedirects('/login');
+        } else {
+            $email = $user->getEmail();
+        }
+        $crawler = $client->followRedirect();
+        $form = $crawler->filterXPath('//form[.//input[@name="_email"]]')->form();
+        $form['_email'] = $email;
+        $form['_password'] = 'ResumePassword123';
+        $client->submit($form);
+        self::assertResponseRedirects('/reservations/reprendre');
+        $crawler = $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        $client->submit($crawler->filter('form[data-controller="booking-resume"]')->form());
+        self::assertResponseRedirects();
+        self::assertMatchesRegularExpression('#/reservations/[0-9A-Z]+$#', $client->getResponse()->headers->get('Location'));
+        $bookingId = basename($client->getResponse()->headers->get('Location'));
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $booking = $em->getRepository(Booking::class)->find($bookingId);
+        self::assertNotNull($booking);
+        self::assertSame(3, $booking->getParticipants());
+        $client->request('POST', '/reservations/reprendre');
+        self::assertResponseRedirects('/activites');
+        self::assertSame($initialCount + 1, $em->getRepository(Booking::class)->count(['service' => $service->getId()]));
+
+        $paymentUrl = '/reservations/'.$booking->getId().'/paiement';
+        $client->getCookieJar()->clear();
+        $client->request('GET', $paymentUrl);
+        self::assertResponseRedirects('http://localhost/login');
+        $crawler = $client->followRedirect();
+        $form = $crawler->filterXPath('//form[.//input[@name="_email"]]')->form();
+        $form['_email'] = $email;
+        $form['_password'] = 'ResumePassword123';
+        $client->submit($form);
+        self::assertResponseRedirects('http://localhost'.$paymentUrl);
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+    }
+
+    public static function authenticationPaths(): iterable
+    {
+        yield 'existing account' => [false];
+        yield 'registration and email verification' => [true];
     }
 
     public function testAnUnknownTimeIsRefused(): void

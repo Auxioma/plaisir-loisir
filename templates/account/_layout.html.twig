@@ -10,7 +10,7 @@
 
 {% block body %}
 {% set aside = block('account_aside') is defined ? block('account_aside')|trim : '' %}
-<div class="pf">
+<div class="pf {% block account_class %}{% endblock %}">
     {# La colonne garde le fond bleu nuit sur toute la hauteur ; son contenu
        reste collé sous l'en-tête et défile seul (demande du 30/09). #}
     <aside class="pf-side">

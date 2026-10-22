@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Reprise de votre réservation'|trans }}{% endblock %}
+
+{% block body %}
+<main class="bk container">
+    <h1 class="bk-title">{{ 'Reprise de votre réservation'|trans }}</h1>
+    <p>{{ 'Votre sélection est conservée. Nous vérifions les disponibilités avant de vous présenter le récapitulatif.'|trans }}</p>
+    <form method="post" action="{{ path('app_booking_resume') }}" data-controller="booking-resume">
+        <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">
+        <button type="submit" class="pl-btn pl-btn--primary">{{ 'Continuer ma réservation'|trans }}</button>
+    </form>
+</main>
+{% endblock %}

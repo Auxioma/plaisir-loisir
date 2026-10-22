@@ -31,4 +31,7 @@ interface CheckoutGateway
         string $successUrl,
         string $cancelUrl,
     ): CheckoutSessionResult;
+
+    /** Vérifie côté Stripe le règlement et son rattachement à la commande attendue. */
+    public function isCheckoutPaid(string $sessionId, int $amountCents, string $currency, string $reference): bool;
 }

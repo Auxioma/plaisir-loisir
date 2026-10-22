@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale|default('fr') }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ 'Bon cadeau'|trans }} {{ card.code }}</title>
+    <style>
+        @page { margin: 36px; }
+        body { font-family: 'DejaVu Sans', sans-serif; color: #17203b; font-size: 13px; }
+        .voucher { background-color: #5b2ee6; color: #fff; border-radius: 18px; padding: 30px 40px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 22px; }
+        td { width: 50%; font-size: 16px; font-weight: bold; text-align: left; }
+        td:last-child { text-align: right; }
+        .brand { font-size: 22px; }
+        .tagline { display: block; color: #ffd166; font-size: 11px; }
+        .label { font-size: 18px; font-weight: bold; }
+        .amount { margin: 10px 0; font-size: 44px; font-weight: bold; }
+        .message { margin: 18px 0; font-style: italic; overflow-wrap: break-word; }
+        .code { display: inline-block; padding: 10px 20px; border-radius: 8px; background-color: #fff; color: #5b2ee6; font-size: 22px; font-weight: bold; letter-spacing: 2px; }
+        .expires { font-size: 11px; }
+    </style>
+</head>
+<body>
+<div class="voucher">
+    <table><tr><td><span class="brand">TrouveMoi</span><span class="tagline">Plaisirs &amp; Loisirs</span></td><td>{{ 'Bon cadeau'|trans }}</td></tr></table>
+    <p>{{ 'Pour'|trans }} <strong>{{ card.recipientName }}</strong>, {{ 'de la part de'|trans }} <strong>{{ card.buyerName }}</strong></p>
+    <p class="label">{{ card.label }}</p>
+    <p class="amount">{{ card.amount|number_format(2, ',', ' ') }} €</p>
+    {% if card.message %}<p class="message">« {{ card.message|nl2br }} »</p>{% endif %}
+    <p class="code">{{ card.code }}</p>
+    <p class="expires">{{ 'Valable jusqu’au'|trans }} {{ card.expiresAt|date('d/m/Y') }} · trouvemoi.eu</p>
+</div>
+</body>
+</html>

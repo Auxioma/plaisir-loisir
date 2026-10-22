@@ -1353,3 +1353,28 @@ html, body { overflow-x: clip; }
 [data-favorite-slug][aria-pressed="true"] > svg { fill: currentColor; }
 [data-favorite-slug]:focus-visible { outline: 3px solid #5d00ff; outline-offset: 3px; }
 .ew-guide__start { justify-content: flex-end; margin: 24px 0; }
+
+/* Cartes des listes : la taille du fichier image ne doit jamais agrandir
+   sa vignette ou déplacer les informations des cartes voisines. */
+.pl-card__media, .ofm-card__media, .gc-card__media, .evn-card__media,
+.fa-card__media, .ex-card__media, .ds-card__media, .ap-card__media {
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.pl-card__media > img, .ofm-card__media > img, .gc-card__media > img,
+.evn-card__media > img, .fa-card__media > img, .ex-card__media > img,
+.ds-card__media > img, .ap-card__media > img {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.act-card .pl-card__body, .ofm-card__body, .gc-card__body { flex: 1; min-width: 0; }
+.act-card .pl-card__title, .ofm-card__title, .gc-card__title { min-height: 2.8em; line-height: 1.4; overflow-wrap: anywhere; }
+.act-card .pl-card__foot { margin-top: auto; flex-wrap: wrap; }
+.act-card__meta { flex-wrap: wrap; row-gap: 6px; }
+.ofm-card__body, .gc-card__body { gap: 8px; padding: 16px; }
+.ofm-card__row { flex-wrap: wrap; margin-top: auto; padding-top: 8px; }
+.ofm-card .pg-btn, .gc-card__cta { max-width: 100%; min-height: 40px; height: auto !important; padding-block: 10px !important; white-space: normal; text-align: center; }

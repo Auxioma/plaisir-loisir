@@ -92,6 +92,31 @@ class GiftCard
     #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
     private ?\DateTimeImmutable $expiresAt = null;
 
+    #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
+    private ?\DateTimeImmutable $buyerEmailSentAt = null;
+
+    #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
+    private ?\DateTimeImmutable $recipientEmailSentAt = null;
+
+    public function getBuyerEmailSentAt(): ?\DateTimeImmutable
+    {
+        return $this->buyerEmailSentAt;
+    }
+
+    public function getRecipientEmailSentAt(): ?\DateTimeImmutable
+    {
+        return $this->recipientEmailSentAt;
+    }
+
+    public function recordEmailSent(bool $recipient): void
+    {
+        if ($recipient) {
+            $this->recipientEmailSentAt = new \DateTimeImmutable();
+        } else {
+            $this->buyerEmailSentAt = new \DateTimeImmutable();
+        }
+    }
+
     public function __toString(): string
     {
         return $this->code;
