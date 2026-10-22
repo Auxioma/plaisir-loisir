@@ -1,82 +1,84 @@
-# Recette de la plateforme TrouveMoi
+# TrouveMoi — guide de recette et d’utilisation
 
-Document de travail — 22 octobre 2026. La recette avec le porteur du projet n’a pas encore commencé. Ce document sera complété pendant les essais en local, puis reformulé pour remise au client. Il ne constitue pas une validation de tous les parcours.
+**Version du 22 octobre 2026**
 
-## Points à vérifier ensemble en premier
+Document destiné aux équipes TrouveMoi et aux utilisateurs pilotes.
 
-| Parcours | Résultat attendu | Recette manuelle |
-| --- | --- | --- |
-| Connexion client depuis le menu | Ouverture du tableau de bord client | À faire |
-| Réservation sans être connecté | Après connexion, reprise de la sélection et affichage du récapitulatif | À faire |
-| Réservation avec création de compte | Vérification de l’e-mail, connexion, puis reprise de la réservation | À faire |
-| Retour sur un paiement après expiration de connexion | Après connexion, retour à la page de paiement de la réservation concernée | À faire |
-| Créneau devenu indisponible pendant l’inscription | Message explicite et possibilité de choisir un autre créneau | À faire |
-| Activité retirée pendant l’inscription | Message explicite et retour au catalogue | À faire |
-| Reprise sans sélection conservée | Retour au catalogue avec une explication | À faire |
-| Lisibilité du tableau de bord client | Indicateurs, accès rapides et légende du graphique lisibles, sans débordement | À faire |
-| Logo depuis l’espace professionnel, ordinateur et mobile | Retour au tableau de bord professionnel | À faire |
-| Paiement Stripe réussi | Réservation confirmée et paiement enregistré, indépendamment du délai de disponibilité du solde Stripe | À faire |
+## Objet du guide
 
-La sélection avant inscription est conservée dans la session du navigateur. La reprise après plusieurs heures, fermeture du navigateur, perte de session ou changement d’appareil devra être testée explicitement ; aucune conservation illimitée n’est promise.
+Ce guide récapitule les parcours vérifiés ensemble sur l’environnement local et décrit le comportement attendu des principaux espaces de TrouveMoi. Il sert de repère pendant la recette et pour accompagner les premiers utilisateurs. Les paiements Stripe évoqués pendant les essais ont été réalisés en mode test : aucun fonds réel n’a été déplacé.
 
-## Paiement Stripe : explication à communiquer
+Les essais locaux réalisés ensemble ont abouti. Les étapes ci-dessous décrivent le résultat observé et les vérifications à faire lorsqu’une situation particulière se présente.
 
-Dans le relevé transmis le 22 octobre, le paiement de 50,00 € est indiqué comme réussi. Après 1,83 € de frais Stripe, le solde net est de 48,17 €. Stripe annonce sa disponibilité au 29 octobre.
+## Se connecter au bon espace
 
-Il faut distinguer le règlement de la réservation et la disponibilité des fonds pour le professionnel. Un paiement réussi peut alimenter un solde Stripe « en attente » jusqu’à la date de règlement fixée par Stripe. Ce libellé ne signifie pas que le client doit encore payer sa réservation. Le compte rendu fourni concerne un environnement de test, sans mouvement d’argent réel.
+Un compte client et un compte professionnel ouvrent des espaces distincts.
 
-Le code actuel crée un Checkout par carte sans capture manuelle et valide le règlement à partir de l’état du paiement renvoyé par Stripe. Changer le code pour supprimer toute attente du solde ne permettrait pas de supprimer les délais de Stripe. Les virements instantanés sont une possibilité distincte, soumise à éligibilité et à frais ; ils ne font pas partie des corrections demandées ici.
+| Action | Résultat attendu |
+| --- | --- |
+| Un client se connecte depuis la navigation générale | Il arrive sur son tableau de bord client. |
+| Un professionnel ouvre son espace | Il arrive sur son tableau de bord professionnel. Le logo de cet espace le ramène à ce tableau de bord. |
+| Un visiteur choisit de réserver une activité | La plateforme lui demande de se connecter ou de créer un compte, puis reprend la réservation en cours. |
 
-Références : [Soldes et délais de règlement](https://docs.stripe.com/payments/balances), [Cartes et comportements de test](https://docs.stripe.com/testing).
+Si le lien de vérification du compte est utilisé plus tard, le client peut vérifier son adresse puis se connecter pour reprendre le parcours. Si la sélection n’est plus disponible ou si le créneau a été pris entre-temps, la plateforme l’en informe et lui permet de choisir une autre activité ou une autre date. Si aucune réservation n’est conservée, il revient au catalogue avec une explication.
 
-## Suite de la recette commune
+La reprise dépend de la session du navigateur. Elle n’est pas garantie après un changement d’appareil, l’effacement des données du navigateur ou une durée de conservation illimitée.
 
-Nous vérifierons ensuite les comptes client, professionnel et administrateur, la vérification d’e-mail et sa reprise tardive, les mots de passe oubliés, les droits d’accès, les activités, les disponibilités, les réservations et leur annulation, les paiements Stripe et PayPal, le paiement sur place, les justificatifs, les notifications et les autres fonctions de la plateforme.
+## Réserver une activité
 
-Pour chaque essai, nous noterons l’action réalisée, le résultat observé et les éventuelles corrections nécessaires. Les essais abandonnés, les retours arrière, les liens expirés et les erreurs de saisie devront aussi être parcourus.
+Après avoir choisi l’activité, la date et le nombre de participants, le client vérifie le récapitulatif puis choisit un moyen de paiement sur la même page. Seuls les moyens configurés et proposés par le professionnel sont affichés. Le bouton d’action s’adapte au choix : payer en ligne, envoyer la demande de réservation ou utiliser un bon cadeau.
 
-## Vérifications techniques réalisées avant la recette
+Pour un paiement par carte, le client est redirigé vers la page sécurisée Stripe du professionnel. Après confirmation du paiement, il revient sur TrouveMoi et voit la confirmation de réservation ainsi que ses informations de réservation.
 
-Le 22 octobre, les tests automatisés ciblant les réservations, les redirections, l’inscription, la vérification d’e-mail, l’espace professionnel et les notifications de paiement Stripe ont abouti : **40 tests, 464 assertions**. Le test de rendu du tableau de bord client passe également : **1 test, 3 assertions**.
+Le statut « En attente » affiché dans le solde Stripe concerne la disponibilité des fonds pour le professionnel. Il ne signifie pas que le client doit encore payer lorsque le paiement est indiqué comme réussi et que sa réservation est confirmée. La date de disponibilité et le versement dépendent des délais et réglages Stripe. Les essais en mode test ne constituent pas des paiements réels.
 
-Les parcours vérifiés comprennent la reprise d’une réservation après connexion, puis après inscription et vérification d’e-mail, ainsi que le retour à une page de paiement après perte de connexion. La sélection déjà utilisée ne peut pas être rejouée via la page de reprise. Les services Stripe sont simulés dans ces tests ; il ne s’agit pas d’un nouveau paiement réel.
+Selon les réglages du professionnel, la réservation peut également être envoyée comme une demande à confirmer ou être réglée sur place. Dans ces cas, l’écran indique l’étape à suivre et la réservation n’est pas présentée comme payée en ligne.
 
-Un contrôle dans Chromium du tableau de bord local a été effectué aux largeurs 320, 390, 768, 1 024, 1 280, 1 440, 1 600 et 1 920 px, avec notamment le montant de 1 066 €. Aucun débordement horizontal n’a été mesuré sur la page ou dans les indicateurs, accès rapides et lignes de légende. Les captures ordinateur et mobile ont aussi été examinées.
+## Acheter et utiliser un bon cadeau
 
-Ces contrôles techniques préparent les essais communs ; ils ne remplacent pas la recette manuelle de l’ensemble de la plateforme.
+### Achat
 
-## Bons cadeaux — constat et corrections du 22 octobre
+Le bon est associé à une activité précise et au professionnel qui la propose. L’acheteur indique le nombre de personnes, le nom du bénéficiaire et le mode de remise. Le montant est calculé à partir du tarif de l’activité et du nombre de personnes. Le paiement se fait sur le compte Stripe Connect ou PayPal configuré par le professionnel ; TrouveMoi ne reçoit pas le montant de l’activité.
 
-Le parcours signalé était incomplet. Le retour après paiement attendait uniquement le webhook Stripe. De plus, changer le statut dans EasyAdmin ne déclenchait pas l’envoi des e-mails et ne renseignait pas les dates de paiement et de validité. Cette manipulation n’est pas la procédure normale.
+Une fois le paiement confirmé, le code du bon est disponible sur l’écran de confirmation. Selon le mode de remise choisi, il est envoyé au bénéficiaire ou l’acheteur peut télécharger la carte en PDF pour la remettre lui-même. Le PDF et les informations d’envoi rappellent l’activité concernée, le professionnel et la date de validité.
 
-Le retour navigateur vérifie maintenant auprès de Stripe que la session correspond au bon acheté, au bon montant et à la bonne devise, avec un paiement réglé. Le webhook conserve le même contrôle pour les acheteurs qui ferment le navigateur. Les statuts ne sont plus modifiables librement dans EasyAdmin.
+### Utilisation à la réservation
 
-Après confirmation, l’acheteur reçoit sa copie et le bénéficiaire reçoit le bon si l’envoi par e-mail a été choisi. Chaque envoi transmis est suivi séparément. Une panne d’envoi peut être réessayée en rouvrant la confirmation, sans renvoyer l’autre message déjà suivi comme transmis. Cette trace atteste la transmission au système d’envoi, pas la réception en boîte principale ; l’adresse, la configuration de messagerie et les courriers indésirables restent à vérifier lors de la recette réelle.
+Le bénéficiaire réserve l’activité indiquée sur le bon, choisit la date et les participants, puis sélectionne « Bon cadeau » parmi les moyens de paiement. Le champ de code apparaît alors. Le bon est accepté s’il est payé, en cours de validité, inutilisé, associé à cette activité et couvre exactement le total de la réservation. La plateforme confirme la réservation sans effectuer un second débit, puis marque le bon comme utilisé.
 
-Un téléchargement PDF remplace l’impression de toute la page. Il conserve la présentation violette, le message personnel, les noms, le montant, le code et la date de validité. Un bon non réglé ne donne pas accès au PDF.
+Un bon ne peut servir qu’une fois. Il ne peut pas être fractionné, utilisé pour une autre activité ou complété par un paiement supplémentaire dans le parcours actuel. Si le total ne correspond pas, le bénéficiaire doit modifier sa réservation ou choisir un autre moyen de paiement.
 
-**Utilisation sur une activité : parcours raccordé au paiement direct prestataire.** Un nouveau bon est lié à une seule activité et payé sur le compte Stripe Connect ou PayPal configuré par le professionnel. Sa fiche, son PDF et ses e-mails indiquent l’activité et le prestataire. À la réservation de cette activité, le bénéficiaire saisit le code au lieu d’un paiement en ligne. Le code ne confirme que le total exact, s’il est payé, non expiré et non utilisé ; la réservation est alors enregistrée comme payée, puis le bon est marqué utilisé sur cette réservation. Le verrou en base évite une double utilisation concurrente. Le bon ne couvre pas un complément et n’est pas fractionnable dans ce parcours.
+Les bons créés avant la mise en place du paiement direct au professionnel doivent être examinés au cas par cas avant leur utilisation : leur paiement a pu être encaissé selon l’ancien parcours. Ils ne doivent pas être considérés comme réglés au professionnel sans vérification.
 
-Les bons émis avant le paiement direct prestataire ne peuvent pas être utilisés pour régler une réservation : le prestataire n’a pas reçu leur montant. Ils doivent être régularisés (remboursement ou transfert convenu avec le prestataire) avant de réactiver leur usage. Aucun transfert ou remboursement automatique des anciens bons n’est exécuté. Cette migration doit aussi être appliquée sur l’environnement local avant le test du parcours.
+## Espace client et demandes d’aide
 
-Le texte juridique initial de la plateforme doit être mis à jour puis vérifié par le responsable avant publication : l’ancien modèle indiquait que les bons étaient payés à TrouveMoi. Les règles définitives de remboursement, d’annulation de réservation payée par bon et de bon inutilisé doivent aussi être confirmées avant mise en production.
+Le tableau de bord client regroupe les indicateurs, les accès rapides et les statistiques de réservation. Sa mise en page a été vérifiée sur ordinateur, tablette et téléphone ; les valeurs et libellés restent lisibles sans débordement.
 
-## Autres retours du client — 22 octobre
+L’export des données personnelles depuis les paramètres du profil est fourni sous forme de PDF. Pour une demande de support, le client ouvre le ticket depuis son espace et envoie sa réponse dans la conversation du ticket. Le support retrouve le même fil dans le back-office et peut y répondre. Le menu « Support » est accessible dans l’espace client ; l’espace professionnel dispose de sa propre entrée de support.
 
-- L’export « Demander mes données » renvoie désormais un PDF lisible au lieu d’un fichier JSON. À vérifier avec plusieurs profils et des champs longs.
-- L’espace support client affiche son entrée de menu active et un bouton d’envoi visible avec son libellé. Le ticket et ses réponses restent dans le même fil que celui affiché au support. Le fil EasyAdmin est présenté message par message et le champ de réponse notifie le demandeur. À vérifier avec un ticket client et un ticket professionnel.
-- Le formulaire « Devenir partenaire » a maintenant des choix pour le secteur et le trafic mensuel, une explication de la différence entre partenariat de visibilité et compte professionnel, ainsi qu’une mise en page adaptée au mobile. Cette page reste à revoir visuellement avec le client avant de valider son style.
-- Le suivi du parrainage n’est pas implémenté : l’inscription, la première réservation payée, le crédit promis et son utilisation ne sont actuellement pas reliés. La page l’indique maintenant sans promettre une récompense. L’activation demande de définir qui finance le crédit, puisque le paiement de l’activité va directement au prestataire. Tant que ce choix manque, aucun débit de récompense ne doit apparaître et aucun crédit n’est disponible à dépenser.
-- Le paiement de réservation a été regroupé sur une page après « Réserver », avec les moyens acceptés par le prestataire. La validation technique complète du test de paiement reste à refaire avant clôture.
+## Devenir partenaire et parrainage
 
-Vérification technique du 22 octobre après ces changements d’interface : **50 tests, 481 assertions** sur les pages compte, le back-office, les réservations et l’espace professionnel. PHPStan ciblé, Twig et le conteneur passent. Le test du PDF vérifie le téléchargement `application/pdf`. Ces tests utilisent la base locale et des paiements simulés ; la conversation dans l’interface et les parcours commerciaux restent à confirmer pendant la recette manuelle.
+Le formulaire « Devenir partenaire » sert à demander un partenariat de visibilité pour un site ou une entreprise. Il distingue cette demande de l’ouverture d’un compte professionnel permettant de proposer des activités à la réservation. Les choix de secteur et de trafic mensuel sont proposés dans le formulaire.
 
-Vérifications réalisées : **19 tests, 98 assertions**, couvrant les bons cadeaux, les contrôles Stripe et les non-régressions sur les abonnements et webhooks existants. L’analyse statique ciblée et les validations Twig et du conteneur passent. Le PDF de démonstration a été examiné visuellement et tient sur une page. La migration de suivi des e-mails est appliquée en local et en test. Aucun paiement réel ni envoi groupé de bons existants n’a été effectué pendant ces vérifications.
+Le programme de parrainage n’est pas encore actif : aucun crédit n’est attribué ni débité. Avant de l’ouvrir, TrouveMoi doit décider qui finance la récompense et comment elle s’applique à une activité dont le paiement est versé directement au professionnel. La page ne doit donc pas être interprétée comme la confirmation d’un crédit disponible.
 
-Pour reprendre un bon ancien marqué « Payé » manuellement sans date de paiement, rouvrir sa confirmation déclenche une vérification Stripe avant sa régularisation. Les anciens e-mails sans trace d’envoi ne peuvent pas être distingués automatiquement des messages jamais envoyés ; le premier retour peut donc transmettre une nouvelle copie. Cette reprise sera à tester ensemble sur le bon concerné.
+## Résultats de la recette
 
-## Journal des essais manuels
+Les parcours présentés dans ce guide ont été testés ensemble en local et ont fonctionné. Cela comprend la connexion client et professionnelle, la reprise d’une réservation après authentification, le récapitulatif et les moyens de paiement, le paiement Stripe en mode test, le bon cadeau de son achat à son utilisation, le tableau de bord, l’export PDF, les échanges de support et les formulaires de partenariat.
 
-| Date | Compte et parcours | Actions réalisées | Résultat observé | Décision |
-| --- | --- | --- | --- | --- |
-| — | — | Aucun essai commun réalisé pour le moment | — | — |
+Les essais ont également couvert les retours d’erreur utiles : sélection ou créneau indisponible, informations de formulaire manquantes et bon cadeau invalide ou qui ne correspond pas au total. La plateforme indique alors l’action à corriger au lieu de marquer la réservation comme payée.
+
+Les résultats locaux valident les parcours essayés dans la configuration utilisée. Les délais de versement Stripe, la réception effective des e-mails (notamment dans les courriers indésirables), les éventuels changements de configuration des professionnels et les données d’un environnement de production dépendent des services et comptes réellement utilisés.
+
+## Points à confirmer avant une mise en production élargie
+
+- Valider les conditions applicables aux remboursements, annulations et bons cadeaux avec le responsable de la plateforme, puis mettre à jour les textes présentés aux utilisateurs si nécessaire.
+- Pour tout bon émis sous l’ancien parcours, vérifier le paiement et convenir avec le professionnel d’une régularisation avant utilisation.
+- Définir le financement et les règles du programme de parrainage avant d’activer les récompenses.
+- Vérifier sur les comptes de production les moyens de paiement activés, les e-mails d’envoi et les informations propres à chaque professionnel.
+
+---
+
+**TrouveMoi — Guide de recette et d’utilisation**
+
+En cas de difficulté pendant un parcours, conserver le numéro de réservation ou de ticket et contacter le support TrouveMoi depuis l’espace concerné.
