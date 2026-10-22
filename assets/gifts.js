@@ -23,7 +23,7 @@ function initGiftForm() {
             total.textContent = euro(Math.max(0, Math.floor(Number(amount.value) || 0)));
         }
     };
-    people?.addEventListener('change', refresh);
+    people?.addEventListener('input', refresh);
     amount?.addEventListener('input', refresh);
     form.querySelectorAll('[data-gc-preset]').forEach((btn) => btn.addEventListener('click', () => {
         if (!amount) return;
