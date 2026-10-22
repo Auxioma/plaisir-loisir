@@ -101,7 +101,8 @@ final class ProviderSpaceFlowTest extends WebTestCase
         self::assertSelectorExists('.ew-error');
 
         $this->step($client, 1, ['title' => $title, 'category' => $category->getSlug(), 'activity_type' => 'supervised', 'level' => 'beginner', 'languages' => ['Français', 'Anglais'], 'subtitle' => 'Une accroche de test assez longue.']);
-        $this->step($client, 2, ['address' => '12 rue de la République, Lyon', 'city' => 'Lyon', 'postal_code' => '69002', 'lat' => '45.76', 'lng' => '4.83', 'meeting_point' => 'Devant l’entrée principale', 'opening_period' => 'all_year']);
+        $meetingPoint = str_repeat('Instructions détaillées pour rejoindre le point de rendez-vous. ', 8);
+        $this->step($client, 2, ['address' => '12 rue de la République, Lyon', 'city' => 'Lyon', 'postal_code' => '69002', 'lat' => '45.76', 'lng' => '4.83', 'meeting_point' => $meetingPoint, 'opening_period' => 'all_year']);
 
         // Étape 3 : la photo principale est obligatoire.
         $client->request('POST', '/pro/activites/assistant/3', $this->token($client, '/pro/activites/assistant/3') + ['action' => 'next', 'description' => str_repeat('Une description détaillée. ', 5)]);
@@ -134,6 +135,7 @@ final class ProviderSpaceFlowTest extends WebTestCase
         self::assertNotNull($service);
         self::assertSame(ServiceStatus::Pending, $service->getStatus());
         self::assertSame('1h30', $service->getDurationLabel());
+        self::assertSame($meetingPoint, $service->getMeetingPoint());
         self::assertSame(['Français', 'Anglais'], $service->getLanguages());
         self::assertCount(2, $service->getPackages());
         self::assertSame('42.50', $service->getPackages()->first()->getPrice());
