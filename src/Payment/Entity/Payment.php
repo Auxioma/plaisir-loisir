@@ -42,6 +42,7 @@ class Payment
         'card' => 'Carte bancaire',
         'cash' => 'Espèces',
         'other' => 'Autre',
+        'gift' => 'Bon cadeau',
     ];
 
     public const CHANNEL_STRIPE = 'stripe';

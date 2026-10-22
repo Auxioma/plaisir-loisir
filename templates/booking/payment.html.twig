@@ -43,7 +43,8 @@
             <form method="post" action="{{ path('app_booking_pay', {id: booking.id}) }}" class="bk-methods" data-turbo="false"
                   data-controller="booking-checkout" data-action="change->booking-checkout#update submit->booking-checkout#submit pageshow@window->booking-checkout#reset"
                   data-booking-checkout-online-label-value="{{ 'Payer %amount%'|trans({'%amount%': amount}) }}"
-                  data-booking-checkout-onsite-label-value="{{ 'Envoyer ma demande de réservation'|trans }}">
+                  data-booking-checkout-onsite-label-value="{{ 'Envoyer ma demande de réservation'|trans }}"
+                  data-booking-checkout-gift-label-value="Utiliser mon bon cadeau">
                 <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">
                 <fieldset class="bk-methods__choices">
                     <legend class="visually-hidden">{{ 'Moyen de paiement'|trans }}</legend>
@@ -65,6 +66,11 @@
                         </label>
                     {% endfor %}
                 </fieldset>
+                <label class="bk-gift-code">J’ai un bon cadeau valable pour cette activité
+                    <input type="radio" name="moyen" value="gift">
+                    <input type="text" name="gift_code" maxlength="20" autocomplete="off" placeholder="Code du bon cadeau">
+                    <small>Le bon doit couvrir exactement le montant de la réservation et être encore valide.</small>
+                </label>
                 <dl class="bk-total"><dt>{{ 'Total'|trans }}</dt><dd>{{ amount }}</dd></dl>
                 <button type="submit" class="pf-btn pf-btn--primary pf-btn--block bk-checkout__submit" data-booking-checkout-target="submit">{{ 'Valider ma réservation'|trans }}</button>
             </form>

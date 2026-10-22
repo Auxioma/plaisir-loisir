@@ -75,7 +75,7 @@
                 <section class="gc-section" id="resultats">
                     <h2 class="pg-h3">{{ params is empty ? 'Meilleures ventes'|trans : total ~ ' ' ~ (total > 1 ? 'bons cadeaux trouvés'|trans : 'bon cadeau trouvé'|trans) }}</h2>
                     {% if filters.type == 'libre' %}
-                        <div class="ofm-empty">{{ icon.gift(32) }}<strong>{{ 'Un bon cadeau personnalisé : vous choisissez le montant, le bénéficiaire choisit l’activité.'|trans }}</strong><a class="pg-btn" href="{{ path('app_gifts_offer') }}">{{ 'Offrir un bon cadeau libre'|trans }}</a></div>
+                        <div class="ofm-empty">{{ icon.gift(32) }}<strong>Choisissez une activité pour offrir un bon valable chez son prestataire.</strong></div>
                     {% elseif cards is empty %}
                         <div class="ofm-empty">{{ icon.gift(32) }}<strong>{{ 'Aucune activité ne correspond à ces critères.'|trans }}</strong><a class="pg-btn pg-btn--outline" href="{{ path('app_gifts') }}">{{ 'Réinitialiser les filtres'|trans }}</a></div>
                     {% else %}
@@ -132,7 +132,7 @@
                 </section>
                 <section class="pg-card gc-free">
                     <div>{{ icon.gift(44) }}<span><strong>{{ 'Un montant libre ?'|trans }}</strong><small>{{ 'Choisissez le montant et laissez le choix.'|trans }}</small></span></div>
-                    <a class="pg-btn pg-btn--outline pg-btn--block" href="{{ path('app_gifts_offer') }}">{{ 'Offrir un bon cadeau libre'|trans }}</a>
+                    <a class="pg-btn pg-btn--outline pg-btn--block" href="{{ path('app_activities') }}">{{ 'Découvrir les activités'|trans }}</a>
                 </section>
             </aside>
         </div>

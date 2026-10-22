@@ -7,12 +7,21 @@ namespace App\Catalog\Service;
 use App\Catalog\Entity\GiftCard;
 use App\Catalog\Entity\Service;
 use App\Catalog\Repository\GiftCardRepository;
+use App\Catalog\Repository\PromotionRepository;
+use App\Booking\Entity\Booking;
+use App\Booking\Enum\BookingStatus;
+use App\Booking\Service\BookingService;
+use App\Catalog\Enum\PricingUnit;
+use App\Catalog\Enum\PromotionKind;
 use App\Notification\Message\SendNotificationEmail;
 use App\Payment\Stripe\CheckoutGateway;
+use App\Payment\Stripe\ConnectGateway;
+use App\Payment\PayPal\PayPalGateway;
+use App\Provider\Service\ProviderPaymentMethods;
+use App\Payment\Service\PaymentService;
 use App\User\Entity\User;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutowireServiceClosure;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -22,10 +31,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  * « en attente », paiement, puis envoi du code à l'acheteur et — si l'envoi
  * par e-mail est choisi — au bénéficiaire.
  *
- * Paiement encaissé par TrouveMoi (le bon est vendu par la plateforme). Avec une clé
- * Stripe, page de paiement hébergée et confirmation par le webhook ou au retour ; sans
- * clé (développement, démo), le paiement est simulé et réglé aussitôt.
- * Sans clé en production, l’achat est refusé.
+ * Nouveaux bons liés à une activité : paiement direct au prestataire par son
+ * Stripe Connect ou son compte PayPal. Les anciens bons sans canal conservé
+ * continuent d’être vérifiés selon leur ancien Checkout plateforme.
  */
 final class GiftCardService
 {
@@ -44,10 +52,11 @@ final class GiftCardService
         private readonly UrlGeneratorInterface $urls,
         #[AutowireServiceClosure(CheckoutGateway::class)]
         private readonly \Closure $gateway,
-        #[Autowire('%env(STRIPE_SECRET_KEY)%')]
-        private readonly string $stripeSecretKey,
-        #[Autowire('%kernel.environment%')]
-        private readonly string $environment = 'dev',
+        private readonly ?ConnectGateway $connect = null,
+        private readonly ?PayPalGateway $paypal = null,
+        private readonly ?ProviderPaymentMethods $providerMethods = null,
+        private readonly ?PaymentService $payments = null,
+        private readonly ?PromotionRepository $promotions = null,
     ) {
     }
 
@@ -58,12 +67,17 @@ final class GiftCardService
     public function amountFor(Service $service, int $people): ?string
     {
         $lowest = null;
+        $promotion = $this->promotions?->findRunningForService($service);
         foreach ($service->getPackages() as $package) {
             $cents = (int) round((float) $package->getPrice() * 100);
+            if (null !== $promotion && PromotionKind::Reduction === $promotion->getKind() && ($promotion->getDiscountPercent() ?? 0) > 0) {
+                $cents = (int) round((float) BookingService::discount($package->getPrice(), (int) $promotion->getDiscountPercent()) * 100);
+            }
+            $cents *= PricingUnit::PerPerson === $package->getPricingUnit() ? max(1, $people) : 1;
             $lowest = null === $lowest ? $cents : min($lowest, $cents);
         }
 
-        return null === $lowest ? null : sprintf('%d.%02d', intdiv($lowest * $people, 100), ($lowest * $people) % 100);
+        return null === $lowest ? null : sprintf('%d.%02d', intdiv($lowest, 100), $lowest % 100);
     }
 
     /**
@@ -150,28 +164,37 @@ final class GiftCardService
     /**
      * @return string URL vers laquelle rediriger l'acheteur
      */
-    public function checkout(GiftCard $card): string
+    public function checkout(GiftCard $card, string $channel = ProviderPaymentMethods::STRIPE): string
     {
-        $confirmation = $this->urls->generate('app_gifts_confirmation', ['id' => (string) $card->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-
-        if (!str_starts_with($this->stripeSecretKey, 'sk_')) {
-            if ('prod' === $this->environment) {
-                throw new \RuntimeException('Le paiement des bons cadeaux n’est pas configuré.');
-            }
-            $this->markPaid($card);
-
-            return $confirmation;
+        $service = $card->getService();
+        $provider = $service?->getProvider();
+        if (null === $service || null === $provider || null === $this->connect || null === $this->paypal || null === $this->providerMethods) {
+            throw new \RuntimeException('Un bon cadeau doit être lié à une activité et payé sur le compte de son prestataire.');
         }
-
-        $session = ($this->gateway)()->createCheckoutSession(
-            label: 'Bon cadeau TrouveMoi — '.$card->getLabel(),
-            amountCents: (int) round((float) $card->getAmount() * 100),
-            currency: $card->getCurrency(),
-            reference: 'gift-'.$card->getId(),
-            successUrl: $confirmation,
-            cancelUrl: $this->urls->generate('app_gifts', [], UrlGeneratorInterface::ABSOLUTE_URL),
-        );
-        $card->setCheckoutReference($session->id);
+        $offered = $this->providerMethods->offered($provider);
+        if (!isset($offered[$channel]) || !$offered[$channel]['online']) {
+            throw new \RuntimeException('Ce moyen de paiement n’est pas configuré par le prestataire.');
+        }
+        $confirmation = $this->urls->generate('app_gifts_confirmation', ['id' => (string) $card->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $amount = (int) round((float) $card->getAmount() * 100);
+        if (ProviderPaymentMethods::STRIPE === $channel) {
+            $account = (string) $provider->getStripeAccountId();
+            $session = $this->connect->createCheckout(
+                $account, 'Bon cadeau — '.$card->getLabel(), $amount, $card->getCurrency(), $card->getBuyerEmail(),
+                'gift-'.$card->getId(), $confirmation.(str_contains($confirmation, '?') ? '&' : '?').'session_id={CHECKOUT_SESSION_ID}',
+                $this->urls->generate('app_gifts', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            );
+            $card->setCheckoutAccount($account);
+        } else {
+            $merchant = (string) ($provider->getPaypalMerchantId() ?? $provider->getPaymentPaypal());
+            $session = $this->paypal->createOrder(
+                $merchant, 'Bon cadeau — '.$card->getLabel(), number_format((float) $card->getAmount(), 2, '.', ''),
+                $card->getCurrency(), 'gift-'.$card->getId(), $confirmation,
+                $this->urls->generate('app_gifts', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            );
+            $card->setCheckoutAccount($merchant);
+        }
+        $card->setCheckoutReference($session->id)->setCheckoutChannel($channel);
         $this->entityManager->flush();
 
         return $session->url;
@@ -190,18 +213,13 @@ final class GiftCardService
     }
 
     /** Même vérification au retour navigateur et au webhook, sans faire confiance à l'URL. */
-    public function synchronize(GiftCard $card): void
+    public function synchronize(GiftCard $card, ?string $paypalToken = null): void
     {
         if (GiftCard::STATUS_CANCELLED === $card->getStatus()) {
             return;
         }
         if (!$card->isPaid() || null === $card->getPaidAt()) {
-            if (null === $card->getCheckoutReference() || !($this->gateway)()->isCheckoutPaid(
-                $card->getCheckoutReference(),
-                (int) round((float) $card->getAmount() * 100),
-                $card->getCurrency(),
-                'gift-'.$card->getId(),
-            )) {
+            if (!$this->isCheckoutPaid($card, $paypalToken)) {
                 return;
             }
             $this->markPaid($card);
@@ -209,6 +227,64 @@ final class GiftCardService
             return;
         }
         $this->sendEmails($card);
+    }
+
+    private function isCheckoutPaid(GiftCard $card, ?string $paypalToken): bool
+    {
+        $reference = $card->getCheckoutReference();
+        if (null === $reference) {
+            return false;
+        }
+        if (ProviderPaymentMethods::STRIPE === $card->getCheckoutChannel() && null !== $this->connect && null !== $card->getCheckoutAccount()) {
+            $state = $this->connect->checkoutState($card->getCheckoutAccount(), $reference);
+
+            return $state->paid && ($state->amountCents === null || $state->amountCents === (int) round((float) $card->getAmount() * 100));
+        }
+        if (ProviderPaymentMethods::PAYPAL === $card->getCheckoutChannel() && null !== $this->paypal && $reference === $paypalToken) {
+            $state = $this->paypal->capture($reference, $card->getCheckoutAccount());
+
+            return $state->paid && ($state->amountCents === null || $state->amountCents === (int) round((float) $card->getAmount() * 100));
+        }
+        // Reprise des bons créés avant le paiement direct prestataire.
+        return null === $card->getCheckoutChannel() && ($this->gateway)()->isCheckoutPaid(
+            $reference, (int) round((float) $card->getAmount() * 100), $card->getCurrency(), 'gift-'.$card->getId(),
+        );
+    }
+
+    /** Le bon paie le total exact de l’activité du prestataire qui l’a vendu. */
+    public function redeemOnBooking(string $code, Booking $booking): void
+    {
+        $card = $this->cards->findOneBy(['code' => strtoupper(trim($code))]);
+        if (null === $card || !$card->isPaid() || GiftCard::STATUS_REDEEMED === $card->getStatus()) {
+            throw new \InvalidArgumentException('Ce bon cadeau est introuvable, non réglé ou déjà utilisé.');
+        }
+        if (!in_array($card->getCheckoutChannel(), [ProviderPaymentMethods::STRIPE, ProviderPaymentMethods::PAYPAL], true)
+            || null === $card->getCheckoutAccount()) {
+            throw new \InvalidArgumentException('Ce bon a été acheté avec un ancien parcours et doit être régularisé avant utilisation.');
+        }
+        if (null === $card->getExpiresAt() || $card->getExpiresAt() <= new \DateTimeImmutable()) {
+            throw new \InvalidArgumentException('La période de validité de ce bon cadeau est terminée.');
+        }
+        if (null === $booking->getService() || $card->getService()?->getId() !== $booking->getService()->getId()) {
+            throw new \InvalidArgumentException('Ce bon est valable uniquement pour l’activité indiquée sur la carte.');
+        }
+        if ($card->getCurrency() !== $booking->getCurrency() || number_format((float) $card->getAmount(), 2, '.', '') !== number_format((float) $booking->getTotalPrice(), 2, '.', '')) {
+            throw new \InvalidArgumentException('Le montant du bon doit correspondre exactement au total de cette réservation.');
+        }
+        if (BookingStatus::Pending !== $booking->getStatus() || null === $this->payments) {
+            throw new \InvalidArgumentException('Cette réservation ne peut plus être réglée avec un bon cadeau.');
+        }
+
+        $this->entityManager->wrapInTransaction(function () use ($card, $booking): void {
+            $this->entityManager->refresh($card, LockMode::PESSIMISTIC_WRITE);
+            if (!$card->isPaid() || GiftCard::STATUS_REDEEMED === $card->getStatus()
+                || !in_array($card->getCheckoutChannel(), [ProviderPaymentMethods::STRIPE, ProviderPaymentMethods::PAYPAL], true)
+                || null === $card->getCheckoutAccount()) {
+                throw new \InvalidArgumentException('Ce bon cadeau vient d’être utilisé ou n’est plus valide.');
+            }
+            $this->payments->recordGiftVoucherPayment($booking, $card->getCode());
+            $card->redeemOn($booking);
+        });
     }
 
     private function markPaid(GiftCard $card): void
@@ -236,14 +312,14 @@ final class GiftCardService
         $this->sendOnce($card, false, new SendNotificationEmail(
             $card->getBuyerEmail(),
             sprintf('Votre bon cadeau %s est prêt', $card->getCode()),
-            sprintf("Bonjour %s,\n\nMerci pour votre achat ! Votre bon cadeau « %s » d'une valeur de %s pour %s est prêt.\n\nCode : %s\nValable jusqu'au %s\n\nRetrouvez-le (et imprimez-le) ici : %s\n\nL'équipe TrouveMoi", $card->getBuyerName(), $card->getLabel(), $amount, $card->getRecipientName(), $card->getCode(), $until, $link),
+                sprintf("Bonjour %s,\n\nMerci pour votre achat ! Votre bon cadeau « %s » d'une valeur de %s pour %s est prêt.\n\nCode : %s\nActivité valable : %s\nPrestataire : %s\nValable jusqu'au %s\n\nRetrouvez-le (et imprimez-le) ici : %s\n\nL'équipe TrouveMoi", $card->getBuyerName(), $card->getLabel(), $amount, $card->getRecipientName(), $card->getCode(), $card->getService()?->getTitle() ?? '—', $card->getService()?->getProvider()?->getDisplayName() ?? '—', $until, $link),
         ));
 
         if (GiftCard::DELIVERY_EMAIL === $card->getDelivery() && null !== $card->getRecipientEmail()) {
             $this->sendOnce($card, true, new SendNotificationEmail(
                 $card->getRecipientEmail(),
                 sprintf('%s vous offre un bon cadeau TrouveMoi', $card->getBuyerName()),
-                sprintf("Bonjour %s,\n\n%s vous offre un bon cadeau « %s » d'une valeur de %s.%s\n\nVotre code : %s\nValable jusqu'au %s.\n\nRetrouvez votre bon et téléchargez-le en PDF ici : %s\n\nL'équipe TrouveMoi", $card->getRecipientName(), $card->getBuyerName(), $card->getLabel(), $amount, null !== $card->getMessage() ? "\n\nSon message : « ".$card->getMessage().' »' : '', $card->getCode(), $until, $link),
+                sprintf("Bonjour %s,\n\n%s vous offre un bon cadeau « %s » d'une valeur de %s.%s\n\nVotre code : %s\nActivité valable : %s\nPrestataire : %s\nValable jusqu'au %s.\n\nRetrouvez votre bon et téléchargez-le en PDF ici : %s\n\nL'équipe TrouveMoi", $card->getRecipientName(), $card->getBuyerName(), $card->getLabel(), $amount, null !== $card->getMessage() ? "\n\nSon message : « ".$card->getMessage().' »' : '', $card->getCode(), $card->getService()?->getTitle() ?? '—', $card->getService()?->getProvider()?->getDisplayName() ?? '—', $until, $link),
             ));
         }
     }

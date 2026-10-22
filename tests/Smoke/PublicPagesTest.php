@@ -75,7 +75,6 @@ final class PublicPagesTest extends WebTestCase
             '/cadeaux',
             '/cadeaux?categorie[]=ateliers-creations&montant[]=0-25',
             '/cadeaux?type=libre',
-            '/cadeaux/offrir',
             '/cadeaux/offrir?activite=descente-en-canoe',
             '/offres',
             '/offres?reduction[]=20&dispo[]=semaine&type[]=flash&tri=prix',

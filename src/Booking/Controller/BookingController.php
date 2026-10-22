@@ -11,6 +11,7 @@ use App\Booking\Presenter\BookingPaymentPresenter;
 use App\Booking\Repository\BookingRepository;
 use App\Booking\Service\BookingQrCode;
 use App\Booking\Service\BookingService;
+use App\Catalog\Service\GiftCardService;
 use App\Catalog\Entity\Service;
 use App\Catalog\Entity\ServicePackage;
 use App\Catalog\Repository\ServiceRepository;
@@ -72,6 +73,7 @@ final class BookingController extends AbstractController
         private readonly InvoiceRenderer $invoices,
         private readonly BookingQrCode $qrCode,
         private readonly AccountIdentityPresenter $identity,
+        private readonly GiftCardService $giftCards,
     ) {
     }
 
@@ -236,6 +238,21 @@ final class BookingController extends AbstractController
         }
 
         $method = (string) $request->request->get('moyen', '');
+        if ('gift' === $method) {
+            try {
+                $code = trim((string) $request->request->get('gift_code', ''));
+                if ('' === $code) {
+                    throw new \InvalidArgumentException('Saisissez le code de votre bon cadeau.');
+                }
+                $this->giftCards->redeemOnBooking($code, $booking);
+
+                return $this->redirectToRoute('app_booking_confirmation', ['id' => $id]);
+            } catch (\InvalidArgumentException $e) {
+                $this->addFlash('error', $e->getMessage());
+
+                return $this->redirectToRoute('app_booking_payment', ['id' => $id]);
+            }
+        }
         $offered = $this->bookingView($booking)['payment_methods'];
         if (!$this->isOffered($offered, $method)) {
             $this->addFlash('error', 'Ce moyen de paiement n’est pas proposé par l’organisateur.');

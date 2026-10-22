@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Catalog\Entity;
 
 use App\Catalog\Repository\GiftCardRepository;
+use App\Booking\Entity\Booking;
 use App\Shared\Doctrine\TimestampableTrait;
 use App\Shared\Doctrine\UlidIdentifierTrait;
 use App\User\Entity\User;
@@ -85,6 +86,16 @@ class GiftCard
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $checkoutReference = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $checkoutChannel = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $checkoutAccount = null;
+
+    #[ORM\OneToOne(targetEntity: Booking::class)]
+    #[ORM\JoinColumn(nullable: true, unique: true, onDelete: 'SET NULL')]
+    private ?Booking $redeemedBooking = null;
 
     #[ORM\Column(type: 'datetimetz_immutable', nullable: true)]
     private ?\DateTimeImmutable $paidAt = null;
@@ -320,6 +331,13 @@ class GiftCard
     {
         return $this->checkoutReference;
     }
+
+    public function getCheckoutChannel(): ?string { return $this->checkoutChannel; }
+    public function setCheckoutChannel(?string $channel): static { $this->checkoutChannel = $channel; return $this; }
+    public function getCheckoutAccount(): ?string { return $this->checkoutAccount; }
+    public function setCheckoutAccount(?string $account): static { $this->checkoutAccount = $account; return $this; }
+    public function getRedeemedBooking(): ?Booking { return $this->redeemedBooking; }
+    public function redeemOn(Booking $booking): static { $this->redeemedBooking = $booking; $this->status = self::STATUS_REDEEMED; return $this; }
 
     public function setCheckoutReference(?string $checkoutReference): static
     {

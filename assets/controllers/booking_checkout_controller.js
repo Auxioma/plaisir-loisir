@@ -2,7 +2,7 @@ import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
     static targets = ['submit'];
-    static values = { onlineLabel: String, onsiteLabel: String };
+    static values = { onlineLabel: String, onsiteLabel: String, giftLabel: String };
 
     connect() {
         this.reset();
@@ -10,7 +10,7 @@ export default class extends Controller {
 
     update() {
         const method = this.element.querySelector('input[name="moyen"]:checked')?.value;
-        this.submitTarget.textContent = method === 'onsite' ? this.onsiteLabelValue : this.onlineLabelValue;
+        this.submitTarget.textContent = method === 'onsite' ? this.onsiteLabelValue : (method === 'gift' ? this.giftLabelValue : this.onlineLabelValue);
     }
 
     submit(event) {

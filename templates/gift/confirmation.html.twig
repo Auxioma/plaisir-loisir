@@ -19,10 +19,11 @@
                 <header><span>TrouveMoi <small>Plaisirs &amp; Loisirs</small></span><strong>{{ 'Bon cadeau'|trans }}</strong></header>
                 <p class="gc-voucher__for">{{ 'Pour'|trans }} <strong>{{ card.recipientName }}</strong>, {{ 'de la part de'|trans }} <strong>{{ card.buyerName }}</strong></p>
                 <p class="gc-voucher__what">{{ card.label }}</p>
+                {% if card.service %}<p>{{ 'Valable uniquement pour cette activité'|trans }} : <strong>{{ card.service.title }}</strong>{% if card.service.provider %} · {{ card.service.provider.displayName }}{% endif %}</p>{% endif %}
                 <p class="gc-voucher__amount">{{ card.amount|number_format(2, ',', ' ') }} €</p>
                 {% if card.message %}<blockquote>« {{ card.message }} »</blockquote>{% endif %}
                 <p class="gc-voucher__code">{{ 'Code'|trans }} <strong>{{ card.code }}</strong></p>
-                <small>{{ 'Valable jusqu’au'|trans }} {{ card.expiresAt|date('d/m/Y') }} · {{ 'à utiliser sur trouvemoi.eu'|trans }}</small>
+                <small>{{ 'Valable jusqu’au'|trans }} {{ card.expiresAt|date('d/m/Y') }} · {{ 'à utiliser lors de la réservation de cette activité sur trouvemoi.eu'|trans }}</small>
             </article>
             <p class="gc-done__info">
                 {% if card.delivery == 'email' %}
