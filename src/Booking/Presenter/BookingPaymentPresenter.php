@@ -96,8 +96,8 @@ final class BookingPaymentPresenter
 
         $steps = [['label' => 'Réservation effectuée', 'text' => 'Le client a effectué une réservation en ligne.', 'at' => $booking->getCreatedAt(), 'done' => true]];
         if ($gift) {
-            $steps[] = ['label' => 'Bon cadeau vérifié', 'text' => 'Le bon a été payé lors de son achat auprès du prestataire et correspond à cette activité.', 'at' => $payment?->getPaidAt(), 'done' => $paid];
-            $steps[] = ['label' => 'Réservation confirmée', 'text' => 'La réservation est confirmée sans nouveau débit.', 'at' => $paid ? $payment?->getPaidAt() : null, 'done' => $confirmed];
+            $steps[] = ['label' => 'Bon cadeau vérifié', 'text' => 'Le bon a été payé lors de son achat auprès du prestataire et correspond à cette activité.', 'at' => $payment->getPaidAt(), 'done' => $paid];
+            $steps[] = ['label' => 'Réservation confirmée', 'text' => 'La réservation est confirmée sans nouveau débit.', 'at' => $paid ? $payment->getPaidAt() : null, 'done' => $confirmed];
         } elseif ($online) {
             $steps[] = ['label' => 'Paiement validé', 'text' => Payment::CHANNEL_PAYPAL === $payment->getChannel() ? 'Le paiement a été confirmé par PayPal.' : 'Le paiement a été confirmé par Stripe.', 'at' => $payment->getPaidAt(), 'done' => $paid];
             $steps[] = ['label' => 'Paiement reçu par le prestataire', 'text' => Payment::CHANNEL_PAYPAL === $payment->getChannel() ? 'Le montant a été versé directement sur votre compte PayPal.' : 'Le montant a été versé directement sur votre compte Stripe.', 'at' => $payment->getPaidAt(), 'done' => $paid];
