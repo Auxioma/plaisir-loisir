@@ -939,3 +939,30 @@
 .acc-howto { margin-bottom: 18px; padding: 14px 18px; border: 1px solid #e3e6f0; border-radius: 12px; background: #f7f5ff; font-size: 14px; }
 .acc-howto summary { display: flex; align-items: center; gap: 8px; color: var(--pl-action, #5d00ff); font-weight: 700; cursor: pointer; }
 .acc-howto ul { display: grid; gap: 8px; margin: 12px 0 0; padding-left: 20px; color: #3d4363; }
+
+/* Tableau de bord client : adapter les cartes à la colonne disponible,
+   qui peut être étroite même sur un grand écran avec les encarts de droite. */
+.pf-dashboard .pf-content { container: client-dashboard / inline-size; }
+.pf-dashboard .pf-stat__top { width: 100%; min-width: 0; flex-direction: column; gap: 12px; }
+.pf-dashboard .pf-stat__body { width: 100%; overflow-wrap: anywhere; }
+.pf-dashboard .pf-stat__value { flex-wrap: wrap; white-space: normal; }
+.pf-dashboard .pf-quick__grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 16px; }
+.pf-dashboard .pf-quick__item { min-width: 0; gap: 12px; padding: 16px; border: 1px solid var(--pf-line); border-radius: 10px; margin: 0; }
+.pf-dashboard .pf-quick__item > .pf-ico { width: 44px; height: 44px; }
+.pf-dashboard .pf-quick__item > div { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.pf-dashboard .pf-quick__item .pf-btn { max-width: 100%; height: auto; min-height: 36px; padding: 8px 12px; white-space: normal; text-align: center; }
+.pf-dashboard .pf-charts { grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+.pf-dashboard .pf-charts > .pf-card { min-width: 0; }
+.pf-dashboard .pf-card__head { flex-wrap: wrap; }
+.pf-dashboard .pf-donut { flex-wrap: wrap; gap: 20px; }
+.pf-dashboard .pf-donut__chart { margin-inline: auto; }
+.pf-dashboard .pf-donut__legend { flex: 1 1 180px; min-width: 0; }
+.pf-dashboard .pf-donut__legend li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 10px; }
+.pf-dashboard .pf-donut__legend span { white-space: nowrap; }
+.pf-dashboard .pf-donut__legend .pf-donut__label { min-width: 0; margin: 0; padding: 0; border: 0; font-size: inherit; white-space: normal; overflow-wrap: anywhere; }
+@container client-dashboard (max-width: 1000px) {
+    .pf-dashboard .pf-row--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container client-dashboard (max-width: 360px) {
+    .pf-dashboard .pf-row--4 { grid-template-columns: 1fr; }
+}

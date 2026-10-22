@@ -12,6 +12,8 @@
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
+{% block account_class %}pf-dashboard{% endblock %}
+
 {% block title %}{{ 'Tableau de bord'|trans }}{% endblock %}
 
 {% macro tile_icon(name) %}
@@ -146,7 +148,7 @@
                 {% else %}
                     <ul class="pf-donut__legend">
                         {% for b in breakdown %}
-                            <li><i style="background: {{ colors[loop.index0] }}"></i>{{ b.label|trans }}<span>{{ b.count }} ({{ b.percent }}%)</span></li>
+                            <li><i style="background: {{ colors[loop.index0] }}"></i><span class="pf-donut__label">{{ b.label|trans }}</span><span>{{ b.count }} ({{ b.percent }}%)</span></li>
                         {% endfor %}
                     </ul>
                 {% endif %}
