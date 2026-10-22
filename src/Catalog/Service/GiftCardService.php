@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Catalog\Service;
 
-use App\Catalog\Entity\GiftCard;
-use App\Catalog\Entity\Service;
-use App\Catalog\Repository\GiftCardRepository;
-use App\Catalog\Repository\PromotionRepository;
 use App\Booking\Entity\Booking;
 use App\Booking\Enum\BookingStatus;
 use App\Booking\Service\BookingService;
+use App\Catalog\Entity\GiftCard;
+use App\Catalog\Entity\Service;
 use App\Catalog\Enum\PricingUnit;
 use App\Catalog\Enum\PromotionKind;
+use App\Catalog\Repository\GiftCardRepository;
+use App\Catalog\Repository\PromotionRepository;
 use App\Notification\Message\SendNotificationEmail;
+use App\Payment\PayPal\PayPalGateway;
+use App\Payment\Service\PaymentService;
 use App\Payment\Stripe\CheckoutGateway;
 use App\Payment\Stripe\ConnectGateway;
-use App\Payment\PayPal\PayPalGateway;
 use App\Provider\Service\ProviderPaymentMethods;
-use App\Payment\Service\PaymentService;
 use App\User\Entity\User;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
@@ -238,13 +238,14 @@ final class GiftCardService
         if (ProviderPaymentMethods::STRIPE === $card->getCheckoutChannel() && null !== $this->connect && null !== $card->getCheckoutAccount()) {
             $state = $this->connect->checkoutState($card->getCheckoutAccount(), $reference);
 
-            return $state->paid && ($state->amountCents === null || $state->amountCents === (int) round((float) $card->getAmount() * 100));
+            return $state->paid && (null === $state->amountCents || $state->amountCents === (int) round((float) $card->getAmount() * 100));
         }
         if (ProviderPaymentMethods::PAYPAL === $card->getCheckoutChannel() && null !== $this->paypal && $reference === $paypalToken) {
             $state = $this->paypal->capture($reference, $card->getCheckoutAccount());
 
-            return $state->paid && ($state->amountCents === null || $state->amountCents === (int) round((float) $card->getAmount() * 100));
+            return $state->paid && (null === $state->amountCents || $state->amountCents === (int) round((float) $card->getAmount() * 100));
         }
+
         // Reprise des bons créés avant le paiement direct prestataire.
         return null === $card->getCheckoutChannel() && ($this->gateway)()->isCheckoutPaid(
             $reference, (int) round((float) $card->getAmount() * 100), $card->getCurrency(), 'gift-'.$card->getId(),
@@ -312,7 +313,7 @@ final class GiftCardService
         $this->sendOnce($card, false, new SendNotificationEmail(
             $card->getBuyerEmail(),
             sprintf('Votre bon cadeau %s est prêt', $card->getCode()),
-                sprintf("Bonjour %s,\n\nMerci pour votre achat ! Votre bon cadeau « %s » d'une valeur de %s pour %s est prêt.\n\nCode : %s\nActivité valable : %s\nPrestataire : %s\nValable jusqu'au %s\n\nRetrouvez-le (et imprimez-le) ici : %s\n\nL'équipe TrouveMoi", $card->getBuyerName(), $card->getLabel(), $amount, $card->getRecipientName(), $card->getCode(), $card->getService()?->getTitle() ?? '—', $card->getService()?->getProvider()?->getDisplayName() ?? '—', $until, $link),
+            sprintf("Bonjour %s,\n\nMerci pour votre achat ! Votre bon cadeau « %s » d'une valeur de %s pour %s est prêt.\n\nCode : %s\nActivité valable : %s\nPrestataire : %s\nValable jusqu'au %s\n\nRetrouvez-le (et imprimez-le) ici : %s\n\nL'équipe TrouveMoi", $card->getBuyerName(), $card->getLabel(), $amount, $card->getRecipientName(), $card->getCode(), $card->getService()?->getTitle() ?? '—', $card->getService()?->getProvider()?->getDisplayName() ?? '—', $until, $link),
         ));
 
         if (GiftCard::DELIVERY_EMAIL === $card->getDelivery() && null !== $card->getRecipientEmail()) {
