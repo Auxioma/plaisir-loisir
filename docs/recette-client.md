@@ -45,6 +45,22 @@ Un contrôle dans Chromium du tableau de bord local a été effectué aux largeu
 
 Ces contrôles techniques préparent les essais communs ; ils ne remplacent pas la recette manuelle de l’ensemble de la plateforme.
 
+## Bons cadeaux — constat et corrections du 22 octobre
+
+Le parcours signalé était incomplet. Le retour après paiement attendait uniquement le webhook Stripe. De plus, changer le statut dans EasyAdmin ne déclenchait pas l’envoi des e-mails et ne renseignait pas les dates de paiement et de validité. Cette manipulation n’est pas la procédure normale.
+
+Le retour navigateur vérifie maintenant auprès de Stripe que la session correspond au bon acheté, au bon montant et à la bonne devise, avec un paiement réglé. Le webhook conserve le même contrôle pour les acheteurs qui ferment le navigateur. Les statuts ne sont plus modifiables librement dans EasyAdmin.
+
+Après confirmation, l’acheteur reçoit sa copie et le bénéficiaire reçoit le bon si l’envoi par e-mail a été choisi. Chaque envoi transmis est suivi séparément. Une panne d’envoi peut être réessayée en rouvrant la confirmation, sans renvoyer l’autre message déjà suivi comme transmis. Cette trace atteste la transmission au système d’envoi, pas la réception en boîte principale ; l’adresse, la configuration de messagerie et les courriers indésirables restent à vérifier lors de la recette réelle.
+
+Un téléchargement PDF remplace l’impression de toute la page. Il conserve la présentation violette, le message personnel, les noms, le montant, le code et la date de validité. Un bon non réglé ne donne pas accès au PDF.
+
+**Utilisation sur une activité : décision encore attendue.** Le code de bon cadeau n’est pas encore utilisable au paiement. TrouveMoi encaisse aujourd’hui les bons tandis que chaque prestataire encaisse ses propres réservations. Il faut décider soit d’un reversement par TrouveMoi au prestataire lors de l’utilisation, soit de bons vendus par un prestataire et limités à ses activités. La déduction du bon ne doit pas être ajoutée seule : elle laisserait sinon une partie de la prestation impayée.
+
+Vérifications réalisées : **19 tests, 98 assertions**, couvrant les bons cadeaux, les contrôles Stripe et les non-régressions sur les abonnements et webhooks existants. L’analyse statique ciblée et les validations Twig et du conteneur passent. Le PDF de démonstration a été examiné visuellement et tient sur une page. La migration de suivi des e-mails est appliquée en local et en test. Aucun paiement réel ni envoi groupé de bons existants n’a été effectué pendant ces vérifications.
+
+Pour reprendre un bon ancien marqué « Payé » manuellement sans date de paiement, rouvrir sa confirmation déclenche une vérification Stripe avant sa régularisation. Les anciens e-mails sans trace d’envoi ne peuvent pas être distingués automatiquement des messages jamais envoyés ; le premier retour peut donc transmettre une nouvelle copie. Cette reprise sera à tester ensemble sur le bon concerné.
+
 ## Journal des essais manuels
 
 | Date | Compte et parcours | Actions réalisées | Résultat observé | Décision |
