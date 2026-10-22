@@ -36,7 +36,7 @@ final class StateChangingRequestsTest extends WebTestCase
     public function testTheGiftFormDoesNotPutPersonalDataInTheUrl(): void
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '/cadeaux/offrir');
+        $crawler = $client->request('GET', '/cadeaux/offrir?activite=descente-en-canoe');
 
         self::assertSame(200, $client->getResponse()->getStatusCode());
 
@@ -56,13 +56,12 @@ final class StateChangingRequestsTest extends WebTestCase
             'Le jeton anti-CSRF manque au formulaire cadeau.',
         );
 
-        // Le bon est créé et payé (paiement simulé en test), puis l'acheteur
-        // arrive sur son bon — sans ses données dans l'adresse.
+        // Une saisie invalide est renvoyée dans la page, jamais dans l'adresse.
         $client->submit($form->form([
-            'amount' => '40',
+            'people' => '1',
             'recipient_name' => 'Léa',
             'delivery' => 'email',
-            'recipient_email' => 'lea@example.com',
+            'recipient_email' => 'pas-une-adresse',
             'message' => 'Joyeux anniversaire !',
             'buyer_name' => 'Martin Thomas',
             'buyer_email' => 'martin@example.com',
@@ -70,16 +69,13 @@ final class StateChangingRequestsTest extends WebTestCase
             'accept_terms' => '1',
         ]));
 
-        self::assertResponseRedirects();
-        $client->followRedirect();
-        self::assertSame(200, $client->getResponse()->getStatusCode());
+        self::assertResponseStatusCodeSame(422);
         self::assertStringNotContainsString(
             'martin@example.com',
             (string) $client->getRequest()->getUri(),
             "L'adresse de la page du bon contient l'e-mail saisi.",
         );
-        self::assertSelectorTextContains('.gc-voucher__amount', '40,00');
-        self::assertSelectorExists('.gc-voucher__code strong');
+        self::assertStringNotContainsString('pas-une-adresse', (string) $client->getRequest()->getUri());
     }
 
     public function testTheGiftFormRefusesMissingInformation(): void

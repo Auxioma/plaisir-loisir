@@ -39,6 +39,8 @@ final class BookingFlowTest extends WebTestCase
         $user = $this->client($em, 'julie.martin@client.trouvemoi.test');
         $client->loginUser($user);
         $booking = $this->book($client, $em, $user, $service, $slot);
+        $service = $em->find(Service::class, $booking->getService()->getId());
+        self::assertNotNull($service);
         $code = 'GIFT-'.strtoupper(bin2hex(random_bytes(4)));
         $gift = (new GiftCard())->setCode($code)->setService($service)->setLabel('Descente en canoë — 2 pers.')
             ->setAmount($booking->getTotalPrice())->setBuyerName('Alice')->setBuyerEmail('alice@example.test')
@@ -87,11 +89,14 @@ final class BookingFlowTest extends WebTestCase
             'children' => 1,
         ]);
         self::assertResponseRedirects();
+        $location = (string) $client->getResponse()->headers->get('Location');
+        self::assertMatchesRegularExpression('#^/reservations/([0-9A-HJKMNP-TV-Z]{26})$#', $location);
+        $booking = $em->find(Booking::class, substr($location, \strlen('/reservations/')));
+        self::assertNotNull($booking);
         $client->followRedirect();
         self::assertSelectorTextContains('h1', 'Finaliser ma réservation');
         self::assertSelectorExists('.bk-pay form[method="post"][action$="/payer"]');
         self::assertSelectorNotExists('.bk-progress');
-        $booking = $this->lastBooking($em, $user, $service);
         self::assertSame($before + 3, $em->getRepository(Availability::class)->find($slot->getId())->getBooked());
 
         // La page affichée après « Réserver » contient directement les moyens acceptés.
@@ -459,14 +464,6 @@ final class BookingFlowTest extends WebTestCase
         self::assertNotNull($user);
 
         return $user;
-    }
-
-    private function lastBooking(EntityManagerInterface $em, User $user, Service $service): Booking
-    {
-        $booking = $em->getRepository(Booking::class)->findOneBy(['client' => $user, 'service' => $service], ['createdAt' => 'DESC']);
-        self::assertNotNull($booking);
-
-        return $booking;
     }
 
     /** Réserve 2 places sur le créneau et renvoie la réservation (en attente de paiement). */
