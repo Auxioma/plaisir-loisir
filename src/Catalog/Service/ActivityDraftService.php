@@ -442,7 +442,7 @@ final class ActivityDraftService
             ->setLatitude(is_numeric($d['lat'] ?? null) ? number_format((float) $d['lat'], 7, '.', '') : null)
             ->setLongitude(is_numeric($d['lng'] ?? null) ? number_format((float) $d['lng'], 7, '.', '') : null)
             ->setPlaceLabel(self::str($d, 'place_label', 120) ?? self::str($d, 'city', 120))
-            ->setMeetingPoint(self::str($d, 'meeting_point', 2000))
+            ->setMeetingPoint(self::str($d, 'meeting_point', 500))
             ->setOpeningPeriod(OpeningPeriod::tryFrom((string) ($d['opening_period'] ?? '')))
             ->setDescription((string) ($d['description'] ?? ''))
             ->setProgramme(self::str($d, 'programme', 3000))
