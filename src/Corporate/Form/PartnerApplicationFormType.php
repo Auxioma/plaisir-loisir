@@ -24,11 +24,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  * termsAccepted, et désormais `phone`) suffisent, pas besoin de les
  * dupliquer ici.
  *
- * Portée volontairement limitée au téléphone : secteur, trafic et ville
- * restent HORS de ce formulaire, exactement comme avant. Ce sont des
- * `<select>` dans la maquette dont les options n'ont jamais été câblées côté
- * template (défaut préexistant, hors sujet de cette tâche) — le contrôleur
- * continue de recopier leur valeur brute sur l'entité séparément.
+ * Secteur, trafic et ville restent des contrôles complémentaires du formulaire.
  */
 final class PartnerApplicationFormType extends AbstractType
 {

@@ -54,7 +54,7 @@ class SupportTicketCrudController extends AbstractCrudController
             ->setEntityLabelInSingular('ticket')
             ->setEntityLabelInPlural('tickets')
             ->setPageTitle(Crud::PAGE_INDEX, 'Tickets support')
-            ->setHelp(Crud::PAGE_EDIT, 'Écrivez votre réponse puis enregistrez : elle s’ajoute au fil et le professionnel est notifié.')
+            ->setHelp(Crud::PAGE_EDIT, 'Écrivez votre réponse puis enregistrez : elle s’ajoute au fil et le demandeur reçoit une notification.')
             ->setDefaultSort(['lastReplyAt' => 'DESC'])
             ->setSearchFields(['number', 'subject', 'author.email']);
     }
@@ -90,7 +90,7 @@ class SupportTicketCrudController extends AbstractCrudController
 
         yield TextField::new('reference', 'N°')->hideOnForm();
         yield TextField::new('subject', 'Sujet')->hideOnForm();
-        yield AssociationField::new('author', 'Professionnel')->hideOnForm()
+        yield AssociationField::new('author', 'Demandeur')->hideOnForm()
             ->formatValue(static fn (mixed $v, SupportTicket $t): string => trim($t->getAuthor()?->getFirstName().' '.$t->getAuthor()?->getLastName()).' — '.$t->getAuthor()?->getEmail());
         yield ChoiceField::new('category', 'Catégorie')->setChoices($categories)->formatValue(static fn (mixed $v, SupportTicket $t): string => $t->getCategory()->label());
         yield TextField::new('phone', 'À rappeler au')->hideOnIndex();
@@ -98,12 +98,13 @@ class SupportTicketCrudController extends AbstractCrudController
             ->formatValue(static fn (mixed $v, SupportTicket $t): string => $t->getStatus()->label())
             ->renderAsBadges(['open' => 'info', 'in_progress' => 'warning', 'resolved' => 'success', 'closed' => 'secondary']);
         yield DateTimeField::new('lastReplyAt', 'Dernière réponse')->hideOnForm();
-        yield Field::new('thread', 'Fil')->onlyOnDetail()
+        yield TextField::new('thread', 'Conversation complète')->onlyOnDetail()
             ->setVirtual(true)
-            ->formatValue(static fn (mixed $v, SupportTicket $t): string => implode("\n\n", array_map(
-                static fn (SupportTicketMessage $m): string => sprintf('[%s] %s : %s', $m->getCreatedAt()?->format('d/m/Y H:i'), $m->isFromStaff() ? 'Équipe' : 'Pro', $m->getBody()),
+            ->renderAsHtml()
+            ->formatValue(static fn (mixed $v, SupportTicket $t): string => '<div style="white-space:normal;max-width:900px">'.implode('', array_map(
+                static fn (SupportTicketMessage $m): string => sprintf('<article style="padding:12px 14px;margin:0 0 10px;border:1px solid #e5e7eb;border-radius:10px"><strong>%s · %s</strong><p style="white-space:pre-wrap;margin:8px 0 0">%s</p></article>', $m->isFromStaff() ? 'Équipe TrouveMoi' : 'Demandeur', $m->getCreatedAt()?->format('d/m/Y H:i') ?? '', htmlspecialchars($m->getBody(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')),
                 $t->getMessages()->toArray(),
-            )));
+            )).'</div>');
         yield TextareaField::new('reply', 'Réponse à envoyer')->onlyOnForms()->setVirtual(true)->setFormTypeOption('mapped', false)->setRequired(false)
             ->setHelp('Le fil complet est visible sur la page « Consulter » du ticket.');
     }

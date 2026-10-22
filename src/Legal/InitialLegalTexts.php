@@ -212,14 +212,13 @@ final class InitialLegalTexts
                 'Paiement',
                 [
                     '<p><strong>Le prix d\'une prestation se règle directement au prestataire</strong>, par l\'un des moyens qu\'il propose et qui vous sont indiqués lors de la réservation (lien de paiement en ligne sur son propre compte, PayPal, virement, paiement sur place…), selon les modalités et le calendrier qu\'il fixe. TrouveMoi n\'encaisse aucune somme à ce titre, ne prélève aucune commission sur les prestations et n\'intervient pas dans leur règlement.</p>',
-                    '<p>Seuls les bons cadeaux et les abonnements des professionnels sont payés à TrouveMoi, en ligne, par l\'intermédiaire de notre prestataire <strong>Stripe</strong> : <strong>vos coordonnées bancaires ne transitent pas par nos serveurs et n\'y sont jamais enregistrées</strong>.</p>',
+                    '<p>Les bons cadeaux liés à une activité sont réglés directement au prestataire qui la propose, sur son compte de paiement Stripe Connect ou PayPal. Les abonnements professionnels sont réglés à TrouveMoi par l\'intermédiaire de Stripe. <strong>Vos coordonnées bancaires ne transitent pas par nos serveurs et n\'y sont jamais enregistrées</strong>.</p>',
                 ],
             ],
             [
                 'Bons cadeaux',
                 [
-                    '<p>Les bons cadeaux sont nominatifs, valables douze mois à compter de leur date d\'émission et utilisables sur les activités éligibles indiquées lors de l\'achat. Ils ne sont ni repris, ni échangés, ni remboursés, y compris en cas de perte, et ne donnent lieu à aucun rendu de monnaie si le prix de la prestation choisie est inférieur au montant du bon.</p>',
-                    '<p>Un bon peut être utilisé en plusieurs fois jusqu\'à épuisement de son montant, dans la limite de sa durée de validité.</p>',
+                    '<p>Les bons cadeaux sont nominatifs, valables douze mois à compter de leur date d\'émission et utilisables uniquement pour l\'activité du prestataire indiquée lors de l\'achat. Le paiement du bon est versé directement à ce prestataire. Le code couvre une réservation du montant exact du bon ; il ne peut être utilisé qu\'une fois. Les conditions de remboursement applicables sont celles du prestataire et du moyen de paiement utilisé.</p>',
                 ],
             ],
             [

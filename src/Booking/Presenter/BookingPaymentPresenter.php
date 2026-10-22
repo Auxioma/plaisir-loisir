@@ -57,6 +57,7 @@ final class BookingPaymentPresenter
     {
         return match (true) {
             null === $payment => 'À convenir avec l’organisateur',
+            'gift' === $payment->getMethod() => 'Bon cadeau',
             'card' === $payment->getMethod() => 'Carte bancaire',
             null !== $payment->getMethodLabel() => $payment->getMethodLabel(),
             Payment::CHANNEL_STRIPE === $payment->getChannel() => 'Carte bancaire (non finalisé)',
@@ -90,10 +91,14 @@ final class BookingPaymentPresenter
     {
         $paid = null !== $payment && $payment->isPaid();
         $online = null !== $payment && $payment->isOnline();
+        $gift = null !== $payment && 'gift' === $payment->getChannel();
         $confirmed = \in_array($booking->getStatus(), [BookingStatus::Confirmed, BookingStatus::InProgress, BookingStatus::Completed], true);
 
         $steps = [['label' => 'Réservation effectuée', 'text' => 'Le client a effectué une réservation en ligne.', 'at' => $booking->getCreatedAt(), 'done' => true]];
-        if ($online) {
+        if ($gift) {
+            $steps[] = ['label' => 'Bon cadeau vérifié', 'text' => 'Le bon a été payé lors de son achat auprès du prestataire et correspond à cette activité.', 'at' => $payment?->getPaidAt(), 'done' => $paid];
+            $steps[] = ['label' => 'Réservation confirmée', 'text' => 'La réservation est confirmée sans nouveau débit.', 'at' => $paid ? $payment?->getPaidAt() : null, 'done' => $confirmed];
+        } elseif ($online) {
             $steps[] = ['label' => 'Paiement validé', 'text' => Payment::CHANNEL_PAYPAL === $payment->getChannel() ? 'Le paiement a été confirmé par PayPal.' : 'Le paiement a été confirmé par Stripe.', 'at' => $payment->getPaidAt(), 'done' => $paid];
             $steps[] = ['label' => 'Paiement reçu par le prestataire', 'text' => Payment::CHANNEL_PAYPAL === $payment->getChannel() ? 'Le montant a été versé directement sur votre compte PayPal.' : 'Le montant a été versé directement sur votre compte Stripe.', 'at' => $payment->getPaidAt(), 'done' => $paid];
             $steps[] = ['label' => 'Réservation confirmée', 'text' => 'La réservation a été confirmée automatiquement après le paiement.', 'at' => $paid ? $payment->getPaidAt() : null, 'done' => $confirmed];

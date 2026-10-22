@@ -8,6 +8,7 @@ use App\Availability\Entity\Availability;
 use App\Booking\Entity\Booking;
 use App\Booking\Enum\BookingStatus;
 use App\Catalog\Entity\Service;
+use App\Catalog\Entity\GiftCard;
 use App\Catalog\Enum\ServiceStatus;
 use App\Payment\Entity\Payment;
 use App\Payment\Enum\PaymentStatus;
@@ -30,6 +31,39 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
  */
 final class BookingFlowTest extends WebTestCase
 {
+    public function testPaidGiftVoucherCanOnlyBeUsedOnceOnItsOwnActivity(): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        [$service, $slot] = $this->serviceWithSlot($em);
+        $user = $this->client($em, 'julie.martin@client.trouvemoi.test');
+        $client->loginUser($user);
+        $booking = $this->book($client, $em, $user, $service, $slot);
+        $code = 'GIFT-'.strtoupper(bin2hex(random_bytes(4)));
+        $gift = (new GiftCard())->setCode($code)->setService($service)->setLabel('Descente en canoë — 2 pers.')
+            ->setAmount($booking->getTotalPrice())->setBuyerName('Alice')->setBuyerEmail('alice@example.test')
+            ->setCheckoutChannel('stripe')->setCheckoutAccount('acct_test_provider')
+            ->setRecipientName('Julie')->setDelivery(GiftCard::DELIVERY_PRINT)->markPaid(new \DateTimeImmutable());
+        $em->persist($gift);
+        $em->flush();
+
+        $crawler = $client->request('GET', '/reservations/'.$booking->getId().'/paiement');
+        $client->request('POST', '/reservations/'.$booking->getId().'/payer', [
+            '_token' => (string) $crawler->filter('input[name="_token"]')->attr('value'),
+            'moyen' => 'gift', 'gift_code' => $code,
+        ]);
+        self::assertResponseRedirects('/reservations/'.$booking->getId().'/confirmation');
+        $em->clear();
+        $booking = $em->find(Booking::class, $booking->getId());
+        $gift = $em->getRepository(GiftCard::class)->findOneBy(['code' => $code]);
+        $payment = $em->getRepository(Payment::class)->findOneBy(['booking' => $booking]);
+        self::assertSame(BookingStatus::Confirmed, $booking->getStatus());
+        self::assertSame(GiftCard::STATUS_REDEEMED, $gift->getStatus());
+        self::assertSame($booking->getId(), $gift->getRedeemedBooking()->getId());
+        self::assertTrue($payment->isPaid());
+        self::assertSame('gift', $payment->getChannel());
+    }
+
     public function testAClientPaysTheProviderByCardOnHisStripeAccount(): void
     {
         $client = static::createClient();

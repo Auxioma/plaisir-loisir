@@ -154,6 +154,38 @@ final class PaymentService
         return true;
     }
 
+    /** Paiement déjà reçu par le professionnel lors de la vente d'un bon ciblé. */
+    public function recordGiftVoucherPayment(Booking $booking, string $giftCode): Payment
+    {
+        if (BookingStatus::Pending !== $booking->getStatus()) {
+            throw new \InvalidArgumentException('Cette réservation n’est plus en attente de règlement.');
+        }
+        $payment = $this->payments->findOneByBooking($booking);
+        if (null !== $payment && ($payment->isPaid() || (null !== $payment->getExternalId() && $payment->isOnline()))) {
+            throw new \InvalidArgumentException('Un paiement est déjà réglé ou en cours pour cette réservation.');
+        }
+        if (null === $payment) {
+            $payment = (new Payment())->setBooking($booking);
+            $this->entityManager->persist($payment);
+        }
+        $payment->setAmount($booking->getTotalPrice())
+            ->setCurrency($booking->getCurrency())
+            ->setChannel('gift')
+            ->setExternalId(null)
+            ->setExternalAccount(null)
+            ->setReference('Bon cadeau '.$giftCode)
+            ->setStatus(PaymentStatus::Paid)
+            ->setMethod('gift')
+            ->setPaidAt(new \DateTimeImmutable());
+        if ($this->bookingWorkflow->can($booking, 'confirm')) {
+            $this->bookingWorkflow->apply($booking, 'confirm', ['paid_online' => true]);
+        }
+        $this->settle($payment);
+        $this->notifyProvider($payment);
+
+        return $payment;
+    }
+
     /** Numéro de facture (séquence annuelle, verrouillée) puis enregistrement. */
     private function settle(Payment $payment): void
     {

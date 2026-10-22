@@ -150,7 +150,7 @@ final class AccountPagesFlowTest extends WebTestCase
     /**
      * §26 du CDC : export des données personnelles (droit à la portabilité).
      */
-    public function testExportDownloadsAJsonFileWithThePersonalData(): void
+    public function testExportDownloadsAPdfFileWithThePersonalData(): void
     {
         $client = static::createClient();
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
@@ -165,12 +165,9 @@ final class AccountPagesFlowTest extends WebTestCase
         $client->request('GET', '/compte/parametres/exporter');
 
         self::assertResponseIsSuccessful();
-        self::assertResponseHeaderSame('content-type', 'application/json');
+        self::assertResponseHeaderSame('content-type', 'application/pdf');
         self::assertStringContainsString('attachment', (string) $client->getResponse()->headers->get('content-disposition'));
-
-        $data = json_decode((string) $client->getResponse()->getContent(), true, flags: \JSON_THROW_ON_ERROR);
-        self::assertSame($user->getEmail(), $data['compte']['email']);
-        self::assertSame('Demande à exporter', $data['demandes_de_devis'][0]['titre']);
+        self::assertStringStartsWith('%PDF-', (string) $client->getResponse()->getContent());
     }
 
     /**

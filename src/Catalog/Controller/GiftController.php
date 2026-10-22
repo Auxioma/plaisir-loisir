@@ -13,6 +13,7 @@ use App\Catalog\Repository\GiftCardRepository;
 use App\Catalog\Repository\ServiceRepository;
 use App\Catalog\Service\GiftCardPdfRenderer;
 use App\Catalog\Service\GiftCardService;
+use App\Provider\Service\ProviderPaymentMethods;
 use App\User\Entity\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -108,16 +109,22 @@ final class GiftController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/cadeaux/offrir', 'en' => '/en/gift-cards/buy'], name: 'app_gifts_offer', methods: ['GET', 'POST'])]
-    public function offer(Request $request): Response
+    public function offer(Request $request, ProviderPaymentMethods $paymentMethods): Response
     {
         $slug = (string) ($request->request->get('activite') ?? $request->query->get('activite', ''));
         $service = '' !== $slug ? $this->services->findPublishedBySlug($slug) : null;
         if ('' !== $slug && (null === $service || ServiceStatus::Published !== $service->getStatus())) {
             throw $this->createNotFoundException('Activité introuvable.');
         }
-        if (null !== $service && null === $this->giftCards->amountFor($service, 1)) {
-            $this->addFlash('info', 'Cette activité n’a pas encore de tarif : offrez un bon cadeau libre.');
-            $service = null;
+        if (null === $service) {
+            $this->addFlash('info', 'Les bons cadeaux sont liés à une activité précise et payés directement au prestataire. Choisissez une activité pour continuer.');
+
+            return $this->redirectToRoute('app_gifts');
+        }
+        if (null === $this->giftCards->amountFor($service, 1)) {
+            $this->addFlash('info', 'Cette activité n’a pas encore de tarif : les bons cadeaux ne sont pas disponibles pour le moment.');
+
+            return $this->redirectToRoute('app_gifts');
         }
 
         $user = $this->getUser();
@@ -146,7 +153,7 @@ final class GiftController extends AbstractController
                 $card = $this->giftCards->create($data, $service, $user instanceof User ? $user : null);
 
                 try {
-                    return $this->redirect($this->giftCards->checkout($card));
+                    return $this->redirect($this->giftCards->checkout($card, (string) $request->request->get('moyen', ProviderPaymentMethods::STRIPE)));
                 } catch (\Throwable) {
                     $errors['_token'] = 'Le paiement n’a pas pu démarrer. Merci de réessayer dans un instant.';
                 }
@@ -154,13 +161,14 @@ final class GiftController extends AbstractController
         }
 
         return $this->render('gift/offrir.html.twig', [
-            'activity' => null !== $service ? $this->presenter->card($service, true) : null,
-            'unit' => null !== $service ? (float) $this->giftCards->amountFor($service, 1) : null,
-            'total' => null !== $service ? (float) $this->giftCards->amountFor($service, max(1, min(GiftCardService::MAX_PEOPLE, (int) $data['people']))) : (float) (int) $data['amount'],
+            'activity' => $this->presenter->card($service, true),
+            'unit' => (float) $this->giftCards->amountFor($service, 1),
+            'total' => (float) $this->giftCards->amountFor($service, max(1, min(GiftCardService::MAX_PEOPLE, (int) $data['people']))),
             'data' => $data,
             'errors' => $errors,
             'deliveries' => GiftCardService::DELIVERIES,
             'limits' => ['min' => GiftCardService::MIN_AMOUNT, 'max' => GiftCardService::MAX_AMOUNT, 'people' => GiftCardService::MAX_PEOPLE],
+            'payment_methods' => $this->paymentMethodsForService($paymentMethods, $service),
         ], new Response(null, [] !== $errors ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK));
     }
 
@@ -173,7 +181,7 @@ final class GiftController extends AbstractController
 
     /** Le lien (ULID, non devinable) est celui envoyé par e-mail à l'acheteur. */
     #[Route(path: ['fr' => '/cadeaux/bon/{id}', 'en' => '/en/gift-cards/card/{id}'], name: 'app_gifts_confirmation', requirements: ['id' => '[0-9A-HJKMNP-TV-Z]{26}'])]
-    public function confirmation(string $id, GiftCardRepository $cards, LoggerInterface $logger): Response
+    public function confirmation(string $id, Request $request, GiftCardRepository $cards, LoggerInterface $logger): Response
     {
         $card = $cards->find($id);
         if (null === $card) {
@@ -182,7 +190,7 @@ final class GiftController extends AbstractController
 
         $verificationError = false;
         try {
-            $this->giftCards->synchronize($card);
+            $this->giftCards->synchronize($card, $request->query->get('token'));
         } catch (\Throwable $e) {
             $verificationError = true;
             $logger->error('Vérification ou envoi du bon cadeau impossible.', ['gift_id' => $id, 'exception' => $e]);
@@ -193,6 +201,15 @@ final class GiftController extends AbstractController
             'verification_error' => $verificationError,
             'activity' => null !== $card->getService() ? $this->presenter->card($card->getService()) : null,
         ]);
+    }
+
+    /** @return array<string, array{type: string, label: string, online: bool}> */
+    private function paymentMethodsForService(ProviderPaymentMethods $methods, ?\App\Catalog\Entity\Service $service): array
+    {
+        return null !== $service && null !== $service->getProvider() ? array_filter(
+            $methods->offered($service->getProvider()),
+            static fn (array $method): bool => $method['online'],
+        ) : [];
     }
 
     #[Route(path: ['fr' => '/cadeaux/bon/{id}/pdf', 'en' => '/en/gift-cards/card/{id}/pdf'], name: 'app_gifts_pdf', requirements: ['id' => '[0-9A-HJKMNP-TV-Z]{26}'], methods: ['GET'])]

@@ -13,6 +13,7 @@
         .brand { font-size: 22px; }
         .tagline { display: block; color: #ffd166; font-size: 11px; }
         .label { font-size: 18px; font-weight: bold; }
+    .valid-for { margin: 10px auto; max-width: 520px; font-size: 12px; line-height: 1.5; }
         .amount { margin: 10px 0; font-size: 44px; font-weight: bold; }
         .message { margin: 18px 0; font-style: italic; overflow-wrap: break-word; }
         .code { display: inline-block; padding: 10px 20px; border-radius: 8px; background-color: #fff; color: #5b2ee6; font-size: 22px; font-weight: bold; letter-spacing: 2px; }
@@ -24,6 +25,7 @@
     <table><tr><td><span class="brand">TrouveMoi</span><span class="tagline">Plaisirs &amp; Loisirs</span></td><td>{{ 'Bon cadeau'|trans }}</td></tr></table>
     <p>{{ 'Pour'|trans }} <strong>{{ card.recipientName }}</strong>, {{ 'de la part de'|trans }} <strong>{{ card.buyerName }}</strong></p>
     <p class="label">{{ card.label }}</p>
+    {% if card.service %}<p class="valid-for">{{ 'Valable uniquement pour cette activité'|trans }} : <strong>{{ card.service.title }}</strong>{% if card.service.provider %}<br>{{ 'Chez'|trans }} {{ card.service.provider.displayName }}{% endif %}</p>{% endif %}
     <p class="amount">{{ card.amount|number_format(2, ',', ' ') }} €</p>
     {% if card.message %}<p class="message">« {{ card.message|nl2br }} »</p>{% endif %}
     <p class="code">{{ card.code }}</p>

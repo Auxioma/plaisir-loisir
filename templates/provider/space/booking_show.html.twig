@@ -25,9 +25,11 @@
             <span class="rg-banner__ico">{{ icon.check(34) }}</span>
             <div>
                 <h1>{{ 'Paiement reçu sur votre compte prestataire !'|trans }}</h1>
-                <p>{{ payment.online
+                <p>{{ payment.channel == 'gift'
+                    ? 'Le bon cadeau a déjà été payé directement au prestataire. La réservation est réglée et confirmée.'|trans
+                    : (payment.online
                     ? 'La réservation est confirmée et le paiement a été versé directement sur votre compte %account%.'|trans({'%account%': account})
-                    : 'Vous avez déclaré le règlement reçu sur place.'|trans }}</p>
+                    : 'Vous avez déclaré le règlement reçu sur place.'|trans) }}</p>
             </div>
             <span class="rg-banner__spark" aria-hidden="true"></span>
         </section>
@@ -58,12 +60,12 @@
             </dl>
             {% if paid %}
                 <div class="rg-received">
-                    <span>{{ payment.online ? 'Montant versé sur votre compte pro'|trans : 'Montant reçu'|trans }}</span>
+                    <span>{{ payment.channel == 'gift' ? 'Montant reçu à la vente du bon'|trans : (payment.online ? 'Montant versé sur votre compte pro'|trans : 'Montant reçu'|trans) }}</span>
                     <strong>{{ payment.amount|number_format(2, ',', ' ') }} €</strong>
                 </div>
                 <div class="rg-info">
                     {{ icon.info(18) }}
-                    <p>{% if payment.online %}{{ 'Le montant de %amount% a été versé directement sur votre compte %account%. TrouveMoi ne prélève aucune commission ; seuls les frais de %account% s’appliquent, selon votre contrat.'|trans({'%amount%': payment.amount|number_format(2, ',', ' ') ~ ' €', '%account%': account}) }}{% else %}{{ 'Règlement déclaré reçu. TrouveMoi ne prélève aucune commission.'|trans }}{% endif %}</p>
+                    <p>{% if payment.channel == 'gift' %}Le prestataire a reçu le paiement lorsque le bon cadeau a été acheté. Aucun second débit n’est effectué pour cette réservation.{% elseif payment.online %}{{ 'Le montant de %amount% a été versé directement sur votre compte %account%. TrouveMoi ne prélève aucune commission ; seuls les frais de %account% s’appliquent, selon votre contrat.'|trans({'%amount%': payment.amount|number_format(2, ',', ' ') ~ ' €', '%account%': account}) }}{% else %}{{ 'Règlement déclaré reçu. TrouveMoi ne prélève aucune commission.'|trans }}{% endif %}</p>
                 </div>
             {% elseif not cancelled %}
                 <div class="rg-manage">

@@ -525,6 +525,10 @@ button.acc-nlink { appearance: none; background: none; border: none; padding: 0;
 .acc-inbox .acc-chat__report { flex: none; }
 .acc-inbox__placeholder { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--tm-ink-2); }
 .acc-inbox__back { display: none; }
+.pf-support-ticket .pp-composer { gap: 10px; align-items: flex-end; }
+.pf-support-ticket .pp-composer textarea { min-width: 0; }
+.pf-support-ticket .pp-composer__send { flex: 0 0 auto; gap: 7px; min-width: 92px; padding: 0 12px; background: var(--pl-action, #5b3cc4); color: #fff; }
+.pf-support-ticket .pp-composer__send span { display: inline; font-size: 13px; }
 @media (max-width: 1499.98px) {
     .acc-inbox.has-thread .pp-inbox__list { display: none; }
     .acc-inbox.has-thread .acc-inbox__back { display: inline-flex; }

@@ -89,11 +89,7 @@ final class CorporateController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            // Secteur, trafic et ville restent hors du FormType (voir
-            // PartnerApplicationFormType) : ce sont des <select> dont les
-            // options n'ont jamais été câblées côté template, un défaut
-            // préexistant hors sujet ici. On recopie leur valeur brute
-            // exactement comme le faisait l'extraction manuelle d'avant.
+            // Ces renseignements complètent le dossier de partenariat.
             $application
                 ->setSector((string) $request->request->get('secteur'))
                 ->setTraffic((string) $request->request->get('trafic'))
@@ -121,6 +117,8 @@ final class CorporateController extends AbstractController
 
         return $this->render('corporate/partenaire_formulaire.html.twig', [
             'partnerForm' => $form,
+            'sectors' => ['Tourisme et voyages', 'Loisirs et activités', 'Culture et patrimoine', 'Sport et bien-être', 'Événementiel', 'Média et contenu', 'Autre'],
+            'traffic_ranges' => ['Moins de 1 000 visites', '1 000 à 10 000 visites', '10 000 à 50 000 visites', '50 000 à 100 000 visites', 'Plus de 100 000 visites'],
         ]);
     }
 

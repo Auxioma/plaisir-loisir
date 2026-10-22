@@ -34,14 +34,13 @@ use App\User\Enum\UserStatus;
 use App\User\Form\PersonalInformationFormType;
 use App\User\Presenter\AccountActivityPresenter;
 use App\User\Service\AccountAnonymizer;
-use App\User\Service\AccountDataExporter;
+use App\User\Service\AccountDataPdfRenderer;
 use App\User\Service\AvatarStorageService;
 use App\User\StaticAccount;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -66,7 +65,7 @@ final class AccountController extends AbstractController
         private readonly DestinationPresenter $destinationPresenter,
         private readonly AvatarStorageService $avatars,
         private readonly AccountAnonymizer $anonymizer,
-        private readonly AccountDataExporter $dataExporter,
+        private readonly AccountDataPdfRenderer $dataPdfRenderer,
         private readonly EntityManagerInterface $entityManager,
         private readonly EventRepository $events,
         private readonly EventRegistrationRepository $eventRegistrations,
@@ -716,14 +715,7 @@ final class AccountController extends AbstractController
     #[Route(path: ['fr' => '/compte/parametres/exporter', 'en' => '/en/account/settings/export'], name: 'app_account_export')]
     public function exportData(): Response
     {
-        $data = $this->dataExporter->export($this->currentUser());
-
-        $response = new JsonResponse($data, headers: [
-            'Content-Disposition' => 'attachment; filename="mes-donnees-trouvemoi.json"',
-        ]);
-        $response->setEncodingOptions(JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
-        return $response;
+        return $this->dataPdfRenderer->response($this->currentUser());
     }
 
     /**

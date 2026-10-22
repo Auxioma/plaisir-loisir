@@ -2,11 +2,9 @@
     Parrainage — maquette docs/maquettes/profil_particulier/
     profil_parrainages_particulier.jpeg (30/09).
 
-    LE PROGRAMME N'A PAS ENCORE DE BACK : aucun suivi des filleuls ni crédit
-    n'est enregistré. L'écran reprend la maquette avec des valeurs réelles,
-    donc à zéro, et le signale. Le lien d'invitation fonctionne : il mène à
-    l'écran de choix du compte, avec le code du parrain dans l'adresse, prêt
-    à être exploité le jour où le suivi sera développé.
+    Le suivi des inscriptions, réservations et crédits n'est pas activé. Cette
+    page l'indique clairement pour éviter de promettre une récompense qui ne
+    peut pas encore être versée.
 #}
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
@@ -28,7 +26,7 @@
         <div class="pf-ref__hero">
             <div>
                 <h2 class="pf-card__title">{{ 'Invitez vos amis et soyez récompensé'|trans }}</h2>
-                <p>{{ 'Partagez votre lien de parrainage avec vos amis.'|trans }}<br>{{ 'Dès qu’ils s’inscrivent et font leur première réservation,'|trans }}<br>{{ 'vous gagnez des crédits à utiliser sur vos prochaines activités.'|trans }}</p>
+                <p>Le programme de parrainage n’est pas encore actif. Aucune récompense n’est versée après une inscription ou une réservation.</p>
             </div>
             <img src="{{ asset('images/account/referral-friends.jpg') }}" alt="" width="402" height="154" loading="lazy" decoding="async">
         </div>
@@ -38,16 +36,12 @@
                 <p>{{ 'Partagez ce lien unique avec vos amis'|trans }}</p>
                 <div class="pf-ref__link">
                     <input type="text" value="{{ link }}" readonly aria-label="{{ 'Votre lien de parrainage'|trans }}" id="ref-link">
-                    <button type="button" class="pf-btn" onclick="navigator.clipboard.writeText(document.getElementById('ref-link').value).then(() => { this.querySelector('span').textContent = '{{ 'Lien copié'|trans|e('js') }}'; })">{{ icon.copy(16) }} <span>{{ 'Copier le lien'|trans }}</span></button>
+                    <button type="button" class="pf-btn" disabled title="Le suivi du programme n’est pas encore actif">{{ icon.copy(16) }} <span>Partage bientôt disponible</span></button>
                 </div>
             </div>
             <div class="pf-ref__via">
                 <p>{{ 'Partager via'|trans }}</p>
-                <div>
-                    <a class="pf-share pf-share--fb" href="https://www.facebook.com/sharer/sharer.php?u={{ link|url_encode }}" target="_blank" rel="noopener" aria-label="Facebook">{{ icon.facebook(20) }}</a>
-                    <a class="pf-share pf-share--wa" href="https://wa.me/?text={{ ('Rejoins-moi sur TrouveMoi Plaisirs & Loisirs : '|trans ~ link)|url_encode }}" target="_blank" rel="noopener" aria-label="WhatsApp">{{ icon.whatsapp(20) }}</a>
-                    <a class="pf-share" href="mailto:?subject={{ 'Rejoins-moi sur TrouveMoi'|trans|url_encode }}&body={{ link|url_encode }}" aria-label="{{ 'E-mail'|trans }}">{{ icon.mail(20) }}</a>
-                </div>
+                <p>Le partage sera activé avec l’attribution des inscriptions et le calcul des récompenses.</p>
             </div>
         </div>
     </section>
@@ -66,8 +60,8 @@
     <section class="pf-card">
         <h2 class="pf-card__title">{{ 'Vos filleuls'|trans }}</h2>
         <div class="pf-empty">
-            <strong>{{ 'Aucun filleul pour le moment.'|trans }}</strong>
-            {{ 'Partagez votre lien : vos amis inscrits apparaîtront ici dès que le suivi du parrainage sera activé.'|trans }}
+            <strong>Le suivi des filleuls n’est pas encore activé.</strong>
+            Le lien affiché ne rattache pas encore les nouveaux comptes à votre profil.
         </div>
     </section>
 {% endblock %}

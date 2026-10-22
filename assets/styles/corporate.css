@@ -860,6 +860,21 @@
 /* Maquette : deux cadres de 350 (x364 -> x713 et x726 -> x1075). */
 .pf-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
+/* Formulaire partenaire : réduire les vides hérités de la planche et garder
+   une lecture confortable sur téléphone et tablette. */
+.pf-page .pf-form { max-width: 100%; padding-top: 38px; }
+.pf-page .pf-block + .pf-block { margin-top: 48px; }
+.pf-page .pf-title { max-width: 900px; }
+@media (max-width: 760px) {
+    .pf-page .pf-crumb { margin-top: 22px; }
+    .pf-page .pf-title { margin-top: 32px; font-size: clamp(30px, 8vw, 40px); }
+    .pf-page .pf-lead { font-size: 15px; line-height: 1.55; }
+    .pf-page .pf-form { width: 100%; padding-top: 28px; }
+    .pf-page .pf-block + .pf-block { margin-top: 36px; }
+    .pf-page .pf-block__title { font-size: 22px; }
+    .pf-page .pf-row { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+}
+
 /* --------------------------------------------------------------------------
  *  Zone de texte, compteur et acceptation
  * ------------------------------------------------------------------------ */

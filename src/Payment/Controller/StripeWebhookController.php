@@ -76,9 +76,12 @@ final class StripeWebhookController extends AbstractController
         // (direct sur son compte) ou changement d'état de son compte.
         if (null !== ($event->account ?? null)) {
             $object = $event->data->object;
-            if ('checkout.session.completed' === $event->type
-                && !$this->checkout->completeFromStripe((string) ($object->id ?? ''), (string) $event->account)) {
-                $this->logger->warning('Webhook Stripe Connect ignoré : session {id} inconnue.', ['id' => (string) ($object->id ?? '')]);
+            if (\in_array($event->type, ['checkout.session.completed', 'checkout.session.async_payment_succeeded'], true)) {
+                $sessionId = (string) ($object->id ?? '');
+                if (!$this->giftCards->confirmBySessionReference($sessionId)
+                    && !$this->checkout->completeFromStripe($sessionId, (string) $event->account)) {
+                    $this->logger->warning('Webhook Stripe Connect ignoré : session {id} inconnue.', ['id' => $sessionId]);
+                }
             }
             if ('account.updated' === $event->type) {
                 $this->stripeConnect->sync((string) $event->account, (bool) ($object->charges_enabled ?? false));

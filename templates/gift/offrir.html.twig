@@ -31,12 +31,6 @@
                         <label class="gc-field{{ errors.people is defined ? ' is-invalid' }}">{{ 'Nombre de personnes'|trans }} *
                             <select name="people" required data-gc-people>{% for n in 1..limits.people %}<option value="{{ n }}"{{ data.people == n ? ' selected' }}>{{ n }}</option>{% endfor %}</select>
                             {{ _self.err(errors, 'people') }}</label>
-                    {% else %}
-                        <label class="gc-field{{ errors.amount is defined ? ' is-invalid' }}">{{ 'Montant du bon (en €)'|trans }} *
-                            <input type="number" name="amount" min="{{ limits.min }}" max="{{ limits.max }}" step="1" value="{{ data.amount }}" required data-gc-amount>
-                            <small class="pg-muted">{{ 'Entre'|trans }} {{ limits.min }} € {{ 'et'|trans }} {{ limits.max }} €.</small>
-                            {{ _self.err(errors, 'amount') }}</label>
-                        <div class="gc-pills">{% for v in [25, 50, 100, 150] %}<button type="button" class="gc-pill" data-gc-preset="{{ v }}">{{ v }} €</button>{% endfor %}</div>
                     {% endif %}
                 </section>
 
@@ -86,6 +80,18 @@
                     </label>
                     {{ _self.err(errors, 'accept_terms') }}
                 </section>
+
+                <section class="pg-card">
+                    <h2 class="pg-h3">4. Paiement auprès du prestataire</h2>
+                    {% if payment_methods is empty %}
+                        <p class="pg-muted">Ce prestataire n’a pas encore configuré de moyen de paiement en ligne. Le bon ne peut pas être acheté pour le moment.</p>
+                    {% else %}
+                        <fieldset class="gc-field"><legend>Choisissez un moyen de paiement</legend><div class="gc-radios">
+                            {% for key, method in payment_methods %}<label class="gc-radio"><input type="radio" name="moyen" value="{{ key }}"{{ loop.first ? ' checked' }} required> {{ method.label|trans }}</label>{% endfor %}
+                        </div></fieldset>
+                        <p class="pg-muted">Le paiement est versé directement au prestataire de cette activité. Le bon sera valable uniquement pour celle-ci.</p>
+                    {% endif %}
+                </section>
             </div>
 
             <aside class="gc-buy__side">
@@ -95,19 +101,14 @@
                         <strong>{{ activity.title }}</strong>
                         <small>{{ activity.place }}</small>
                         <p class="gc-summary__line">{{ unit|number_format(unit == unit|round ? 0 : 2, ',', ' ') }} € × <span data-gc-people-out>{{ data.people }}</span> {{ 'pers.'|trans }}</p>
-                    {% else %}
-                        <img src="{{ asset('images/gifts/giftcards-stack.jpg') }}" alt="" loading="lazy" decoding="async">
-                        <strong>{{ 'Bon cadeau libre'|trans }}</strong>
-                        <small>{{ 'Le bénéficiaire choisit son activité parmi tout le catalogue.'|trans }}</small>
                     {% endif %}
                     <p class="gc-summary__total">{{ 'Total'|trans }} <strong data-gc-total>{{ total|number_format(2, ',', ' ') }} €</strong></p>
                     <ul class="gc-summary__perks">
                         <li>{{ icon.check(14) }} {{ 'Valable 12 mois'|trans }}</li>
-                        <li>{{ icon.check(14) }} {{ 'Échange gratuit'|trans }}</li>
+                        <li>{{ icon.check(14) }} Activité et prestataire indiqués avant paiement</li>
                         <li>{{ icon.check(14) }} {{ 'Paiement 100% sécurisé'|trans }}</li>
                     </ul>
-                    <button class="pg-btn pg-btn--block">{{ icon.padlock(16) }} {{ 'Payer et offrir'|trans }}</button>
-                    {% if activity %}<a class="pg-link" href="{{ path('app_gifts_offer') }}">{{ 'Préférer un montant libre'|trans }}</a>{% endif %}
+                    <button class="pg-btn pg-btn--block"{{ payment_methods is empty ? ' disabled' }}>{{ icon.padlock(16) }} {{ 'Payer et offrir'|trans }}</button>
                 </section>
             </aside>
         </form>

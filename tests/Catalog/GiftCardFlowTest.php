@@ -123,7 +123,7 @@ final class GiftCardFlowTest extends WebTestCase
         self::assertNotNull($card->getRecipientEmailSentAt());
     }
 
-    public function testProductionNeverSimulatesAPaidGiftWithoutStripe(): void
+    public function testUnboundGiftCannotStartDirectCheckout(): void
     {
         static::createClient();
         $card = $this->card();
@@ -133,13 +133,13 @@ final class GiftCardFlowTest extends WebTestCase
         $bus->expects(self::never())->method('dispatch');
         $this->expectException(\RuntimeException::class);
         try {
-            $this->service($gateway, $bus, '', 'prod')->checkout($card);
+            $this->service($gateway, $bus)->checkout($card);
         } finally {
             self::assertFalse($card->isPaid());
         }
     }
 
-    private function service(CheckoutGateway $gateway, MessageBusInterface $bus, string $secret = 'sk_test_fake', string $environment = 'test'): GiftCardService
+    private function service(CheckoutGateway $gateway, MessageBusInterface $bus): GiftCardService
     {
         return new GiftCardService(
             static::getContainer()->get(EntityManagerInterface::class),
@@ -147,8 +147,6 @@ final class GiftCardFlowTest extends WebTestCase
             $bus,
             static::getContainer()->get(UrlGeneratorInterface::class),
             static fn (): CheckoutGateway => $gateway,
-            $secret,
-            $environment,
         );
     }
 

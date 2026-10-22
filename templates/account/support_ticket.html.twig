@@ -2,6 +2,7 @@
 {% extends 'account/_layout.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 {% block title %}{{ ticket.reference }} — {{ 'Support'|trans }}{% endblock %}
+{% block account_class %}pf-support-ticket{% endblock %}
 {% block account %}
     <header class="pf-head">
         <div>
@@ -32,7 +33,7 @@
             <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
             <label class="visually-hidden" for="sp-body">{{ 'Votre message'|trans }}</label>
             <textarea id="sp-body" name="message" rows="1" placeholder="{{ 'Écrire un message…'|trans }}" required data-pp-autosend></textarea>
-            <button class="pp-composer__send" aria-label="{{ 'Envoyer'|trans }}">{{ icon.send(20) }}</button>
+            <button type="submit" class="pp-composer__send" aria-label="{{ 'Envoyer'|trans }}" title="{{ 'Envoyer'|trans }}">{{ icon.send(20) }}<span>{{ 'Envoyer'|trans }}</span></button>
         </form>
     </section>
 {% endblock %}
