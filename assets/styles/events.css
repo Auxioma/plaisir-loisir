@@ -1342,3 +1342,79 @@
 /* Cœur favori (01/10) : bouton réel, plein et violet une fois en favori. */
 .evn-card__fav { border: 0; cursor: pointer; }
 .evn-card__fav.is-active { color: var(--pl-action); }
+
+/* Fiche événement : galerie, réservation et informations de la maquette client. */
+.evn-detail { background: #f8f9fc; }
+.evd-hero, .evd-content { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(320px, 1fr); gap: 24px; align-items: start; }
+.evd-hero { margin-top: 26px; align-items: stretch; }
+.evd-gallery { position: relative; min-width: 0; border-radius: 18px; overflow: hidden; background: var(--evn-soft); }
+.evd-gallery__cover { display: block; height: 100%; min-height: 480px; }
+.evd-gallery__cover > img { width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; }
+.evd-gallery__bottom { position: absolute; bottom: 18px; left: 18px; right: 18px; display: flex; align-items: end; justify-content: space-between; gap: 12px; }
+.evd-gallery__thumbs { display: flex; gap: 8px; }
+.evd-gallery__thumbs img { width: 76px; height: 64px; object-fit: cover; border: 2px solid #fff; border-radius: 10px; box-shadow: 0 2px 12px #0003; }
+.evd-gallery__all { display: inline-flex; align-items: center; gap: 8px; background: #101b38db; color: #fff; text-decoration: none; padding: 12px; border: 1px solid #fff; border-radius: 10px; font-size: 14px; }
+.evd-gallery__empty { min-height: 440px; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--pl-action); }
+.evd-reservation, .evd-panel { background: #fff; border: 1px solid var(--pl-line, #e5e7eb); border-radius: 18px; padding: 24px; box-shadow: 0 4px 20px #0a1c5504; min-width: 0; }
+.evd-actions { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.evd-badge { background: var(--evn-soft); color: var(--pl-action); padding: 6px 14px; border-radius: 999px; font-weight: 600; font-size: 13px; }
+.evd-share { margin-left: auto; border: 0; background: transparent; color: var(--pl-text-strong); padding: 6px; cursor: pointer; }
+.evd-reservation .evn-book { border: 0; border-radius: 0; padding: 0; }
+.evd-reservation .evn-detail__title { font-size: clamp(26px, 2.5vw, 36px); line-height: 1.2; margin: 14px 0 18px; overflow-wrap: anywhere; }
+.evd-reservation .evn-book__price strong { display: inline-block; background: var(--pl-action); color: #fff; padding: 5px 14px; border-radius: 999px; font-size: 14px; }
+.evn-detail .evn-organizer { gap: 10px; margin-bottom: 20px; flex-wrap: wrap; font-size: 14px; }
+.evn-detail .evn-organizer img { width: 36px; height: 36px; object-fit: cover; }
+.evd-summary { list-style: none; padding: 0; margin: 22px 0 16px; display: grid; gap: 18px; color: var(--pl-text-strong); font-size: 15px; font-weight: 600; }
+.evd-summary li { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.evd-summary a { font-size: 12px; color: var(--pl-action); }
+.evd-progress { height: 12px; background: #eef0f5; border-radius: 99px; overflow: hidden; margin-bottom: 12px; }
+.evd-progress span { display: block; height: 100%; background: var(--pl-action); border-radius: inherit; }
+.evd-reservation .pl-btn { margin-top: 12px; white-space: normal; }
+.evn-book__places { font-size: 14px; color: var(--pl-text); }
+.evn-book__places small { display: block; margin-top: 8px; }
+.evd-benefits { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 24px; margin: 20px 0 28px; border-radius: 16px; background: var(--evn-soft); }
+.evd-benefits > div { display: flex; align-items: center; gap: 16px; color: var(--pl-action); }
+.evd-benefits span { display: grid; gap: 6px; color: var(--pl-text); font-size: 13px; }
+.evd-benefits strong { color: var(--pl-text-strong); font-size: 14px; }
+.evd-main, .evd-aside { display: grid; gap: 24px; min-width: 0; }
+.evd-nav { display: flex; gap: 26px; overflow-x: auto; border-bottom: 1px solid var(--pl-line, #e5e7eb); margin: -4px 0 26px; }
+.evd-nav a { color: var(--pl-text); text-decoration: none; padding: 0 0 16px; white-space: nowrap; }
+.evd-nav a:first-child { color: var(--pl-action); border-bottom: 2px solid var(--pl-action); }
+.evd-panel { scroll-margin-top: 100px; }
+.evd-panel .evn-h2 { font-size: 21px; }
+.evd-conditions { display: grid; gap: 12px; list-style: none; padding: 0; margin-bottom: 0; font-size: 14px; color: var(--pl-text); }
+.evd-conditions li { display: flex; align-items: start; gap: 10px; }
+.evd-conditions svg { flex-shrink: 0; color: var(--pl-action); }
+.evd-panel .evn-parts { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 0; }
+.evd-panel .evn-part { border: 0; padding: 4px; max-width: 96px; }
+.evd-panel .evn-part__role { display: none; }
+.evd-panel .evn-parts__head { flex-wrap: wrap; gap: 12px; }
+.evd-panel .evn-parts__head > a { background: var(--evn-soft); color: var(--pl-action); font-size: 13px; padding: 8px 12px; }
+.evd-photos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.evd-photos img { display: block; width: 100%; aspect-ratio: 1.2; object-fit: cover; border-radius: 10px; }
+.evd-aside .evn-facts { margin-bottom: 18px; }
+.evd-aside .evn-detail__map { height: 230px; margin-bottom: 14px; border-radius: 12px; }
+.evd-share-links { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.evd-share-links a { padding: 10px 14px; border-radius: 8px; background: var(--evn-soft); color: var(--pl-action); font-size: 14px; text-decoration: none; }
+.evd-download { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 18px; color: var(--pl-text); font-size: 14px; }
+@media (max-width: 991px) {
+    .evd-hero, .evd-content { grid-template-columns: minmax(0, 1fr); }
+    .evd-gallery__cover { min-height: 420px; }
+    .evd-gallery__empty { min-height: 280px; }
+    .evd-benefits { gap: 12px; padding: 20px; }
+}
+@media (max-width: 575px) {
+    .evn-detail > .container { padding-top: 20px; }
+    .evd-reservation, .evd-panel { padding: 20px 16px; }
+    .evd-gallery__cover { min-height: 320px; }
+    .evd-gallery__thumbs img { width: 48px; height: 44px; }
+    .evd-gallery__bottom { left: 12px; right: 12px; bottom: 12px; }
+    .evd-gallery__all { font-size: 12px; padding: 9px; }
+    .evd-benefits { grid-template-columns: 1fr; gap: 20px; }
+    .evd-photos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .evd-nav { gap: 22px; font-size: 14px; }
+}
+.evd-panel .evn-part__avatar { width: 46px; height: 46px; }
+.evd-panel .evn-part__plus { width: 46px; height: 46px; }
+.evn-detail .evn-book__state { color: var(--pl-action); }
+.evd-summary svg, .evd-benefits > div > svg { flex-shrink: 0; }

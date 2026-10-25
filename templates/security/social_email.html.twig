@@ -1,0 +1,44 @@
+{#
+    Vérification de l'adresse e-mail à l'inscription (Lot I, 15/09). Aucune
+    maquette : repris du gabarit de l'étape 2/3 « mot de passe oublié »
+    (security/password_code.html.twig), le seul écran de saisie de code déjà
+    dessiné par la designer.
+#}
+{% extends 'security/_layout.html.twig' %}
+{% import '_partials/_icons.html.twig' as icon %}
+
+{% block title %}{{ 'Vérifier votre adresse e-mail'|trans }}{% endblock %}
+
+{% block auth_card %}
+    <div class="auth-card auth-card--pw">
+        <div class="auth-card__header">
+            <h2 class="auth-card__title">{{ 'Vérifiez votre adresse e-mail'|trans }}</h2>
+            <p class="auth-card__subtitle">{{ 'Confirmez votre adresse e-mail pour terminer votre connexion. Un code vous a été envoyé.'|trans }}{% if email|default('') %}<br><strong>{{ email }}</strong>{% endif %}</p>
+        </div>
+
+        {# 20/10 : le code arrive souvent dans les indésirables. #}
+        <p class="auth-tip">{{ icon.info(18) }} <span><strong>{{ 'Vous ne trouvez pas l’e-mail ?'|trans }}</strong> {{ 'Pensez à vérifier votre dossier Spam ou Courrier indésirable : le code peut y arriver. Il reste valable 15 minutes.'|trans }}</span></p>
+
+        <form class="auth-form" method="post" action="{{ path('app_social_email') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+
+            <div class="auth-fields">
+                <div class="auth-field">
+                    <label class="auth-field__label" for="inputCode">{{ 'Saisir le code'|trans }}</label>
+                    <div class="auth-input" data-controller="password-toggle">
+                        <input id="inputCode" class="auth-input__control" type="text" name="code"
+                               data-password-toggle-target="input" placeholder="7759BK5X" autocomplete="one-time-code" required autofocus>
+                        <button type="button" class="auth-input__eye" data-action="password-toggle#toggle" aria-label="{{ 'Afficher ou masquer le code'|trans }}">
+                            <span data-password-toggle-target="show">{{ icon.eye() }}</span>
+                            <span data-password-toggle-target="hide" hidden>{{ icon.eye_off() }}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="pl-btn pl-btn--primary pl-btn--block">{{ 'Vérifier'|trans }}</button>
+        </form>
+
+        <p class="auth-switch"><a href="{{ path('app_login') }}">{{ 'Retour à la connexion'|trans }}</a></p>
+    </div>
+{% endblock %}

@@ -1,5 +1,10 @@
 framework:
     rate_limiter:
+        social_login:
+            policy: 'sliding_window'
+            limit: 10
+            interval: '15 minutes'
+
         # Demandes de code « mot de passe oublié » (05/10) : la page dit si
         # une adresse a un compte, elle ne doit pas servir à en tester des
         # milliers. 5 demandes par IP toutes les 15 minutes.

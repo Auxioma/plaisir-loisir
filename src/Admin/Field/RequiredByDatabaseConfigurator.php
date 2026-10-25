@@ -50,7 +50,9 @@ final class RequiredByDatabaseConfigurator implements FieldConfiguratorInterface
 
         // Une case à cocher « required » obligerait à la COCHER : décochée,
         // elle vaut false, ce qui satisfait déjà la base.
-        if (BooleanField::class !== $field->getFieldFqcn()) {
+        // Une liste JSON vide est valide en base. Exiger son contrôle HTML
+        // imposerait une photo pour une galerie pourtant facultative.
+        if (BooleanField::class !== $field->getFieldFqcn() && 'json' !== $entityDto->getClassMetadata()->getTypeOfField($field->getProperty())) {
             $field->setFormTypeOption('required', true);
         }
     }

@@ -19,14 +19,16 @@
             <thead><tr><th>{{ 'Événement'|trans }}</th><th>{{ 'Date'|trans }}</th><th>{{ 'Statut'|trans }}</th><th>{{ 'Participants'|trans }}</th><th></th></tr></thead>
             <tbody>
                 {% for e in events %}
-                    {% set status = e.status == 'draft' ? ['Brouillon', 'grey'] : (e.status == 'scheduled' ? ['Programmé', 'orange'] : (e.startsAt < date() ? ['Terminé', 'grey'] : ['Publié', 'green'])) %}
+                    {% set status = e.status == 'suspended' ? ['Suspendu par l’administration', 'red'] : e.status == 'draft' ? ['Brouillon', 'grey'] : (e.status == 'scheduled' ? ['Programmé', 'orange'] : (e.startsAt < date() ? ['Terminé', 'grey'] : ['Publié', 'green'])) %}
                     <tr>
                         <td><strong>{{ e.title }}</strong>{% if e.location %}<br><small class="pf-muted">{{ e.location }}</small>{% endif %}</td>
                         <td>{{ e.startsAt|date('d/m/Y H:i') }}</td>
                         <td><span class="pf-pill pf-pill--{{ status[1] }}">{{ status[0]|trans }}</span>{% if e.status == 'scheduled' and e.publishAt %}<br><small class="pf-muted">{{ 'le'|trans }} {{ e.publishAt|date('d/m H:i') }}</small>{% endif %}</td>
                         <td>{{ e.participantsCount }}{% if e.capacity %} / {{ e.capacity }}{% endif %}</td>
                         <td class="pf-table__actions">
-                            {% if e.status == 'draft' %}
+                            {% if e.status == 'suspended' %}
+                                <span class="pf-muted">{{ 'Contactez le support pour plus d’informations.'|trans }}</span>
+                            {% elseif e.status == 'draft' %}
                                 <a class="pf-btn" href="{{ path('app_event_resume', {slug: e.slug}) }}">{{ 'Reprendre'|trans }}</a>
                             {% else %}
                                 <a class="pf-btn" href="{{ path('app_events_detail', {slug: e.slug}) }}">{{ 'Voir'|trans }}</a>

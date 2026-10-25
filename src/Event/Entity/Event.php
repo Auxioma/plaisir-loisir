@@ -97,7 +97,7 @@ class Event
 
     // ---- Assistant de création (maquettes creation_evenements, 04/10) ----
 
-    /** Statut : draft (brouillon), scheduled (publication programmée), published. */
+    /** Statut : draft (brouillon), scheduled (publication programmée), published, suspended (administration). */
     #[ORM\Column(length: 20, options: ['default' => 'published'])]
     private string $status = 'published';
 
