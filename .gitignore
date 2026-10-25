@@ -46,4 +46,10 @@ temp_interactive_push.bat
 ###> sécurité (13/10) ###
 # Configuration d'éditeur personnelle : jamais dans le dépôt (vecteur d'une injection
 # de code, tâche VS Code lancée automatiquement à l'ouverture du dossier).
+/.vscode/
+/.idea/
+/assets/lib/leaflet/images/public/
+/public/fonts/
+/dist/
+*.orc
 ###< sécurité ###

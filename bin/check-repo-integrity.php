@@ -19,13 +19,20 @@ declare(strict_types=1);
  */
 
 $root = dirname(__DIR__);
-$files = [];
-exec('git -C '.escapeshellarg($root).' ls-files -z', $out);
-foreach (explode("\0", implode("\0", $out)) as $f) {
-    if ('' !== trim($f)) {
-        $files[] = $f;
+$staged = in_array('--staged', $argv, true);
+$ref = null;
+foreach ($argv as $arg) {
+    if (str_starts_with($arg, '--ref=')) {
+        $ref = substr($arg, 6);
     }
 }
+$listCommand = null === $ref ? 'ls-files --cached -z' : 'ls-tree -r --name-only -z '.escapeshellarg($ref);
+$list = shell_exec('git -C '.escapeshellarg($root).' '.$listCommand);
+if (null === $list) {
+    fwrite(\STDERR, "[ERREUR] Impossible de lire l'index Git.\n");
+    exit(1);
+}
+$files = array_values(array_filter(explode("\0", $list), static fn (string $file): bool => '' !== $file));
 
 // Signatures binaires attendues (premiers octets) par extension.
 $magic = [
@@ -44,13 +51,22 @@ $magic = [
 $problems = [];
 foreach ($files as $file) {
     $path = $root.'/'.$file;
-    if (!is_file($path)) {
+    if (!$staged && null === $ref && !is_file($path)) {
         continue;
     }
     $ext = strtolower(pathinfo($file, \PATHINFO_EXTENSION));
+    // Le hook vérifie le contenu réellement indexé, même si le fichier de
+    // travail a ensuite été remplacé par une version saine.
+    $content = $staged || null !== $ref
+        ? (string) shell_exec('git -C '.escapeshellarg($root).' show '.escapeshellarg(($ref ?? '').':'.$file))
+        : (string) file_get_contents($path);
+
+    if ('orc' === $ext) {
+        $problems[] = sprintf('%s : extension utilisée pour une charge utile Node', $file);
+    }
 
     if (isset($magic[$ext])) {
-        $head = (string) file_get_contents($path, false, null, 0, 8);
+        $head = substr($content, 0, 8);
         $ok = false;
         foreach ($magic[$ext] as $sig) {
             if (str_starts_with($head, $sig)) {
@@ -65,7 +81,7 @@ foreach ($files as $file) {
 
     if ('eot' === $ext) {
         // EOT : octets 34-35 = « LP » (signature du format Embedded OpenType).
-        $head = (string) file_get_contents($path, false, null, 0, 36);
+        $head = substr($content, 0, 36);
         if ('LP' !== substr($head, 34, 2)) {
             $problems[] = sprintf('%s : contenu qui ne correspond pas à un fichier .eot', $file);
         }
@@ -74,7 +90,6 @@ foreach ($files as $file) {
     // Code caché en bout de ligne derrière des centaines d'espaces (invisible
     // dans l'éditeur, 20/10), et chargeurs Node exécutés hors navigateur.
     if (in_array($ext, ['js', 'mjs', 'cjs', 'php', 'twig', 'json', 'css'], true) && !str_starts_with($file, 'assets/vendor/')) {
-        $content = (string) file_get_contents($path);
         if (preg_match('/[ \t]{150,}\S/', $content)) {
             $problems[] = sprintf('%s : code dissimulé derrière une longue suite d\'espaces', $file);
         }
@@ -89,7 +104,6 @@ foreach ($files as $file) {
     }
 
     if (str_starts_with($file, '.vscode/') || str_starts_with($file, '.idea/')) {
-        $content = (string) file_get_contents($path);
         if (preg_match('/folderOpen|allowAutomaticTasks/i', $content)) {
             $problems[] = sprintf('%s : exécution automatique de commande à l\'ouverture du dossier', $file);
         }
