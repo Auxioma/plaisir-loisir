@@ -1,0 +1,6 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+{% form_theme registrationForm 'bootstrap_5_layout.html.twig' %}
+{% block content_title %}Ajouter une inscription à un événement{% endblock %}
+{% block main %}
+    <div class="col-lg-8">{{ form(registrationForm) }}</div>
+{% endblock %}

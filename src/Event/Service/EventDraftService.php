@@ -334,6 +334,9 @@ final class EventDraftService
         if (Ulid::isValid((string) ($d['event_id'] ?? ''))) {
             $existing = $this->events->find(Ulid::fromString((string) $d['event_id']));
             if ($existing instanceof Event && $existing->getOrganizer() === $organizer) {
+                if ('suspended' === $existing->getStatus() || $existing->isDeleted()) {
+                    throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('Cet événement a été retiré par l’administration. Contactez le support.');
+                }
                 $event = $existing;
             }
         }

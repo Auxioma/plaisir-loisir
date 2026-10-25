@@ -228,7 +228,7 @@ class EventRepository extends ServiceEntityRepository
             ->leftJoin(\App\Event\Entity\EventInvitation::class, 'i', 'WITH', 'i.event = e AND (i.user = :user OR i.email = :email)')
             ->andWhere('e.deletedAt IS NULL')
             ->andWhere('e.private = true')
-            ->andWhere("e.status != 'draft'")
+            ->andWhere("e.status NOT IN ('draft', 'suspended')")
             ->andWhere('e.organizer = :user OR i.id IS NOT NULL')
             ->setParameter('user', $user->getId(), 'ulid')
             ->setParameter('email', $user->getEmail())

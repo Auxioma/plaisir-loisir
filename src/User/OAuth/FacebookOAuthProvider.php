@@ -91,7 +91,7 @@ final class FacebookOAuthProvider implements OAuthProviderInterface
         /** @var array<string, mixed> $data */
         $data = $response->toArray(false);
 
-        if (200 !== $response->getStatusCode() || !\is_string($data['id'] ?? null)) {
+        if (200 !== $response->getStatusCode() || (!\is_string($data['id'] ?? null) || '' === $data['id'])) {
             throw new OAuthException('Lecture du profil Facebook refusée : HTTP '.$response->getStatusCode());
         }
 
@@ -103,16 +103,15 @@ final class FacebookOAuthProvider implements OAuthProviderInterface
             }
         }
 
-        $email = \is_string($data['email'] ?? null) ? $data['email'] : null;
+        $email = \is_string($data['email'] ?? null) ? mb_strtolower(trim($data['email'])) : null;
 
         return new SocialUser(
             provider: SocialProvider::Facebook,
             externalId: $data['id'],
             email: $email,
-            // Facebook ne transmet une adresse que confirmée de son côté. Sa
-            // seule présence vaut donc vérification — l'absence, en revanche,
-            // est fréquente et doit être traitée.
-            emailVerified: null !== $email,
+            // Graph ne fournit pas de preuve email_verified : le site confirme
+            // l'adresse par code avant toute création ou liaison de compte.
+            emailVerified: false,
             firstName: \is_string($data['first_name'] ?? null) ? $data['first_name'] : null,
             lastName: \is_string($data['last_name'] ?? null) ? $data['last_name'] : null,
             avatarUrl: $picture,

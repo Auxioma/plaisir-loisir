@@ -99,6 +99,11 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(PromotionCrudController::class, 'Offres des professionnels', 'fa fa-percent');
 
         // Activité des professionnels (espace pro, 02/10).
+        yield MenuItem::section('Événements');
+        yield MenuItem::linkTo(EventCrudController::class, 'Événements', 'fa fa-calendar-days');
+        yield MenuItem::linkTo(EventCategoryCrudController::class, 'Catégories des événements', 'fa fa-tags');
+        yield MenuItem::linkTo(EventRegistrationCrudController::class, 'Inscriptions aux événements', 'fa fa-users');
+
         yield MenuItem::section('Réservations');
         yield MenuItem::linkTo(BookingCrudController::class, 'Réservations', 'fa fa-calendar-check');
         yield MenuItem::linkTo(PaymentCrudController::class, 'Règlements (pros)', 'fa fa-money-bill');

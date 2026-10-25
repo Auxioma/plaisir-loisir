@@ -470,6 +470,9 @@ final class EventsController extends AbstractController
     {
         $event = $this->findEventOrFail($slug);
         $user = $this->getUser();
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return $event;
+        }
         $isOrganizer = $user instanceof User && $event->getOrganizer() === $user;
         if (!$isOrganizer && !$event->isPublished()) {
             throw new NotFoundHttpException('Cet événement est introuvable.');

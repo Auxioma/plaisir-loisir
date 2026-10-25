@@ -46,7 +46,8 @@ final class SocialLoginService
     /**
      * Ouvre ou retrouve le compte correspondant à cette identité externe.
      *
-     * @throws SocialLoginException si la liaison ne peut pas être faite en sécurité
+     * @throws SocialLoginException            si la liaison ne peut pas être faite en sécurité
+     * @throws SocialEmailVerificationRequired si l’e-mail nécessite une preuve locale
      */
     public function resolve(SocialUser $socialUser, ?Request $request = null): User
     {
@@ -60,6 +61,9 @@ final class SocialLoginService
                 throw new SocialLoginException('Cette identité n\'est reliée à aucun compte.');
             }
 
+            $this->assertClientCanLogin($user);
+            $this->verifyPendingClient($user, $socialUser);
+
             $this->refreshIdentity($identity, $socialUser);
             $this->entityManager->flush();
 
@@ -71,16 +75,22 @@ final class SocialLoginService
         if (null === $email || '' === $email) {
             // Arrive régulièrement avec Facebook : un compte ouvert avec un
             // simple numéro de téléphone n'a pas d'adresse à transmettre.
-            throw new SocialLoginException(sprintf('%s n\'a transmis aucune adresse e-mail. Créez un compte avec votre adresse, puis reliez %s depuis votre profil.', $socialUser->provider->label(), $socialUser->provider->label()));
+            throw new SocialLoginException(sprintf('%s n\'a transmis aucune adresse e-mail. Utilisez l’inscription ou la connexion avec votre adresse e-mail.', $socialUser->provider->label()));
+        }
+
+        if (mb_strlen($email) > 180 || false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new SocialLoginException('Le fournisseur n’a pas transmis une adresse e-mail valide. Utilisez votre connexion habituelle.');
         }
 
         $existing = $this->users->findOneBy(['email' => $email]);
 
         // --- Cas 3 : l'adresse est déjà celle d'un compte ----------------
         if (null !== $existing) {
+            $this->assertClientCanLogin($existing);
             if (!$socialUser->emailVerified) {
-                throw new SocialLoginException(sprintf('Un compte utilise déjà cette adresse, et %s ne certifie pas qu\'elle vous appartient. Connectez-vous avec votre mot de passe.', $socialUser->provider->label()));
+                throw new SocialEmailVerificationRequired();
             }
+            $this->verifyPendingClient($existing, $socialUser);
 
             $this->linkIdentity($existing, $socialUser);
             $this->entityManager->flush();
@@ -88,16 +98,41 @@ final class SocialLoginService
             return $existing;
         }
 
+        if (!$socialUser->emailVerified) {
+            throw new SocialEmailVerificationRequired();
+        }
+
         // --- Cas 2 : création d'un compte --------------------------------
         return $this->createUser($email, $socialUser, $request);
+    }
+
+    private function assertClientCanLogin(User $user): void
+    {
+        if ($user->isProvider() || \in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            throw new SocialLoginException('Cette connexion est réservée aux clients. Utilisez votre connexion habituelle pour accéder à votre espace professionnel ou administrateur.');
+        }
+        if ($user->isDeleted() || UserStatus::Suspended === $user->getStatus()) {
+            throw new SocialLoginException('Ce compte n’est plus accessible. Contactez-nous si vous pensez qu’il s’agit d’une erreur.');
+        }
+    }
+
+    private function verifyPendingClient(User $user, SocialUser $socialUser): void
+    {
+        if (UserStatus::Pending !== $user->getStatus()) {
+            return;
+        }
+        if (!$socialUser->emailVerified || mb_strtolower(trim($socialUser->email ?? '')) !== $user->getEmail()) {
+            throw new SocialLoginException('Vérifiez votre adresse e-mail avant de vous connecter.');
+        }
+        $user->markEmailVerified();
     }
 
     private function createUser(string $email, SocialUser $socialUser, ?Request $request): User
     {
         $user = new User();
         $user->setEmail($email);
-        $user->setFirstName($socialUser->firstName ?? '');
-        $user->setLastName($socialUser->lastName ?? '');
+        $user->setFirstName(mb_substr($socialUser->firstName ?? '', 0, 100));
+        $user->setLastName(mb_substr($socialUser->lastName ?? '', 0, 100));
         // Le compte n'a pas de mot de passe choisi par son titulaire, mais la
         // colonne ne peut pas rester vide. On y met une valeur aléatoire que
         // personne ne connaît : la connexion par formulaire est ainsi
@@ -113,14 +148,7 @@ final class SocialLoginService
 
         $this->entityManager->flush();
 
-        // Une inscription par Google reste une inscription : le consentement
-        // doit être tracé comme pour le formulaire.
-        //
-        // RÉSERVE À LEVER : la maquette n'affiche aucune mention « en
-        // continuant, vous acceptez les conditions générales » à côté des
-        // boutons sociaux. Tant qu'elle n'en porte pas, ce consentement repose
-        // sur les liens présents sur la page, ce qui est plus faible qu'une
-        // case cochée. À signaler à la designer.
+        // Même traçabilité des conditions que pour l'inscription classique.
         $this->consentService->recordRegistrationConsent(
             $user,
             $request,
@@ -153,9 +181,9 @@ final class SocialLoginService
      */
     private function refreshIdentity(SocialIdentity $identity, SocialUser $socialUser): void
     {
-        $identity->setExternalEmail($socialUser->email)
-            ->setDisplayName($socialUser->fullName())
-            ->setAvatarUrl($socialUser->avatarUrl)
+        $identity->setExternalEmail(null !== $socialUser->email ? mb_substr($socialUser->email, 0, 180) : null)
+            ->setDisplayName(null !== $socialUser->fullName() ? mb_substr($socialUser->fullName(), 0, 180) : null)
+            ->setAvatarUrl(null !== $socialUser->avatarUrl ? mb_substr($socialUser->avatarUrl, 0, 500) : null)
             ->touchLogin();
     }
 }

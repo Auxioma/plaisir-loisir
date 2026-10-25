@@ -27,14 +27,14 @@
                 <tbody>
                     {% for r in registrations %}
                         {% set e = r.event %}
-                        {% set status = e.startsAt < date() ? ['Terminé', 'grey'] : (r.status == 'waitlist' ? ["Liste d'attente", 'orange'] : ['Inscrit', 'green']) %}
+                        {% set status = e.status == 'suspended' ? ['Suspendu par l’administration', 'red'] : e.startsAt < date() ? ['Terminé', 'grey'] : (r.status == 'waitlist' ? ["Liste d'attente", 'orange'] : ['Inscrit', 'green']) %}
                         <tr>
                             <td><strong>{{ e.title }}</strong>{% if e.location %}<br><small class="pf-muted">{{ e.location }}</small>{% endif %}</td>
                             <td>{{ e.startsAt|date('d/m/Y H:i') }}</td>
                             <td><span class="pf-pill pf-pill--{{ status[1] }}">{{ status[0]|trans }}</span></td>
                             <td class="pf-table__actions">
-                                <a class="pf-btn" href="{{ path('app_events_detail', {slug: e.slug}) }}">{{ 'Voir'|trans }}</a>
-                                <a class="pf-link" href="{{ path('app_events_ics', {slug: e.slug}) }}">{{ 'Agenda'|trans }}</a>
+                                {% if e.isPublished %}<a class="pf-btn" href="{{ path('app_events_detail', {slug: e.slug}) }}">{{ 'Voir'|trans }}</a>
+                                <a class="pf-link" href="{{ path('app_events_ics', {slug: e.slug}) }}">{{ 'Agenda'|trans }}</a>{% endif %}
                             </td>
                         </tr>
                     {% endfor %}

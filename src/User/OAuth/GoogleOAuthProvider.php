@@ -58,7 +58,8 @@ final class GoogleOAuthProvider implements OAuthProviderInterface
             // « openid » donne l'identifiant stable, les deux autres le profil.
             'scope' => 'openid email profile',
             'state' => $state,
-            'nonce' => $nonce,
+            // L'identité est lue côté serveur avec le jeton d'accès reçu
+            // contre le code. Aucun ID token n'est accepté depuis le navigateur.
             // Sans « prompt=select_account », un utilisateur déjà connecté à un
             // compte Google est reconnecté sans pouvoir en changer.
             'prompt' => 'select_account',
@@ -96,7 +97,7 @@ final class GoogleOAuthProvider implements OAuthProviderInterface
         return new SocialUser(
             provider: SocialProvider::Google,
             externalId: $sub,
-            email: \is_string($data['email'] ?? null) ? $data['email'] : null,
+            email: \is_string($data['email'] ?? null) ? mb_strtolower(trim($data['email'])) : null,
             // Google renvoie un vrai booléen ; on ne se contente pas de la
             // présence de l'adresse, une adresse non vérifiée ne vaut rien.
             emailVerified: true === ($data['email_verified'] ?? false),
