@@ -9,7 +9,7 @@
 <div class="modal fade" id="confirm-logout" tabindex="-1" aria-labelledby="confirm-logout-title" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="post" action="{{ path('app_logout') }}">
+            <form method="post" action="{{ path('app_logout') }}" data-turbo="false">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
                 <div class="modal-header">
                     <h2 class="modal-title h5" id="confirm-logout-title">{{ 'Déconnexion'|trans }}</h2>

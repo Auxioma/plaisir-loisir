@@ -58,8 +58,16 @@ final class SocialAuthFlowTest extends WebTestCase
         self::assertNotNull($user);
         self::assertSame(['ROLE_USER'], $user->getRoles());
         self::assertSame(UserStatus::Active, $user->getStatus());
-        $client->request('GET', '/compte/tableau-de-bord');
+        $crawler = $client->request('GET', '/compte/tableau-de-bord');
         self::assertResponseIsSuccessful();
+        $logout = $crawler->filter('button.tm-menu__item--danger');
+        self::assertSame(1, $logout->count());
+        self::assertSame('modal', $logout->attr('data-bs-toggle'));
+        self::assertSame('#confirm-logout', $logout->attr('data-bs-target'));
+        $client->submit($crawler->filter('#confirm-logout form[action*="logout"]')->form());
+        self::assertResponseRedirects('/');
+        $client->request('GET', '/compte/tableau-de-bord');
+        self::assertResponseRedirects('/login');
     }
 
     public function testExistingPasswordAndClientArePreservedAndBookingResumes(): void
