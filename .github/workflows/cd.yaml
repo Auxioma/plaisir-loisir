@@ -97,6 +97,10 @@ jobs:
             $PHP bin/console cache:clear --no-interaction
             $PHP bin/console assets:install public --no-interaction
 
+            # Initialiser / mettre à jour le suivi Doctrine avant de lire les
+            # versions ou de marquer une base existante comme déjà migrée.
+            $PHP bin/console doctrine:migrations:sync-metadata-storage --no-interaction
+
             # Base créée hors migrations (schema:create) : aucune migration
             # enregistrée alors que le schéma est déjà à jour. On les marque
             # jouées au lieu de les rejouer (« relation already exists »).
