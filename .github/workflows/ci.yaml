@@ -48,6 +48,10 @@ jobs:
           extensions: ctype, iconv, pdo_pgsql
           coverage: none
 
+      # Contrôler les fichiers avant toute installation ou exécution du projet.
+      - name: Intégrité du dépôt (pas de code déguisé en police ou image)
+        run: php bin/check-repo-integrity.php
+
       - name: Valider composer.json
         run: composer validate --strict
 
@@ -64,11 +68,6 @@ jobs:
       # erreur visible : l'espacement disparaît en silence. Voir le script.
       - name: Jetons CSS (aucune variable --pl-* non déclarée)
         run: php bin/check-css-tokens.php
-
-      # Du code malveillant a été injecté plusieurs fois, déguisé en polices et
-      # lancé par une tâche VS Code cachée. Voir le script.
-      - name: Intégrité du dépôt (pas de code déguisé en police ou image)
-        run: php bin/check-repo-integrity.php
 
       # Les tests fonctionnels parcourent le site pour de vrai : il leur faut la
       # base et son schema. Doctrine y ajoute le suffixe « _test »
