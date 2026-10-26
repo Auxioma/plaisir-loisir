@@ -53,3 +53,12 @@ temp_interactive_push.bat
 /dist/
 *.orc
 ###< sécurité ###
+
+###> documentation interne (26/10) ###
+# Le dépôt GitHub est public : les notes internes et les consignes pour
+# l'assistant IA (CLAUDE.md, docs/*.md…) restent sur les postes, hors dépôt,
+# pour ne pas être indexées par les moteurs de recherche.
+*.md
+/.claude/
+/.agents/
+###< documentation interne ###
