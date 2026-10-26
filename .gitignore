@@ -46,10 +46,18 @@ temp_interactive_push.bat
 ###> sécurité (13/10) ###
 # Configuration d'éditeur personnelle : jamais dans le dépôt (vecteur d'une injection
 # de code, tâche VS Code lancée automatiquement à l'ouverture du dossier).
-/.vscode/
 /.idea/
 /assets/lib/leaflet/images/public/
 /public/fonts/
 /dist/
 *.orc
 ###< sécurité ###
+
+###> documentation interne (26/10) ###
+# Le dépôt GitHub est public : les notes internes et les consignes pour
+# l'assistant IA (CLAUDE.md, docs/*.md…) restent sur les postes, hors dépôt,
+# pour ne pas être indexées par les moteurs de recherche.
+*.md
+/.claude/
+/.agents/
+###< documentation interne ###
