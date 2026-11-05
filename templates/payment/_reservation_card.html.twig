@@ -6,7 +6,7 @@
 <section class="pf-card rg-card">
     <h2 class="rg-card__title"><span class="rg-card__ico">{{ icon.image_frame(20) }}</span>{{ 'Détails de la réservation'|trans }}</h2>
     <div class="rg-activity">
-        {% if service %}<img src="{{ asset(service|pp_cover) }}" alt="" loading="lazy" decoding="async">{% endif %}
+        {% if service %}<img src="{{ image_url(service|pp_cover, 'card') }}" alt="" loading="lazy" decoding="async">{% endif %}
         <div>
             <strong>{{ service ? service.title : '—' }}</strong>
             {% if provider %}<span>{{ 'Par'|trans }} {{ provider.displayName }}</span>{% endif %}

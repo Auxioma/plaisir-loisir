@@ -65,3 +65,8 @@ temp_interactive_push.bat
 /.claude/
 /.agents/
 ###< documentation interne ###
+
+###> liip/imagine-bundle ###
+# Copies compressées des photos, régénérées à la demande.
+/public/media/
+###< liip/imagine-bundle ###

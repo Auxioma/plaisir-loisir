@@ -62,7 +62,7 @@
                     <div class="gc-cats" data-pg-track>
                         {% for t in tiles %}
                             <a class="gc-cat{{ t.slug in filters.categorie ? ' is-active' }}" href="{{ path('app_gifts', params|merge({categorie: [t.slug], page: null})) }}">
-                                <img src="{{ asset(t.image) }}" alt="" loading="lazy">
+                                <img src="{{ image_url(t.image, 'card') }}" alt="" loading="lazy">
                                 <span class="gc-cat__ico is-{{ t.tone }}">{{ ico.svg(t.icon, 18) }}</span>
                                 <strong>{{ t.name|trans }}</strong>
                                 <small>{{ t.count }} {{ t.count > 1 ? 'activités'|trans : 'activité'|trans }}</small>
@@ -83,7 +83,7 @@
                             {% for a in cards %}
                                 <article class="gc-card" id="gc-{{ loop.index }}">
                                     <a class="gc-card__media" href="{{ path('app_activity_show', {slug: a.slug}) }}">
-                                        <img src="{{ asset(a.image) }}" alt="{{ a.title }}" loading="lazy">
+                                        <img src="{{ image_url(a.image, 'card') }}" alt="{{ a.title }}" loading="lazy">
                                         {% if a.badge %}<span class="gc-badge">{{ a.badge|trans }}</span>{% elseif loop.index <= 3 and params is empty %}<span class="gc-badge is-{{ ['blue', 'green', 'orange'][loop.index0] }}">{{ ['Bestseller', 'Nouveau', 'Tendance'][loop.index0]|trans }}</span>{% endif %}
                                     </a>
                                     <div class="gc-card__body">

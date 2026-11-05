@@ -18,7 +18,7 @@
         </span>
         <input id="ew-cover" type="file" name="cover" accept="image/jpeg,image/png,image/webp" data-ew-cover{{ not draft.cover ? ' required' }}>
     </label>
-    <p class="ew-hint ew-hint--center">{{ 'Formats acceptés : JPG, PNG, WebP • 6 Mo maximum • format paysage conseillé (1600 x 1000 px)'|trans }}</p>
+    <p class="ew-hint ew-hint--center">{{ 'Formats acceptés : JPG, PNG, WebP • format paysage conseillé (1600 x 1000 px)'|trans }}</p>
     {{ ui.err(errors, 'cover') }}
 </div>
 

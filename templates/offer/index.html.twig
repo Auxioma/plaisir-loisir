@@ -89,7 +89,7 @@
                     {% for o in offers %}
                         <article class="ofm-card" id="of-{{ loop.index }}">
                             <a class="ofm-card__media" href="{{ path('app_activity_show', {slug: o.slug, offre: o.id}) }}">
-                                <img src="{{ asset(o.image) }}" alt="{{ o.title }}" loading="lazy">
+                                <img src="{{ image_url(o.image, 'card') }}" alt="{{ o.title }}" loading="lazy">
                                 <span class="ofm-badge{{ o.discount is null ? ' is-alt' }}">{{ o.badge|trans }}</span>
                                 <span class="ofm-card__timer">{{ icon.clock(13) }} {{ 'Se termine dans'|trans }} <b data-pg-countdown="{{ o.endsAt|date('c') }}"></b></span>
                             </a>
@@ -125,7 +125,7 @@
                         {% set ends = o.endsAt|date('Y-m-d') %}
                         <a class="ofm-mini" href="{{ path('app_activity_show', {slug: o.slug, offre: o.id}) }}">
                             <span class="ofm-mini__media">
-                                <img src="{{ asset(o.image) }}" alt="" loading="lazy">
+                                <img src="{{ image_url(o.image, 'card') }}" alt="" loading="lazy">
                                 <span class="ofm-badge{{ o.discount is null ? ' is-alt' }}">{{ o.badge|trans }}</span>
                                 <span class="ofm-mini__when">{{ ends == 'now'|date('Y-m-d') ? 'Aujourd’hui'|trans : (ends == '+1 day'|date('Y-m-d') ? 'Demain'|trans : 'Jusqu’au'|trans ~ ' ' ~ o.endsAt|date('d/m')) }}</span>
                             </span>

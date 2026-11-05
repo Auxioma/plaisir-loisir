@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Service;
 
+use App\Shared\Image\UploadedImageUrl;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -11,16 +12,18 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 /**
  * Dépôt d'images publiques (photos d'activités, couverture de fiche pro)
  * sous public/uploads/<dossier>/, avec les mêmes garde-fous que
- * AvatarStorageService : taille, type réel du fichier, nom imprévisible.
+ * AvatarStorageService : type réel du fichier, nom imprévisible. Pas de
+ * plafond de poids côté application : seul celui de PHP (upload_max_filesize)
+ * s'applique ; l'original est gardé, LiipImagine sert des copies compressées.
  */
 final class PublicImageStorage
 {
-    private const MAX_BYTES = 6 * 1024 * 1024;
     private const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
     public function __construct(
         #[Autowire('%kernel.project_dir%')]
         private readonly string $projectDir,
+        private readonly UploadedImageUrl $images,
     ) {
     }
 
@@ -33,10 +36,6 @@ final class PublicImageStorage
     {
         if (!$file->isValid()) {
             throw new \InvalidArgumentException('Le fichier n\'a pas pu être reçu. Il est peut-être trop volumineux.');
-        }
-
-        if ($file->getSize() > self::MAX_BYTES) {
-            throw new \InvalidArgumentException('L\'image dépasse 6 Mo. Merci de fournir un fichier plus léger.');
         }
 
         if (!\in_array((string) $file->getMimeType(), self::ALLOWED_MIME_TYPES, true)) {
@@ -62,6 +61,7 @@ final class PublicImageStorage
             return;
         }
 
+        $this->images->forget($relativePath);
         $path = $this->projectDir.'/public/'.$relativePath;
         if (is_file($path)) {
             @unlink($path);

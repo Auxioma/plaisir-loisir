@@ -23,7 +23,7 @@
         <div>
             <small>{{ 'Organisé par'|trans }}</small>
             <span class="ew-preview__org">
-                {% if me.avatarPath %}<img src="{{ asset(me.avatarPath) }}" alt="" loading="lazy" decoding="async">{% else %}<i>{{ (me.firstName|first ~ me.lastName|first)|upper }}</i>{% endif %}
+                {% if me.avatarPath %}<img src="{{ image_url(me.avatarPath, 'avatar') }}" alt="" loading="lazy" decoding="async">{% else %}<i>{{ (me.firstName|first ~ me.lastName|first)|upper }}</i>{% endif %}
                 {{ me.firstName }} {{ me.lastName|first }}.
             </span>
         </div>
