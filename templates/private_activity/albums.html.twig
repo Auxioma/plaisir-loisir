@@ -70,7 +70,7 @@
                 <article class="pf-album">
                     <a class="pf-album__media" href="{{ path('app_account_album_show', {id: album.activity.id}) }}">
                         {% if album.cover %}
-                            <img src="{{ asset(album.cover) }}" alt="" loading="lazy">
+                            <img src="{{ image_url(album.cover, 'card') }}" alt="" loading="lazy">
                         {% else %}
                             <span class="pf-album__placeholder">{{ icon.image_frame(34) }}</span>
                         {% endif %}

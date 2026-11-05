@@ -90,7 +90,7 @@
                         <tr>
                             <td>
                                 <div class="pf-table__item">
-                                    <img src="{{ asset(r.image) }}" alt="" loading="lazy">
+                                    <img src="{{ image_url(r.image, 'card') }}" alt="" loading="lazy">
                                     <div><strong>{{ r.title }}</strong><small>{{ r.place ?: '—' }}</small></div>
                                 </div>
                             </td>
@@ -166,7 +166,7 @@
         <h2 class="pf-card__title">{{ 'Activité à venir'|trans }}</h2>
         {% if next %}
             <div class="pf-next">
-                <img src="{{ asset(next.image) }}" alt="" loading="lazy">
+                <img src="{{ image_url(next.image, 'card') }}" alt="" loading="lazy">
                 <div>
                     <strong>{{ next.title }}</strong>
                     <span>{{ next.date|pf_date('d MMMM y') }} {{ 'à'|trans }} {{ next.date|date('H') }}h{{ next.date|date('i') }}</span>

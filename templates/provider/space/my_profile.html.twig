@@ -88,7 +88,7 @@
                 {% else %}
                     <ul class="pp-mini-list">
                         {% for s in services %}
-                            <li><img src="{{ asset(s|pp_cover) }}" alt="" loading="lazy" decoding="async"><div><strong>{{ s.title }}</strong><small>{{ s.category ? s.category.name|trans }} · {{ s.city ?? s.placeLabel }}</small></div><span class="pf-pill pf-pill--{{ s.status.tone }}">{{ s.status.label|trans }}</span><a class="pp-iconlink" href="{{ path('app_pro_activities_edit', {id: s.id}) }}" aria-label="{{ 'Modifier'|trans }}">{{ icon.edit_square(16) }}</a></li>
+                            <li><img src="{{ image_url(s|pp_cover, 'card') }}" alt="" loading="lazy" decoding="async"><div><strong>{{ s.title }}</strong><small>{{ s.category ? s.category.name|trans }} · {{ s.city ?? s.placeLabel }}</small></div><span class="pf-pill pf-pill--{{ s.status.tone }}">{{ s.status.label|trans }}</span><a class="pp-iconlink" href="{{ path('app_pro_activities_edit', {id: s.id}) }}" aria-label="{{ 'Modifier'|trans }}">{{ icon.edit_square(16) }}</a></li>
                         {% endfor %}
                     </ul>
                 {% endif %}
@@ -96,7 +96,7 @@
                 {% if media is empty %}
                     <p class="pf-empty">{{ 'Ajoutez des photos à vos activités pour les retrouver ici.'|trans }}</p>
                 {% else %}
-                    <div class="pp-gallery">{% for m in media %}<a href="{{ path('app_pro_activities_edit', {id: m.service.id}) }}" title="{{ m.service.title }}"><img src="{{ asset(m.path) }}" alt="{{ m.service.title }}" loading="lazy"></a>{% endfor %}</div>
+                    <div class="pp-gallery">{% for m in media %}<a href="{{ path('app_pro_activities_edit', {id: m.service.id}) }}" title="{{ m.service.title }}"><img src="{{ image_url(m.path, 'card') }}" alt="{{ m.service.title }}" loading="lazy"></a>{% endfor %}</div>
                 {% endif %}
             {% elseif tab == 'preferences' %}
                 <dl class="pp-info">

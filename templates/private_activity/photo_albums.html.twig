@@ -70,7 +70,7 @@
                 {% for a in albums %}
                     <a class="ap-card" href="{{ a.route ? path(a.route, a.routeParams) : '#' }}">
                         <span class="ap-card__media">
-                            <img src="{{ asset(a.image) }}" alt="" loading="lazy">
+                            <img src="{{ image_url(a.image, 'card') }}" alt="" loading="lazy">
                             <span class="ap-card__privacy{{ a.public ? '' : ' is-private' }}" title="{{ a.public ? 'Album public'|trans : 'Album privé'|trans }}">{{ a.public ? icon.users(15) : icon.padlock(15) }}</span>
                             <span class="ap-card__count">{{ a.photos }} {{ 'photos'|trans }}</span>
                         </span>
@@ -79,7 +79,7 @@
                             <span>{{ a.date|pf_date('d MMMM y') }}</span>
                             <span>{{ a.location ?: '—' }}</span>
                             {% if a.avatars is not empty %}
-                                <span class="fv-avatars">{% for f in a.avatars %}<img src="{{ asset(f) }}" alt="" loading="lazy" decoding="async">{% endfor %}{% if a.more > 0 %}<em>+{{ a.more }}</em>{% endif %}</span>
+                                <span class="fv-avatars">{% for f in a.avatars %}<img src="{{ image_url(f, 'card') }}" alt="" loading="lazy" decoding="async">{% endfor %}{% if a.more > 0 %}<em>+{{ a.more }}</em>{% endif %}</span>
                             {% endif %}
                         </span>
                     </a>
@@ -115,7 +115,7 @@
             <h2 class="pf-card__title">{{ 'Albums populaires'|trans }}</h2>
             <ul class="pf-list ap-popular">
                 {% for a in popular %}
-                    <li><a class="pf-list__link" href="{{ a.route ? path(a.route, a.routeParams) : '#' }}"><img src="{{ asset(a.image) }}" alt="" loading="lazy"><span class="pf-list__body"><strong>{{ a.title }}</strong><small>{{ a.photos }} {{ 'photos'|trans }}</small></span></a></li>
+                    <li><a class="pf-list__link" href="{{ a.route ? path(a.route, a.routeParams) : '#' }}"><img src="{{ image_url(a.image, 'card') }}" alt="" loading="lazy"><span class="pf-list__body"><strong>{{ a.title }}</strong><small>{{ a.photos }} {{ 'photos'|trans }}</small></span></a></li>
                 {% else %}
                     <li class="pf-muted">{{ 'Aucun album pour le moment.'|trans }}</li>
                 {% endfor %}

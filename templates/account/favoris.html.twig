@@ -72,7 +72,7 @@
                 {% set href = is_activity ? path('app_activity_show', {slug: f.slug}) : path('app_destination_city', {ville: f.slug}) %}
                 <article class="pf-fav">
                     <a class="pf-fav__media" href="{{ href }}">
-                        <img src="{{ asset(f.image) }}" alt="" loading="lazy">
+                        <img src="{{ image_url(f.image, 'card') }}" alt="" loading="lazy">
                         <span class="pf-fav__type pf-fav__type--{{ is_activity ? 'activity' : 'place' }}">{{ is_activity ? 'Activité'|trans : 'Lieu'|trans }}</span>
                     </a>
                     <button type="button" class="pf-fav__heart is-active"
@@ -126,7 +126,7 @@
             <ul class="pf-list pf-suggest">
                 {% for s in suggestions %}
                     <li>
-                        <img src="{{ asset(s.image) }}" alt="" loading="lazy">
+                        <img src="{{ image_url(s.image, 'card') }}" alt="" loading="lazy">
                         <a class="pf-list__body" href="{{ path('app_activity_show', {slug: s.slug}) }}">
                             <strong>{{ s.title }}</strong>
                             <small>{{ s.place }}</small>

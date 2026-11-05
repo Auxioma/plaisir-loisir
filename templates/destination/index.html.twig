@@ -95,7 +95,7 @@
                 <h3>{{ 'Idées du moment'|trans }}</h3>
                 <ul>
                     {% for idea in ideas %}
-                        <li><img src="{{ asset(idea.image) }}" alt="" loading="lazy"><span><strong>{{ idea.title|trans }}</strong><small>{{ idea.subtitle|trans }}</small></span></li>
+                        <li><img src="{{ image_url(idea.image, 'card') }}" alt="" loading="lazy"><span><strong>{{ idea.title|trans }}</strong><small>{{ idea.subtitle|trans }}</small></span></li>
                     {% endfor %}
                 </ul>
             </div>
@@ -129,7 +129,7 @@
                 {% for d in destinations %}
                     <a class="ds-card" href="{{ path('app_destination_city', {ville: d.slug}) }}">
                         <span class="ds-card__media">
-                            <img src="{{ asset(d.image) }}" alt="{{ d.name }}" loading="lazy">
+                            <img src="{{ image_url(d.image, 'card') }}" alt="{{ d.name }}" loading="lazy">
                             {% if d.badge %}<span class="ds-card__badge ds-card__badge--{{ badgeTone[d.badge] ?? 'violet' }}">{{ d.badge|trans }}</span>{% endif %}
                             <button type="button" class="ex-card__fav{{ d.favorite ? ' is-active' }}"
                                     aria-pressed="{{ d.favorite ? 'true' : 'false' }}"

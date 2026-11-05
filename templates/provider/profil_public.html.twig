@@ -21,9 +21,9 @@
         {# En-tête au modèle du profil membre (13/10) : couverture, photo en
            chevauchement, identité, note, actions. Styles : member.css (.mb-head). #}
         <header class="mb-head pdp-head">
-            <div class="mb-head__cover">{% if card.cover %}<img src="{{ asset(card.cover) }}" alt="" fetchpriority="high">{% endif %}</div>
+            <div class="mb-head__cover">{% if card.cover %}<img src="{{ image_url(card.cover, 'card') }}" alt="" fetchpriority="high">{% endif %}</div>
             <div class="mb-head__body">
-                {% if card.avatar %}<img class="mb-head__avatar" src="{{ asset(card.avatar) }}" alt="" width="160" height="160">{% else %}<span class="mb-head__avatar pdp-head__initial" aria-hidden="true">{{ provider.displayName|first|upper }}</span>{% endif %}
+                {% if card.avatar %}<img class="mb-head__avatar" src="{{ image_url(card.avatar, 'avatar') }}" alt="" width="160" height="160">{% else %}<span class="mb-head__avatar pdp-head__initial" aria-hidden="true">{{ provider.displayName|first|upper }}</span>{% endif %}
                 <div class="mb-head__id">
                     <h1>{{ provider.displayName }} <span class="mb-verified" title="{{ 'Professionnel vérifié'|trans }}">{{ icon.badge_check(22) }}</span></h1>
                     <p class="mb-head__meta">
@@ -88,7 +88,7 @@
                         <div class="pdp-acts">
                             {% for a in card.activities %}
                                 <article class="gc-card">
-                                    <a class="gc-card__media" href="{{ path('app_activity_show', {slug: a.slug}) }}"><img src="{{ asset(a.image) }}" alt="{{ a.title }}" loading="lazy">{% if a.badge %}<span class="gc-badge">{{ a.badge|trans }}</span>{% endif %}</a>
+                                    <a class="gc-card__media" href="{{ path('app_activity_show', {slug: a.slug}) }}"><img src="{{ image_url(a.image, 'card') }}" alt="{{ a.title }}" loading="lazy">{% if a.badge %}<span class="gc-badge">{{ a.badge|trans }}</span>{% endif %}</a>
                                     <div class="gc-card__body">
                                         <a class="gc-card__title" href="{{ path('app_activity_show', {slug: a.slug}) }}">{{ a.title }}</a>
                                         <small>{{ a.place }}{% if a.duration %} · {{ a.duration }}{% endif %}</small>

@@ -46,6 +46,8 @@ temp_interactive_push.bat
 ###> sécurité (13/10) ###
 # Configuration d'éditeur personnelle : jamais dans le dépôt (vecteur d'une injection
 # de code, tâche VS Code lancée automatiquement à l'ouverture du dossier).
+# Retiré par le commit 78bc3b9 (26/10) pour réinjecter le code : remis le 05/11.
+/.vscode/
 /.idea/
 /assets/lib/leaflet/images/public/
 /public/fonts/
@@ -58,6 +60,13 @@ temp_interactive_push.bat
 # l'assistant IA (CLAUDE.md, docs/*.md…) restent sur les postes, hors dépôt,
 # pour ne pas être indexées par les moteurs de recherche.
 *.md
+# Exception : la procédure de sécurité doit être dans le dépôt pour toute l'équipe.
+!/docs/integrite-depot.md
 /.claude/
 /.agents/
 ###< documentation interne ###
+
+###> liip/imagine-bundle ###
+# Copies compressées des photos, régénérées à la demande.
+/public/media/
+###< liip/imagine-bundle ###

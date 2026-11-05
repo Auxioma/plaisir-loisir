@@ -59,7 +59,7 @@
                     {% for participation in rows %}
                         {% set person = participation.participant %}
                         <li>
-                            <img src="{{ asset(person and person.avatarPath ? person.avatarPath : 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
+                            <img src="{{ image_url(person and person.avatarPath ? person.avatarPath : 'images/account/avatar-default.svg', 'avatar') }}" alt="" loading="lazy" decoding="async">
                             <span class="fa-people__who">
                                 <strong>{{ person ? person.firstName ~ ' ' ~ person.lastName : 'Membre supprimé'|trans }}</strong>
                                 <small>{{ 'Demande du'|trans }} {{ participation.createdAt ? participation.createdAt|pf_date('d MMM y') : '—' }}</small>

@@ -9,7 +9,7 @@
         {# Maquettes profil_particulier : pastille avatar + nom + « Mon compte ». #}
         <summary class="tm-account__toggle" aria-label="{{ 'Menu du compte'|trans }}">
             <span class="tm-account__avatar">
-                <img src="{{ asset(app.user.avatarPath ?? 'images/account/avatar-default.svg') }}" alt="">
+                <img src="{{ image_url(app.user.avatarPath ?? 'images/account/avatar-default.svg', 'avatar') }}" alt="">
                 {% set unreadMessages = app.user ? unread_messages_count(app.user) : 0 %}
                 {% if unreadMessages > 0 %}<span class="tm-account__dot" aria-hidden="true"></span>{% endif %}
             </span>

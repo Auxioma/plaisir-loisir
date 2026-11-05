@@ -73,7 +73,7 @@
                         <tr>
                             <td class="pp-when">{{ p.createdAt|pf_date('d MMM y') }}<small>{{ p.createdAt|date('H:i') }}</small></td>
                             <td><a class="pp-strong" href="{{ path('app_pro_booking_show', {id: b.id}) }}">#{{ b.reference }}</a></td>
-                            <td><div class="pf-table__item pp-mini-item"><img src="{{ asset(b.service|pp_cover) }}" alt="" loading="lazy" decoding="async"><span>{{ b.service.title }}</span></div></td>
+                            <td><div class="pf-table__item pp-mini-item"><img src="{{ image_url(b.service|pp_cover, 'card') }}" alt="" loading="lazy" decoding="async"><span>{{ b.service.title }}</span></div></td>
                             <td><div class="pp-client">{{ ui.avatar(b.client, 28) }}<span>{{ b.client.firstName }} {{ b.client.lastName }}</span></div></td>
                             <td><strong class="pp-strong">{{ ui.money(p.amount) }}</strong></td>
                             <td>{% set st = {pending: ['À régler', 'orange'], paid: ['Réglé', 'green'], failed: ['Échoué', 'red'], refunded: ['Remboursé', 'grey']}[p.status.value] %}<span class="pf-pill pf-pill--{{ st[1] }} pp-pill">{{ st[0]|trans }}</span></td>
