@@ -96,7 +96,9 @@
             "assets:install %PUBLIC_DIR%": "symfony-cmd",
             "importmap:install": "symfony-cmd"
         },
+        "hooks-git": "@php -r \"if (is_dir('.git')) { @exec('git config core.hooksPath .githooks'); }\"",
         "post-install-cmd": [
+            "@hooks-git",
             "@auto-scripts"
         ],
         "post-update-cmd": [
