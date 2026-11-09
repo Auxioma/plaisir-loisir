@@ -61,7 +61,7 @@
                     <p class="evn-book__price"><strong>{{ 'Gratuit'|trans }}</strong> {{ '· entre membres'|trans }}</p>
                     <h1 class="evn-detail__title">{{ event.title }}</h1>
                 <p class="evn-organizer">
-                    <img src="{{ asset(entity.organizer and entity.organizer.avatarPath ? entity.organizer.avatarPath : 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
+                    <img src="{{ image_url(entity.organizer and entity.organizer.avatarPath ? entity.organizer.avatarPath : 'images/account/avatar-default.svg', 'avatar') }}" alt="" loading="lazy" decoding="async">
                     {{ 'Organisé par'|trans }} <strong>{% if entity.organizer and not entity.organizer.isProvider %}<a href="{{ path('app_member_profile', {id: entity.organizer.id}) }}">{{ event.organizer }}</a>{% else %}{{ event.organizer }}{% endif %}</strong>
                     {# Suivre l'organisateur : il apparaît dans « Mes favoris » (01/10). #}
                     {% if app.user and event.organizerId and event.organizerId != app.user.id ~ '' %}
@@ -155,7 +155,7 @@
                         {% for r in going|slice(0, 5) %}
                             <div class="evn-part">
                                 <span class="evn-part__avatar">
-                                    {% if r.user.avatarPath %}<img src="{{ asset(r.user.avatarPath) }}" alt="" loading="lazy" decoding="async">{% else %}<span class="evn-part__initials">{{ (r.user.firstName|first ~ r.user.lastName|first)|upper }}</span>{% endif %}
+                                    {% if r.user.avatarPath %}<img src="{{ image_url(r.user.avatarPath, 'avatar') }}" alt="" loading="lazy" decoding="async">{% else %}<span class="evn-part__initials">{{ (r.user.firstName|first ~ r.user.lastName|first)|upper }}</span>{% endif %}
                                     {% if r.user == entity.organizer %}<span class="evn-part__tag">{{ 'Hôte'|trans }}</span>{% endif %}
                                 </span>
                                 <span class="evn-part__name">{{ r.user.firstName }} {{ r.user.lastName|first }}.</span>
@@ -182,7 +182,7 @@
                 <section class="evd-panel">
                     <h2 class="evn-h2">{{ 'Organisé par'|trans }}</h2>
                 <p class="evn-organizer">
-                    <img src="{{ asset(entity.organizer and entity.organizer.avatarPath ? entity.organizer.avatarPath : 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
+                    <img src="{{ image_url(entity.organizer and entity.organizer.avatarPath ? entity.organizer.avatarPath : 'images/account/avatar-default.svg', 'avatar') }}" alt="" loading="lazy" decoding="async">
                     {{ 'Organisé par'|trans }} <strong>{% if entity.organizer and not entity.organizer.isProvider %}<a href="{{ path('app_member_profile', {id: entity.organizer.id}) }}">{{ event.organizer }}</a>{% else %}{{ event.organizer }}{% endif %}</strong>
                     {# Suivre l'organisateur : il apparaît dans « Mes favoris » (01/10). #}
                     {% if app.user and event.organizerId and event.organizerId != app.user.id ~ '' %}
@@ -230,7 +230,7 @@
             <h2 class="evn-section__title">{{ 'Vous aimerez peut-être aussi'|trans }}</h2>
             <div class="card-grid evn-similar-grid">
                 {% for e in similar %}
-                    {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
+                    {% include 'event/nav/_event_card.html.twig' with { e: e } %}
                 {% endfor %}
             </div>
         </section>

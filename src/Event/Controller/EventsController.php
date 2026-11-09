@@ -16,9 +16,10 @@ use App\Event\Repository\EventInvitationRepository;
 use App\Event\Repository\EventRegistrationRepository;
 use App\Event\Repository\EventRepository;
 use App\Event\Repository\GroupAlbumRepository;
+use App\Event\Repository\GroupMembershipRepository;
 use App\Event\Repository\GroupRepository;
 use App\Event\Service\EventDocumentRenderer;
-use App\Event\StaticEvents;
+use App\Event\Service\GroupMembershipService;
 use App\I18n\Routing\LocaleUrlGenerator;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\Service\NotificationService;
@@ -78,33 +79,6 @@ final class EventsController extends AbstractController
         return $group;
     }
 
-    /**
-     * La rangee « filtree » de l'ecran « Tous les evenements ».
-     *
-     * La maquette y remet quatre cartes deja presentes plus haut, dans un
-     * autre ordre : randonnee, foot, barbecue, yoga. C'est un effet de
-     * presentation, pas un filtre — d'ou sa place ici.
-     *
-     * @param list<array<string, mixed>> $events
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function filteredRow(array $events): array
-    {
-        // Neuf cartes, dans l'ordre exact de la maquette : elle reprend celles
-        // du dessus dans un autre ordre et repete le barbecue en dernier.
-        $rangs = [4, 1, 2, 3, 8, 9, 10, 11, 2];
-        $rangee = [];
-
-        foreach ($rangs as $rang) {
-            if (isset($events[$rang])) {
-                $rangee[] = $events[$rang];
-            }
-        }
-
-        return $rangee;
-    }
-
     /** Pastilles de catégories de la maquette evenements.jpeg (libellé → slug EventCategory). */
     private const CHIPS = [
         '' => ['Tous les événements', 'star'],
@@ -161,25 +135,18 @@ final class EventsController extends AbstractController
             'types' => \App\Event\StaticEventWizard::types(),
             'upcoming' => $this->presenter->cards($upcoming),
             'markers' => $markers,
-            'avatars' => StaticEvents::avatars(),
         ]);
     }
 
+    /**
+     * L'ancienne maquette « Tous les événements » (filtres simulés en
+     * JavaScript, compteurs écrits en dur) : /evenements fait la même chose
+     * avec de vrais filtres. L'adresse reste valable pour les liens partagés.
+     */
     #[Route(path: ['fr' => '/evenements/tous', 'en' => '/en/events/all'], name: 'app_events_all')]
-    public function all(): Response
+    public function all(Request $request): Response
     {
-        $events = $this->presenter->cards($this->events->findForListing());
-
-        return $this->render('event/nav/tous.html.twig', [
-            'events' => $events,
-            // La rangee « filtree » de la maquette est une SELECTION d'ordre
-            // (randonnee, foot, barbecue...) et non un filtre reel : c'est une
-            // mise en page, elle reste ici et non en base.
-            'events_filtered' => $this->filteredRow($events),
-            'avatars' => StaticEvents::avatars(),
-            'selections' => StaticEvents::selections(),
-            'cities' => StaticEvents::cities(),
-        ]);
+        return $this->redirectToRoute('app_events', $request->query->all(), Response::HTTP_MOVED_PERMANENTLY);
     }
 
     #[Route(path: ['fr' => '/evenements/calendrier', 'en' => '/en/events/calendar'], name: 'app_events_calendar')]
@@ -187,8 +154,8 @@ final class EventsController extends AbstractController
     {
         return $this->render('event/nav/calendrier.html.twig', [
             ...$this->calendarData($this->readMonth($request)),
-            'selections' => StaticEvents::selections(),
-            'cities' => StaticEvents::cities(),
+            'event_categories' => $this->events->countUpcomingByCategory(12),
+            ...$this->selectionData(),
         ]);
     }
 
@@ -246,9 +213,7 @@ final class EventsController extends AbstractController
             // Événements privés : seulement ceux que le membre organise ou
             // auxquels il est invité (04/10) ; rien pour un visiteur.
             'events' => $this->presenter->cards($this->getUser() instanceof User ? $this->events->findPrivateFor($this->getUser()) : []),
-            'avatars' => StaticEvents::avatars(),
-            'selections' => StaticEvents::selections(),
-            'cities' => StaticEvents::cities(),
+            ...$this->selectionData(),
         ]);
     }
 
@@ -270,7 +235,6 @@ final class EventsController extends AbstractController
                 $this->events->findForListing(limit: 5),
                 static fn (Event $e): bool => $e !== $event,
             ), 0, 4)),
-            'avatars' => StaticEvents::avatars(),
         ]);
     }
 
@@ -497,17 +461,25 @@ final class EventsController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/evenements/groupes', 'en' => '/en/events/groups'], name: 'app_groups')]
-    public function groups(): Response
+    public function groups(Request $request): Response
     {
+        $q = trim((string) $request->query->get('q', ''));
+        $groups = $this->groups->findForListing();
+        if ('' !== $q) {
+            $needle = mb_strtolower($q);
+            $groups = array_values(array_filter($groups, static fn ($g): bool => str_contains(mb_strtolower($g->getName().' '.$g->getLocation().' '.strip_tags((string) $g->getDescription())), $needle)));
+        }
+
         return $this->render('event/nav/groupes.html.twig', [
-            'groups' => $this->groupPresenter->cards($this->groups->findForListing()),
-            'avatars' => StaticEvents::avatars(),
+            'groups' => $this->groupPresenter->cards($groups),
+            'q' => $q,
         ]);
     }
 
     #[Route(path: ['fr' => '/evenements/groupes/detail/{groupSlug}/photos/album/{albumId}', 'en' => '/en/events/groups/detail/{groupSlug}/photos/album/{albumId}'], name: 'app_group_album')]
-    public function album(string $groupSlug, string $albumId): Response
+    public function album(string $groupSlug, string $albumId, GroupMembershipService $membershipService): Response
     {
+        $user = $this->getUser();
         $group = $this->findGroupOrFail($groupSlug);
         $album = Ulid::isValid($albumId) ? $this->albums->find(Ulid::fromString($albumId)) : null;
 
@@ -518,26 +490,33 @@ final class EventsController extends AbstractController
         return $this->render('event/nav/album.html.twig', [
             'group' => $this->groupPresenter->card($group),
             'album' => $this->groupPresenter->albums([$album])[0],
+            'membership' => $membershipService->statusFor($group, $user instanceof User ? $user : null),
             // « Événements similaires à proximité » : mêmes cartes réelles
             // que sur la fiche groupe (groupDetail()) et la fiche événement.
             'similar' => $this->presenter->cards($this->events->findForListing(limit: 4)),
-            'avatars' => StaticEvents::avatars(),
         ]);
     }
 
     #[Route(path: ['fr' => '/evenements/groupes/detail/demande-envoyee', 'en' => '/en/events/groups/detail/request-sent'], name: 'app_group_join_sent')]
-    public function joinSent(): Response
+    public function joinSent(Request $request): Response
     {
-        return $this->render('event/nav/demande.html.twig');
+        $slug = (string) $request->query->get('groupe', '');
+        $group = '' !== $slug ? $this->groups->findOneBySlug($slug) : null;
+
+        return $this->render('event/nav/demande.html.twig', [
+            'group' => null !== $group ? $this->groupPresenter->card($group) : null,
+        ]);
     }
 
     // L'onglet apparait dans l'URL : il accepte donc les deux langues
     // (/detail/membres et /en/detail/members). tabKey() ramene ensuite la
     // valeur a l'identifiant interne attendu par les gabarits.
     #[Route(path: ['fr' => '/evenements/groupes/detail/{slug}/{onglet}', 'en' => '/en/events/groups/detail/{slug}/{onglet}'], name: 'app_group_detail', requirements: ['onglet' => 'apropos|evenements|membres|photos|discussions|about|events|members'], defaults: ['onglet' => 'apropos'])]
-    public function groupDetail(string $slug, string $onglet): Response
+    public function groupDetail(string $slug, string $onglet, GroupMembershipRepository $memberships, GroupMembershipService $membershipService): Response
     {
         $group = $this->findGroupOrFail($slug);
+        $user = $this->getUser();
+        $membership = $membershipService->statusFor($group, $user instanceof User ? $user : null);
         $onglet = LocaleUrlGenerator::tabKey($onglet);
 
         $now = new \DateTimeImmutable();
@@ -548,6 +527,11 @@ final class EventsController extends AbstractController
         return $this->render('event/nav/groupe.html.twig', [
             'group' => $this->groupPresenter->card($group),
             'tab' => $onglet,
+            // Adhésion réelle (09/11) : état du visiteur, membres acceptés et,
+            // pour le seul créateur, les demandes à traiter.
+            'membership' => $membership,
+            'members' => $this->groupPresenter->members($memberships->findMembers($group)),
+            'pending_requests' => 'owner' === $membership ? $this->groupPresenter->members($memberships->findPending($group)) : [],
             // Evenements reels a la place des groupes de remplissage de la
             // maquette (StaticEvents::groupEvents(), point a trancher n°5,
             // desormais tranche : on n'invente plus un habillage de groupe
@@ -557,10 +541,6 @@ final class EventsController extends AbstractController
             'group_events' => $this->presenter->cards($events),
             'upcoming_events' => $this->presenter->cards(\array_slice($upcoming, 0, 3)),
             'past_events' => $this->presenter->cards(\array_slice($past, 0, 3)),
-            // Les membres sont des prenoms et des photos de la maquette, sans
-            // compte derriere : il n'y a rien a brancher tant que l'adhesion a
-            // un groupe n'existe pas.
-            'members' => StaticEvents::members(),
             'albums' => $this->groupPresenter->albums($this->albums->findForGroup($group)),
             // « Evenements similaires a proximite », commun aux onglets de
             // cette page (groupe.html.twig) : de vrais evenements desormais,
@@ -570,7 +550,25 @@ final class EventsController extends AbstractController
             // L'onglet « Evenements » du groupe affiche le meme calendrier :
             // il lui faut donc les memes variables. Meme limite que ci-dessus.
             ...$this->calendarData(),
-            'avatars' => StaticEvents::avatars(),
         ]);
+    }
+
+    /**
+     * « Votre sélection d'événements » : catégories et villes des événements
+     * publics à venir, avec leurs vrais nombres (06/11).
+     *
+     * @return array{selections: list<array<string, mixed>>, cities: list<string>}
+     */
+    private function selectionData(): array
+    {
+        return [
+            'selections' => array_map(static fn (array $c): array => [
+                'title' => $c['name'],
+                'slug' => $c['slug'],
+                'count' => $c['total'],
+                'image' => $c['image'] ?? 'images/events/sel-kayak.jpg',
+            ], $this->events->countUpcomingByCategory()),
+            'cities' => $this->events->upcomingCities(),
+        ];
     }
 }

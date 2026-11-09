@@ -52,7 +52,7 @@
                 {% for t in testimonials %}
                     <figure class="pg-quote">
                         <blockquote>« {{ t.quote|trans }} »</blockquote>
-                        <figcaption><img src="{{ asset(t.photo) }}" alt="" loading="lazy" decoding="async"><span><strong>{{ t.author }}</strong><small>{{ t.role|trans }}</small></span></figcaption>
+                        <figcaption><img src="{{ image_url(t.photo, 'card') }}" alt="" loading="lazy" decoding="async"><span><strong>{{ t.author }}</strong><small>{{ t.role|trans }}</small></span></figcaption>
                     </figure>
                 {% endfor %}
             </div>

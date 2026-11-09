@@ -726,4 +726,98 @@ class ServiceRepository extends ServiceEntityRepository
 
         return $langues;
     }
+
+    /**
+     * Nombre d'activités publiées par catégorie, les plus fournies d'abord.
+     *
+     * Alimente « Votre sélection d'activités » (06/11) : les compteurs
+     * « 88 activités » de la maquette étaient écrits en dur.
+     *
+     * @return list<array{category: Category, total: int}>
+     */
+    public function countPublishedByCategory(int $limit = 8): array
+    {
+        /** @var list<array{category: Category, total: int|string}> $lignes */
+        $lignes = $this->getEntityManager()->createQueryBuilder()
+            ->select('c AS category', 'COUNT(s.id) AS total')
+            ->from(Category::class, 'c')
+            ->join(Service::class, 's', 'WITH', 's.category = c')
+            ->andWhere('s.status = :published')
+            ->andWhere('s.deletedAt IS NULL')
+            ->setParameter('published', ServiceStatus::Published)
+            ->groupBy('c.id')
+            ->orderBy('total', 'DESC')
+            ->addOrderBy('c.position', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return array_map(static fn (array $l): array => ['category' => $l['category'], 'total' => (int) $l['total']], $lignes);
+    }
+
+    /**
+     * Nombre d'activités publiées par destination, les plus fournies d'abord.
+     *
+     * @return list<array{destination: Destination, total: int}>
+     */
+    public function countPublishedByDestination(int $limit = 12): array
+    {
+        /** @var list<array{destination: Destination, total: int|string}> $lignes */
+        $lignes = $this->getEntityManager()->createQueryBuilder()
+            ->select('d AS destination', 'COUNT(s.id) AS total')
+            ->from(Destination::class, 'd')
+            ->join(Service::class, 's', 'WITH', 's.destination = d')
+            ->andWhere('s.status = :published')
+            ->andWhere('s.deletedAt IS NULL')
+            ->setParameter('published', ServiceStatus::Published)
+            ->groupBy('d.id')
+            ->orderBy('total', 'DESC')
+            ->addOrderBy('d.position', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return array_map(static fn (array $l): array => ['destination' => $l['destination'], 'total' => (int) $l['total']], $lignes);
+    }
+
+    /**
+     * Une photo de couverture par catégorie : celle de l'activité publiée la
+     * plus vue. Les catégories sont désignées par leur slug (chaîne) : lier
+     * des identifiants ULID dans un IN est le piège rappelé plus haut.
+     *
+     * @param list<string> $categorySlugs
+     *
+     * @return array<string, string> slug de catégorie => chemin de l'image
+     */
+    public function coverByCategory(array $categorySlugs): array
+    {
+        if ([] === $categorySlugs) {
+            return [];
+        }
+
+        /** @var list<array{slug: string, path: string}> $lignes */
+        $lignes = $this->getEntityManager()->createQueryBuilder()
+            ->select('c.slug AS slug', 'm.path AS path')
+            ->from(\App\Catalog\Entity\Media::class, 'm')
+            ->join('m.service', 's')
+            ->join('s.category', 'c')
+            ->andWhere('m.type = :cover')
+            ->andWhere('s.status = :published')
+            ->andWhere('s.deletedAt IS NULL')
+            ->andWhere('c.slug IN (:slugs)')
+            ->setParameter('cover', 'cover')
+            ->setParameter('published', ServiceStatus::Published)
+            ->setParameter('slugs', $categorySlugs)
+            ->orderBy('s.viewsCount', 'DESC')
+            ->addOrderBy('m.position', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        $covers = [];
+        foreach ($lignes as $ligne) {
+            $covers[$ligne['slug']] ??= $ligne['path'];
+        }
+
+        return $covers;
+    }
 }

@@ -17,25 +17,20 @@
         crumb: 'Groupes'|trans,
         tabs_active: 'groupes',
         title: 'Tous les groupes'|trans,
-        chips: [
-            { icon: 'grid', label: 'Tous les groupes'|trans, active: true },
-            { icon: 'person_plus', label: 'Nouveau groupe'|trans },
-            { icon: 'wellness', label: 'Bien-être'|trans },
-            { icon: 'culture', label: 'Culture & Découvertes'|trans },
-            { icon: 'palette', label: 'Ateliers & Créations'|trans },
-        ],
+        search_action: path('app_groups'),
+        search_where: false,
+        q: q,
+        total: groups|length,
     } %}
 
     <section class="act-section">
         <div class="container">
             <div class="card-grid evn-grid evn-groups-grid">
                 {% for g in groups %}
-                    {% include 'event/nav/_group_card.html.twig' with { g: g, avatars: avatars } %}
+                    {% include 'event/nav/_group_card.html.twig' with { g: g } %}
                 {% endfor %}
             </div>
-            <div class="act-more">
-                <button type="button" class="pl-btn pl-btn--outline-action">{{ 'Voir plus de groupes'|trans }} {{ icon.chevron_down(16) }}</button>
-            </div>
+            {% if groups is empty %}<p class="evn-empty__text">{{ 'Aucun groupe ne correspond à cette recherche.'|trans }}</p>{% endif %}
         </div>
     </section>
 

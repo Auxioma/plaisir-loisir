@@ -3,7 +3,8 @@
     lieu, membres, partage) + barre d'onglets avec menu ⋮ et bouton
     « Demander à rejoindre le groupe » (grammaire corrigée : « la
     groupe » → le groupe). Variables : group (carte du groupe, voir
-    GroupPresenter::card()), tab (onglet actif).
+    GroupPresenter::card()), tab (onglet actif), membership (owner, member,
+    pending ou null).
 
     17/09 : nom, lieu, membres et couverture viennent du groupe réellement
     consulté (auparavant figés sur « Cours collectifs de fitness à Lyon »,
@@ -57,6 +58,17 @@
     </nav>
     <div class="evn-gtabs__actions">
         <button type="button" class="evn-dots" aria-label="{{ "Plus d'actions"|trans }}">{{ icon.dots(18) }}</button>
-        <button type="button" class="pl-btn pl-btn--primary" data-bs-toggle="modal" data-bs-target="#evn-join">{{ 'Demander à rejoindre le groupe'|trans }}</button>
+        {# Adhésion réelle (09/11) : le bouton suit l'état du visiteur. #}
+        {% set membership = membership ?? null %}
+        {% if membership == 'owner' %}
+            <span class="evn-chip-count">{{ 'Vous êtes le créateur de ce groupe'|trans }}</span>
+        {% elseif membership in ['member', 'pending'] %}
+            <form method="post" action="{{ path('app_group_join', {slug: group.slug}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('group_join') }}">
+                <button class="pl-btn pl-btn--outline-dark">{{ (membership == 'member' ? 'Quitter le groupe' : 'Annuler ma demande')|trans }}</button>
+            </form>
+        {% else %}
+            <button type="button" class="pl-btn pl-btn--primary" data-bs-toggle="modal" data-bs-target="#evn-join">{{ (group.owner ? 'Demander à rejoindre le groupe' : 'Rejoindre le groupe')|trans }}</button>
+        {% endif %}
     </div>
 </div>

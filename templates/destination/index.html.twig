@@ -91,14 +91,16 @@
                 <p>{{ 'Des expériences uniques vous attendent,'|trans }}<br>{{ 'où que vous soyez.'|trans }}</p>
                 <a class="pf-btn pf-btn--primary pf-btn--lg" href="{{ path('app_activities') }}#carte">{{ 'Explorer la carte'|trans }} {{ icon.map(20) }}</a>
             </div>
+            {% if ideas is not empty %}
             <div class="ds-ideas">
                 <h3>{{ 'Idées du moment'|trans }}</h3>
                 <ul>
                     {% for idea in ideas %}
-                        <li><img src="{{ asset(idea.image) }}" alt="" loading="lazy"><span><strong>{{ idea.title|trans }}</strong><small>{{ idea.subtitle|trans }}</small></span></li>
+                        <li><a href="{{ path('app_destination_city', { ville: idea.slug }) }}"><img src="{{ image_url(idea.image, 'card') }}" alt="" loading="lazy"><span><strong>{{ idea.title }}</strong>{% if idea.subtitle %}<small>{{ idea.subtitle }}</small>{% endif %}</span></a></li>
                     {% endfor %}
                 </ul>
             </div>
+            {% endif %}
         </section>
 
         {# Filtres actifs (13/10) : visibles au-dessus des résultats, retirables d'un clic. #}
@@ -116,7 +118,6 @@
 
         <div class="ds-section-head">
             <h2>{% if filtering %}{{ total }} {{ (total > 1 ? 'destinations trouvées' : 'destination trouvée')|trans }}{% else %}{{ 'Destinations populaires'|trans }}{% endif %}</h2>
-            <a href="{{ path('app_destinations_popular') }}">{{ 'Voir toutes les destinations'|trans }} {{ icon.arrow_right(16) }}</a>
         </div>
 
         {% if destinations is empty %}
@@ -129,7 +130,7 @@
                 {% for d in destinations %}
                     <a class="ds-card" href="{{ path('app_destination_city', {ville: d.slug}) }}">
                         <span class="ds-card__media">
-                            <img src="{{ asset(d.image) }}" alt="{{ d.name }}" loading="lazy">
+                            <img src="{{ image_url(d.image, 'card') }}" alt="{{ d.name }}" loading="lazy">
                             {% if d.badge %}<span class="ds-card__badge ds-card__badge--{{ badgeTone[d.badge] ?? 'violet' }}">{{ d.badge|trans }}</span>{% endif %}
                             <button type="button" class="ex-card__fav{{ d.favorite ? ' is-active' }}"
                                     aria-pressed="{{ d.favorite ? 'true' : 'false' }}"

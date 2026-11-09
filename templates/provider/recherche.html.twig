@@ -83,12 +83,12 @@
                         {% for r in results %}
                             <article class="pd-card" id="pro-{{ loop.index }}">
                                 <a class="pd-card__cover" href="{{ path('app_provider_profile', {slug: r.slug}) }}">
-                                    {% if r.cover %}<img src="{{ asset(r.cover) }}" alt="" loading="lazy">{% endif %}
+                                    {% if r.cover %}<img src="{{ image_url(r.cover, 'card') }}" alt="" loading="lazy">{% endif %}
                                     <span class="pd-card__verified">{{ icon.check_badge(14) }} {{ 'Vérifié'|trans }}</span>
                                 </a>
                                 <div class="pd-card__body">
                                     <div class="pd-card__id">
-                                        <span class="pd-avatar">{% if r.avatar %}<img src="{{ asset(r.avatar) }}" alt="" loading="lazy" decoding="async">{% else %}{{ r.name|first|upper }}{% endif %}</span>
+                                        <span class="pd-avatar">{% if r.avatar %}<img src="{{ image_url(r.avatar, 'avatar') }}" alt="" loading="lazy" decoding="async">{% else %}{{ r.name|first|upper }}{% endif %}</span>
                                         <span>
                                             <a class="pd-card__name" href="{{ path('app_provider_profile', {slug: r.slug}) }}">{{ r.name }}</a>
                                             <small>{% if r.category %}{{ r.category|trans }}{% endif %}{% if r.city %} · {{ icon.map_pin(12) }} {{ r.city }}{% endif %}{% if r.distance is not null %} · {{ r.distance }} km{% endif %}</small>

@@ -9,6 +9,7 @@ use App\PrivateActivity\Entity\Photo;
 use App\PrivateActivity\Entity\PrivateActivity;
 use App\PrivateActivity\Repository\AlbumRepository;
 use App\PrivateActivity\Repository\PhotoRepository;
+use App\Shared\Image\UploadedImageUrl;
 use App\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -32,9 +33,6 @@ final class AlbumService
     /** §4 de docs/corrections-client-2026-07-27.md. */
     public const MAX_PHOTOS_PER_ALBUM = 25;
 
-    /** 4 Mio : même plafond que la photo de profil (AvatarStorageService). */
-    public const MAX_BYTES = 4 * 1024 * 1024;
-
     /** @var list<string> */
     public const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -43,6 +41,7 @@ final class AlbumService
         private readonly AlbumRepository $albums,
         private readonly PhotoRepository $photos,
         private readonly string $projectDir,
+        private readonly UploadedImageUrl $images,
     ) {
     }
 
@@ -81,10 +80,6 @@ final class AlbumService
 
         if (!$file->isValid()) {
             throw new \InvalidArgumentException('Le fichier n\'a pas pu être reçu. Il est peut-être trop volumineux.');
-        }
-
-        if ($file->getSize() > self::MAX_BYTES) {
-            throw new \InvalidArgumentException('Cette photo dépasse 4 Mo. Merci de fournir un fichier plus léger.');
         }
 
         $mimeType = (string) $file->getMimeType();
@@ -130,6 +125,7 @@ final class AlbumService
 
     private function deleteFile(string $relativePath): void
     {
+        $this->images->forget($relativePath);
         $path = $this->projectDir.'/public/'.$relativePath;
 
         if (is_file($path)) {

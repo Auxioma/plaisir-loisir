@@ -22,11 +22,17 @@
 
         {# Confirmation « Demande envoyée » (capture 29). #}
         <div class="evn-sent__layout">
-            <img class="evn-sent__img" src="{{ asset('images/events/grp-fitness-cover.jpg') }}" alt="" loading="lazy" decoding="async">
+            <img class="evn-sent__img" src="{{ asset(group.image ?? 'images/events/grp-fitness-cover.jpg') }}" alt="" loading="lazy" decoding="async">
             <div class="evn-sent__body">
                 <p class="evn-sent__label">{{ 'Demande envoyée'|trans }}</p>
                 <h1 class="evn-sent__title">{{ 'Votre demande'|trans }}<br>{{ 'est en cours !'|trans }}</h1>
-                <p class="evn-sent__text">{{ "L'organisateur examine votre demande d'adhésion au"|trans }}<br>{{ 'groupe Erasmus Paris EP et vous répondra.'|trans }}</p>
+                {# Le nom du groupe vient de la demande (?groupe=), plus d'« Erasmus Paris EP » figé (09/11). #}
+                {% if group %}
+                    <p class="evn-sent__text">{{ "L'organisateur examine votre demande d'adhésion au groupe %groupe% et vous répondra."|trans({'%groupe%': group.name}) }}</p>
+                    <a href="{{ path('app_group_detail', {slug: group.slug}) }}" class="pl-btn pl-btn--outline-dark">{{ 'Retour au groupe'|trans }}</a>
+                {% else %}
+                    <p class="evn-sent__text">{{ "L'organisateur examine votre demande d'adhésion et vous répondra."|trans }}</p>
+                {% endif %}
             </div>
         </div>
 

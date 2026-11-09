@@ -1,39 +1,54 @@
-# Génération d'images (miniatures + formats modernes webp/avif) via LiipImagineBundle.
+# Copies compressées des photos déposées (public/uploads/), via LiipImagineBundle.
 #
-# Driver de rendu :
-#   - en local  : GD  (la DLL php_gd est présente dans C:\php8.4\ext) ;
-#   - en prod   : Imagick (installé sur le serveur par Guillaume — meilleur pour webp/avif).
+# L'original n'est jamais modifié. Au premier affichage, Liip génère la copie
+# (route _liip_imagine) dans public/media/cache/<filtre>/uploads/…, puis le
+# serveur web la sert directement. Branchement : App\Shared\Image\ResizedUploadPackage
+# (tout asset('uploads/…') → filtre « web ») et la fonction Twig image_url().
 #
-# Pour tester le rendu d'images EN LOCAL, active l'extension dans C:\php8.4\php.ini :
-#   extension=gd
-# (la DLL est déjà là, il suffit de décommenter/ajouter la ligne puis relancer le serveur).
+# Aucun filtre ne recadre (sauf l'avatar, carré) : le CSS (object-fit) garde la
+# main sur le cadrage. Aucun agrandissement : une petite image reste telle quelle.
+# auto_rotate redresse les photos de téléphone (EXIF) ; strip retire les
+# métadonnées, dont la position GPS.
+#
+# Driver : GD en local, Imagick en production.
 liip_imagine:
     driver: gd
 
-    # Jeux de filtres réutilisables — on les affinera avec les vraies images de la maquette.
+    # Après remplacement d'une photo, ses copies sont supprimées
+    # (UploadedImageUrl::forget) ; pour tout régénérer : liip:imagine:cache:remove
     filter_sets:
-        # Miniature d'activité (grille, listes, favoris)
-        activity_thumb:
-            quality: 80
-            format: webp
-            filters:
-                thumbnail: { size: [400, 300], mode: outbound }
-
-        # Grande image / bannière d'activité
-        activity_cover:
+        # Toute photo affichée en grand (fiche, galerie, bannière, og:image)
+        web:
+            jpeg_quality: 82
+            png_compression_level: 8
             quality: 82
-            format: webp
             filters:
-                thumbnail: { size: [1280, 720], mode: outbound }
+                auto_rotate: ~
+                strip: ~
+                thumbnail: { size: [1920, 1920], mode: inset, allow_upscale: false }
+                interlace: { mode: line }
 
-        # Avatar / logo prestataire
+        # Vignettes des cartes et listes
+        card:
+            jpeg_quality: 80
+            png_compression_level: 8
+            quality: 80
+            filters:
+                auto_rotate: ~
+                strip: ~
+                thumbnail: { size: [800, 800], mode: inset, allow_upscale: false }
+                interlace: { mode: line }
+
+        # Photo de profil (carrée, nette en écran haute densité)
         avatar:
+            jpeg_quality: 85
+            png_compression_level: 8
             quality: 85
-            format: webp
             filters:
-                thumbnail: { size: [128, 128], mode: outbound }
+                auto_rotate: ~
+                strip: ~
+                thumbnail: { size: [256, 256], mode: outbound, allow_upscale: false }
 
-# En production, on bascule sur Imagick (disponible sur le serveur).
 when@prod:
     liip_imagine:
         driver: imagick
