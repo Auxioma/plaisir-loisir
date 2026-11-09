@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Event\Controller;
 
+use App\Catalog\Entity\Destination;
+use App\Catalog\Repository\DestinationRepository;
 use App\Event\Service\GroupDraftService;
 use App\Event\StaticGroupWizard;
 use App\User\Entity\User;
@@ -35,7 +37,7 @@ final class GroupWizardController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/evenements/groupes/creer/{etape}', 'en' => '/en/events/groups/create/{etape}'], name: 'app_group_create', requirements: ['etape' => '[1-4]'], defaults: ['etape' => 1], methods: ['GET', 'POST'])]
-    public function create(Request $request, int $etape): Response
+    public function create(Request $request, int $etape, DestinationRepository $destinations): Response
     {
         if ($request->isMethod('POST')) {
             return $this->handleStep($request, $etape);
@@ -45,7 +47,12 @@ final class GroupWizardController extends AbstractController
             'step' => $etape,
             'advice' => StaticGroupWizard::advice($etape),
             'tags' => StaticGroupWizard::tags(),
-            'cities' => StaticGroupWizard::cities(),
+            // Destinations réelles du catalogue (09/11), à la place des
+            // suggestions de maquette (« Linz, Australie »…).
+            'cities' => array_map(static fn (Destination $d): array => [
+                'label' => $d->getName().', '.($d->getRegion() ?? $d->getCountry()),
+                'short' => $d->getName(),
+            ], $destinations->findForListing(limit: 12)),
             'draft' => $this->draft->current($request->getSession()),
         ]);
     }
