@@ -111,6 +111,9 @@ jobs:
             fi
             $PHP bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
             $PHP bin/console app:i18n:import --no-interaction
+            # Contenus des pages institutionnelles : ne remplit que les sections
+            # vides, n'écrase jamais ce qui a été modifié dans le back-office.
+            $PHP bin/console app:contenu:importer --no-interaction
             $PHP bin/console importmap:install --no-interaction
             $PHP bin/console asset-map:compile
             $PHP bin/console cache:clear --no-interaction

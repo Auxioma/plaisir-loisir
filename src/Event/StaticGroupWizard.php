@@ -11,22 +11,6 @@ namespace App\Event;
 final class StaticGroupWizard
 {
     /**
-     * Suggestions de l'autocomplete de localisation (étape 1).
-     * Coquille maquette corrigée : « Linciln » → Lincoln.
-     *
-     * @return list<array{label: string, short: string}>
-     */
-    public static function cities(): array
-    {
-        return [
-            ['label' => 'Lille, France', 'short' => 'Lille'],
-            ['label' => 'Linz, Australie', 'short' => 'Linz'],
-            ['label' => 'Lisbon, Portugal', 'short' => 'Lisbon'],
-            ['label' => 'Lincoln, United Kingdom', 'short' => 'Lincoln'],
-        ];
-    }
-
-    /**
      * Tags « types d'événements » (étape 2). La maquette contient des
      * doublons de remplissage (« Sports & Sensations », « Musique »…) que la
      * spec demande de dédupliquer ; « Réligions » y est aussi corrigé.

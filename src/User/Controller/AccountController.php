@@ -382,16 +382,15 @@ final class AccountController extends AbstractController
         ]);
     }
 
-    #[Route(path: ['fr' => '/compte/favoris/listes/{slug}', 'en' => '/en/account/favorites/lists/{slug}'], name: 'app_account_favorites_list', defaults: ['slug' => 'alsace-2026'])]
-    public function favoritesList(string $slug): Response
+    /**
+     * Ancienne liste de démonstration « Alsace - 2026 » (StaticAccount),
+     * identique pour tout le monde : retirée le 09/11, les favoris réels
+     * vivent sur « Mes favoris ».
+     */
+    #[Route(path: ['fr' => '/compte/favoris/listes/{slug}', 'en' => '/en/account/favorites/lists/{slug}'], name: 'app_account_favorites_list', defaults: ['slug' => ''])]
+    public function favoritesList(): Response
     {
-        return $this->render('account/liste.html.twig', [
-            'user' => $this->accountUser(),
-            'menu' => $this->menuFor($this->currentUser()),
-            'active' => 'Favoris',
-            'list_name' => 'Alsace - 2026',
-            'favorites' => StaticAccount::alsaceList(),
-        ]);
+        return $this->redirectToRoute('app_favorites_page', [], Response::HTTP_MOVED_PERMANENTLY);
     }
 
     /**
