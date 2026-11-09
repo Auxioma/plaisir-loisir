@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Legal;
 
-use App\Corporate\StaticCorporate;
 use App\Legal\Enum\LegalDocumentType;
 
 /**
@@ -31,8 +30,8 @@ final class LegalDefaults
         }
 
         return match ($type) {
-            LegalDocumentType::TermsOfService => self::renderSections(StaticCorporate::cguSections()),
-            LegalDocumentType::LegalNotice => self::renderSections(StaticCorporate::legalSections()),
+            LegalDocumentType::TermsOfService => self::renderSections(InitialLegalSections::cguSections()),
+            LegalDocumentType::LegalNotice => self::renderSections(InitialLegalSections::legalSections()),
             LegalDocumentType::PrivacyPolicy => InitialLegalTexts::privacyPolicy(),
             LegalDocumentType::TermsOfSale => InitialLegalTexts::termsOfSale(),
             LegalDocumentType::CookiePolicy => InitialLegalTexts::cookiePolicy(),

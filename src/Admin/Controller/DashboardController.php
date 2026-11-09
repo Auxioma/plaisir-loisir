@@ -139,6 +139,9 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Contenus éditoriaux');
         yield MenuItem::linkTo(LegalDocumentCrudController::class, 'Textes juridiques', 'fa fa-scale-balanced');
         yield MenuItem::linkTo(FaqEntryCrudController::class, 'FAQ', 'fa fa-circle-question');
+        // 09/11 : contenus des pages institutionnelles, auparavant figés dans le code.
+        yield MenuItem::linkTo(PageBlockCrudController::class, 'Pages institutionnelles', 'fa fa-building');
+        yield MenuItem::linkTo(JobOfferCrudController::class, 'Offres d\'emploi', 'fa fa-briefcase');
         // Retours client du 07/10 : e-mail, téléphone et adresse modifiables sans déploiement.
         yield MenuItem::linkTo(CompanyContactCrudController::class, 'Coordonnées du site', 'fa fa-address-card');
 

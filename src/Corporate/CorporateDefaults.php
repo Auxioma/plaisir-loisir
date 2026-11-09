@@ -4,15 +4,54 @@ declare(strict_types=1);
 
 namespace App\Corporate;
 
+use App\Corporate\Enum\PageBlockSection;
+
 /**
- * Contenus statiques des pages institutionnelles (« corporate »).
+ * Contenu de départ des pages institutionnelles, repris de la maquette
+ * (ex-StaticCorporate). Il n'est PLUS lu par les pages : seule la commande
+ * app:contenu:importer s'en sert, pour remplir les tables page_block et
+ * job_offer quand elles sont vides. Ensuite, tout se modifie depuis le
+ * back-office (Contenus éditoriaux).
  *
- * Comme pour les autres flows, tout vient de la maquette : aucun texte n'est
- * inventé. Les coquilles de la maquette (« activivté », « Regions »…) sont
- * corrigées et listées dans docs/note-conformite-12-08.md.
+ * ⚠ L'équipe et les témoignages sont ceux de la maquette (noms et photos
+ * d'exemple) : à remplacer par les vrais depuis le back-office.
  */
-final class StaticCorporate
+final class CorporateDefaults
 {
+    /**
+     * Blocs par section, au format de l'entité PageBlock.
+     *
+     * @return array<string, list<array{title: string, text?: string|null, author?: string|null, role?: string|null, image?: string|null, icon?: string|null, tone?: string|null, featured?: bool}>>
+     */
+    public static function blocks(): array
+    {
+        $plain = static fn (array $rows): array => array_map(static fn (array $r): array => [
+            'title' => $r['title'],
+            'text' => $r['text'],
+            'icon' => $r['icon'] ?? null,
+            'tone' => $r['tone'] ?? null,
+            'featured' => $r['featured'] ?? false,
+        ], $rows);
+
+        return [
+            PageBlockSection::AboutValues->value => $plain(self::values()),
+            PageBlockSection::AboutTeam->value => array_map(static fn (array $m): array => [
+                'title' => $m['name'], 'role' => $m['role'], 'image' => $m['photo'],
+            ], self::team()),
+            PageBlockSection::PartnerBenefits->value => $plain(self::partnerBenefits()),
+            PageBlockSection::PartnerSteps->value => $plain(self::partnerSteps()),
+            PageBlockSection::PartnerTestimonials->value => array_map(static fn (array $t): array => [
+                'title' => $t['author'], 'text' => $t['quote'], 'author' => $t['author'], 'role' => $t['role'], 'image' => $t['photo'],
+            ], self::testimonials()),
+            PageBlockSection::PartnerArguments->value => $plain(self::partnerArguments()),
+            PageBlockSection::CareerValues->value => $plain(self::careerValues()),
+            PageBlockSection::CareerReasons->value => $plain(self::careerReasons()),
+            PageBlockSection::CareerTestimonials->value => array_map(static fn (array $t): array => [
+                'title' => $t['author'], 'text' => $t['quote'], 'author' => $t['author'], 'role' => $t['role'], 'image' => $t['photo'],
+            ], self::employeeTestimonials()),
+        ];
+    }
+
     /**
      * « Pourquoi Nous Choisir ? » — 5 cartes numérotées, la 2e mise en avant.
      *
@@ -123,22 +162,6 @@ final class StaticCorporate
     }
 
     /**
-     * Offres d'emploi (Carrières). Le texte de description est le lorem de la
-     * maquette, repris tel quel.
-     *
-     * @return list<array{slug: string, icon: string, tone: string, title: string, text: string, city: string, contract: string, time: string, dept: string}>
-     */
-    public static function jobs(): array
-    {
-        return [
-            ['slug' => 'developpeur-full-stack', 'icon' => 'monitor', 'tone' => 'blue', 'title' => 'Développeur Full Stack (H/F)', 'text' => 'Concevez et faites évoluer la plateforme TrouveMoi (Symfony, PostgreSQL, Twig) au sein d’une équipe produit à taille humaine.', 'city' => 'Lyon ou télétravail', 'contract' => 'CDI', 'time' => 'Temps complet', 'dept' => 'Tech'],
-            ['slug' => 'responsable-marketing-digital', 'icon' => 'megaphone', 'tone' => 'green', 'title' => 'Responsable Marketing Digital (H/F)', 'text' => 'Pilotez l’acquisition et la notoriété de TrouveMoi : SEO, réseaux sociaux, campagnes et partenariats de contenu.', 'city' => 'Paris', 'contract' => 'CDI', 'time' => 'Temps complet', 'dept' => 'Marketing'],
-            ['slug' => 'charge-experience-client', 'icon' => 'headset', 'tone' => 'orange', 'title' => 'Chargé(e) Expérience Client (H/F)', 'text' => 'Accompagnez nos membres et nos partenaires au quotidien et faites de chaque échange une expérience réussie.', 'city' => 'Bordeaux', 'contract' => 'CDI', 'time' => 'Temps complet', 'dept' => 'Relation client'],
-            ['slug' => 'data-analyst', 'icon' => 'chart', 'tone' => 'violet', 'title' => 'Data Analyst (H/F)', 'text' => 'Transformez nos données d’usage en décisions : tableaux de bord, études et recommandations pour toutes les équipes.', 'city' => 'Nantes ou télétravail', 'contract' => 'CDI', 'time' => 'Temps complet', 'dept' => 'Data'],
-        ];
-    }
-
-    /**
      * « Nos valeurs au coeur de notre quotidien » — 6 cartes numérotées, la 2e
      * mise en avant ; les numéros changent de couleur (maquette).
      *
@@ -170,6 +193,22 @@ final class StaticCorporate
             ['num' => '03', 'icon' => 'hand_heart', 'tone' => 'orange', 'title' => 'Équilibre vie pro/perso', 'text' => 'Nous respectons votre équilibre et votre bien-être', 'featured' => false],
             ['num' => '04', 'icon' => 'shield_check', 'tone' => 'red', 'title' => 'Avantages', 'text' => 'Tickets restaurant, mutuelle, avantages loisirs…', 'featured' => false],
             ['num' => '05', 'icon' => 'party', 'tone' => 'blue', 'title' => "Événements d'équipe", 'text' => 'Séminaires, activités et bons moments garantis !', 'featured' => false],
+        ];
+    }
+
+    /**
+     * Offres d'emploi (Carrières). Le texte de description est le lorem de la
+     * maquette, repris tel quel.
+     *
+     * @return list<array{slug: string, icon: string, tone: string, title: string, text: string, city: string, contract: string, time: string, dept: string}>
+     */
+    public static function jobs(): array
+    {
+        return [
+            ['slug' => 'developpeur-full-stack', 'icon' => 'monitor', 'tone' => 'blue', 'title' => 'Développeur Full Stack (H/F)', 'text' => 'Concevez et faites évoluer la plateforme TrouveMoi (Symfony, PostgreSQL, Twig) au sein d’une équipe produit à taille humaine.', 'city' => 'Lyon ou télétravail', 'contract' => 'CDI', 'time' => 'Temps complet', 'dept' => 'Tech'],
+            ['slug' => 'responsable-marketing-digital', 'icon' => 'megaphone', 'tone' => 'green', 'title' => 'Responsable Marketing Digital (H/F)', 'text' => 'Pilotez l’acquisition et la notoriété de TrouveMoi : SEO, réseaux sociaux, campagnes et partenariats de contenu.', 'city' => 'Paris', 'contract' => 'CDI', 'time' => 'Temps complet', 'dept' => 'Marketing'],
+            ['slug' => 'charge-experience-client', 'icon' => 'headset', 'tone' => 'orange', 'title' => 'Chargé(e) Expérience Client (H/F)', 'text' => 'Accompagnez nos membres et nos partenaires au quotidien et faites de chaque échange une expérience réussie.', 'city' => 'Bordeaux', 'contract' => 'CDI', 'time' => 'Temps complet', 'dept' => 'Relation client'],
+            ['slug' => 'data-analyst', 'icon' => 'chart', 'tone' => 'violet', 'title' => 'Data Analyst (H/F)', 'text' => 'Transformez nos données d’usage en décisions : tableaux de bord, études et recommandations pour toutes les équipes.', 'city' => 'Nantes ou télétravail', 'contract' => 'CDI', 'time' => 'Temps complet', 'dept' => 'Data'],
         ];
     }
 
@@ -220,96 +259,5 @@ final class StaticCorporate
         }
 
         return null;
-    }
-
-    /**
-     * Mentions légales : sommaire + sections.
-     *
-     * @return list<array{title: string, intro: string, items: list<string>, paragraphs: list<string>}>
-     */
-    public static function legalSections(): array
-    {
-        return [
-            [
-                'title' => 'Éditeur du site',
-                'intro' => 'Le site TrouveMoi Plaisirs & Loisirs est édité par :',
-                'items' => [
-                    'TrouveMoi',
-                    'Société par actions simplifiée (SAS) au capital de 100.000 €',
-                    '28 rue de la Paix, 75002 Paris, France',
-                    'RCS Paris 123 456 789',
-                    'Numéro de TVA intracommunautaire : FR12 123 456 789',
-                    'Email : contact@trouvemoi.com',
-                    'Téléphone : 07 45 15 54 51',
-                ],
-                'paragraphs' => [],
-            ],
-            [
-                'title' => 'Hébergeur',
-                'intro' => 'Le site est hébergé par :',
-                'items' => [
-                    'OVHcloud',
-                    '2 rue Kellermann | 59100 Roubaix, France',
-                    'Téléphone : 09 72 10 10 07',
-                    'Site web : www.ovhcloud.com',
-                ],
-                'paragraphs' => [],
-            ],
-            [
-                'title' => 'Propriété intellectuelle',
-                'intro' => '',
-                'items' => [],
-                'paragraphs' => ["L'ensemble du contenu présent sur ce site (textes, images, logos, icônes, graphismes, etc.) est la propriété exclusive de TrouveMoi, sauf mention contraire, et est protégé par les lois en vigueur sur la propriété intellectuelle. Toute reproduction, représentation, modification, publication, adaptation totale ou partielle de tout ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, est interdite sans l'autorisation écrite préalable de TrouveMoi."],
-            ],
-            [
-                'title' => 'Responsabilité',
-                'intro' => '',
-                'items' => [],
-                'paragraphs' => ["TrouveMoi s'efforce de fournir sur le site des informations aussi précises que possible. Cependant, elle ne pourra être tenue responsable des omissions, des inexactitudes et des carences dans la mise à jour. L'utilisation des informations et contenus disponibles sur le site se fait sous l'entière responsabilité de l'utilisateur."],
-            ],
-            [
-                'title' => 'Liens hypertextes',
-                'intro' => '',
-                'items' => [],
-                'paragraphs' => ["Le site peut contenir des liens hypertextes vers d'autres sites. TrouveMoi n'exerce aucun contrôle sur ces sites et décline toute responsabilité quant à leur contenu."],
-            ],
-            [
-                'title' => 'Droit applicable',
-                'intro' => '',
-                'items' => [],
-                'paragraphs' => ['Les présentes mentions légales sont régies par le droit français. En cas de litige, une solution amiable sera recherchée avant toute action judiciaire. À défaut, les tribunaux compétents de Paris seront saisis.'],
-            ],
-        ];
-    }
-
-    /**
-     * Conditions générales d'utilisation.
-     *
-     * La planche est nommée « Politiques de confidentialités » mais son contenu
-     * est bien celui des CGU (voir docs/note-conformite-12-08.md).
-     *
-     * @return list<array{title: string, intro: string, items: list<string>, paragraphs: list<string>}>
-     */
-    public static function cguSections(): array
-    {
-        $textes = [
-            'Objet' => "Les présentes CGU ont pour objet de définir les modalités d'accès et d'utilisation de la plateforme TrouveMoi Plaisirs & Loisirs, exploitée par la société TrouveMoi, ainsi que les droits et obligations des utilisateurs.",
-            'Accès au service' => "La plateforme est accessible gratuitement à tout utilisateur disposant d'un accès Internet. Certains services peuvent nécessiter la création d'un compte utilisateur. L'utilisateur s'engage à fournir des informations exactes et à jour lors de son inscription.",
-            'Utilisation de la plateforme' => "Vous vous engagez à utiliser la plateforme conformément à la loi et aux présentes CGU. Il est interdit d'utiliser la plateforme à des fins illégales, frauduleuses ou portant atteinte aux droits de tiers.",
-            'Comptes utilisateurs' => 'Vous êtes responsable de la confidentialité de vos identifiants et de toutes les activités effectuées depuis votre compte. Vous devez nous informer immédiatement de toute utilisation non autorisée de votre compte.',
-            'Contenus et activités' => "Les informations, descriptions, photos et avis présents sur la plateforme sont fournis par les utilisateurs ou nos partenaires. TrouveMoi Plaisirs & Loisirs ne peut être tenu responsable de l'exactitude ou de l'exhaustivité de ces informations.",
-            'Réservations et paiements' => 'Les réservations effectuées via la plateforme sont soumises aux conditions des prestataires partenaires. Le prix des prestations est réglé directement au prestataire, par les moyens qu\'il propose : aucune somme liée à une prestation ne transite par TrouveMoi. Les abonnements des professionnels et les bons cadeaux sont payés à TrouveMoi par l\'intermédiaire de son partenaire de paiement agréé. Les conditions d\'annulation et de remboursement sont précisées avant chaque réservation.',
-            'Responsabilités' => "TrouveMoi Plaisirs & Loisirs met tout en œuvre pour assurer la disponibilité et la fiabilité de la plateforme, mais ne garantit pas l'absence d'erreurs ou d'interruptions. Notre responsabilité ne saurait être engagée pour tout dommage indirect lié à l'utilisation de la plateforme.",
-            'Données personnelles' => 'La collecte et le traitement de vos données personnelles sont effectués conformément à notre Politique de Confidentialité, disponible sur notre site.',
-            'Modification des CGU' => 'TrouveMoi se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront informés de toute modification substantielle.',
-            'Droit applicable et litiges' => 'Les présentes CGU sont soumises au droit français. En cas de litige, une solution amiable sera recherchée avant toute action judiciaire.',
-        ];
-
-        $out = [];
-        foreach ($textes as $title => $texte) {
-            $out[] = ['title' => $title, 'intro' => '', 'items' => [], 'paragraphs' => [$texte]];
-        }
-
-        return $out;
     }
 }
