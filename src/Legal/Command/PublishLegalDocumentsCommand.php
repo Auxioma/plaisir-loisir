@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Legal\Command;
 
-use App\Corporate\StaticCorporate;
 use App\Legal\Enum\LegalDocumentType;
 use App\Legal\InitialLegalTexts;
 use App\Legal\LegalDefaults;
@@ -21,7 +20,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * Publie en base la première version des textes juridiques.
  *
  * Le texte n'est pas inventé ici : il est repris MOT POUR MOT de
- * StaticCorporate, c'est-à-dire de ce que le site affiche déjà sur
+ * InitialLegalSections, c'est-à-dire de ce que le site affiche déjà sur
  * /conditions-generales et /mentions-legales.
  *
  * LES TROIS TEXTES MANQUANTS SONT DÉSORMAIS PUBLIÉS (31/08).
