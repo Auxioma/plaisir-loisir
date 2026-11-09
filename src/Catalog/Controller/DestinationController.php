@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Catalog\Controller;
 
 use App\Catalog\Entity\Destination;
+use App\Catalog\Entity\Service;
 use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Presenter\DestinationPresenter;
 use App\Catalog\Repository\DestinationRepository;
 use App\Catalog\Repository\ServiceRepository;
-use App\Catalog\Entity\Service;
 use App\Catalog\Service\CatalogShowcase;
 use App\Favorite\Service\CurrentUserFavorites;
 use App\Review\Presenter\ReviewPresenter;
