@@ -1,0 +1,16 @@
+# Fichiers sensibles (05/11/2026, après la réinjection de code du 26/10, commit 78bc3b9).
+# Toute PR qui les touche demande la validation d'un propriétaire, à condition
+# que « Require review from Code Owners » soit activé sur master
+# (Settings > Branches). Adapter la liste des propriétaires si besoin.
+
+/.github/                        @gtecotan
+/.gitignore                      @gtecotan
+/.githooks/                      @gtecotan
+/bin/check-repo-integrity.php    @gtecotan
+/composer.json                   @gtecotan
+/composer.lock                   @gtecotan
+/importmap.php                   @gtecotan
+/assets/controllers/             @gtecotan
+/assets/*.js                     @gtecotan
+/.vscode/                        @gtecotan
+/.idea/                          @gtecotan

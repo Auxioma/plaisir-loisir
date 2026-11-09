@@ -1,32 +1,35 @@
 {#
     Section « Votre sélection D'événements » : carrousel de villes +
     cartes catégorie avec compteur d'événements (écrans B, H, I).
-    Variables : selections, cities.
+    Variables : selections (title, slug, count, image), cities (noms de
+    villes) — calculées depuis les événements publics à venir (06/11).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
+{% if selections is not empty %}
 <section class="act-section evn-selection">
     <div class="container">
         <h2 class="evn-section__title evn-selection__title">{{ "Votre sélection D'événements"|trans }}</h2>
-        <div class="act-citybar">
-            <button type="button" class="act-citybar__nav" aria-label="{{ 'Villes précédentes'|trans }}">{{ icon.chevron_left(16) }}</button>
-            <div class="act-citybar__scroll">
-                {% for city in cities %}
-                    <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">{{ city }}</button>
-                {% endfor %}
+        {% if cities is not empty %}
+            <div class="act-citybar">
+                <div class="act-citybar__scroll">
+                    {% for city in cities %}
+                        <a class="act-chip" href="{{ path('app_events', { ou: city }) }}">{{ city }}</a>
+                    {% endfor %}
+                </div>
             </div>
-            <button type="button" class="act-citybar__nav" aria-label="{{ 'Villes suivantes'|trans }}">{{ icon.chevron_right(16) }}</button>
-        </div>
+        {% endif %}
         <div class="card-grid evn-sel-grid">
             {% for s in selections %}
-                <a href="{{ path('app_events_all') }}" class="pl-card evn-sel-card">
-                    <div class="pl-card__media"><img src="{{ asset(s.image) }}" alt="{{ s.title|trans }}" loading="lazy" decoding="async"></div>
+                <a href="{{ path('app_events', { categorie: s.slug }) }}" class="pl-card evn-sel-card">
+                    <div class="pl-card__media"><img src="{{ image_url(s.image, 'card') }}" alt="{{ s.title }}" loading="lazy" decoding="async"></div>
                     <div class="pl-card__body">
-                        <span class="pl-card__title">{{ s.title|trans }}</span>
-                        <span class="evn-sel-card__count">{{ icon.book_open(16) }} {{ s.count|split(' ')|first }} {{ 'événements'|trans }}</span>
+                        <span class="pl-card__title">{{ s.title }}</span>
+                        <span class="evn-sel-card__count">{{ icon.book_open(16) }} {{ s.count }} {{ (s.count > 1 ? 'événements' : 'événement')|trans }}</span>
                     </div>
                 </a>
             {% endfor %}
         </div>
     </div>
 </section>
+{% endif %}

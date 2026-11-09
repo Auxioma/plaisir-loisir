@@ -1,10 +1,11 @@
 {#
-    Section « Votre sélection d'activités » (spec Destinations §1.12) :
-    carrousel de villes + cartes simplifiées + pagination optionnelle.
-    Variables : selections, cities, with_pagination (défaut true).
+    Section « Votre sélection d'activités » : destinations et catégories du
+    catalogue, avec leurs nombres réels d'activités (CatalogShowcase, 06/11).
+    Variables : selections (title, slug, count, image), cities (name, slug).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
+{% if selections is not empty %}
 <section class="act-section">
     <div class="container">
         <div class="home-section__head">
@@ -12,29 +13,20 @@
                 <h2 class="home-section__title">{{ "Votre sélection d'activités"|trans }}</h2>
             </div>
         </div>
-        <div class="act-citybar">
-            <button type="button" class="act-citybar__nav" aria-label="{{ 'Villes précédentes'|trans }}">{{ icon.chevron_left(16) }}</button>
-            <div class="act-citybar__scroll">
-                {% for city in cities %}
-                    <button type="button" class="act-chip {{ loop.first ? 'is-active' }}">{{ city }}</button>
-                {% endfor %}
+        {% if cities is not empty %}
+            <div class="act-citybar">
+                <div class="act-citybar__scroll">
+                    {% for c in cities %}
+                        <a class="act-chip {{ c.slug == citySlug|default('') ? 'is-active' }}" href="{{ path('app_destination_city', { ville: c.slug }) }}">{{ c.name }}</a>
+                    {% endfor %}
+                </div>
             </div>
-            <button type="button" class="act-citybar__nav" aria-label="{{ 'Villes suivantes'|trans }}">{{ icon.chevron_right(16) }}</button>
-        </div>
+        {% endif %}
         <div class="card-grid">
             {% for s in selections %}
                 {% include 'activity/_selection_card.html.twig' with { s: s } %}
             {% endfor %}
         </div>
-        {% if with_pagination|default(true) %}
-            <nav class="act-pagination" aria-label="{{ 'Pagination de la sélection'|trans }}">
-                <button type="button" class="act-page-btn" aria-label="{{ 'Page précédente'|trans }}">{{ icon.chevron_left(16) }}</button>
-                <button type="button" class="act-page-btn is-active" aria-current="page">1</button>
-                <button type="button" class="act-page-btn">2</button>
-                <button type="button" class="act-page-btn">3</button>
-                <button type="button" class="act-page-btn">4</button>
-                <button type="button" class="act-page-btn" aria-label="{{ 'Page suivante'|trans }}">{{ icon.chevron_right(16) }}</button>
-            </nav>
-        {% endif %}
     </div>
 </section>
+{% endif %}

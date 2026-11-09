@@ -50,7 +50,7 @@
             <div class="ex2-track" data-pg-track>
                 {% for c in collections %}
                     <article class="ex2-col">
-                        <a href="{{ path('app_activities', c.params) }}" class="ex2-col__media"><img src="{{ asset(c.image) }}" alt="" loading="lazy"><span class="gc-cat__ico is-{{ c.tone }}">{{ ico.svg(c.icon, 20) }}</span></a>
+                        <a href="{{ path('app_activities', c.params) }}" class="ex2-col__media"><img src="{{ image_url(c.image, 'card') }}" alt="" loading="lazy"><span class="gc-cat__ico is-{{ c.tone }}">{{ ico.svg(c.icon, 20) }}</span></a>
                         <div class="ex2-col__body">
                             <h2>{{ c.title|trans }}</h2>
                             <small>{{ c.subtitle|trans }}</small>
@@ -77,7 +77,7 @@
                     {% for a in ideas %}
                         <article class="gc-card">
                             <a class="gc-card__media" href="{{ path('app_activity_show', {slug: a.slug}) }}">
-                                <img src="{{ asset(a.image) }}" alt="{{ a.title }}" loading="lazy">
+                                <img src="{{ image_url(a.image, 'card') }}" alt="{{ a.title }}" loading="lazy">
                                 <span class="gc-badge is-{{ ['blue', 'green', 'orange', 'blue'][loop.index0] }}">{{ (a.badge ?: ['Populaire', 'Nouveau', 'Tendance', 'Coup de cœur'][loop.index0])|trans }}</span>
                             </a>
                             {% include '_partials/_event_fav.html.twig' with { type: 'activite', key: a.slug, class: 'ofm-card__fav' } %}

@@ -170,24 +170,6 @@ function initEvnReport() {
     });
 }
 
-/* Groupe : modale « Rejoindre ce groupe » (3 états). */
-function initEvnJoin() {
-    const modal = document.getElementById('evn-join');
-    if (!modal) return;
-
-    const steps = modal.querySelectorAll('[data-evn-join-step]');
-    const show = (n) => steps.forEach((s) => { s.hidden = s.dataset.evnJoinStep !== String(n); });
-
-    // Ouverture et fermeture : modale Bootstrap (data-bs-toggle / data-bs-dismiss).
-    modal.addEventListener('show.bs.modal', () => { if (!modal.hasAttribute('data-auto-open')) show(1); });
-    const choose = modal.querySelector('[data-evn-join-choose]');
-    if (choose) choose.addEventListener('click', () => show(2));
-    const cancel = modal.querySelector('[data-evn-join-cancel]');
-    if (cancel) cancel.addEventListener('click', () => show(1));
-    const confirm = modal.querySelector('[data-evn-join-confirm]');
-    if (confirm) confirm.addEventListener('click', () => show(3));
-}
-
 /* Groupe : sous-onglets Liste des événements / Calendrier. */
 function initEvnSubtabs() {
     const tabs = [...document.querySelectorAll('[data-evn-subtab]')];
@@ -266,7 +248,6 @@ function initEvnAutoOpen() {
 }
 
 initEvnReport();
-initEvnJoin();
 initEvnAutoOpen();
 initEvnSubtabs();
 initEvnMembers();

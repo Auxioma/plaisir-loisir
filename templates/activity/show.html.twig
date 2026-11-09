@@ -156,7 +156,7 @@
                     <h2 id="act-org-title" class="act-org__title">{{ icon.user_round(20) }} {{ 'Votre organisateur'|trans }}</h2>
                     <div class="act-org__body">
                         <a class="act-org__id" href="{{ path('app_provider_profile', {slug: pro.slug}) }}">
-                            <span class="act-org__avatar">{% if organizer.card.avatar %}<img src="{{ asset(organizer.card.avatar) }}" alt="" loading="lazy" decoding="async">{% else %}{{ pro.displayName|first|upper }}{% endif %}</span>
+                            <span class="act-org__avatar">{% if organizer.card.avatar %}<img src="{{ image_url(organizer.card.avatar, 'avatar') }}" alt="" loading="lazy" decoding="async">{% else %}{{ pro.displayName|first|upper }}{% endif %}</span>
                             <span>
                                 <strong>{{ pro.displayName }}</strong>
                                 <span class="act-org__verified">{{ icon.check_badge(14) }} {{ 'Professionnel vérifié'|trans }}</span>

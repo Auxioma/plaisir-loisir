@@ -7,7 +7,6 @@ namespace App\Favorite\Controller;
 use App\Event\Presenter\EventPresenter;
 use App\Event\Presenter\GroupPresenter;
 use App\Event\Repository\EventRepository;
-use App\Event\StaticEvents;
 use App\Favorite\Entity\Favorite;
 use App\Favorite\Repository\FavoriteRepository;
 use App\User\Entity\User;
@@ -73,7 +72,6 @@ final class FavoritesPageController extends AbstractController
             'groups' => $groups,
             'activities' => $activities,
             'organizers' => $organizers,
-            'avatars' => StaticEvents::avatars(),
         ]);
     }
 }

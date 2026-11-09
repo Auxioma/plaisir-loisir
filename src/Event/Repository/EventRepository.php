@@ -237,4 +237,63 @@ class EventRepository extends ServiceEntityRepository
 
         return array_values(array_unique($rows, \SORT_REGULAR));
     }
+
+    /**
+     * Événements publics à venir, par catégorie, les plus fournies d'abord,
+     * avec la photo de l'un d'eux (« Votre sélection d'événements », 06/11 :
+     * les compteurs « 88 événements » étaient écrits en dur).
+     *
+     * @return list<array{name: string, slug: string, total: int, image: string|null}>
+     */
+    public function countUpcomingByCategory(int $limit = 4): array
+    {
+        /** @var list<array{name: string, slug: string, total: int|string, image: string|null}> $lignes */
+        $lignes = $this->upcomingPublic()
+            ->join('e.category', 'c')
+            ->select('c.name AS name', 'c.slug AS slug', 'COUNT(e.id) AS total', 'MAX(e.imagePath) AS image')
+            ->groupBy('c.id', 'c.name', 'c.slug', 'c.position')
+            ->orderBy('total', 'DESC')
+            ->addOrderBy('c.position', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(static fn (array $l): array => [...$l, 'total' => (int) $l['total']], $lignes);
+    }
+
+    /**
+     * Villes des événements publics à venir, les plus actives d'abord.
+     *
+     * @return list<string>
+     */
+    public function upcomingCities(int $limit = 12): array
+    {
+        /** @var list<array{city: string}> $lignes */
+        $lignes = $this->upcomingPublic()
+            ->select('e.city AS city', 'COUNT(e.id) AS HIDDEN total')
+            ->andWhere("COALESCE(e.city, '') <> ''")
+            ->groupBy('e.city')
+            ->orderBy('total', 'DESC')
+            ->addOrderBy('e.city', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_column($lignes, 'city');
+    }
+
+    /** Mêmes règles de visibilité que searchPublic(). */
+    private function upcomingPublic(): \Doctrine\ORM\QueryBuilder
+    {
+        $now = new \DateTimeImmutable();
+
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.deletedAt IS NULL')
+            ->andWhere('e.private = false')
+            ->andWhere("(e.status = 'published' OR (e.status = 'scheduled' AND e.publishAt <= :now))")
+            ->andWhere('COALESCE(e.endsAt, e.startsAt) >= :today')
+            ->andWhere("e.visibility = 'public'")
+            ->setParameter('now', $now)
+            ->setParameter('today', $now->setTime(0, 0));
+    }
 }

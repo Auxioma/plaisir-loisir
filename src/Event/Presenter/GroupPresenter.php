@@ -6,6 +6,7 @@ namespace App\Event\Presenter;
 
 use App\Event\Entity\Group;
 use App\Event\Entity\GroupAlbum;
+use App\Event\Entity\GroupMembership;
 use App\User\Entity\User;
 
 /**
@@ -61,7 +62,7 @@ final class GroupPresenter
     }
 
     /**
-     * @return array{name: string, avatar: string}|null
+     * @return array{id: string, name: string, avatar: string}|null
      */
     private function owner(Group $group): ?array
     {
@@ -74,9 +75,36 @@ final class GroupPresenter
         $name = trim($owner->getFirstName().' '.$owner->getLastName());
 
         return [
+            'id' => (string) $owner->getId(),
             'name' => '' !== $name ? $name : $owner->getEmail(),
             'avatar' => $owner->getAvatarPath() ?? self::FALLBACK_OWNER_AVATAR,
         ];
+    }
+
+    /**
+     * Lignes de l'onglet Membres (membres acceptés ou demandes en attente).
+     *
+     * @param iterable<GroupMembership> $memberships
+     *
+     * @return list<array{id: string, userId: string, name: string, avatar: string, since: \DateTimeImmutable|null}>
+     */
+    public function members(iterable $memberships): array
+    {
+        $rows = [];
+
+        foreach ($memberships as $membership) {
+            $user = $membership->getUser();
+            $name = trim($user->getFirstName().' '.$user->getLastName());
+            $rows[] = [
+                'id' => (string) $membership->getId(),
+                'userId' => (string) $user->getId(),
+                'name' => '' !== $name ? $name : 'Membre',
+                'avatar' => $user->getAvatarPath() ?? self::FALLBACK_OWNER_AVATAR,
+                'since' => $membership->getJoinedAt() ?? $membership->getCreatedAt(),
+            ];
+        }
+
+        return $rows;
     }
 
     /**

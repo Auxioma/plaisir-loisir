@@ -20,26 +20,19 @@
         banner_href: path('app_group_create'),
         title: 'Événements privés'|trans,
         intro: false,
-        chips: [
-            { icon: 'grid', label: 'Tous les événements'|trans, active: true },
-            { icon: 'culture', label: 'Culture & Découverte'|trans },
-            { icon: 'family', label: 'En famille'|trans },
-            { icon: 'palette', label: 'Ateliers & Créations'|trans },
-            { icon: 'wellness', label: 'Bien-être'|trans },
-            { icon: 'culture', label: 'Culture & …'|trans },
-        ],
+        total: events|length,
     } %}
 
     <section class="act-section">
         <div class="container">
             <div class="card-grid evn-grid">
                 {% for e in events %}
-                    {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
+                    {% include 'event/nav/_event_card.html.twig' with { e: e } %}
                 {% endfor %}
             </div>
-            <div class="act-more">
-                <button type="button" class="pl-btn pl-btn--outline-action">{{ "Voir plus d'événements"|trans }} {{ icon.chevron_down(16) }}</button>
-            </div>
+            {% if events is empty %}
+                <p class="evn-empty__text">{{ is_granted('ROLE_USER') ? 'Aucun événement privé pour le moment.'|trans : 'Connectez-vous pour voir les événements privés auxquels vous êtes invité.'|trans }}</p>
+            {% endif %}
         </div>
     </section>
 

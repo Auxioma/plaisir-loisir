@@ -6,7 +6,6 @@ namespace App\PrivateActivity\Controller;
 
 use App\Event\Entity\GroupAlbum;
 use App\Event\Repository\GroupAlbumRepository;
-use App\Event\StaticEvents;
 use App\PrivateActivity\Enum\ParticipationStatus;
 use App\User\Entity\User;
 use App\User\Presenter\AccountActivityPresenter;
@@ -39,7 +38,6 @@ final class PhotoAlbumsController extends AbstractController
     #[Route(path: ['fr' => '/albums-photo', 'en' => '/en/photo-albums'], name: 'app_photo_albums')]
     public function index(Request $request): Response
     {
-        $avatars = StaticEvents::avatars();
         $albums = [];
 
         foreach ($this->groupAlbums->findBy([], ['lastPhotoAt' => 'DESC']) as $album) {
@@ -55,8 +53,9 @@ final class PhotoAlbumsController extends AbstractController
                 'category' => 'Groupes & Clubs',
                 'route' => null !== $group ? 'app_group_album' : null,
                 'routeParams' => null !== $group ? ['groupSlug' => $group->getSlug(), 'albumId' => (string) $album->getId()] : [],
-                'avatars' => \array_slice($avatars, 0, 4),
-                'more' => max(0, ($group?->getMembersCount() ?? 0) - 4),
+                // Pas de visages inventés (06/11) : l'adhésion n'est pas enregistrée.
+                'avatars' => [],
+                'more' => 0,
             ];
         }
 

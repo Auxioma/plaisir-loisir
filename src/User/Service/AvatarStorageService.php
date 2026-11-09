@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Service;
 
+use App\Shared\Image\UploadedImageUrl;
 use App\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -18,20 +19,18 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  * contenu public par nature, servi directement par le serveur web.
  *
  * MÊME CONTRÔLE QUE ProviderDocumentStorage (§25 du CDC)
- * Type déduit du contenu réel du fichier, taille plafonnée, nom de fichier
+ * Type déduit du contenu réel du fichier (poids plafonné par PHP seulement), nom de fichier
  * imprévisible — mais images uniquement (pas de PDF, sans objet ici).
  */
 final class AvatarStorageService
 {
-    /** 4 Mio : une photo de profil n'a aucune raison de dépasser ce poids. */
-    public const MAX_BYTES = 4 * 1024 * 1024;
-
     /** @var list<string> */
     public const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly string $projectDir,
+        private readonly UploadedImageUrl $images,
     ) {
     }
 
@@ -47,10 +46,6 @@ final class AvatarStorageService
     {
         if (!$file->isValid()) {
             throw new \InvalidArgumentException('Le fichier n\'a pas pu être reçu. Il est peut-être trop volumineux.');
-        }
-
-        if ($file->getSize() > self::MAX_BYTES) {
-            throw new \InvalidArgumentException('Votre photo dépasse 4 Mo. Merci de fournir un fichier plus léger.');
         }
 
         $mimeType = (string) $file->getMimeType();
@@ -98,6 +93,7 @@ final class AvatarStorageService
 
     private function deleteFile(string $relativePath): void
     {
+        $this->images->forget($relativePath);
         $path = $this->projectDir.'/public/'.$relativePath;
 
         if (is_file($path)) {

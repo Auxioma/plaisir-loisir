@@ -16,7 +16,7 @@
         </span>
         <input id="ew-cover" type="file" name="cover" accept="image/jpeg,image/png,image/webp" data-ew-cover>
     </label>
-    <p class="ew-hint ew-hint--center">{{ 'JPG, PNG ou WebP • 6 Mo maximum'|trans }}</p>
+    <p class="ew-hint ew-hint--center">{{ 'Formats acceptés : JPG, PNG, WebP'|trans }}</p>
     {% if draft.cover %}<label class="aw-accept"><input type="checkbox" name="remove_cover" value="1"> <span>{{ 'Retirer la photo'|trans }}</span></label>{% endif %}
     {{ ui.err(errors, 'cover') }}
 </div>

@@ -40,10 +40,9 @@ final class PublicPagesTest extends WebTestCase
             '/activites?demo=filtres',
             // Destinations
             '/destinations',
-            '/destinations/populaires',
-            '/destinations/populaires?q=paris',
-            '/destinations/lille',
             '/destinations/paris-france',
+            '/destinations/paris-france?q=canoe',
+            '/destinations/paris-france?categorie=sports-aventures',
             // Authentification
             '/login',
             '/inscription',
@@ -51,7 +50,6 @@ final class PublicPagesTest extends WebTestCase
             '/mot-de-passe-oublie',
             // Événements
             '/evenements',
-            '/evenements/tous',
             '/evenements/prives',
             '/evenements/calendrier',
             '/evenements/calendrier?mois='.date('Y-m'),
@@ -60,6 +58,7 @@ final class PublicPagesTest extends WebTestCase
             '/evenements/detail/competitions-canoe-kayak',
             '/evenements/detail/competitions-canoe-kayak/participants',
             '/evenements/groupes',
+            '/evenements/groupes?q=fitness',
             '/evenements/groupes/detail/cours-collectifs-de-fitness-a-lyon/apropos',
             '/evenements/groupes/detail/cours-collectifs-de-fitness-a-lyon/evenements',
             '/evenements/groupes/detail/cours-collectifs-de-fitness-a-lyon/membres',

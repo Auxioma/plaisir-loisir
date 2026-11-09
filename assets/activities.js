@@ -168,6 +168,44 @@ function initReviewFormStars(root = document) {
     });
 }
 
+/* Copie dans le presse-papiers, avec repli pour les contextes sans Clipboard API. */
+async function copyText(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        return true;
+    } catch (e) {
+        const area = document.createElement('textarea');
+        area.value = text;
+        area.setAttribute('readonly', '');
+        area.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+        document.body.appendChild(area);
+        area.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+        area.remove();
+        return ok;
+    }
+}
+
+/* Message « Lien copié ! » visible quelques secondes sous le bouton. */
+function showShareToast(btn, message) {
+    document.querySelectorAll('.pl-share-toast').forEach((el) => el.remove());
+    const toast = document.createElement('div');
+    toast.className = 'pl-share-toast';
+    toast.setAttribute('role', 'status');
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    const rect = btn.getBoundingClientRect();
+    const left = Math.min(Math.max(rect.left + rect.width / 2, 16 + toast.offsetWidth / 2), window.innerWidth - 16 - toast.offsetWidth / 2);
+    toast.style.left = `${left}px`;
+    toast.style.top = `${rect.bottom + 8}px`;
+    btn.classList.add('is-active');
+    setTimeout(() => {
+        toast.remove();
+        btn.classList.remove('is-active');
+    }, 2500);
+}
+
 /*
  * 3 bis. Partage de la fiche, « Cet avis m'a aidé », filtre de la modale
  *        d'avis (04/10).
@@ -178,18 +216,19 @@ function initActivityExtras(root = document) {
         btn.dataset.shareReady = '1';
         btn.addEventListener('click', async () => {
             const { shareUrl: url, shareTitle: title, shareDone: done } = btn.dataset;
-            if (navigator.share) {
-                try { await navigator.share({ title, url }); } catch (e) { /* partage annulé */ }
-                return;
+            // Partage natif (mobile surtout). Sur Chrome Windows, navigator.share
+            // existe mais échoue (NotAllowedError) : seule l'annulation par la
+            // personne (AbortError) arrête là, sinon on copie le lien (05/11).
+            if (navigator.share && (!navigator.canShare || navigator.canShare({ title, url }))) {
+                try {
+                    await navigator.share({ title, url });
+                    return;
+                } catch (e) {
+                    if (e && e.name === 'AbortError') return;
+                }
             }
-            try {
-                await navigator.clipboard.writeText(url);
-                btn.setAttribute('title', done);
-                btn.classList.add('is-active');
-                setTimeout(() => btn.classList.remove('is-active'), 1500);
-            } catch (e) {
-                window.prompt(title, url);
-            }
+            const copied = await copyText(url);
+            showShareToast(btn, copied ? done : url);
         });
     });
 

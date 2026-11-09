@@ -56,7 +56,7 @@
     <header class="mb-head">
         <div class="mb-head__cover"><img src="{{ asset('images/legal/legal-hero.jpg') }}" alt="" fetchpriority="high"><span class="mb-head__motto">{{ 'Partager'|trans }}<br>{{ 'Découvrir'|trans }}<br>{{ 'Rencontrer'|trans }}</span></div>
         <div class="mb-head__body">
-            <img class="mb-head__avatar" src="{{ asset(member.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="" width="160" height="160">
+            <img class="mb-head__avatar" src="{{ image_url(member.avatarPath ?: 'images/account/avatar-default.svg', 'avatar') }}" alt="" width="160" height="160">
             <div class="mb-head__id">
                 <h1>{{ display_name }} {% if rep.verified %}<span class="mb-verified" title="{{ 'Profil vérifié'|trans }}">{{ icon.badge_check(22) }}</span>{% endif %}</h1>
                 <p class="mb-head__meta">
@@ -194,7 +194,7 @@
                     <ul class="mb-reviews">
                         {% for r in reviews %}
                             <li>
-                                <img src="{{ asset(r.author.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
+                                <img src="{{ image_url(r.author.avatarPath ?: 'images/account/avatar-default.svg', 'avatar') }}" alt="" loading="lazy" decoding="async">
                                 <div>
                                     <p class="mb-reviews__head"><strong>{{ r.author.firstName }} {{ r.author.lastName|first|upper }}.</strong> {{ _self.stars(r.rating, 13) }} <span>{{ r.rating }}/5</span> <time>{{ r.createdAt|pf_date('d MMM y') }}</time></p>
                                     {% if r.comment %}<p>{{ r.comment }}</p>{% endif %}

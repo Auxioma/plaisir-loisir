@@ -83,7 +83,7 @@
                         <tr>
                             <td>
                                 <div class="pf-table__item">
-                                    <img src="{{ asset(row.image) }}" alt="" loading="lazy">
+                                    <img src="{{ image_url(row.image, 'card') }}" alt="" loading="lazy">
                                     <div><strong>{{ row.title }}</strong>{% if row.activity.level %}<small>{{ row.activity.level.label|trans }}</small>{% endif %}</div>
                                 </div>
                             </td>

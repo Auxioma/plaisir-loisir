@@ -158,7 +158,7 @@
                         {% for a in featured %}
                             <article class="ld-card">
                                 <a class="ld-card__media" href="{{ path('app_activity_show', {slug: a.slug}) }}">
-                                    <img src="{{ asset(a.image) }}" alt="{{ a.title }}" loading="lazy">
+                                    <img src="{{ image_url(a.image, 'card') }}" alt="{{ a.title }}" loading="lazy">
                                     {% if a.price is not null %}<span class="ld-card__price">{{ a.price|number_format(a.price == a.price|round ? 0 : 2, ',', ' ') }} €</span>{% endif %}
                                 </a>
                                 {% include '_partials/_event_fav.html.twig' with { type: 'activite', key: a.slug, class: 'ld-card__fav' } %}
@@ -219,7 +219,7 @@
             </header>
             <div class="ld-events">
                 {% for e in public_events %}
-                    {% include 'event/nav/_event_card.html.twig' with {e: e, avatars: []} %}
+                    {% include 'event/nav/_event_card.html.twig' with {e: e} %}
                 {% else %}
                     <p class="ld-empty">{{ 'Aucun événement public à venir dans cette zone pour le moment.'|trans }}</p>
                 {% endfor %}
@@ -239,7 +239,7 @@
                 <div class="ld-track ld-track--dest" data-pg-track>
                     {% for d in destinations %}
                         <a class="ld-dest" href="{{ path('app_destination_city', {ville: d.slug}) }}">
-                            <img src="{{ asset(d.image) }}" alt="" loading="lazy">
+                            <img src="{{ image_url(d.image, 'card') }}" alt="" loading="lazy">
                             {% include '_partials/_event_fav.html.twig' with {type: 'destination', key: d.slug, class: 'ld-dest__fav'} %}
                             <span><strong>{{ d.name|split(',')|first }}</strong><small>{{ d.count }} {{ d.count > 1 ? 'activités'|trans : 'activité'|trans }}</small></span>
                         </a>

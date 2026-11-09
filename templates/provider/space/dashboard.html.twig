@@ -101,7 +101,7 @@
                     {% for t in top %}
                         <li>
                             <span class="pp-top__rank">{{ loop.index }}</span>
-                            <img src="{{ asset(t.image) }}" alt="" loading="lazy" decoding="async">
+                            <img src="{{ image_url(t.image, 'card') }}" alt="" loading="lazy" decoding="async">
                             <div>
                                 <strong class="pp-ellipsis">{{ t.service.title }}</strong>
                                 <small>{{ t.count }} {{ t.count > 1 ? 'réservations'|trans : 'réservation'|trans }}</small>

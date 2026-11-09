@@ -75,7 +75,7 @@
                 </ul>
                 {% if organizer %}
                     <p class="fd-hero__org">
-                        <img src="{{ asset(organizer.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="" width="40" height="40">
+                        <img src="{{ image_url(organizer.avatarPath ?: 'images/account/avatar-default.svg', 'avatar') }}" alt="" width="40" height="40">
                         <span>{{ 'Organisée par'|trans }} <a href="{{ path('app_member_profile', {id: organizer.id}) }}">{{ org_name }}</a></span>
                         {% if organizer_rep and organizer_rep.level >= 2 %}<span class="fd-badge is-level">{{ icon.crown(14) }} {{ organizer_rep.level_label|trans }}</span>{% endif %}
                         {% if organizer_rep and organizer_rep.rating is not null %}<span class="fd-hero__rating">{{ icon.star_solid(16) }} {{ organizer_rep.rating|number_format(1, ',') }} <small>({{ organizer_rep.reviews_count }} {{ 'avis'|trans }})</small></span>{% endif %}
@@ -170,7 +170,7 @@
                 <ul class="fd-people">
                     {% if organizer %}
                         <li>
-                            <img src="{{ asset(organizer.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
+                            <img src="{{ image_url(organizer.avatarPath ?: 'images/account/avatar-default.svg', 'avatar') }}" alt="" loading="lazy" decoding="async">
                             <span><a href="{{ path('app_member_profile', {id: organizer.id}) }}">{{ org_name }}</a>
                             <em class="fd-role is-org">{{ icon.crown(12) }} {{ 'Organisateur'|trans }}</em>
                             {% if organizer_rep and organizer_rep.rating is not null %}<small>{{ icon.star_solid(12) }} {{ organizer_rep.rating|number_format(1, ',') }} ({{ organizer_rep.reviews_count }} {{ 'avis'|trans }})</small>{% endif %}</span>
@@ -178,7 +178,7 @@
                     {% endif %}
                     {% for p in people|slice(0, 5) %}
                         <li>
-                            <img src="{{ asset(p.participant.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
+                            <img src="{{ image_url(p.participant.avatarPath ?: 'images/account/avatar-default.svg', 'avatar') }}" alt="" loading="lazy" decoding="async">
                             <span><a href="{{ path('app_member_profile', {id: p.participant.id}) }}">{{ p.participant.firstName }} {{ p.participant.lastName|first|upper }}.</a>
                             <em class="fd-role">{{ 'Participant'|trans }}</em></span>
                         </li>
@@ -186,7 +186,7 @@
                     {% if can_manage %}
                         {% for p in pending|slice(0, 3) %}
                             <li>
-                                <img src="{{ asset(p.participant.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="" loading="lazy" decoding="async">
+                                <img src="{{ image_url(p.participant.avatarPath ?: 'images/account/avatar-default.svg', 'avatar') }}" alt="" loading="lazy" decoding="async">
                                 <span><a href="{{ path('app_member_profile', {id: p.participant.id}) }}">{{ p.participant.firstName }} {{ p.participant.lastName|first|upper }}.</a>
                                 <em class="fd-role is-pending">{{ icon.clock(12) }} {{ 'En attente'|trans }}</em></span>
                             </li>
@@ -300,7 +300,7 @@
                 <section class="fd-box fd-org">
                     <h2>{{ icon.person(20) }} {{ 'Votre organisateur'|trans }}</h2>
                     <div class="fd-org__id">
-                        <img src="{{ asset(organizer.avatarPath ?: 'images/account/avatar-default.svg') }}" alt="" width="88" height="88" loading="lazy" decoding="async">
+                        <img src="{{ image_url(organizer.avatarPath ?: 'images/account/avatar-default.svg', 'avatar') }}" alt="" width="88" height="88" loading="lazy" decoding="async">
                         <div>
                             <p class="fd-org__name"><a href="{{ path('app_member_profile', {id: organizer.id}) }}">{{ org_name }}</a>{% if organizer_rep.level >= 2 %} <span class="fd-badge is-level">{{ icon.crown(13) }} {{ organizer_rep.level_label|trans }}</span>{% endif %}</p>
                             {% if organizer_rep.verified %}<p class="fd-org__ok">{{ icon.badge_check(16) }} {{ 'Membre vérifié'|trans }}</p>{% endif %}

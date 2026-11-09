@@ -1,74 +1,64 @@
 {#
-    Onglet « Membres » (captures 17-19) : recherche + loupe orange, chip
-    compteur violet, filtre « Administrateur du groupe » (bascule vers la
-    liste filtrée Martin Thomas / badge Créateur, events.js), tri par Nom
-    (dropdown), lignes membre. Typos corrigées : « visiste » → visite,
-    « Dernièrer » → Dernière.
+    Onglet « Membres » (09/11) : le créateur, puis les membres réellement
+    acceptés (GroupMembership) avec leur date d'arrivée. Le créateur voit en
+    plus les demandes en attente et les accepte ou les refuse.
+    Variables : group, members, pending_requests, membership.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
 <section class="evn-gsection">
     <h2 class="evn-gh2 evn-gh2--tab">{{ 'Membres'|trans }}</h2>
 
-    <form class="act-search evn-members-search" role="search" action="" method="get">
-        <div class="act-search__bar">
-            <label class="act-search__field">
-                {{ icon.search(18) }}
-                <input type="text" placeholder="{{ 'Rechercher des membres'|trans }}" aria-label="{{ 'Rechercher des membres'|trans }}">
-            </label>
+    {% if pending_requests is not empty %}
+        <h3 class="evn-gh3">{{ 'Demandes en attente'|trans }} ({{ pending_requests|length }})</h3>
+        <div class="evn-mlist evn-mlist--requests">
+            {% for r in pending_requests %}
+                <div class="evn-mrow">
+                    <img class="evn-mrow__avatar" src="{{ image_url(r.avatar, 'avatar') }}" alt="" loading="lazy" decoding="async">
+                    <span class="evn-mrow__id">
+                        <a class="evn-prow__name" href="{{ path('app_member_profile', {id: r.userId}) }}">{{ r.name }}</a>
+                        <span class="evn-mrow__meta">{{ 'Demande envoyée le %date%'|trans({'%date%': r.since|date('d/m/Y')}) }}</span>
+                    </span>
+                    <span class="evn-mrow__actions">
+                        {% for d in [{key: 'accepter', label: 'Accepter', cls: 'pl-btn--primary'}, {key: 'refuser', label: 'Refuser', cls: 'pl-btn--outline-dark'}] %}
+                            <form method="post" action="{{ path('app_group_request_decide', {slug: group.slug, id: r.id, decision: d.key}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('group_request') }}">
+                                <button class="pl-btn {{ d.cls }}">{{ d.label|trans }}</button>
+                            </form>
+                        {% endfor %}
+                    </span>
+                </div>
+            {% endfor %}
         </div>
-        <button type="submit" class="act-search__submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(20) }}</button>
-    </form>
+    {% endif %}
 
     <div class="evn-members-tools">
         <div class="evn-members-tools__left">
-            <span class="evn-chip-count">{{ '1991 membres'|trans }}</span>
-            <button type="button" class="act-chip" id="evn-admin-filter" aria-pressed="false">{{ 'Administrateur du groupe'|trans }}</button>
-        </div>
-        <div class="evn-sort">
-            <button type="button" class="act-tool act-tool--plain" id="evn-sort-toggle" aria-expanded="false" aria-controls="evn-sort-menu">
-                {{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ 'Nom'|trans }}</strong> {{ icon.chevron_down(14) }}
-            </button>
-            <div class="dest-sort__menu evn-sort__menu" id="evn-sort-menu" role="radiogroup" aria-label="{{ 'Trier les membres'|trans }}" hidden>
-                {% for s in ['Nom', "Date d'adhésion", 'Dernière visite', 'Ordre décroissant', 'Ordre croissant', 'Décroissant'] %}
-                    <button type="button" class="dest-sort__option {{ loop.first ? 'is-checked' }}" role="radio" aria-checked="{{ loop.first ? 'true' : 'false' }}">
-                        <span class="dest-sort__box" aria-hidden="true"></span> {{ s|trans }}
-                    </button>
-                {% endfor %}
-            </div>
+            <span class="evn-chip-count">{{ group.members }} {{ (group.members > 1 ? 'membres' : 'membre')|trans }}</span>
         </div>
     </div>
 
-    {# Liste complète (les lignes 2 et 6 sont à l'état survolé sur la
-       maquette : icône message apparente). #}
     <div class="evn-mlist" id="evn-members-all">
-        {% for m in members %}
-            <div class="evn-mrow {{ m.hovered ? 'is-hovered' }}">
-                <img class="evn-mrow__avatar" src="{{ asset(m.avatar) }}" alt="" loading="lazy" decoding="async">
+        {% if group.owner %}
+            <div class="evn-mrow">
+                <img class="evn-mrow__avatar" src="{{ image_url(group.owner.avatar, 'avatar') }}" alt="" loading="lazy" decoding="async">
                 <span class="evn-mrow__id">
-                    <span class="evn-prow__name">{{ m.name }}</span>
-                    <span class="evn-mrow__meta"><strong>{{ 'Membre'|trans }}</strong> <i>|</i> {{ 'rejoint le 24 Mai 2026'|trans }}</span>
-                    <span class="evn-mrow__last">{{ 'Dernière visite il y a 3 heures'|trans }}</span>
+                    <a class="evn-prow__name" href="{{ path('app_member_profile', {id: group.owner.id}) }}">{{ group.owner.name }}</a>
+                    <span class="evn-mrow__meta"><strong>{{ 'Créateur'|trans }}</strong></span>
                 </span>
-                <button type="button" class="evn-mrow__msg" aria-label="{{ 'Envoyer un message'|trans }}">{{ icon.comment(20) }}</button>
+            </div>
+        {% endif %}
+        {% for m in members %}
+            <div class="evn-mrow">
+                <img class="evn-mrow__avatar" src="{{ image_url(m.avatar, 'avatar') }}" alt="" loading="lazy" decoding="async">
+                <span class="evn-mrow__id">
+                    <a class="evn-prow__name" href="{{ path('app_member_profile', {id: m.userId}) }}">{{ m.name }}</a>
+                    {% if m.since %}<span class="evn-mrow__meta">{{ 'A rejoint le %date%'|trans({'%date%': m.since|date('d/m/Y')}) }}</span>{% endif %}
+                </span>
             </div>
         {% endfor %}
-    </div>
-
-    {# Vue filtrée « Administrateur » (capture 19) : un seul résultat. #}
-    <div class="evn-mlist" id="evn-members-admin" hidden>
-        <div class="evn-mrow">
-            <img class="evn-mrow__avatar" src="{{ asset('images/events/avatar-thomas.jpg') }}" alt="" loading="lazy" decoding="async">
-            <span class="evn-mrow__id">
-                <span class="evn-prow__name">Martin Thomas</span>
-                <span class="evn-mrow__meta"><strong>{{ 'Créateur'|trans }}</strong> <i>|</i> {{ 'rejoint le 24 Mai 2026'|trans }}</span>
-                <span class="evn-mrow__last">{{ 'Dernière visite il y a 3 heures'|trans }}</span>
-            </span>
-            <button type="button" class="evn-mrow__msg" aria-label="{{ 'Envoyer un message'|trans }}">{{ icon.comment(20) }}</button>
-        </div>
-    </div>
-
-    <div class="act-more" id="evn-members-more">
-        <button type="button" class="pl-btn pl-btn--outline-action">{{ 'Voir plus de membres'|trans }} {{ icon.chevron_down(16) }}</button>
+        {% if not group.owner and members is empty %}
+            <p class="evn-empty__text">{{ "Ce groupe n'a pas encore de membre. Soyez le premier à le rejoindre !"|trans }}</p>
+        {% endif %}
     </div>
 </section>
