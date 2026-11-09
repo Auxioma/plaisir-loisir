@@ -18,7 +18,6 @@ use App\Event\Repository\EventRepository;
 use App\Event\Repository\GroupAlbumRepository;
 use App\Event\Repository\GroupRepository;
 use App\Event\Service\EventDocumentRenderer;
-use App\Event\StaticEvents;
 use App\I18n\Routing\LocaleUrlGenerator;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\Service\NotificationService;
@@ -78,33 +77,6 @@ final class EventsController extends AbstractController
         return $group;
     }
 
-    /**
-     * La rangee « filtree » de l'ecran « Tous les evenements ».
-     *
-     * La maquette y remet quatre cartes deja presentes plus haut, dans un
-     * autre ordre : randonnee, foot, barbecue, yoga. C'est un effet de
-     * presentation, pas un filtre — d'ou sa place ici.
-     *
-     * @param list<array<string, mixed>> $events
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function filteredRow(array $events): array
-    {
-        // Neuf cartes, dans l'ordre exact de la maquette : elle reprend celles
-        // du dessus dans un autre ordre et repete le barbecue en dernier.
-        $rangs = [4, 1, 2, 3, 8, 9, 10, 11, 2];
-        $rangee = [];
-
-        foreach ($rangs as $rang) {
-            if (isset($events[$rang])) {
-                $rangee[] = $events[$rang];
-            }
-        }
-
-        return $rangee;
-    }
-
     /** Pastilles de catégories de la maquette evenements.jpeg (libellé → slug EventCategory). */
     private const CHIPS = [
         '' => ['Tous les événements', 'star'],
@@ -161,25 +133,18 @@ final class EventsController extends AbstractController
             'types' => \App\Event\StaticEventWizard::types(),
             'upcoming' => $this->presenter->cards($upcoming),
             'markers' => $markers,
-            'avatars' => StaticEvents::avatars(),
         ]);
     }
 
+    /**
+     * L'ancienne maquette « Tous les événements » (filtres simulés en
+     * JavaScript, compteurs écrits en dur) : /evenements fait la même chose
+     * avec de vrais filtres. L'adresse reste valable pour les liens partagés.
+     */
     #[Route(path: ['fr' => '/evenements/tous', 'en' => '/en/events/all'], name: 'app_events_all')]
-    public function all(): Response
+    public function all(Request $request): Response
     {
-        $events = $this->presenter->cards($this->events->findForListing());
-
-        return $this->render('event/nav/tous.html.twig', [
-            'events' => $events,
-            // La rangee « filtree » de la maquette est une SELECTION d'ordre
-            // (randonnee, foot, barbecue...) et non un filtre reel : c'est une
-            // mise en page, elle reste ici et non en base.
-            'events_filtered' => $this->filteredRow($events),
-            'avatars' => StaticEvents::avatars(),
-            'selections' => StaticEvents::selections(),
-            'cities' => StaticEvents::cities(),
-        ]);
+        return $this->redirectToRoute('app_events', $request->query->all(), Response::HTTP_MOVED_PERMANENTLY);
     }
 
     #[Route(path: ['fr' => '/evenements/calendrier', 'en' => '/en/events/calendar'], name: 'app_events_calendar')]
@@ -187,8 +152,8 @@ final class EventsController extends AbstractController
     {
         return $this->render('event/nav/calendrier.html.twig', [
             ...$this->calendarData($this->readMonth($request)),
-            'selections' => StaticEvents::selections(),
-            'cities' => StaticEvents::cities(),
+            'event_categories' => $this->events->countUpcomingByCategory(12),
+            ...$this->selectionData(),
         ]);
     }
 
@@ -246,9 +211,7 @@ final class EventsController extends AbstractController
             // Événements privés : seulement ceux que le membre organise ou
             // auxquels il est invité (04/10) ; rien pour un visiteur.
             'events' => $this->presenter->cards($this->getUser() instanceof User ? $this->events->findPrivateFor($this->getUser()) : []),
-            'avatars' => StaticEvents::avatars(),
-            'selections' => StaticEvents::selections(),
-            'cities' => StaticEvents::cities(),
+            ...$this->selectionData(),
         ]);
     }
 
@@ -270,7 +233,6 @@ final class EventsController extends AbstractController
                 $this->events->findForListing(limit: 5),
                 static fn (Event $e): bool => $e !== $event,
             ), 0, 4)),
-            'avatars' => StaticEvents::avatars(),
         ]);
     }
 
@@ -497,11 +459,18 @@ final class EventsController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/evenements/groupes', 'en' => '/en/events/groups'], name: 'app_groups')]
-    public function groups(): Response
+    public function groups(Request $request): Response
     {
+        $q = trim((string) $request->query->get('q', ''));
+        $groups = $this->groups->findForListing();
+        if ('' !== $q) {
+            $needle = mb_strtolower($q);
+            $groups = array_values(array_filter($groups, static fn ($g): bool => str_contains(mb_strtolower($g->getName().' '.$g->getLocation().' '.strip_tags((string) $g->getDescription())), $needle)));
+        }
+
         return $this->render('event/nav/groupes.html.twig', [
-            'groups' => $this->groupPresenter->cards($this->groups->findForListing()),
-            'avatars' => StaticEvents::avatars(),
+            'groups' => $this->groupPresenter->cards($groups),
+            'q' => $q,
         ]);
     }
 
@@ -521,7 +490,6 @@ final class EventsController extends AbstractController
             // « Événements similaires à proximité » : mêmes cartes réelles
             // que sur la fiche groupe (groupDetail()) et la fiche événement.
             'similar' => $this->presenter->cards($this->events->findForListing(limit: 4)),
-            'avatars' => StaticEvents::avatars(),
         ]);
     }
 
@@ -557,10 +525,6 @@ final class EventsController extends AbstractController
             'group_events' => $this->presenter->cards($events),
             'upcoming_events' => $this->presenter->cards(\array_slice($upcoming, 0, 3)),
             'past_events' => $this->presenter->cards(\array_slice($past, 0, 3)),
-            // Les membres sont des prenoms et des photos de la maquette, sans
-            // compte derriere : il n'y a rien a brancher tant que l'adhesion a
-            // un groupe n'existe pas.
-            'members' => StaticEvents::members(),
             'albums' => $this->groupPresenter->albums($this->albums->findForGroup($group)),
             // « Evenements similaires a proximite », commun aux onglets de
             // cette page (groupe.html.twig) : de vrais evenements desormais,
@@ -570,7 +534,25 @@ final class EventsController extends AbstractController
             // L'onglet « Evenements » du groupe affiche le meme calendrier :
             // il lui faut donc les memes variables. Meme limite que ci-dessus.
             ...$this->calendarData(),
-            'avatars' => StaticEvents::avatars(),
         ]);
+    }
+
+    /**
+     * « Votre sélection d'événements » : catégories et villes des événements
+     * publics à venir, avec leurs vrais nombres (06/11).
+     *
+     * @return array{selections: list<array<string, mixed>>, cities: list<string>}
+     */
+    private function selectionData(): array
+    {
+        return [
+            'selections' => array_map(static fn (array $c): array => [
+                'title' => $c['name'],
+                'slug' => $c['slug'],
+                'count' => $c['total'],
+                'image' => $c['image'] ?? 'images/events/sel-kayak.jpg',
+            ], $this->events->countUpcomingByCategory()),
+            'cities' => $this->events->upcomingCities(),
+        ];
     }
 }

@@ -230,7 +230,7 @@
             <h2 class="evn-section__title">{{ 'Vous aimerez peut-être aussi'|trans }}</h2>
             <div class="card-grid evn-similar-grid">
                 {% for e in similar %}
-                    {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
+                    {% include 'event/nav/_event_card.html.twig' with { e: e } %}
                 {% endfor %}
             </div>
         </section>

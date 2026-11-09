@@ -38,11 +38,11 @@
         <section class="evn-section evn-section--similar">
             <div class="evn-section__head">
                 <h2 class="evn-section__title evn-section__title--lower">{{ 'événements similaires à proximité'|trans }}</h2>
-                <a href="{{ path('app_events_all') }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
+                <a href="{{ path('app_events') }}" class="evn-btn-dark">{{ 'Tout voir'|trans }} {{ icon.arrow_up_right(15) }}</a>
             </div>
             <div class="card-grid evn-similar-grid">
                 {% for e in similar %}
-                    {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
+                    {% include 'event/nav/_event_card.html.twig' with { e: e } %}
                 {% endfor %}
             </div>
         </section>

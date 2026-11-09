@@ -64,9 +64,12 @@
             {% if a.free is defined and a.free %}
                 <span class="pl-card__from">{{ 'Entre particuliers'|trans }}</span>
                 <span class="pl-card__price pl-card__price--free">{{ 'Gratuit'|trans }}</span>
-            {% else %}
+            {% elseif a.price is not null %}
                 <span class="pl-card__from">{{ 'À partir de'|trans }}</span>
                 <span class="pl-card__price">{{ a.price }}€</span>
+            {% else %}
+                {# Aucune formule tarifée : pas de « À partir de € » vide (06/11). #}
+                <span class="pl-card__from">{{ 'Prix sur demande'|trans }}</span>
             {% endif %}
         </div>
     </div>

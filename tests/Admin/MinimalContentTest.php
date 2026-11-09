@@ -58,7 +58,8 @@ final class MinimalContentTest extends WebTestCase
             '/en/activities' => 200,
             '/activites?q='.rawurlencode($titre) => 200,
             '/destinations' => 200,
-            '/destinations/populaires' => 200,
+            // Ancienne maquette, redirigée vers /destinations (06/11).
+            '/destinations/populaires' => 301,
             // Sans fiche detaillee non plus : une activite publiee a une page,
             // construite a partir de ce qu'elle sait d'elle-meme.
             '/activites/'.$slug => 200,
@@ -98,7 +99,7 @@ final class MinimalContentTest extends WebTestCase
         $this->assertPagesAnswer($client, [
             '/destinations' => 200,
             '/en/destinations' => 200,
-            '/destinations/populaires' => 200,
+            '/destinations/populaires' => 301,
             '/destinations/'.$slug => 200,
             '/en/destinations/'.$slug => 200,
         ]);

@@ -8,7 +8,6 @@ use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Service\CategorySuggestionService;
 use App\Event\Presenter\EventPresenter;
 use App\Event\Repository\EventRepository;
-use App\Event\StaticEvents;
 use App\PrivateActivity\Entity\MemberReview;
 use App\PrivateActivity\Entity\Participation;
 use App\PrivateActivity\Entity\PrivateActivity;
@@ -106,7 +105,6 @@ final class PrivateActivityController extends AbstractController
             'activities' => $results,
             'member_events' => $eventPresenter->cards($memberEvents),
             'events_total' => $eventsTotal,
-            'event_avatars' => StaticEvents::avatars(),
             'categories' => $this->categories->findRoots(),
             'selected_category' => $category,
             'filters' => ['lieu' => $place, 'q' => $keywords, 'date' => null !== $day ? $date : '', 'tri' => $sort],

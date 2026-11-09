@@ -219,7 +219,7 @@
             </header>
             <div class="ld-events">
                 {% for e in public_events %}
-                    {% include 'event/nav/_event_card.html.twig' with {e: e, avatars: []} %}
+                    {% include 'event/nav/_event_card.html.twig' with {e: e} %}
                 {% else %}
                     <p class="ld-empty">{{ 'Aucun événement public à venir dans cette zone pour le moment.'|trans }}</p>
                 {% endfor %}

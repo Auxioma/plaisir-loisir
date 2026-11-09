@@ -25,7 +25,7 @@
     <div id="evn-gtab-liste">
         <div class="card-grid evn-grid evn-groups-grid">
             {% for e in group_events %}
-                {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
+                {% include 'event/nav/_event_card.html.twig' with { e: e } %}
             {% endfor %}
         </div>
     </div>

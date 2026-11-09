@@ -44,11 +44,12 @@
         {% endif %}
         <div class="evn-side-card">
             <p class="evn-side-card__title">{{ 'Membres'|trans }} <span>({{ group.members }})</span> <a href="{{ path('app_group_detail', { slug: group.slug, onglet: group_tab('membres') }) }}" class="evn-side-card__more">{{ 'Voir plus'|trans }}</a></p>
-            <div class="evn-side-card__avatars">
-                {% for i in 0..14 %}
-                    <img src="{{ image_url(avatars[i % 5], 'avatar') }}" alt="" loading="lazy" decoding="async">
-                {% endfor %}
-            </div>
+            {# Seul le créateur est connu : l'adhésion n'est pas encore enregistrée (06/11). #}
+            {% if group.owner %}
+                <div class="evn-side-card__avatars">
+                    <img src="{{ image_url(group.owner.avatar, 'avatar') }}" alt="{{ group.owner.name }}" loading="lazy" decoding="async">
+                </div>
+            {% endif %}
         </div>
     </aside>
 </div>
@@ -63,7 +64,7 @@
     </div>
     <div class="card-grid evn-gcards3">
         {% for e in upcoming_events %}
-            {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
+            {% include 'event/nav/_event_card.html.twig' with { e: e } %}
         {% else %}
             <p class="text-muted">{{ "Aucun événement à venir pour ce groupe."|trans }}</p>
         {% endfor %}
@@ -77,7 +78,7 @@
     </div>
     <div class="card-grid evn-gcards3">
         {% for e in past_events %}
-            {% include 'event/nav/_event_card.html.twig' with { e: e, avatars: avatars } %}
+            {% include 'event/nav/_event_card.html.twig' with { e: e } %}
         {% else %}
             <p class="text-muted">{{ "Aucun événement passé pour ce groupe."|trans }}</p>
         {% endfor %}

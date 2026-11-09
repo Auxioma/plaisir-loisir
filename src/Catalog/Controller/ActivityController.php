@@ -14,7 +14,6 @@ use App\Catalog\Presenter\ActivityPresenter;
 use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Repository\PromotionRepository;
 use App\Catalog\Repository\ServiceRepository;
-use App\Catalog\StaticCatalog;
 use App\Favorite\Service\CurrentUserFavorites;
 use App\Provider\Service\ProviderSummary;
 use App\Review\Enum\ReviewStatus;
@@ -37,8 +36,6 @@ use Symfony\Component\Routing\Attribute\Route;
  * Ce qui reste dans StaticCatalog, et pourquoi :
  *  - `offers` : les offres à prix barré et leur compte à rebours relèvent du
  *    parcours Offres, qui a sa propre modélisation (lot à part).
- *  - `selections`, `cities`, `filterChips` : listes éditoriales de la maquette,
- *    sans entité correspondante à ce stade.
  *  - `reviews`, `suggestions` : les avis et les suggestions de fin de fiche
  *    relevent des entites Review et d'un moteur de recommandation, a venir.
  *
@@ -195,9 +192,6 @@ final class ActivityController extends AbstractController
             // quatre en double, et la page 2 aurait recommence a la neuvieme :
             // le visiteur aurait vu des doublons ET cru en avoir vu douze.
             'gridActivities' => $activities,
-            'selections' => StaticCatalog::selections(),
-            'cities' => StaticCatalog::cities(),
-            'filterChips' => StaticCatalog::filterChips(),
             // Catégories réelles du catalogue : onglets et cases à cocher de
             // la maquette activites.jpeg (01/10).
             'catalogCategories' => $this->categoryRepository->findRoots(),

@@ -46,7 +46,7 @@
                     {% if events|length > 5 and tab == 'tous' %}<a href="{{ path('app_favorites_page', {onglet: 'evenements'}) }}">{{ 'Voir tous (%n%)'|trans({'%n%': events|length}) }} {{ icon.arrow_right(14) }}</a>{% endif %}
                 </div>
                 {% if events is empty %}
-                    <p class="fv-empty">{{ 'Aucun événement en favori. Touchez le cœur d’un événement pour le retrouver ici.'|trans }} <a href="{{ path('app_events_all') }}">{{ 'Parcourir les événements'|trans }}</a></p>
+                    <p class="fv-empty">{{ 'Aucun événement en favori. Touchez le cœur d’un événement pour le retrouver ici.'|trans }} <a href="{{ path('app_events') }}">{{ 'Parcourir les événements'|trans }}</a></p>
                 {% else %}
                     <div class="fv-events" data-favorite-list data-favorite-removed="{{ 'Retiré de vos favoris.'|trans }}" data-favorite-undo="{{ 'Annuler'|trans }}">
                         {% for e in tab == 'tous' ? events|slice(0, 5) : events %}
@@ -61,7 +61,7 @@
                                     <strong>{{ e.title }}</strong>
                                     {% if e.location %}<span>{{ icon.map_pin(14) }} {{ e.location }}</span>{% endif %}
                                     <span>{{ icon.clock(14) }} {{ e.hours }}</span>
-                                    <span class="fv-avatars">{% for a in avatars|slice(0, 4) %}<img src="{{ asset(a) }}" alt="" loading="lazy" decoding="async">{% endfor %}<em>+{{ e.participants }}</em></span>
+                                    {% if e.participants %}<span>{{ icon.users(14) }} {{ e.participants }} {{ (e.participants > 1 ? 'participants' : 'participant')|trans }}</span>{% endif %}
                                 </span>
                             </a>
                         {% endfor %}
@@ -91,7 +91,6 @@
                                     <strong>{{ g.name }}</strong>
                                     <span class="fv-group__members">{{ g.members }} {{ 'membres'|trans }}</span>
                                     {% if g.description %}<span class="fv-group__desc">{{ g.description|striptags|length > 90 ? g.description|striptags|slice(0, 88) ~ '…' : g.description|striptags }}</span>{% endif %}
-                                    <span class="fv-avatars">{% for a in avatars|slice(0, 4) %}<img src="{{ asset(a) }}" alt="" loading="lazy" decoding="async">{% endfor %}</span>
                                 </span>
                             </a>
                         {% endfor %}
@@ -159,7 +158,7 @@
                 <li><a class="pf-list__link" href="{{ path('app_events_calendar') }}"><span class="pf-ico pf-ico--sm">{{ icon.calendar_grid(20) }}</span><span class="pf-list__body"><strong>{{ 'Voir mon calendrier'|trans }}</strong><small>{{ 'Tous vos événements favoris'|trans }}</small></span>{{ icon.chevron_right(16) }}</a></li>
                 <li><a class="pf-list__link" href="{{ path('app_account_referral') }}"><span class="pf-ico pf-ico--sm">{{ icon.users(20) }}</span><span class="pf-list__body"><strong>{{ 'Inviter des amis'|trans }}</strong><small>{{ 'Partagez vos favoris'|trans }}</small></span>{{ icon.chevron_right(16) }}</a></li>
                 <li><a class="pf-list__link" href="{{ path('app_event_create', {etape: 1}) }}"><span class="pf-ico pf-ico--sm">{{ icon.edit_square(20) }}</span><span class="pf-list__body"><strong>{{ 'Créer un événement'|trans }}</strong><small>{{ 'Organisez votre prochaine activité'|trans }}</small></span>{{ icon.chevron_right(16) }}</a></li>
-                <li><a class="pf-list__link" href="{{ path('app_events_all') }}"><span class="pf-ico pf-ico--sm">{{ icon.rocket(20) }}</span><span class="pf-list__body"><strong>{{ 'Découvrir de nouveaux événements'|trans }}</strong><small>{{ 'Trouvez d’autres activités qui vous plaisent'|trans }}</small></span>{{ icon.chevron_right(16) }}</a></li>
+                <li><a class="pf-list__link" href="{{ path('app_events') }}"><span class="pf-ico pf-ico--sm">{{ icon.rocket(20) }}</span><span class="pf-list__body"><strong>{{ 'Découvrir de nouveaux événements'|trans }}</strong><small>{{ 'Trouvez d’autres activités qui vous plaisent'|trans }}</small></span>{{ icon.chevron_right(16) }}</a></li>
             </ul>
         </section>
     </aside>

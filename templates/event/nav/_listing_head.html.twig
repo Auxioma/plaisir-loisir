@@ -1,14 +1,17 @@
 {#
-    En-tête commun des listings du flow navigation Événements (écrans B,
-    E, H, I) : fil d'Ariane, bannière CTA, onglets Événements/Groupes,
-    titre, intro, recherche, outils d'affichage, chips, ligne résultats.
-    Typos maquette corrigées : « Acceuil » → Accueil, « Touts » → Tous,
-    « Toutes les événements » → Tous les événements.
+    En-tête commun des listings du flow navigation Événements : fil
+    d'Ariane, bannière CTA, onglets Événements/Groupes, titre, recherche,
+    pastilles de catégories, ligne résultats.
 
-    Variables : crumb (libellé courant), banner_text/banner_cta (optionnels),
-    tabs_active (optionnel), title, intro (bool, défaut true), chips
-    (liste {icon, label, active}), sort (défaut Les plus populaires),
-    with_filters (bool : chip Filtre reliée à la sidebar #evn-filters).
+    Données réelles uniquement (06/11) : plus de lieu « Paris » pré-rempli,
+    de texte « à Lille », de « 400+ résultats » ni de pastilles de maquette.
+
+    Variables : crumb, banner_text/banner_cta/banner_href (optionnels),
+    tabs_active (optionnel), title, intro (bool, défaut true),
+    search_action (défaut : listing des événements), search_where (bool,
+    champ « Où ? », défaut true), q / where (valeurs saisies),
+    categories (liste {name, slug}, pastilles vers le listing filtré),
+    total (nombre de résultats, optionnel), sort (libellé du tri appliqué).
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
@@ -29,68 +32,43 @@
         {% endif %}
 
         <h1 class="act-head__title evn-title">{{ title }}</h1>
-        {# `intro|default(true)` renvoyait TRUE meme avec `intro: false` : le filtre
-           `default` de Twig se declenche sur toute valeur VIDE, et `false` en est
-           une. Le sous-titre s'affichait donc sur « Evenements prives », ou la
-           maquette n'en met pas. #}
         {% if intro is defined ? intro : true %}
-            <p class="act-head__subtitle">{{ "Découvrez les meilleures activités à faire à Lille. Choississez parmi un choix varié d'expériences pour créer des souvenirs inoubliables, en famille ou entre amis. Meilleur prix garanti. Annulation gratuites"|trans }}</p>
+            <p class="act-head__subtitle">{{ 'Trouvez, rejoignez et partagez des moments uniques : événements entre membres partout en France.'|trans }}</p>
         {% endif %}
 
-        <form class="act-search" role="search" action="" method="get">
+        <form class="act-search" role="search" action="{{ search_action|default(path('app_events')) }}" method="get">
             <div class="act-search__bar">
-                <label class="act-search__field">
-                    {{ icon.map_pin(18) }}
-                    <input type="text" name="lieu" data-suggest="lieu" value="Paris" aria-label="{{ 'Lieu'|trans }}">
-                </label>
-                <span class="act-search__sep" aria-hidden="true"></span>
+                {% if search_where is defined ? search_where : true %}
+                    <label class="act-search__field">
+                        {{ icon.map_pin(18) }}
+                        <input type="text" name="ou" value="{{ where|default('') }}" placeholder="{{ 'Toute la France'|trans }}" aria-label="{{ 'Lieu'|trans }}">
+                    </label>
+                    <span class="act-search__sep" aria-hidden="true"></span>
+                {% endif %}
                 <label class="act-search__field">
                     {{ icon.search(18) }}
-                    <input type="text" name="q" data-suggest="activite" placeholder="{{ 'Recherches par mots-clés'|trans }}" aria-label="{{ 'Mots-clés'|trans }}">
+                    <input type="text" name="q" value="{{ q|default('') }}" placeholder="{{ 'Recherches par mots-clés'|trans }}" aria-label="{{ 'Mots-clés'|trans }}">
                 </label>
             </div>
             <button type="submit" class="act-search__submit" aria-label="{{ 'Rechercher'|trans }}">{{ icon.search(20) }}</button>
         </form>
 
-        <div class="act-toolbar evn-toolbar">
-            <div class="act-toolbar__right">
-                <button type="button" class="act-tool evn-map-tool">{{ icon.map(18) }} {{ 'Afficher la carte'|trans }}</button>
-                <div class="act-viewswitch" role="group" aria-label="{{ "Mode d'affichage"|trans }}">
-                    <button type="button" class="act-viewbtn" {% if with_filters|default(false) %}id="evn-filter-toggle" aria-label="{{ 'Ouvrir les filtres'|trans }}"{% else %}aria-label="{{ 'Affichage en grille'|trans }}"{% endif %}>{{ icon.sliders(18) }}</button>
-                    <button type="button" class="act-viewbtn" aria-label="{{ 'Affichage en liste'|trans }}">{{ icon.list_view(18) }}</button>
+        {% if categories|default([]) is not empty %}
+            <div class="act-chipbar evn-chipbar">
+                <div class="act-chipbar__scroll">
+                    <a class="act-chip is-active" href="{{ path('app_events') }}">{{ icon.grid(16) }} {{ 'Tous les événements'|trans }}</a>
+                    {% for c in categories %}
+                        <a class="act-chip" href="{{ path('app_events', { categorie: c.slug }) }}">{{ c.name }}</a>
+                    {% endfor %}
                 </div>
             </div>
-        </div>
+        {% endif %}
 
-        <div class="act-chipbar evn-chipbar">
-            <button type="button" class="act-chip act-chip--filter" {% if with_filters|default(false) %}id="evn-chip-filter" aria-expanded="false" aria-controls="evn-filters"{% endif %}>
-                {{ icon.sliders(16) }} {{ 'Filtre'|trans }}
-                <span class="act-chip__counter" id="evn-filter-counter" {{ not app.request.query.has('filtres') ? 'hidden' }}>2</span>
-            </button>
-            <span class="act-chipbar__sep" aria-hidden="true"></span>
-            <div class="act-chipbar__scroll">
-                {% if with_filters|default(false) %}
-                    <button type="button" class="act-chip evn-chip-applied" id="evn-chip-applied" {{ not app.request.query.has('filtres') ? 'hidden' }}>{{ icon.tree(16) }} {{ 'Nature & Plein air'|trans }}</button>
-                {% endif %}
-                {% for chip in chips %}
-                    <button type="button" class="act-chip {{ chip.active|default(false) ? 'is-active' }}" {% if chip.id is defined %}id="{{ chip.id }}"{% endif %}>
-                        {%- if chip.icon == 'grid' %}{{ icon.grid(16) }}
-                        {%- elseif chip.icon == 'person_plus' %}{{ icon.person_plus(16) }}
-                        {%- elseif chip.icon == 'person' %}{{ icon.person(16) }}
-                        {%- elseif chip.icon == 'palette' %}{{ icon.palette(16) }}
-                        {%- elseif chip.icon == 'wellness' %}{{ icon.cat_wellness(16) }}
-                        {%- elseif chip.icon == 'culture' %}{{ icon.cat_culture(16) }}
-                        {%- elseif chip.icon == 'family' %}{{ icon.cat_family(16) }}
-                        {%- endif %} {{ chip.label }}
-                    </button>
-                {% endfor %}
+        {% if total is defined or sort is defined %}
+            <div class="act-results">
+                {% if total is defined %}<p class="act-results__count"><strong>{{ total }}</strong> {{ (total > 1 ? 'résultats trouvés' : 'résultat trouvé')|trans }}</p>{% endif %}
+                {% if sort is defined %}<p class="act-tool act-tool--plain">{{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ sort }}</strong></p>{% endif %}
             </div>
-            <button type="button" class="act-chipbar__more" aria-label="{{ 'Faire défiler les filtres'|trans }}">{{ icon.chevron_right(16) }}</button>
-        </div>
-
-        <div class="act-results">
-            <p class="act-results__count"><strong>400+</strong> {{ 'de résultats trouvés'|trans }}</p>
-            <button type="button" class="act-tool act-tool--plain">{{ icon.sort(16) }} {{ 'Trier par:'|trans }} <strong>{{ sort|default('Les plus populaires'|trans) }}</strong> {{ icon.chevron_down(14) }}</button>
-        </div>
+        {% endif %}
     </div>
 </section>
