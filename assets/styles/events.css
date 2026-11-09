@@ -1418,3 +1418,13 @@
 .evd-panel .evn-part__plus { width: 46px; height: 46px; }
 .evn-detail .evn-book__state { color: var(--pl-action); }
 .evd-summary svg, .evd-benefits > div > svg { flex-shrink: 0; }
+
+/* Adhésion aux groupes (09/11) : demandes en attente de l'onglet Membres. */
+.evn-gh3 { margin: 0 0 16px; font-size: 22px; font-weight: 600; color: var(--pl-text-strong); }
+.evn-mlist--requests { margin-bottom: 36px; }
+.evn-mrow__actions { margin-left: auto; display: flex; flex-wrap: wrap; gap: 10px; }
+.evn-mrow__actions .pl-btn { min-height: 40px; padding: 8px 18px; }
+@media (max-width: 575.98px) {
+    .evn-mrow { flex-wrap: wrap; padding: 14px 16px; }
+    .evn-mrow__actions { margin-left: 0; width: 100%; }
+}

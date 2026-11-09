@@ -16,8 +16,10 @@ use App\Event\Repository\EventInvitationRepository;
 use App\Event\Repository\EventRegistrationRepository;
 use App\Event\Repository\EventRepository;
 use App\Event\Repository\GroupAlbumRepository;
+use App\Event\Repository\GroupMembershipRepository;
 use App\Event\Repository\GroupRepository;
 use App\Event\Service\EventDocumentRenderer;
+use App\Event\Service\GroupMembershipService;
 use App\I18n\Routing\LocaleUrlGenerator;
 use App\Notification\Enum\NotificationCategory;
 use App\Notification\Service\NotificationService;
@@ -475,8 +477,9 @@ final class EventsController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/evenements/groupes/detail/{groupSlug}/photos/album/{albumId}', 'en' => '/en/events/groups/detail/{groupSlug}/photos/album/{albumId}'], name: 'app_group_album')]
-    public function album(string $groupSlug, string $albumId): Response
+    public function album(string $groupSlug, string $albumId, GroupMembershipService $membershipService): Response
     {
+        $user = $this->getUser();
         $group = $this->findGroupOrFail($groupSlug);
         $album = Ulid::isValid($albumId) ? $this->albums->find(Ulid::fromString($albumId)) : null;
 
@@ -487,6 +490,7 @@ final class EventsController extends AbstractController
         return $this->render('event/nav/album.html.twig', [
             'group' => $this->groupPresenter->card($group),
             'album' => $this->groupPresenter->albums([$album])[0],
+            'membership' => $membershipService->statusFor($group, $user instanceof User ? $user : null),
             // « Événements similaires à proximité » : mêmes cartes réelles
             // que sur la fiche groupe (groupDetail()) et la fiche événement.
             'similar' => $this->presenter->cards($this->events->findForListing(limit: 4)),
@@ -494,18 +498,25 @@ final class EventsController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/evenements/groupes/detail/demande-envoyee', 'en' => '/en/events/groups/detail/request-sent'], name: 'app_group_join_sent')]
-    public function joinSent(): Response
+    public function joinSent(Request $request): Response
     {
-        return $this->render('event/nav/demande.html.twig');
+        $slug = (string) $request->query->get('groupe', '');
+        $group = '' !== $slug ? $this->groups->findOneBySlug($slug) : null;
+
+        return $this->render('event/nav/demande.html.twig', [
+            'group' => null !== $group ? $this->groupPresenter->card($group) : null,
+        ]);
     }
 
     // L'onglet apparait dans l'URL : il accepte donc les deux langues
     // (/detail/membres et /en/detail/members). tabKey() ramene ensuite la
     // valeur a l'identifiant interne attendu par les gabarits.
     #[Route(path: ['fr' => '/evenements/groupes/detail/{slug}/{onglet}', 'en' => '/en/events/groups/detail/{slug}/{onglet}'], name: 'app_group_detail', requirements: ['onglet' => 'apropos|evenements|membres|photos|discussions|about|events|members'], defaults: ['onglet' => 'apropos'])]
-    public function groupDetail(string $slug, string $onglet): Response
+    public function groupDetail(string $slug, string $onglet, GroupMembershipRepository $memberships, GroupMembershipService $membershipService): Response
     {
         $group = $this->findGroupOrFail($slug);
+        $user = $this->getUser();
+        $membership = $membershipService->statusFor($group, $user instanceof User ? $user : null);
         $onglet = LocaleUrlGenerator::tabKey($onglet);
 
         $now = new \DateTimeImmutable();
@@ -516,6 +527,11 @@ final class EventsController extends AbstractController
         return $this->render('event/nav/groupe.html.twig', [
             'group' => $this->groupPresenter->card($group),
             'tab' => $onglet,
+            // Adhésion réelle (09/11) : état du visiteur, membres acceptés et,
+            // pour le seul créateur, les demandes à traiter.
+            'membership' => $membership,
+            'members' => $this->groupPresenter->members($memberships->findMembers($group)),
+            'pending_requests' => 'owner' === $membership ? $this->groupPresenter->members($memberships->findPending($group)) : [],
             // Evenements reels a la place des groupes de remplissage de la
             // maquette (StaticEvents::groupEvents(), point a trancher n°5,
             // desormais tranche : on n'invente plus un habillage de groupe

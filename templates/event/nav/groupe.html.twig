@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{% block title %}{{ 'Cours collectifs de fitness à Lyon'|trans }}{% endblock %}
-{% block meta_description %}{{ 'Le groupe Cours collectifs de fitness à Lyon : événements, membres, photos et discussions de la communauté.'|trans }}{% endblock %}
+{% block title %}{{ group.name }}{% endblock %}
+{% block meta_description %}{{ 'Le groupe %groupe% : événements, membres, photos et discussions de la communauté.'|trans({'%groupe%': group.name}) }}{% endblock %}
 
 {% block header %}
     {% include '_partials/navbar_events.html.twig' with { nav_active: 'groupes' } %}

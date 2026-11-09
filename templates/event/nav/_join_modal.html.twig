@@ -1,56 +1,43 @@
 {#
-    <JoinGroupModal> (spec §E7) : modale « Rejoindre ce groupe » en 3
-    états pilotés par events.js — 1. dropzone, 2. photo chargée,
-    3. confirmation compacte — puis redirection vers la page « Demande
-    envoyée » (écran G).
+    <JoinGroupModal> (spec §E7) : modale « Rejoindre ce groupe ».
+
+    09/11 : les trois états de la maquette (dépôt d'une photo fictive, aperçu
+    figé, avatar d'exemple) n'enregistraient rien. La modale montre désormais
+    la photo de profil du compte et envoie la vraie demande d'adhésion ; un
+    visiteur est invité à se connecter.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
-{# ?modal=rejoindre / rejoindre2 / rejoindre3 : ouverture directe pour l'audit visuel.
-   Bâtie sur la modale Bootstrap ; seuls les trois états restent pilotés par
-   events.js. #}
-{% set join_qs = app.request.query.get('modal') %}
-<div class="modal fade evn-modal" id="evn-join" tabindex="-1" aria-label="{{ 'Rejoindre ce groupe'|trans }}" {{ join_qs in ['rejoindre', 'rejoindre2', 'rejoindre3'] ? 'data-auto-open' }}>
+<div class="modal fade evn-modal" id="evn-join" tabindex="-1" aria-label="{{ 'Rejoindre ce groupe'|trans }}">
   <div class="modal-dialog">
     <div class="modal-content evn-modal__box">
         <button type="button" class="evn-modal__close" data-bs-dismiss="modal" aria-label="{{ 'Fermer'|trans }}">{{ icon.x(18) }}</button>
 
-        {# État 1 — dropzone. #}
-        <div class="evn-modal__step" data-evn-join-step="1" {{ join_qs in ['rejoindre2', 'rejoindre3'] ? 'hidden' }}>
-            <p class="evn-modal__title">{{ 'Rejoindre ce groupe'|trans }}</p>
-            <p class="evn-join__label">{{ 'Photo de profil'|trans }}</p>
-            <div class="evn-join__drop">
-                <p>{{ 'Faites glisser et déposez une photo ou'|trans }}<br>{{ 'cliquez sur le bouton ci-dessous pour'|trans }}<br>{{ 'selectionner une photo que vous souhaiter'|trans }}<br>{{ 'télécharger.'|trans }}</p>
-                <button type="button" class="pl-btn pl-btn--primary" data-evn-join-choose>{{ icon.share(16) }} {{ 'Choisir une photo'|trans }}</button>
-            </div>
-            <p class="evn-join__terms">{{ 'Ces photos doivent être au format JPEG, GIF ou PNG, faire moins de 15 Mo, avoir une résolution maximale de 24 mégapixels et respecter les'|trans }} <a href="#">{{ "conditions d'utilisation"|trans }}</a> {{ 'de TrouveMoi Plaisirs & Loisirs'|trans }}</p>
-            <div class="evn-modal__foot evn-modal__foot--center">
-                <button type="button" class="evn-join__submit" disabled>{{ 'Rejoindre ce groupe'|trans }}</button>
-            </div>
-        </div>
-
-        {# État 2 — photo chargée. #}
-        <div class="evn-modal__step" data-evn-join-step="2" {{ join_qs != 'rejoindre2' ? 'hidden' }}>
-            <p class="evn-modal__title">{{ 'Rejoindre ce groupe'|trans }}</p>
-            <p class="evn-join__label">{{ 'Photo de profil'|trans }}</p>
-            <img class="evn-join__preview" src="{{ asset('images/events/join-photo.jpg') }}" alt="Photo de profil chargée" loading="lazy" decoding="async">
-            <p class="evn-join__terms">{{ 'Ces photos doivent être au format JPEG, GIF ou PNG, faire moins de 15 Mo, avoir une résolution maximale de 24 mégapixels et respecter les'|trans }} <a href="#">{{ "conditions d'utilisation"|trans }}</a> {{ 'de TrouveMoi Plaisirs & Loisirs'|trans }}</p>
-            <div class="evn-modal__foot evn-modal__foot--center">
-                <button type="button" class="evn-modal__back" data-evn-join-cancel>{{ 'Annuler'|trans }}</button>
-                <button type="button" class="pl-btn pl-btn--primary" data-evn-join-confirm>{{ 'Rejoindre ce groupe'|trans }}</button>
-            </div>
-        </div>
-
-        {# État 3 — confirmation compacte. #}
-        <div class="evn-modal__step evn-join__final" data-evn-join-step="3" {{ join_qs != 'rejoindre3' ? 'hidden' }}>
+        <div class="evn-modal__step evn-join__final">
             <p class="evn-modal__title evn-modal__title--center">{{ 'Rejoindre ce groupe'|trans }}</p>
-            <span class="evn-join__avatar">
-                <img src="{{ image_url('images/events/join-avatar.jpg', 'avatar') }}" alt="" loading="lazy" decoding="async">
-            </span>
-            <div class="evn-modal__foot evn-modal__foot--center">
-                <a href="{{ path('app_group_join_sent') }}" class="pl-btn pl-btn--primary">{{ 'Rejoindre ce groupe'|trans }}</a>
-            </div>
+            {% if app.user %}
+                <span class="evn-join__avatar">
+                    <img src="{{ image_url(app.user.avatarPath ?? 'images/account/avatar-default.svg', 'avatar') }}" alt="" loading="lazy" decoding="async">
+                </span>
+                <p class="evn-join__terms">
+                    {% if group.owner %}
+                        {{ 'Votre demande sera transmise au créateur du groupe, qui vous répondra.'|trans }}
+                    {% else %}
+                        {{ 'Vous rejoindrez le groupe immédiatement.'|trans }}
+                    {% endif %}
+                    {{ 'Votre photo de profil se modifie depuis'|trans }} <a href="{{ path('app_account_profile') }}">{{ 'votre compte'|trans }}</a>.
+                </p>
+                <form method="post" action="{{ path('app_group_join', {slug: group.slug}) }}" class="evn-modal__foot evn-modal__foot--center">
+                    <input type="hidden" name="_token" value="{{ csrf_token('group_join') }}">
+                    <button class="pl-btn pl-btn--primary">{{ 'Rejoindre ce groupe'|trans }}</button>
+                </form>
+            {% else %}
+                <p class="evn-join__terms">{{ 'Connectez-vous pour rejoindre ce groupe.'|trans }}</p>
+                <div class="evn-modal__foot evn-modal__foot--center">
+                    <a href="{{ path('app_login') }}" class="pl-btn pl-btn--primary">{{ 'Se connecter'|trans }}</a>
+                </div>
+            {% endif %}
         </div>
     </div>
-</div>
+  </div>
 </div>

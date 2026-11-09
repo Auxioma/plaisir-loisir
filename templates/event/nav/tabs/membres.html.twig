@@ -1,13 +1,36 @@
 {#
-    Onglet « Membres ». Les lignes de la maquette (prénoms, photos, « 1991
-    membres », « rejoint le 24 Mai 2026 ») sont retirées le 06/11 : l'adhésion
-    à un groupe n'est pas encore enregistrée en base. Seul le créateur du
-    groupe est connu ; le compteur est celui du groupe.
+    Onglet « Membres » (09/11) : le créateur, puis les membres réellement
+    acceptés (GroupMembership) avec leur date d'arrivée. Le créateur voit en
+    plus les demandes en attente et les accepte ou les refuse.
+    Variables : group, members, pending_requests, membership.
 #}
 {% import '_partials/_icons.html.twig' as icon %}
 
 <section class="evn-gsection">
     <h2 class="evn-gh2 evn-gh2--tab">{{ 'Membres'|trans }}</h2>
+
+    {% if pending_requests is not empty %}
+        <h3 class="evn-gh3">{{ 'Demandes en attente'|trans }} ({{ pending_requests|length }})</h3>
+        <div class="evn-mlist evn-mlist--requests">
+            {% for r in pending_requests %}
+                <div class="evn-mrow">
+                    <img class="evn-mrow__avatar" src="{{ image_url(r.avatar, 'avatar') }}" alt="" loading="lazy" decoding="async">
+                    <span class="evn-mrow__id">
+                        <a class="evn-prow__name" href="{{ path('app_member_profile', {id: r.userId}) }}">{{ r.name }}</a>
+                        <span class="evn-mrow__meta">{{ 'Demande envoyée le %date%'|trans({'%date%': r.since|date('d/m/Y')}) }}</span>
+                    </span>
+                    <span class="evn-mrow__actions">
+                        {% for d in [{key: 'accepter', label: 'Accepter', cls: 'pl-btn--primary'}, {key: 'refuser', label: 'Refuser', cls: 'pl-btn--outline-dark'}] %}
+                            <form method="post" action="{{ path('app_group_request_decide', {slug: group.slug, id: r.id, decision: d.key}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('group_request') }}">
+                                <button class="pl-btn {{ d.cls }}">{{ d.label|trans }}</button>
+                            </form>
+                        {% endfor %}
+                    </span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <div class="evn-members-tools">
         <div class="evn-members-tools__left">
@@ -20,12 +43,22 @@
             <div class="evn-mrow">
                 <img class="evn-mrow__avatar" src="{{ image_url(group.owner.avatar, 'avatar') }}" alt="" loading="lazy" decoding="async">
                 <span class="evn-mrow__id">
-                    <span class="evn-prow__name">{{ group.owner.name }}</span>
+                    <a class="evn-prow__name" href="{{ path('app_member_profile', {id: group.owner.id}) }}">{{ group.owner.name }}</a>
                     <span class="evn-mrow__meta"><strong>{{ 'Créateur'|trans }}</strong></span>
                 </span>
             </div>
-        {% else %}
-            <p class="evn-empty__text">{{ "La liste des membres n'est pas encore disponible."|trans }}</p>
+        {% endif %}
+        {% for m in members %}
+            <div class="evn-mrow">
+                <img class="evn-mrow__avatar" src="{{ image_url(m.avatar, 'avatar') }}" alt="" loading="lazy" decoding="async">
+                <span class="evn-mrow__id">
+                    <a class="evn-prow__name" href="{{ path('app_member_profile', {id: m.userId}) }}">{{ m.name }}</a>
+                    {% if m.since %}<span class="evn-mrow__meta">{{ 'A rejoint le %date%'|trans({'%date%': m.since|date('d/m/Y')}) }}</span>{% endif %}
+                </span>
+            </div>
+        {% endfor %}
+        {% if not group.owner and members is empty %}
+            <p class="evn-empty__text">{{ "Ce groupe n'a pas encore de membre. Soyez le premier à le rejoindre !"|trans }}</p>
         {% endif %}
     </div>
 </section>
