@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Shared\Service;
 
 use App\User\Entity\User;
-use App\User\StaticAccount;
 
 /**
  * Le bloc « profil » attendu par account/_sidebar.html.twig (nom, e-mail,
@@ -37,6 +36,9 @@ use App\User\StaticAccount;
  */
 final class AccountIdentityPresenter
 {
+    /** Silhouette générique tant que la personne n'a pas déposé sa photo. */
+    private const DEFAULT_AVATAR = 'images/account/avatar-default.svg';
+
     public function __construct(
         private readonly AccountBadgeCounter $badges,
     ) {
@@ -49,13 +51,12 @@ final class AccountIdentityPresenter
     {
         $firstName = $user->getFirstName();
         $fullName = trim($firstName.' '.$user->getLastName());
-        $demo = StaticAccount::user();
 
         return [
             'name' => '' !== $fullName ? $fullName : $user->getEmail(),
             'firstName' => '' !== $firstName ? $firstName : $user->getLastName(),
             'email' => $user->getEmail(),
-            'avatar' => $user->getAvatarPath() ?? $demo['avatar'],
+            'avatar' => $user->getAvatarPath() ?? self::DEFAULT_AVATAR,
             'memberSince' => $this->formatMemberSince($user->getCreatedAt()),
             // Mêmes compteurs que le header, calculés une seule fois pour
             // les deux (AccountBadgeCounter).

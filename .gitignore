@@ -47,7 +47,6 @@ temp_interactive_push.bat
 # Configuration d'éditeur personnelle : jamais dans le dépôt (vecteur d'une injection
 # de code, tâche VS Code lancée automatiquement à l'ouverture du dossier).
 # Retiré par le commit 78bc3b9 (26/10) pour réinjecter le code : remis le 05/11.
-/.vscode/
 /.idea/
 /assets/lib/leaflet/images/public/
 /public/fonts/

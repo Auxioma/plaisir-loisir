@@ -10,7 +10,7 @@ namespace App\Legal;
  *
  * Faithful translations of InitialLegalTexts (privacy policy, terms of sale,
  * cookie policy) and of the terms of use / legal notice shown on the French
- * site (StaticCorporate). The French version prevails in case of discrepancy,
+ * site (InitialLegalSections). The French version prevails in case of discrepancy,
  * as stated at the top of each text. Same caveats as the French texts: they
  * must be reviewed by a lawyer, and the publisher's identity is still the
  * placeholder one.
@@ -308,7 +308,7 @@ final class InitialLegalTextsEn
     }
 
     /**
-     * Terms of use — translation of StaticCorporate::cguSections().
+     * Terms of use — translation of InitialLegalSections::cguSections().
      *
      * @return list<array{title: string, intro: string, items: list<string>, paragraphs: list<string>}>
      */
@@ -336,7 +336,7 @@ final class InitialLegalTextsEn
     }
 
     /**
-     * Legal notice — translation of StaticCorporate::legalSections().
+     * Legal notice — translation of InitialLegalSections::legalSections().
      *
      * @return list<array{title: string, intro: string, items: list<string>, paragraphs: list<string>}>
      */

@@ -7,40 +7,12 @@ namespace App\User;
 use App\Provider\StaticProviderSpace;
 
 /**
- * Données statiques de l'espace compte « Paramètre du profil » (spec profil :
- * sidebar, favoris, listes, notifications). Même approche que StaticCatalog :
- * contenu figé de la maquette en attendant les vraies entités
- * Favorite/Notification (déjà identifiées par la maquette beta).
+ * Menus de l'espace compte (client et pro) : configuration d'interface, pas
+ * des données. Les données de démonstration (utilisateur « Thomas Martin »,
+ * liste « Alsace - 2026 »…) ont été retirées le 09/11.
  */
 final class StaticAccount
 {
-    /**
-     * Profil affiché dans la sidebar (et prénom de l'écran Déconnexion).
-     *
-     * @return array{name: string, firstName: string, email: string, avatar: string, memberSince: string, unreadMessages: int, unreadNotifications: int}
-     */
-    public static function user(): array
-    {
-        return [
-            'name' => 'Thomas Martin',
-            'firstName' => 'Thomas',
-            'email' => 'Tmartin@email.com',
-            // Silhouette générique, pas la photo de la maquette (signalé le
-            // 18/09) : c'est un repli affiché à N'IMPORTE QUEL compte tant
-            // qu'il n'a pas déposé sa propre photo, pas une photo de démo à
-            // remplacer plus tard — la personne choisit elle-même dans
-            // /compte/parametres (AvatarStorageService).
-            'avatar' => 'images/account/avatar-default.svg',
-            'memberSince' => 'Mai 2026',
-            // Badge « non lues » partagé sidebar/header (spec, point 8).
-            // Séparé en deux compteurs (14/09, Lot G) : les deux sont réels
-            // depuis le Lot K (MessageRepository puis NotificationRepository),
-            // seul l'avatar ci-dessus reste celui du repli par défaut.
-            'unreadMessages' => 3,
-            'unreadNotifications' => 3,
-        ];
-    }
-
     /**
      * Menu de la sidebar client — maquettes docs/maquettes/profil_particulier
      * (30/09) : un premier groupe sans titre, puis le groupe « COMPTE ».
@@ -117,69 +89,5 @@ final class StaticAccount
         $menu[] = ['icon' => 'logout', 'title' => 'Déconnexion', 'subtitle' => 'Se déconnecter', 'route' => 'app_account_logout_confirm', 'badge' => false, 'section' => ''];
 
         return $menu;
-    }
-
-    /**
-     * Grille des favoris (onglets Activités/Destinations/Prestataires) :
-     * mêmes 6 activités que le catalogue, valeurs de la maquette. Le titre
-     * « Titre » est un placeholder de la maquette, reproduit tel quel.
-     * Coquilles corrigées : « Labyrinthe en Province » → Provence,
-     * « Procince-Alpes-Côte d'Azur » → Provence.
-     *
-     * @return list<array<string, string|int|null>>
-     */
-    public static function favorites(): array
-    {
-        return [
-            ['place' => "Gorges de L'ardèche", 'title' => 'Titre', 'rating' => '4.8', 'reviews' => 256, 'duration' => '2h-3h', 'price' => 25, 'badge' => 'Bestseller', 'image' => 'images/account/fav-kayak.jpg'],
-            ['place' => 'Massif du Vercors', 'title' => 'Titre', 'rating' => '4.9', 'reviews' => 178, 'duration' => 'Journée', 'price' => 45, 'badge' => null, 'image' => 'images/account/fav-vtt.jpg'],
-            ['place' => 'Labyrinthe en Provence', 'title' => 'Titre', 'rating' => '4.7', 'reviews' => 134, 'duration' => '1h30', 'price' => 12, 'badge' => null, 'image' => 'images/home/act-labyrinthe.jpg'],
-            ['place' => "Muséum d'Histoire Naturelle", 'title' => 'Titre', 'rating' => '4.6', 'reviews' => 312, 'duration' => '2h', 'price' => 16, 'badge' => null, 'image' => 'images/home/act-musee.jpg'],
-            ['place' => "Provence-Alpes-Côte d'Azur", 'title' => 'Titre', 'rating' => '4.8', 'reviews' => 64, 'duration' => '2h30', 'price' => 25, 'badge' => null, 'image' => 'images/account/fav-cuisine.jpg'],
-            ['place' => "Provence-Alpes-Côte d'Azur", 'title' => 'Titre', 'rating' => '5.0', 'reviews' => 93, 'duration' => '3h', 'price' => 180, 'badge' => null, 'image' => 'images/activities/montgolfiere.jpg'],
-        ];
-    }
-
-    /**
-     * Onglet Prestataires : même grille mais la 1re carte est un
-     * `<ImagePlaceholder>` (chip « Badge », icône image manquante) avec un
-     * vrai titre « Descente en Canoë » ; cœurs en contour (maquette).
-     *
-     * @return list<array<string, string|int|bool|null>>
-     */
-    public static function providers(): array
-    {
-        $cards = self::favorites();
-        $cards[0] = [
-            'place' => "Gorges de L'ardèche",
-            'title' => 'Descente en Canoë',
-            'rating' => '4.8',
-            'reviews' => 256,
-            'duration' => '2h-3h',
-            'price' => 25,
-            'badge' => null,
-            'image' => null,
-            'placeholder' => true,
-        ];
-
-        return $cards;
-    }
-
-    /**
-     * Liste de favoris « Alsace - 2026 » (écran 2) : 6 cartes croppées de la
-     * maquette, localisées Alsace / Alsace-Colmar.
-     *
-     * @return list<array<string, string|int|null>>
-     */
-    public static function alsaceList(): array
-    {
-        return [
-            ['place' => 'Alsace', 'title' => 'Titre', 'rating' => '4.9', 'reviews' => 178, 'duration' => 'Journée', 'price' => 45, 'badge' => null, 'image' => 'images/account/alsace-chocolat.jpg'],
-            ['place' => 'Alsace', 'title' => 'Titre', 'rating' => '4.8', 'reviews' => 256, 'duration' => '2h-3h', 'price' => 25, 'badge' => 'Bestseller', 'image' => 'images/account/alsace-chateau.jpg'],
-            ['place' => 'Alsace', 'title' => 'Titre', 'rating' => '4.7', 'reviews' => 134, 'duration' => '1h30', 'price' => 12, 'badge' => null, 'image' => 'images/account/alsace-brunch.jpg'],
-            ['place' => 'Alsace-Colmar', 'title' => 'Titre', 'rating' => '4.6', 'reviews' => 312, 'duration' => '2h', 'price' => 16, 'badge' => null, 'image' => 'images/account/alsace-galerie.jpg'],
-            ['place' => 'Alsace-Colmar', 'title' => 'Titre', 'rating' => '4.8', 'reviews' => 64, 'duration' => '2h30', 'price' => 25, 'badge' => null, 'image' => 'images/account/alsace-colmar.jpg'],
-            ['place' => 'Alsace', 'title' => 'Titre', 'rating' => '5.0', 'reviews' => 93, 'duration' => '3h', 'price' => 180, 'badge' => null, 'image' => 'images/account/alsace-helico.jpg'],
-        ];
     }
 }

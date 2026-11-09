@@ -6,10 +6,11 @@ namespace App\Corporate\Controller;
 
 use App\Corporate\Entity\ContactMessage;
 use App\Corporate\Entity\PartnerApplication;
+use App\Corporate\Enum\PageBlockSection;
 use App\Corporate\Form\PartnerApplicationFormType;
 use App\Corporate\Service\CompanyContactProvider;
+use App\Corporate\Service\CorporateContent;
 use App\Corporate\Service\CorporateInboxService;
-use App\Corporate\StaticCorporate;
 use App\Legal\Enum\LegalDocumentType;
 use App\Legal\LegalDefaults;
 use App\Legal\Service\LegalContentRenderer;
@@ -35,7 +36,7 @@ final class CorporateController extends AbstractController
     public const CONTACT_SUBJECTS = ['Question générale', 'Réservation', 'Paiement', 'Bon cadeau', 'Devenir partenaire', 'Presse', 'Signaler un problème', 'Autre'];
 
     #[Route(path: ['fr' => '/a-propos', 'en' => '/en/about-us'], name: 'app_corporate_about')]
-    public function about(PlatformFigures $figures): Response
+    public function about(PlatformFigures $figures, CorporateContent $content): Response
     {
         // Chiffres réels (07/10 : plus aucun faux chiffre).
         return $this->render('corporate/apropos.html.twig', [
@@ -46,13 +47,13 @@ final class CorporateController extends AbstractController
                 ['destinations', 'map_pin', 'violet', 'Destinations'],
                 ['rating', 'star', 'yellow', 'Note moyenne des avis'],
             ]),
-            'values' => StaticCorporate::values(),
-            'team' => StaticCorporate::team(),
+            'values' => $content->section(PageBlockSection::AboutValues),
+            'team' => $content->section(PageBlockSection::AboutTeam),
         ]);
     }
 
     #[Route(path: ['fr' => '/devenir-partenaire', 'en' => '/en/become-a-partner'], name: 'app_corporate_partner')]
-    public function partner(PlatformFigures $figures): Response
+    public function partner(PlatformFigures $figures, CorporateContent $content): Response
     {
         return $this->render('corporate/partenaire.html.twig', [
             'stats' => $figures->band([
@@ -61,10 +62,10 @@ final class CorporateController extends AbstractController
                 ['providers', 'shield_check', 'green', 'Professionnels vérifiés'],
                 ['rating', 'star', 'yellow', 'Note moyenne des avis'],
             ]),
-            'benefits' => StaticCorporate::partnerBenefits(),
-            'steps' => StaticCorporate::partnerSteps(),
-            'testimonials' => StaticCorporate::testimonials(),
-            'arguments' => StaticCorporate::partnerArguments(),
+            'benefits' => $content->section(PageBlockSection::PartnerBenefits),
+            'steps' => $content->section(PageBlockSection::PartnerSteps),
+            'testimonials' => $content->section(PageBlockSection::PartnerTestimonials),
+            'arguments' => $content->section(PageBlockSection::PartnerArguments),
         ]);
     }
 
@@ -123,7 +124,7 @@ final class CorporateController extends AbstractController
     }
 
     #[Route(path: ['fr' => '/carrieres', 'en' => '/en/careers'], name: 'app_corporate_careers')]
-    public function careers(PlatformFigures $figures): Response
+    public function careers(PlatformFigures $figures, CorporateContent $content): Response
     {
         return $this->render('corporate/carrieres.html.twig', [
             'stats' => $figures->band([
@@ -132,10 +133,10 @@ final class CorporateController extends AbstractController
                 ['destinations', 'pin', 'orange', 'Destinations'],
                 ['rating', 'star', 'yellow', 'Note moyenne des avis'],
             ]),
-            'jobs' => StaticCorporate::jobs(),
-            'values' => StaticCorporate::careerValues(),
-            'reasons' => StaticCorporate::careerReasons(),
-            'testimonials' => StaticCorporate::employeeTestimonials(),
+            'jobs' => $content->jobs(),
+            'values' => $content->section(PageBlockSection::CareerValues),
+            'reasons' => $content->section(PageBlockSection::CareerReasons),
+            'testimonials' => $content->section(PageBlockSection::CareerTestimonials),
         ]);
     }
 
@@ -145,18 +146,18 @@ final class CorporateController extends AbstractController
      * JavaScript.
      */
     #[Route(path: ['fr' => '/carrieres/offres', 'en' => '/en/careers/jobs'], name: 'app_corporate_jobs')]
-    public function jobs(Request $request): Response
+    public function jobs(Request $request, CorporateContent $content): Response
     {
         $dept = (string) $request->query->get('service', '');
         $slug = (string) $request->query->get('offre', '');
-        $detail = '' !== $slug ? StaticCorporate::jobDetail($slug) : null;
+        $detail = '' !== $slug ? $content->jobDetail($slug) : null;
         if ('' !== $slug && null === $detail) {
             throw $this->createNotFoundException();
         }
 
         return $this->render('corporate/offres.html.twig', [
-            'jobs' => array_values(array_filter(StaticCorporate::jobs(), static fn (array $j): bool => '' === $dept || $j['dept'] === $dept)),
-            'depts' => array_values(array_unique(array_column(StaticCorporate::jobs(), 'dept'))),
+            'jobs' => $content->jobs($dept),
+            'depts' => $content->departments(),
             'dept' => $dept,
             'detail' => $detail,
         ]);
