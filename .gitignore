@@ -69,3 +69,6 @@ temp_interactive_push.bat
 # Copies compressées des photos, régénérées à la demande.
 /public/media/
 ###< liip/imagine-bundle ###
+
+# Sécurité : jamais de configuration VS Code versionnée (kit malware folderOpen)
+*.code-workspace
