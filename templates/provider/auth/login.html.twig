@@ -23,7 +23,7 @@
 {% block pa_card %}
     <h2 class="tm-login__card-title">{{ 'Connexion'|trans }}</h2>
     <p class="tm-login__card-sub">{{ 'Accédez à votre espace professionnel'|trans }}</p>
-    {# Mobile uniquement (retour client du 21/11), voir security/login.html.twig. #}
+    {# Retour client du 21/11, voir security/login.html.twig. #}
     <p class="tm-login__signup-top">
         {{ "Vous n'avez pas encore de compte professionnel ?"|trans }}
         <a href="{{ path('app_auth_choice') }}">{{ "S'inscrire maintenant"|trans }}</a>
