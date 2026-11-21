@@ -79,6 +79,23 @@ jobs:
             export APP_ENV=prod
             cd /var/www/vhosts/trouvemoi.eu/httpdocs
 
+            # Le « php » du système est celui d'Ubuntu (8.3), trop ancien pour
+            # le projet (PHP >= 8.4.1, CD #96 du 21/11). Plesk installe ses
+            # propres versions dans /opt/plesk/php/X.Y : on prend la plus
+            # récente >= 8.4 en tête du PATH, ce qui vaut aussi pour composer
+            # (#!/usr/bin/env php). Le PHP-FPM du site se règle, lui, dans Plesk.
+            for v in $(ls /opt/plesk/php 2>/dev/null | sort -rV); do
+              if [ -x "/opt/plesk/php/$v/bin/php" ] && "/opt/plesk/php/$v/bin/php" -r 'exit(PHP_VERSION_ID >= 80401 ? 0 : 1);'; then
+                export PATH="/opt/plesk/php/$v/bin:$PATH"
+                break
+              fi
+            done
+            if ! php -r 'exit(PHP_VERSION_ID >= 80401 ? 0 : 1);'; then
+              echo "::error::PHP >= 8.4.1 introuvable sur le serveur (php = $(php -r 'echo PHP_VERSION;'), versions Plesk : $(ls /opt/plesk/php 2>/dev/null | tr '\n' ' ')). L'installer dans Plesk > Outils > Mises à jour > PHP."
+              exit 1
+            fi
+            php -v | head -1
+
             [ -d .git ] || git init -q
             git fetch -q --depth=1 "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ${{ github.event.workflow_run.head_sha || github.sha }}
             git reset -q --hard FETCH_HEAD
