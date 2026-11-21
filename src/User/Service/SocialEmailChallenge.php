@@ -25,11 +25,11 @@ final class SocialEmailChallenge
         $this->mailer->send((new Email())
             ->to($identity->email ?? '')
             ->subject('Confirmez votre connexion TrouveMoi')
-            ->text(sprintf('Pour terminer votre connexion avec %s, saisissez le code %s sur TrouveMoi. Ce code est valable 15 minutes. Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail.', $identity->provider->label(), $code)));
+            ->text(sprintf('Pour terminer votre connexion avec %s, saisissez le code %s sur TrouveMoi. Ce code est valable 60 minutes. Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail.', $identity->provider->label(), $code)));
         $session->set(self::KEY, [
             'identity' => $identity,
             'hash' => password_hash($code, PASSWORD_DEFAULT),
-            'expires' => time() + 900,
+            'expires' => time() + 3600, // 60 min : certains opérateurs livrent l'e-mail avec 30 min de retard.
             'attempts' => 0,
         ]);
     }

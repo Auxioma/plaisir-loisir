@@ -20,13 +20,13 @@ use Symfony\Component\Mime\Email;
  *
  * Mêmes choix de conception que PasswordResetService, pour les mêmes
  * raisons : code de 8 caractères alphanumériques sans caractères ambigus,
- * expiration à 15 minutes, 5 tentatives tolérées.
+ * expiration à 60 minutes, 5 tentatives tolérées.
  */
 final class EmailVerificationService
 {
     public const CODE_LENGTH = 8;
 
-    private const VALIDITY_MINUTES = 15;
+    private const VALIDITY_MINUTES = 60;
 
     private const MAX_ATTEMPTS = 5;
 
@@ -165,7 +165,7 @@ final class EmailVerificationService
 
             Pour activer votre compte, votre code de vérification est : {$code}
 
-            Ce code est valable 15 minutes.
+            Ce code est valable 60 minutes.
 
             L'équipe TrouveMoi Plaisirs & Loisirs
             TEXT;

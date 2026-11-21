@@ -3,7 +3,16 @@ framework:
     secret: '%env(APP_SECRET)%'
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    # Les codes envoyés par e-mail (inscription, mot de passe oublié) valent
+    # 60 min et l'adresse en cours est gardée en session : la session doit
+    # durer plus longtemps (2 h). Fichiers dans var/sessions et non dans le
+    # dossier système, que le cron Debian/Ubuntu purge au bout de 24 min quel
+    # que soit ce réglage ; gc_probability à 1 car ces distributions le mettent à 0.
+    session:
+        handler_id: session.handler.native_file
+        save_path: '%kernel.project_dir%/var/sessions/%kernel.environment%'
+        gc_maxlifetime: 7200
+        gc_probability: 1
 
     #esi: true
     #fragments: true
