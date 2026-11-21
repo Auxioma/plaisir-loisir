@@ -1023,6 +1023,11 @@
 }
 .tm-login__signup a { margin-left: 4px; color: var(--tm-pro); font-weight: 700; text-decoration: none; }
 .tm-login__signup a:hover { text-decoration: underline; }
+/* Rappel d'inscription en tête de carte : mobile et tablette seulement, le
+   bureau reste conforme à la maquette (lien en bas). */
+.tm-login__signup-top { display: none; }
+.tm-login__signup-top a { margin-left: 4px; color: var(--tm-pro); font-weight: 700; text-decoration: none; }
+.tm-login__signup-top a:hover { text-decoration: underline; }
 
 @media (max-width: 1599.98px) {
     .tm-login__row { padding-inline: 48px; }
@@ -1032,6 +1037,19 @@
     .tm-login__welcome { width: 100%; max-width: 663px; }
     .tm-login__card { flex-basis: auto; width: 100%; max-width: 663px; }
     .tm-login__art { bottom: 0; width: 1100px; opacity: .35; }
+    /* Retour client du 21/11 : en colonne, le formulaire passe AVANT le bloc
+       d'accueil, sinon il faut défiler deux écrans pour l'atteindre. */
+    .tm-login__card { order: -1; }
+    .tm-login__signup-top {
+        display: block;
+        margin: 16px 0 0;
+        padding: 12px 14px;
+        background: var(--tm-pro-soft);
+        border-radius: 10px;
+        font-size: 15px;
+        line-height: 22px;
+        text-align: center;
+    }
 }
 @media (max-width: 575.98px) {
     .tm-login__row { padding: 32px 16px; }
