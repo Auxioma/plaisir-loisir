@@ -19,6 +19,12 @@
 {% block tm_card %}
             <h2 class="tm-login__card-title">{{ 'Connexion'|trans }}</h2>
             <p class="tm-login__card-sub">{{ 'Accédez à votre compte TrouveMoi'|trans }}</p>
+            {# Retour client du 21/11 : le lien du bas n'apparaît qu'après les
+               boutons sociaux, même sur ordinateur ; beaucoup ne le voyaient pas. #}
+            <p class="tm-login__signup-top">
+                {{ "Vous n'avez pas de compte ?"|trans }}
+                <a href="{{ path('app_auth_choice') }}">{{ "S'inscrire maintenant"|trans }}</a>
+            </p>
 
             <form class="tm-login__form" method="post" action="{{ path('app_login') }}">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">

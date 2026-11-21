@@ -1023,6 +1023,20 @@
 }
 .tm-login__signup a { margin-left: 4px; color: var(--tm-pro); font-weight: 700; text-decoration: none; }
 .tm-login__signup a:hover { text-decoration: underline; }
+/* Rappel d'inscription en tête de carte (retour client du 21/11) : sur tous
+   les écrans, le lien du bas n'est visible qu'après défilement. Écart
+   volontaire à la maquette, demandé par le client. */
+.tm-login__signup-top {
+    margin: 16px 0 0;
+    padding: 12px 14px;
+    background: var(--tm-pro-soft);
+    border-radius: 10px;
+    font-size: 15px;
+    line-height: 22px;
+    text-align: center;
+}
+.tm-login__signup-top a { margin-left: 4px; color: var(--tm-pro); font-weight: 700; text-decoration: none; }
+.tm-login__signup-top a:hover { text-decoration: underline; }
 
 @media (max-width: 1599.98px) {
     .tm-login__row { padding-inline: 48px; }
@@ -1032,6 +1046,9 @@
     .tm-login__welcome { width: 100%; max-width: 663px; }
     .tm-login__card { flex-basis: auto; width: 100%; max-width: 663px; }
     .tm-login__art { bottom: 0; width: 1100px; opacity: .35; }
+    /* Retour client du 21/11 : en colonne, le formulaire passe AVANT le bloc
+       d'accueil, sinon il faut défiler deux écrans pour l'atteindre. */
+    .tm-login__card { order: -1; }
 }
 @media (max-width: 575.98px) {
     .tm-login__row { padding: 32px 16px; }

@@ -110,7 +110,8 @@
                     <div class="fv-acts" data-favorite-list data-favorite-removed="{{ 'Retiré de vos favoris.'|trans }}" data-favorite-undo="{{ 'Annuler'|trans }}">
                         {% for a in activities %}
                             <a class="fv-act" data-favorite-card href="{{ path('app_private_activity_show', {id: a.id}) }}">
-                                <img src="{{ asset(a.service ? 'images/activities/canoe-riviere.jpg' : 'images/events/ev-photo1.jpg') }}" alt="" loading="lazy">
+                                {# Sa propre photo, à défaut l'image de sa catégorie (comme sur /activites-privees). #}
+                                <img src="{% include 'private_activity/_cover.html.twig' with { activity: a } %}" alt="" loading="lazy">
                                 <span class="fv-act__body">
                                     <strong>{{ a.title }}</strong>
                                     <span>{{ a.city ?: '—' }}</span>

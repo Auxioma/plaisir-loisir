@@ -17,7 +17,7 @@
         </div>
 
         {# 20/10 : le code arrive souvent dans les indésirables. #}
-        <p class="auth-tip">{{ icon.info(18) }} <span><strong>{{ 'Vous ne trouvez pas l’e-mail ?'|trans }}</strong> {{ 'Pensez à vérifier votre dossier Spam ou Courrier indésirable : le code peut y arriver. Il reste valable 15 minutes.'|trans }}</span></p>
+        <p class="auth-tip">{{ icon.info(18) }} <span><strong>{{ 'Vous ne trouvez pas l’e-mail ?'|trans }}</strong> {{ 'Pensez à vérifier votre dossier Spam ou Courrier indésirable : le code peut y arriver. Il reste valable 60 minutes.'|trans }}</span></p>
 
         <form class="auth-form" method="post" action="{{ path('app_email_verification') }}">
             <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">

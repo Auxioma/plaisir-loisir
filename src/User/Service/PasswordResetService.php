@@ -28,7 +28,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  *  - Une adresse inconnue ne provoque AUCUNE erreur visible. Répondre
  *    « ce compte n'existe pas » permettrait à n'importe qui de savoir qui est
  *    inscrit sur la plateforme.
- *  - Le code expire au bout de 15 minutes et tolère 5 essais. Passé cela il est
+ *  - Le code expire au bout de 60 minutes et tolère 5 essais. Passé cela il est
  *    effacé et il faut en redemander un.
  */
 final class PasswordResetService
@@ -37,7 +37,7 @@ final class PasswordResetService
     public const CODE_LENGTH = 8;
 
     /** Durée de validité du code, en minutes. */
-    private const VALIDITY_MINUTES = 15;
+    private const VALIDITY_MINUTES = 60;
 
     /** Nombre d'essais tolérés avant que le code ne soit détruit. */
     private const MAX_ATTEMPTS = 5;
@@ -202,7 +202,7 @@ final class PasswordResetService
 
             Votre code de vérification est : {$code}
 
-            Ce code est valable 15 minutes. Si vous n'êtes pas à l'origine de cette
+            Ce code est valable 60 minutes. Si vous n'êtes pas à l'origine de cette
             demande, ignorez ce message : votre mot de passe reste inchangé.
 
             L'équipe TrouveMoi Plaisirs & Loisirs
