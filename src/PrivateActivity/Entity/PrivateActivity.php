@@ -272,6 +272,12 @@ class PrivateActivity
         return $this->showExactAddress;
     }
 
+    /** Accès sous le nom de la propriété, pour les formulaires (back-office). */
+    public function getShowExactAddress(): bool
+    {
+        return $this->showExactAddress;
+    }
+
     public function setShowExactAddress(bool $showExactAddress): static
     {
         $this->showExactAddress = $showExactAddress;

@@ -8,6 +8,7 @@ use App\PrivateActivity\Entity\Invitation;
 use App\PrivateActivity\Entity\Participation;
 use App\PrivateActivity\Entity\PrivateActivity;
 use App\PrivateActivity\Enum\ParticipationStatus;
+use App\PrivateActivity\Enum\PrivateActivityStatus;
 use App\PrivateActivity\Enum\PrivateActivityVisibility;
 use App\PrivateActivity\Repository\ParticipationRepository;
 use App\PrivateActivity\Security\PrivateActivityVoter;
@@ -18,6 +19,8 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\AccessDecision;
+use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 
 /**
@@ -29,7 +32,7 @@ final class PrivateActivityVoterTest extends TestCase
     public function testAPublicActivityIsVisibleToAnonymousVisitors(): void
     {
         $activity = (new PrivateActivity())->setOrganizer(new User())->setVisibility(PrivateActivityVisibility::Public);
-        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink());
+        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink(), self::admin(false));
 
         self::assertSame(
             VoterInterface::ACCESS_GRANTED,
@@ -40,7 +43,7 @@ final class PrivateActivityVoterTest extends TestCase
     public function testAMembersOnlyActivityIsHiddenFromAnonymousVisitors(): void
     {
         $activity = (new PrivateActivity())->setOrganizer(new User())->setVisibility(PrivateActivityVisibility::MembersOnly);
-        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink());
+        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink(), self::admin(false));
 
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
@@ -51,7 +54,7 @@ final class PrivateActivityVoterTest extends TestCase
     public function testAMembersOnlyActivityIsVisibleToAnyConnectedUser(): void
     {
         $activity = (new PrivateActivity())->setOrganizer(new User())->setVisibility(PrivateActivityVisibility::MembersOnly);
-        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink());
+        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink(), self::admin(false));
 
         self::assertSame(
             VoterInterface::ACCESS_GRANTED,
@@ -66,7 +69,7 @@ final class PrivateActivityVoterTest extends TestCase
         $participations = $this->createStub(ParticipationRepository::class);
         $participations->method('findOneByActivityAndParticipant')->willReturn(null);
 
-        $voter = new PrivateActivityVoter($participations, self::noInviteLink());
+        $voter = new PrivateActivityVoter($participations, self::noInviteLink(), self::admin(false));
 
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
@@ -83,7 +86,7 @@ final class PrivateActivityVoterTest extends TestCase
         $participations = $this->createStub(ParticipationRepository::class);
         $participations->method('findOneByActivityAndParticipant')->willReturn(null);
 
-        $voter = new PrivateActivityVoter($participations, self::noInviteLink());
+        $voter = new PrivateActivityVoter($participations, self::noInviteLink(), self::admin(false));
 
         self::assertSame(
             VoterInterface::ACCESS_GRANTED,
@@ -95,7 +98,7 @@ final class PrivateActivityVoterTest extends TestCase
     {
         $organizer = new User();
         $activity = (new PrivateActivity())->setOrganizer($organizer);
-        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink());
+        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink(), self::admin(false));
 
         self::assertSame(VoterInterface::ACCESS_GRANTED, $voter->vote($this->tokenFor($organizer), $activity, [PrivateActivityVoter::MANAGE]));
         self::assertSame(VoterInterface::ACCESS_DENIED, $voter->vote($this->tokenFor(new User()), $activity, [PrivateActivityVoter::MANAGE]));
@@ -105,7 +108,7 @@ final class PrivateActivityVoterTest extends TestCase
     {
         $organizer = new User();
         $activity = (new PrivateActivity())->setOrganizer($organizer);
-        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink());
+        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink(), self::admin(false));
 
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
@@ -126,7 +129,7 @@ final class PrivateActivityVoterTest extends TestCase
         $participations->method('findOneByActivityAndParticipant')
             ->willReturn((new Participation())->setStatus(ParticipationStatus::Pending));
 
-        $voter = new PrivateActivityVoter($participations, self::noInviteLink());
+        $voter = new PrivateActivityVoter($participations, self::noInviteLink(), self::admin(false));
 
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
@@ -143,7 +146,7 @@ final class PrivateActivityVoterTest extends TestCase
         $participations->method('findOneByActivityAndParticipant')
             ->willReturn((new Participation())->setStatus(ParticipationStatus::Accepted));
 
-        $voter = new PrivateActivityVoter($participations, self::noInviteLink());
+        $voter = new PrivateActivityVoter($participations, self::noInviteLink(), self::admin(false));
 
         self::assertSame(
             VoterInterface::ACCESS_GRANTED,
@@ -160,7 +163,7 @@ final class PrivateActivityVoterTest extends TestCase
         $participations->method('findOneByActivityAndParticipant')
             ->willReturn((new Participation())->setStatus(ParticipationStatus::Accepted));
 
-        $voter = new PrivateActivityVoter($participations, self::noInviteLink());
+        $voter = new PrivateActivityVoter($participations, self::noInviteLink(), self::admin(false));
 
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
@@ -177,6 +180,45 @@ final class PrivateActivityVoterTest extends TestCase
     }
 
     /** Aucun lien d'invitation ouvert (pas de requête courante). */
+    /** Modération (26/11) : l'équipe voit tout, mais ne gère pas à la place de l'organisateur. */
+    public function testAnAdminSeesASuspendedPrivateActivityWithoutManagingIt(): void
+    {
+        $activity = (new PrivateActivity())->setOrganizer(new User())
+            ->setVisibility(PrivateActivityVisibility::Private)
+            ->setStatus(PrivateActivityStatus::Suspended);
+        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink(), self::admin(true));
+        $admin = $this->tokenFor(new User());
+
+        self::assertSame(VoterInterface::ACCESS_GRANTED, $voter->vote($admin, $activity, [PrivateActivityVoter::VIEW]));
+        self::assertSame(VoterInterface::ACCESS_GRANTED, $voter->vote($admin, $activity, [PrivateActivityVoter::VIEW_EXACT_LOCATION]));
+        self::assertSame(VoterInterface::ACCESS_DENIED, $voter->vote($admin, $activity, [PrivateActivityVoter::MANAGE]));
+        self::assertSame(VoterInterface::ACCESS_DENIED, $voter->vote($admin, $activity, [PrivateActivityVoter::PARTICIPATE]));
+    }
+
+    public function testASuspendedActivityIsHiddenFromMembersButNotFromItsOrganizer(): void
+    {
+        $organizer = new User();
+        $activity = (new PrivateActivity())->setOrganizer($organizer)->setStatus(PrivateActivityStatus::Suspended);
+        $voter = new PrivateActivityVoter($this->createStub(ParticipationRepository::class), self::noInviteLink(), self::admin(false));
+
+        self::assertSame(VoterInterface::ACCESS_DENIED, $voter->vote($this->tokenFor(new User()), $activity, [PrivateActivityVoter::VIEW]));
+        self::assertSame(VoterInterface::ACCESS_GRANTED, $voter->vote($this->tokenFor($organizer), $activity, [PrivateActivityVoter::VIEW]));
+    }
+
+    private static function admin(bool $granted): AccessDecisionManagerInterface
+    {
+        return new class($granted) implements AccessDecisionManagerInterface {
+            public function __construct(private readonly bool $granted)
+            {
+            }
+
+            public function decide(TokenInterface $token, array $attributes, mixed $object = null, ?AccessDecision $accessDecision = null): bool
+            {
+                return $this->granted && ['ROLE_ADMIN'] === $attributes;
+            }
+        };
+    }
+
     private static function noInviteLink(): PrivateActivityInviteLink
     {
         return new PrivateActivityInviteLink(new InviteLink('test-secret', new RequestStack()));

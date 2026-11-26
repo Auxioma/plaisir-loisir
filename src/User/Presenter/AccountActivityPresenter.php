@@ -153,6 +153,7 @@ final class AccountActivityPresenter
                 PrivateActivityStatus::Draft === $activity->getStatus() => ['draft', 'Brouillon'],
                 PrivateActivityStatus::PendingCategory === $activity->getStatus() => ['draft', 'En attente de la catégorie'],
                 PrivateActivityStatus::Cancelled === $activity->getStatus() => ['cancelled', 'Annulée'],
+                PrivateActivityStatus::Suspended === $activity->getStatus() => ['cancelled', 'Suspendue par l’équipe'],
                 null !== $date && $date < $now => ['past', 'Terminée'],
                 PrivateActivityStatus::Full === $activity->getStatus() => ['full', 'Complète'],
                 default => ['online', 'En ligne'],
@@ -348,6 +349,9 @@ final class AccountActivityPresenter
         };
         if (PrivateActivityStatus::Cancelled === $activity->getStatus()) {
             [$status, $label, $note] = ['cancelled', 'Annulée', 'Par l\'organisateur'];
+        }
+        if (PrivateActivityStatus::Suspended === $activity->getStatus()) {
+            [$status, $label, $note] = ['cancelled', 'Suspendue', 'Par l’équipe TrouveMoi'];
         }
 
         return [

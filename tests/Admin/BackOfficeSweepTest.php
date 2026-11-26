@@ -46,6 +46,10 @@ final class BackOfficeSweepTest extends WebTestCase
     {
         foreach ([
             'activités' => '/admin/service',
+            'activités gratuites' => '/admin/private-activity',
+            'participations' => '/admin/participation',
+            'photos des albums' => '/admin/album-photo',
+            'avis entre membres' => '/admin/member-review',
             'fiches détaillées' => '/admin/service-detail',
             'tarifs' => '/admin/service-package',
             'photos' => '/admin/media',

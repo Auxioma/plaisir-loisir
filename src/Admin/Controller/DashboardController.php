@@ -86,7 +86,7 @@ class DashboardController extends AbstractDashboardController
         // EasyAdmin 5 désigne l'écran par son CONTRÔLEUR, non par l'entité
         // (`linkToCrud` des versions 4 n'existe plus).
         yield MenuItem::section('Catalogue');
-        yield MenuItem::linkTo(ServiceCrudController::class, 'Activités', 'fa fa-compass');
+        yield MenuItem::linkTo(ServiceCrudController::class, 'Activités payantes', 'fa fa-compass');
         yield MenuItem::linkTo(ServicePackageCrudController::class, 'Tarifs', 'fa fa-euro-sign');
         yield MenuItem::linkTo(MediaCrudController::class, 'Photos', 'fa fa-image');
         // Sans fiche detaillee, la page publique d'une activite renvoie une
@@ -97,6 +97,14 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(AvailabilityCrudController::class, 'Disponibilités', 'fa fa-calendar-days');
 
         yield MenuItem::linkTo(PromotionCrudController::class, 'Offres des professionnels', 'fa fa-percent');
+
+        // Sorties gratuites créées par les membres (26/11) : pendant des
+        // activités payantes ci-dessus, avec ce qui les accompagne.
+        yield MenuItem::section('Activités gratuites');
+        yield MenuItem::linkTo(PrivateActivityCrudController::class, 'Activités gratuites', 'fa fa-people-group');
+        yield MenuItem::linkTo(ParticipationCrudController::class, 'Participations', 'fa fa-user-check');
+        yield MenuItem::linkTo(AlbumPhotoCrudController::class, 'Photos des albums', 'fa fa-images');
+        yield MenuItem::linkTo(MemberReviewCrudController::class, 'Avis entre membres', 'fa fa-star-half-stroke');
 
         // Activité des professionnels (espace pro, 02/10).
         yield MenuItem::section('Événements');

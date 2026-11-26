@@ -100,6 +100,26 @@ class MemberReview
         return $this->rating;
     }
 
+    public function getConviviality(): int
+    {
+        return $this->conviviality;
+    }
+
+    public function getOrganisation(): int
+    {
+        return $this->organisation;
+    }
+
+    public function getPunctuality(): int
+    {
+        return $this->punctuality;
+    }
+
+    public function getCommunication(): int
+    {
+        return $this->communication;
+    }
+
     public function getCriterion(string $key): int
     {
         return match ($key) {

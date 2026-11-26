@@ -18,7 +18,7 @@
         <a class="fa-share__btn" href="https://www.facebook.com/sharer/sharer.php?u={{ share_url|url_encode }}" target="_blank" rel="noopener">{{ icon.facebook(14) }} Facebook</a>
     </div>
 
-    {% if activity.status.value not in ['cancelled', 'draft'] %}
+    {% if activity.status.value not in ['cancelled', 'draft', 'suspended'] %}
         <form method="post" action="{{ path('app_account_private_activity_invite', {id: activity.id}) }}">
             <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
             {% if back is defined and back %}<input type="hidden" name="retour" value="{{ back }}">{% endif %}
