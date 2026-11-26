@@ -11,7 +11,7 @@
 #}
 {% macro countdown(activity, variant = 'full') %}
     {%- import '_partials/_icons.html.twig' as icon -%}
-    {%- if activity.scheduledAt and activity.status.value not in ['cancelled', 'draft'] -%}
+    {%- if activity.scheduledAt and activity.status.value not in ['cancelled', 'draft', 'suspended'] -%}
         {%- set p = countdown_parts(activity.scheduledAt) -%}
         {%- set full = variant == 'full' -%}
         {%- set units = full

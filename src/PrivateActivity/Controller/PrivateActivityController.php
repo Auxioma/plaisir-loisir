@@ -244,7 +244,7 @@ final class PrivateActivityController extends AbstractController
             return $this->redirect($back);
         }
         if (PrivateActivityStatus::Cancelled === $activity->getStatus() || $activity->getStatus()->isUnpublished()) {
-            $this->addFlash('error', 'Publiez l’activité avant d’inviter des participants.');
+            $this->addFlash('error', PrivateActivityStatus::Suspended === $activity->getStatus() ? 'Cette activité a été suspendue par l’équipe TrouveMoi.' : 'Publiez l’activité avant d’inviter des participants.');
 
             return $this->redirect($back);
         }
@@ -391,6 +391,13 @@ final class PrivateActivityController extends AbstractController
         $this->denyAccessUnlessGranted(PrivateActivityVoter::MANAGE, $activity);
         // Modifier une annonce publiée (07/10) passe par la même reprise ;
         // une activité annulée ou passée ne se modifie plus.
+        // Une activité suspendue par l'équipe non plus (26/11) : seule
+        // l'administration la remet en ligne.
+        if (PrivateActivityStatus::Suspended === $activity->getStatus()) {
+            $this->addFlash('error', 'Cette activité a été suspendue par l’équipe TrouveMoi : contactez le support pour la remettre en ligne.');
+
+            return $this->redirectToRoute('app_private_activity_show', ['id' => $id]);
+        }
         if (PrivateActivityStatus::Cancelled === $activity->getStatus() || ($activity->getScheduledAt() && $activity->getScheduledAt() < new \DateTimeImmutable() && !$activity->getStatus()->isUnpublished())) {
             $this->addFlash('error', 'Cette activité est annulée ou passée : elle ne peut plus être modifiée.');
 

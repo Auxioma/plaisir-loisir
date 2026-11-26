@@ -96,16 +96,177 @@ final class PrivateActivityService
         $activity->setStatus(PrivateActivityStatus::Cancelled);
         $this->entityManager->flush();
 
+        $this->notifyParticipants($activity, 'Activité annulée', \sprintf('« %s » a été annulée par son organisateur.', $activity->getTitle()));
+    }
+
+    // ---------------------------------------------------------------------
+    // Modération par l'administration (back-office, 26/11).
+    //
+    // Mêmes règles que côté membre (capacité, liste d'attente, comptes pro
+    // exclus), sans la vérification « seul l'organisateur peut… » : c'est le
+    // back-office (ROLE_ADMIN) qui fait foi. Les messages envoyés disent que
+    // l'équipe est intervenue, pas l'organisateur.
+    // ---------------------------------------------------------------------
+
+    /** Retire l'activité du site ; l'organisateur ne peut plus la republier. */
+    public function suspend(PrivateActivity $activity): void
+    {
+        if (PrivateActivityStatus::Suspended === $activity->getStatus()) {
+            return;
+        }
+
+        $activity->setStatus(PrivateActivityStatus::Suspended);
+        $this->entityManager->flush();
+
+        $this->notifyOrganizer($activity, 'Activité suspendue', \sprintf('« %s » a été retirée du site par l’équipe TrouveMoi. Contactez le support pour plus d’informations.', $activity->getTitle()));
+        $this->notifyParticipants($activity, 'Activité suspendue', \sprintf('« %s » a été retirée du site par l’équipe TrouveMoi.', $activity->getTitle()));
+    }
+
+    /**
+     * Remet en ligne une activité suspendue (ouverte ou complète selon les places).
+     *
+     * @throws \InvalidArgumentException si l'activité n'est pas suspendue ou n'a pas de catégorie
+     */
+    public function reinstate(PrivateActivity $activity): void
+    {
+        if (PrivateActivityStatus::Suspended !== $activity->getStatus()) {
+            throw new \InvalidArgumentException('Cette activité n’est pas suspendue.');
+        }
+        if (null === $activity->getCategory()) {
+            throw new \InvalidArgumentException('Choisissez une catégorie avant de remettre l’activité en ligne.');
+        }
+
+        $activity->setStatus(PrivateActivityStatus::Open);
+        $this->refreshFullStatus($activity);
+        $this->entityManager->flush();
+
+        $this->notifyOrganizer($activity, 'Activité rétablie', \sprintf('« %s » est de nouveau en ligne.', $activity->getTitle()));
+        $this->notifyParticipants($activity, 'Activité rétablie', \sprintf('« %s » est de nouveau en ligne.', $activity->getTitle()));
+    }
+
+    /** Annulation décidée par l'équipe (organisateur et inscrits prévenus). */
+    public function cancelByAdministration(PrivateActivity $activity): void
+    {
+        $activity->setStatus(PrivateActivityStatus::Cancelled);
+        $this->entityManager->flush();
+
+        $this->notifyOrganizer($activity, 'Activité annulée', \sprintf('« %s » a été annulée par l’équipe TrouveMoi.', $activity->getTitle()));
+        $this->notifyParticipants($activity, 'Activité annulée', \sprintf('« %s » a été annulée par l’équipe TrouveMoi.', $activity->getTitle()));
+    }
+
+    /**
+     * Après un changement de capacité fait par l'équipe : statut complet /
+     * ouvert recalculé, et la liste d'attente profite des places ajoutées.
+     */
+    public function syncCapacity(PrivateActivity $activity): void
+    {
+        $this->refreshFullStatus($activity);
+        $promoted = [];
+        while (null !== $next = $this->promoteFromWaitingList($activity)) {
+            $promoted[] = $next;
+        }
+        $this->entityManager->flush();
+
+        foreach ($promoted as $participation) {
+            $this->notifyPromoted($participation, $activity);
+        }
+    }
+
+    /**
+     * Inscrit un membre à la main.
+     *
+     * @throws \InvalidArgumentException organisateur, compte pro, doublon ou activité complète
+     */
+    public function enrolByAdministration(PrivateActivity $activity, User $member, ParticipationStatus $status): Participation
+    {
+        if ($activity->getOrganizer() === $member) {
+            throw new \InvalidArgumentException('L’organisateur participe déjà à sa propre activité.');
+        }
+        if ($member->isProvider()) {
+            throw new \InvalidArgumentException('Les comptes professionnels ne participent pas aux activités gratuites entre membres.');
+        }
+        if (null !== $this->participations->findOneByActivityAndParticipant($activity, $member)) {
+            throw new \InvalidArgumentException('Ce membre a déjà une participation à cette activité : modifiez-la plutôt.');
+        }
+        if (ParticipationStatus::Accepted === $status && !$this->hasRoom($activity)) {
+            throw new \InvalidArgumentException('L’activité est complète : choisissez la liste d’attente ou augmentez le nombre de places.');
+        }
+
+        $participation = (new Participation())->setParticipant($member)->setStatus($status);
+        $activity->addParticipation($participation);
+        $this->entityManager->persist($participation);
+        $this->refreshFullStatus($activity);
+        $this->entityManager->flush();
+
+        $this->notifications->notify($member, NotificationCategory::Activity, 'Participation mise à jour', \sprintf('L’équipe TrouveMoi vous a inscrit à « %s » : %s.', $activity->getTitle(), self::participationLabel($status)));
+
+        return $participation;
+    }
+
+    /**
+     * Change le statut d'une participation. Une place confirmée qui se libère
+     * profite au premier de la liste d'attente, comme pour un désistement.
+     *
+     * @throws \InvalidArgumentException si la place demandée n'existe plus
+     */
+    public function moderateParticipation(Participation $participation, ParticipationStatus $status): void
+    {
+        $activity = $participation->getPrivateActivity();
+        $previous = $participation->getStatus();
+        if (null === $activity || $previous === $status) {
+            return;
+        }
+        if (ParticipationStatus::Accepted === $status && !$this->hasRoom($activity)) {
+            throw new \InvalidArgumentException('L’activité est complète : augmentez le nombre de places avant de confirmer ce participant.');
+        }
+
+        $participation->setStatus($status);
+        $this->refreshFullStatus($activity);
+        $promoted = ParticipationStatus::Accepted === $previous ? $this->promoteFromWaitingList($activity) : null;
+        $this->entityManager->flush();
+
+        $participant = $participation->getParticipant();
+        if (null !== $participant) {
+            $this->notifications->notify($participant, NotificationCategory::Activity, 'Participation mise à jour', \sprintf('Votre participation à « %s » a été modifiée par l’équipe TrouveMoi : %s.', $activity->getTitle(), self::participationLabel($status)));
+        }
+        if (null !== $promoted) {
+            $this->notifyPromoted($promoted, $activity);
+        }
+    }
+
+    public static function participationLabel(ParticipationStatus $status): string
+    {
+        return match ($status) {
+            ParticipationStatus::Pending => 'demande en attente',
+            ParticipationStatus::Accepted => 'participation confirmée',
+            ParticipationStatus::Refused => 'demande refusée',
+            ParticipationStatus::WaitingList => 'liste d’attente',
+            ParticipationStatus::Cancelled => 'participation annulée',
+        };
+    }
+
+    private function notifyOrganizer(PrivateActivity $activity, string $title, string $message): void
+    {
+        if (null !== $organizer = $activity->getOrganizer()) {
+            $this->notifications->notify($organizer, NotificationCategory::Activity, $title, $message);
+        }
+    }
+
+    /** Prévient les inscrits encore concernés (confirmés, en attente, en liste d'attente). */
+    private function notifyParticipants(PrivateActivity $activity, string $title, string $message): void
+    {
         foreach ($activity->getParticipations() as $participation) {
             $participant = $participation->getParticipant();
             if (null !== $participant && \in_array($participation->getStatus(), [ParticipationStatus::Accepted, ParticipationStatus::Pending, ParticipationStatus::WaitingList], true)) {
-                $this->notifications->notify(
-                    $participant,
-                    NotificationCategory::Activity,
-                    'Activité annulée',
-                    \sprintf('« %s » a été annulée par son organisateur.', $activity->getTitle()),
-                );
+                $this->notifications->notify($participant, NotificationCategory::Activity, $title, $message);
             }
+        }
+    }
+
+    private function notifyPromoted(Participation $participation, PrivateActivity $activity): void
+    {
+        if (null !== $participant = $participation->getParticipant()) {
+            $this->notifications->notify($participant, NotificationCategory::Activity, 'Participation confirmée', \sprintf('Une place s\'est libérée : votre participation à « %s » est confirmée.', $activity->getTitle()));
         }
     }
 
@@ -167,6 +328,9 @@ final class PrivateActivityService
     {
         if (PrivateActivityStatus::Cancelled === $activity->getStatus()) {
             throw new \InvalidArgumentException('Cette activité est annulée.');
+        }
+        if ($activity->getStatus()->isUnpublished()) {
+            throw new \InvalidArgumentException('Cette activité n’est pas en ligne.');
         }
 
         if ($activity->getOrganizer() === $participant) {
@@ -388,7 +552,15 @@ final class PrivateActivityService
             return null;
         }
 
-        $next = $this->participations->findOldestWaiting($activity)[0] ?? null;
+        // La requête lit la base telle qu'avant le flush : une participation
+        // déjà promue dans ce même appel y figure encore en liste d'attente.
+        $next = null;
+        foreach ($this->participations->findOldestWaiting($activity) as $candidate) {
+            if (ParticipationStatus::WaitingList === $candidate->getStatus()) {
+                $next = $candidate;
+                break;
+            }
+        }
 
         if (null !== $next) {
             $next->setStatus(ParticipationStatus::Accepted);

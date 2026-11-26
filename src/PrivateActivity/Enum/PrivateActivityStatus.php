@@ -37,12 +37,32 @@ enum PrivateActivityStatus: string
     /** Capacité maximale atteinte : n'accepte plus de nouvelle place directe. */
     case Full = 'full';
 
-    /** Annulée par l'organisateur. */
+    /** Annulée par l'organisateur (ou par l'administration). */
     case Cancelled = 'cancelled';
 
-    /** Pas (encore) en ligne : visible du seul organisateur, absente des listes. */
+    /**
+     * Retirée du site par l'administration (back-office, 26/11) : invisible
+     * comme un brouillon, plus aucune inscription, et l'organisateur ne peut
+     * ni la modifier ni la republier. Seule l'équipe la rétablit.
+     */
+    case Suspended = 'suspended';
+
+    /**
+     * Pas (ou plus) en ligne : visible du seul organisateur, absente des
+     * listes. Inclut la suspension par l'administration.
+     */
     public function isUnpublished(): bool
     {
-        return self::Draft === $this || self::PendingCategory === $this;
+        return self::Draft === $this || self::PendingCategory === $this || self::Suspended === $this;
+    }
+
+    /**
+     * Statuts jamais proposés dans les listes de découverte.
+     *
+     * @return list<self>
+     */
+    public static function hiddenFromListings(): array
+    {
+        return [self::Cancelled, self::Draft, self::PendingCategory, self::Suspended];
     }
 }

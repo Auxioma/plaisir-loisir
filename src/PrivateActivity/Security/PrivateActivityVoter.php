@@ -12,6 +12,7 @@ use App\PrivateActivity\Repository\ParticipationRepository;
 use App\PrivateActivity\Service\PrivateActivityInviteLink;
 use App\User\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -45,6 +46,11 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  *                         ou en liste d'attente : elles n'ont pas encore pris
  *                         part à la sortie que l'album illustre.
  *
+ * L'administration (ROLE_ADMIN) voit toute activité, son lieu exact et son
+ * album, quels que soient sa visibilité et son statut (modération depuis le
+ * back-office, 26/11). Elle ne reçoit PAS « MANAGE » : elle agit depuis
+ * /admin, pas depuis l'espace de l'organisateur.
+ *
  * @extends Voter<string, PrivateActivity>
  */
 final class PrivateActivityVoter extends Voter
@@ -58,6 +64,7 @@ final class PrivateActivityVoter extends Voter
     public function __construct(
         private readonly ParticipationRepository $participations,
         private readonly PrivateActivityInviteLink $inviteLink,
+        private readonly AccessDecisionManagerInterface $decisions,
     ) {
     }
 
@@ -71,6 +78,10 @@ final class PrivateActivityVoter extends Voter
     {
         $user = $token->getUser();
         $isOrganizer = $user instanceof User && $subject->getOrganizer() === $user;
+
+        if (\in_array($attribute, [self::VIEW, self::VIEW_EXACT_LOCATION, self::VIEW_ALBUM], true) && $this->decisions->decide($token, ['ROLE_ADMIN'])) {
+            return true;
+        }
 
         return match ($attribute) {
             self::VIEW => $this->canView($subject, $user, $isOrganizer),

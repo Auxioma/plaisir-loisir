@@ -62,7 +62,7 @@
                     <span class="fd-badge">{{ icon.users(14) }} {{ 'Activité entre particuliers'|trans }}</span>
                     <span class="fd-badge is-free">{{ 'Gratuit'|trans }}</span>
                     {% if activity.status.value == 'cancelled' %}<span class="fd-badge is-red">{{ 'Annulée'|trans }}</span>{% elseif activity.status.value == 'full' %}<span class="fd-badge is-dark">{{ 'Complet'|trans }}</span>{% endif %}
-                    {% if activity.status.value == 'draft' %}<span class="fd-badge is-red">{{ 'Brouillon'|trans }}</span>{% elseif activity.status.value == 'pending_category' %}<span class="fd-badge is-red">{{ 'En attente de validation de la catégorie'|trans }}</span>{% endif %}
+                    {% if activity.status.value == 'draft' %}<span class="fd-badge is-red">{{ 'Brouillon'|trans }}</span>{% elseif activity.status.value == 'pending_category' %}<span class="fd-badge is-red">{{ 'En attente de validation de la catégorie'|trans }}</span>{% elseif activity.status.value == 'suspended' %}<span class="fd-badge is-red">{{ 'Suspendue par l’équipe TrouveMoi'|trans }}</span>{% endif %}
                     {% if activity.visibility.value == 'members_only' %}<span class="fd-badge is-dark">{{ 'Réservée aux membres'|trans }}</span>{% elseif activity.visibility.value == 'private' %}<span class="fd-badge is-dark">{{ 'Privée'|trans }}</span>{% endif %}
                 </p>
                 <h1>{{ activity.title }}</h1>
@@ -244,7 +244,7 @@
 
             {# ---- Gestion (organisateur) ---- #}
             {% if can_manage %}
-                {% set editable = activity.status.value != 'cancelled' and (activity.scheduledAt is null or activity.scheduledAt > date()) %}
+                {% set editable = activity.status.value not in ['cancelled', 'suspended'] and (activity.scheduledAt is null or activity.scheduledAt > date()) %}
                 <section class="fd-box pa-manage" id="gestion">
                     <h2>{{ icon.gear(20) }} {{ 'Gestion de l\'activité'|trans }}</h2>
                     <div class="fa-kpis">

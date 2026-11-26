@@ -1,0 +1,7 @@
+{# Formulaire EasyAdmin hors CRUD standard (création passant par une règle métier). #}
+{% extends '@EasyAdmin/page/content.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+{% block content_title %}{{ title }}{% endblock %}
+{% block main %}
+    <div class="col-lg-8">{{ form(form) }}</div>
+{% endblock %}

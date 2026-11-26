@@ -19,6 +19,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Uid\Ulid;
 
 /**
@@ -250,6 +251,7 @@ final class PrivateActivityDraftService
         }
 
         $activity = $this->existing($d, $organizer) ?? (new PrivateActivity())->setOrganizer($organizer);
+        $this->denyIfSuspended($activity);
         $this->fill($activity, $d);
         if (null === $activity->getCategory()) {
             $activity->setStatus(PrivateActivityStatus::PendingCategory);
@@ -277,6 +279,7 @@ final class PrivateActivityDraftService
         }
 
         $activity = $this->existing($d, $organizer) ?? (new PrivateActivity())->setOrganizer($organizer)->setStatus(PrivateActivityStatus::Draft);
+        $this->denyIfSuspended($activity);
         $this->fill($activity, $d);
         $this->entityManager->persist($activity);
         $this->entityManager->flush();
@@ -345,6 +348,17 @@ final class PrivateActivityDraftService
         $suggestion = $this->suggestions->find(Ulid::fromString($id));
 
         return null !== $suggestion && $suggestion->isPending() ? $suggestion : null;
+    }
+
+    /**
+     * Une activité suspendue par l'équipe (26/11) ne se republie pas depuis
+     * l'assistant — même avec une saisie ouverte avant la suspension.
+     */
+    private function denyIfSuspended(PrivateActivity $activity): void
+    {
+        if (PrivateActivityStatus::Suspended === $activity->getStatus()) {
+            throw new AccessDeniedHttpException('Cette activité a été suspendue par l’équipe TrouveMoi.');
+        }
     }
 
     /** @param array<string, mixed> $d */
