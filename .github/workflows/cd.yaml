@@ -1,8 +1,7 @@
 name: CD
 
 # ---------------------------------------------------------------------------
-#  Déploie `master` sur le serveur Plesk (/var/www/vhosts/trouvemoi.eu/httpdocs)
-#  dès que le workflow « CI » est vert sur `master`. Un push dont la CI échoue
+#  Déploie `master` sur le serveur Plesk dès que le workflow « CI » est vert sur `master`. Un push dont la CI échoue
 #  n'est jamais déployé. On déploie exactement le commit validé par la CI.
 #
 #  Le code est récupéré par Git directement sur le serveur, avec le jeton
@@ -21,6 +20,13 @@ name: CD
 #    APP_USER : utilisateur SSH
 #    APP_PASS : mot de passe SSH
 #    APP_PORT : port SSH (facultatif, 22 par défaut)
+#
+#  Emplacement du site (26/11) : le domaine est passé de trouvemoi.eu à
+#  trouvemoi.com. Le site est cherché sur le serveur dans cet ordre :
+#  variable GitHub SITE_DIR (Settings > Variables), puis
+#  /var/www/vhosts/trouvemoi.com/httpdocs, puis l'ancien
+#  /var/www/vhosts/trouvemoi.eu/httpdocs. L'utilisateur système Plesk est
+#  le propriétaire de ce dossier (ou la variable SITE_USER si elle existe).
 # ---------------------------------------------------------------------------
 
 on:
@@ -53,14 +59,30 @@ jobs:
     env:
       SSHPASS: ${{ secrets.APP_PASS }}
       SSH: sshpass -e ssh -q -o StrictHostKeyChecking=no -o ConnectTimeout=20 -p ${{ secrets.APP_PORT || '22' }} ${{ secrets.APP_USER }}@${{ secrets.APP_HOST }}
-      SITE_DIR: /var/www/vhosts/trouvemoi.eu/httpdocs
-      SITE_USER: trouvemoi.eu_w3wfa542s9m
 
     steps:
       - name: Install sshpass
         run: |
           sudo apt-get update
           sudo apt-get install -y sshpass
+
+      # Le premier dossier qui contient le projet (composer.json) gagne.
+      - name: Localiser le site (trouvemoi.com, sinon ancien trouvemoi.eu)
+        run: |
+          found=$($SSH 'for d in ${{ vars.SITE_DIR }} /var/www/vhosts/trouvemoi.com/httpdocs /var/www/vhosts/trouvemoi.eu/httpdocs; do if [ -f "$d/composer.json" ]; then echo "$d $(stat -c %U "$d")"; exit 0; fi; done; exit 1') || {
+            echo "::error::Aucun site trouvé (ni SITE_DIR, ni trouvemoi.com, ni trouvemoi.eu). Lancer le workflow « Diagnostic serveur »."
+            exit 1
+          }
+          dir=${found% *}
+          user=${{ vars.SITE_USER || '' }}
+          user=${user:-${found##* }}
+          if [ -z "$user" ] || [ "$user" = root ]; then
+            echo "::error::Utilisateur du site introuvable pour $dir (propriétaire : ${found##* }). Définir la variable GitHub SITE_USER."
+            exit 1
+          fi
+          echo "::notice::Déploiement dans $dir (utilisateur $user)"
+          echo "SITE_DIR=$dir" >> "$GITHUB_ENV"
+          echo "SITE_USER=$user" >> "$GITHUB_ENV"
 
       # Un cache/prod périmé fait tomber le noyau à la première commande
       # console, cache:clear compris (« ApiPlatformBundle not found »,
@@ -77,7 +99,7 @@ jobs:
           $SSH "sudo -u $SITE_USER -H bash -s" << 'EOF'
             set -e
             export APP_ENV=prod
-            cd /var/www/vhosts/trouvemoi.eu/httpdocs
+            cd ${{ env.SITE_DIR }}
 
             # Le « php » du système est celui d'Ubuntu (8.3), trop ancien pour
             # le projet (PHP >= 8.4.1, CD #96 du 21/11). Plesk installe ses

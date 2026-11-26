@@ -32,12 +32,15 @@ jobs:
             section "Utilisateur"
             whoami; id; echo "HOME=$HOME"; echo "SHELL=$SHELL"
 
-            section "Vhost trouvemoi.eu"
-            ls -la /var/www/vhosts/trouvemoi.eu 2>&1 | head -40
-
-            section "Contenu de httpdocs"
-            ls -la /var/www/vhosts/trouvemoi.eu/httpdocs 2>&1 | head -60
-            du -sh /var/www/vhosts/trouvemoi.eu/httpdocs 2>&1
+            # Domaine passé de trouvemoi.eu à trouvemoi.com (26/11) : on montre les deux.
+            for d in trouvemoi.com trouvemoi.eu; do
+              section "Vhost $d"
+              ls -la /var/www/vhosts/$d 2>&1 | head -40
+              section "Contenu de httpdocs ($d)"
+              ls -la /var/www/vhosts/$d/httpdocs 2>&1 | head -60
+              du -sh /var/www/vhosts/$d/httpdocs 2>&1
+              stat -c 'propriétaire : %U' /var/www/vhosts/$d/httpdocs 2>&1
+            done
 
             section "Autres dossiers candidats"
             ls -d ~/preprod /var/www/vhosts/*/httpdocs 2>&1
@@ -59,9 +62,14 @@ jobs:
       # la base pour correspondre au code, sans l'exécuter.
       - name: Base de données
         run: |
-          sshpass -e ssh -q -o StrictHostKeyChecking=no -o ConnectTimeout=20 -p ${{ secrets.APP_PORT || '22' }} ${{ secrets.APP_USER }}@${{ secrets.APP_HOST }} "sudo -u trouvemoi.eu_w3wfa542s9m -H bash -s" << 'EOF'
+          SSH="sshpass -e ssh -q -o StrictHostKeyChecking=no -o ConnectTimeout=20 -p ${{ secrets.APP_PORT || '22' }} ${{ secrets.APP_USER }}@${{ secrets.APP_HOST }}"
+          # Même recherche que le workflow CD : trouvemoi.com, sinon trouvemoi.eu.
+          found=$($SSH 'for d in ${{ vars.SITE_DIR }} /var/www/vhosts/trouvemoi.com/httpdocs /var/www/vhosts/trouvemoi.eu/httpdocs; do if [ -f "$d/composer.json" ]; then echo "$d $(stat -c %U "$d")"; exit 0; fi; done; exit 1') || { echo "Aucun site trouvé"; exit 1; }
+          echo "Site : $found"
+          # Le chemin est envoyé en tête du script ; le reste garde un
+          # heredoc entre guillemets ('EOF') pour ne rien évaluer ici.
+          { echo "cd '${found% *}'"; cat << 'EOF'
             section() { echo; echo "===== $1 ====="; }
-            cd /var/www/vhosts/trouvemoi.eu/httpdocs
             export APP_ENV=prod
 
             section "Code déployé"
@@ -93,3 +101,4 @@ jobs:
             crontab -l 2>&1 | grep -v '^#' || true
             ss -ltn 2>/dev/null | grep -E ':(25|465|587|1025|8025)\s' || echo "aucun port SMTP local ouvert"
           EOF
+          } | $SSH "sudo -u ${found##* } -H bash -s"
